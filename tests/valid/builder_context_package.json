@@ -26,6 +26,7 @@
       "class_name": "smart-home__section--root",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "root",
       "children": ["n-002"]
     },
@@ -35,6 +36,7 @@
       "class_name": "smart-home__stage--relative",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "relative_stage",
       "children": []
     }
@@ -140,6 +142,7 @@
         "parent": "page root",
         "element_type": "Container",
         "element_generation": "Shared compatibility element",
+        "element_generation_source": "architect_export",
         "structure_panel_name": "Smart Home Section / Root",
         "active_class": "smart-home__section--root",
         "instruction": "Create the root Container and apply class smart-home__section--root without a leading dot.",
@@ -152,6 +155,7 @@
         "parent": "Smart Home Section / Root",
         "element_type": "Container",
         "element_generation": "Shared compatibility element",
+        "element_generation_source": "architect_export",
         "structure_panel_name": "Smart Home Section / Relative Stage",
         "active_class": "smart-home__stage--relative",
         "instruction": "Create the relative stage Container inside root and apply class smart-home__stage--relative without a leading dot.",
