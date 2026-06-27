@@ -4,13 +4,13 @@
 
 `patch/b-package-authorization-hardening`
 
-## Scope
+## دامنه
 
-Implemented Patch B only: Package Authorization Hardening.
+Patch B فقط برای `Package Authorization Hardening` پیاده‌سازی شد.
 
-No changes were made to the approved Smart Home architecture, approved class names, README, STATUS, or CHANGELOG.
+تغییری در معماری تأییدشده‌ی Smart Home، نام classهای تأییدشده، `README`, `STATUS`, یا `CHANGELOG` انجام نشده است.
 
-## Files changed
+## فایل‌های تغییرکرده
 
 - `schemas/builder-context-package.schema.json`
 - `scripts/validate-package.mjs`
@@ -20,7 +20,7 @@ No changes were made to the approved Smart Home architecture, approved class nam
 - `tests/invalid/input_authorization_invalid_digest.json`
 - `patch-reports/PATCH_B_PACKAGE_AUTHORIZATION_HARDENING.md`
 
-## Commits
+## Commitها
 
 - `1667ad9` — `Patch B: harden package authorization validator`
 - `a88ad91` — `Patch B: add input authorization schema support`
@@ -28,26 +28,28 @@ No changes were made to the approved Smart Home architecture, approved class nam
 - `46de36e` — `Patch B: add invalid digest fixture`
 - `0d390e` — `Patch B: document package authorization gate`
 - `3701aec` — `Patch B: gate APPROVED_HANDOFF_MODE by authorization`
+- `f18d46b` — `Patch B: add authorization hardening report`
+- `d14f072` — `Patch B: harden executable package status gate`
 
-## Implemented rules
+## قوانین پیاده‌سازی‌شده
 
-- Added optional schema support for `input_authorization`.
-- Added supported digest object at `input_authorization.package_digest`:
+- پشتیبانی schema برای `input_authorization` اضافه شد، اما برای سازگاری عقب‌رو اختیاری باقی ماند.
+- شیء digest در `input_authorization.package_digest` پشتیبانی می‌شود:
   - `algorithm: sha256`
   - `scope: canonical_package_without_digest`
   - `value: <64 lowercase hex>`
-- Kept digest support backward-compatible: legacy packages without embedded `input_authorization` remain schema-compatible.
-- `scripts/validate-package.mjs` now rejects `package_status: blocked` from the executable validation path.
-- `APPROVED_HANDOFF_MODE` is now gated by an approved authorization decision.
-- `ready` and `ready_with_visible_flags` remain the only package statuses eligible for approved execution.
-- `selected_candidate_locked` must be `true`.
-- `production_ready_allowed` must be `false`.
-- Missing `approved_structure_tree`, class map, first batch actions, or generation/source evidence is blocking.
-- Existing visible flags and unknowns are carried into deterministic authorization checks when `input_authorization` is supplied.
+- packageهای قدیمی که `input_authorization` یا digest ندارند همچنان schema-compatible هستند.
+- `scripts/validate-package.mjs` حالا `package_status: blocked` را از مسیر executable رد می‌کند.
+- `scripts/validate-package.mjs` حالا فقط `ready` و `ready_with_visible_flags` را برای executable validation مجاز می‌داند.
+- `APPROVED_HANDOFF_MODE` با تصمیم `input_authorization.decision: approved` gate شده است.
+- `selected_candidate_locked` باید `true` باشد.
+- `production_ready_allowed` باید `false` باشد.
+- نبودن `approved_structure_tree`, `class_creation_application_map`, `first_builder_batch.actions`, یا generation/source evidence باعث blocking diagnostic می‌شود.
+- `audit_flags_to_preserve` و `unknowns_to_preserve` در `visible_flags` حفظ می‌شوند و silently resolve نمی‌شوند.
 
-## Stable diagnostic IDs
+## Diagnostic IDهای پایدار
 
-The validator now emits stable diagnostic IDs, including the required Patch B IDs:
+validator diagnosticهای پایدار منتشر می‌کند، از جمله IDهای الزامی Patch B:
 
 - `EV4-PKG-001 BLOCKED_PACKAGE_STATUS`
 - `EV4-PKG-002 SELECTED_CANDIDATE_NOT_LOCKED`
@@ -55,11 +57,13 @@ The validator now emits stable diagnostic IDs, including the required Patch B ID
 - `EV4-PKG-004 MISSING_REQUIRED_TREE`
 - `EV4-PKG-005 ACTION_TARGET_UNKNOWN`
 
-Additional narrow IDs were added for generation evidence, class map, digest, and cross-reference failures.
+Diagnosticهای محدود اضافی برای generation evidence، class map، digest، و cross-reference failure اضافه شده‌اند.
 
-## Validation results
+## Validation
 
-Local validation was run against the patched files.
+### نتیجه validation قبلی ثبت‌شده در مرحله پیاده‌سازی
+
+در گزارش اولیه، این نتایج به‌عنوان local validation ثبت شده بودند:
 
 ```text
 npm test --if-present
@@ -83,7 +87,7 @@ Cross-field validation passed: tests/valid/builder_context_package.json
 Cross-field validation passed: examples/smart-home-connector/builder_context_package.json
 ```
 
-Manual negative validation:
+Negative validation ثبت‌شده:
 
 ```text
 node scripts/validate-package.mjs tests/invalid-cross-field/package_status_blocked.json
@@ -101,15 +105,38 @@ observed schema failure:
 /input_authorization/package_digest/algorithm must be equal to constant sha256
 ```
 
+### Audit rerun limitation
+
+در audit pass بعدی، اجرای commandها روی clone واقعی branch در container ممکن نشد، چون environment نتوانست `github.com` را resolve کند:
+
+```text
+git clone --depth 1 --branch patch/b-package-authorization-hardening https://github.com/rezahh107/EV4-Builder-Assistant-Repo.git /mnt/data/ev4-audit
+fatal: unable to access 'https://github.com/rezahh107/EV4-Builder-Assistant-Repo.git/': Could not resolve host: github.com
+exit: 128
+```
+
+همچنین برای commitهای branch، GitHub connector هیچ `workflow_runs` یا combined status check برنگرداند. بنابراین post-fix CI result در این report تأیید نشده است و باید در PR/GitHub Actions بررسی شود.
+
 ## Smart Home validation
 
-`examples/smart-home-connector/builder_context_package.json` still validates through the cross-field validator.
+`examples/smart-home-connector/builder_context_package.json` در مرحله پیاده‌سازی با cross-field validator پاس شده بود و در این patch بازنویسی نشد.
 
-The Smart Home package was not rewritten and its approved architecture/class names were not changed.
+معماری Smart Home و class names تأییدشده تغییر نکردند.
 
-## Remaining risks
+## اصلاح audit pass
 
-- Embedded `input_authorization` remains optional for backward compatibility. This is intentional for Patch B, but future stricter exporter versions may require it.
-- Digest validation is deterministic when `input_authorization` is supplied; packages without embedded digest rely on runtime-computed authorization.
-- This patch does not add broad graph validation beyond existing node/class/action cross-reference checks.
-- `PROJECT_INSTRUCTIONS.md` was read but not modified to avoid broad instruction churn.
+در audit pass یک gap تأیید شد: `scripts/validate-package.mjs` فقط `package_status: blocked` را reject می‌کرد. برای hardening، commit زیر اضافه شد:
+
+```text
+`d14f072` — `Patch B: harden executable package status gate`
+```
+
+این commit باعث می‌شود validator مستقل از AJV نیز فقط `ready` و `ready_with_visible_flags` را eligible بداند و هر مقدار دیگر را با `EV4-PKG-012 PACKAGE_STATUS_NOT_EXECUTABLE` reject کند.
+
+## ریسک‌های باقی‌مانده
+
+- `input_authorization` برای backward compatibility اختیاری است. اگر exporter آینده strict شود، می‌توان آن را required کرد.
+- digest فقط وقتی `input_authorization` ارائه شود enforce می‌شود؛ packageهای legacy بدون digest همچنان به runtime-computed authorization وابسته‌اند.
+- این patch broad graph validation اضافه نکرده است؛ این موضوع عمداً خارج از Patch B نگه داشته شد.
+- branch نسبت به `main` یک commit عقب است. آن commit مربوط به `README.md` است و برای جلوگیری از parallel conflict وارد Patch B نشده است.
+- post-fix validation کامل در این audit environment اجرا نشد؛ CI باید در PR یا workflow_dispatch بررسی شود.
