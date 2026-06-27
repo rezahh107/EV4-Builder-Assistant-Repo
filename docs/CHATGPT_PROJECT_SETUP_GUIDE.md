@@ -1,7 +1,7 @@
 # CHATGPT_PROJECT_SETUP_GUIDE — EV4 Builder Assistant
 
-Version: 0.2.3
-Status: active
+Version: 0.3.0
+Status: mode_state_intake_foundation_added
 Date: 2026-06-27
 
 ---
@@ -22,22 +22,40 @@ EV4 Builder Assistant = interactive Elementor execution companion
 
 It is not the EV4 Architect pipeline.
 
-It must not rerun architecture, score candidates, recommend a new winner, redesign approved structure, change `selected_candidate_id`, add/remove approved classes, or claim production readiness.
+It must not rerun architecture, score candidates, recommend a new winner, redesign approved structure, change `selected_candidate_id`, add/remove approved classes, assume clickability, assume Dynamic Loop, assume mobile connector behavior, or claim production readiness.
 
 ---
 
-## Official Docs Priority
+## v0.3.0 Runtime Foundation
 
-Official Elementor documentation is the primary external source for Elementor capability and standard workflow claims.
+Use separate values:
 
-Upload and use:
+```yaml
+workflow_mode:
+  - START_INTAKE_MODE
+  - APPROVED_HANDOFF_MODE
+  - FRESH_IMAGE_MODE_LIMITED
 
-```text
-protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY.md
-core/LIVE_INTERFACE_PRECEDENCE.md
+runtime_state:
+  - INTAKE_WAITING
+  - INTAKE_VALIDATING
+  - BUILD_ACTIVE
+  - WAITING_FOR_CONFIRMATION
+  - EVIDENCE_REQUIRED
+  - CORRECTION
+  - REVIEW_ONLY
+  - PAUSED
+  - COMPLETED
 ```
 
-Workbook and case memory are reference layers only.
+Legacy aliases:
+
+```yaml
+CORRECTION_MODE: CORRECTION
+REVIEW_MODE: REVIEW_ONLY
+```
+
+Use `STATE_CAPSULE` only as a compact one-line public state marker when session state matters.
 
 ---
 
@@ -45,7 +63,14 @@ Workbook and case memory are reference layers only.
 
 Use `PROJECT_INSTRUCTIONS.md` as the Project Instructions source.
 
-If the Project Instructions character limit is tight, use only `PROJECT_INSTRUCTIONS.md` in the settings and upload the other files as project knowledge.
+If there is conflict between older legacy mode wording and v0.3.0 runtime files, prefer:
+
+```text
+core/MODE_STATE_MATRIX.md
+core/SESSION_STATE_MACHINE.md
+commands/SESSION_COMMANDS.md
+docs/START_INTAKE_POLICY.md
+```
 
 ---
 
@@ -55,31 +80,35 @@ Upload in this order:
 
 ```text
 1. PROJECT_INSTRUCTIONS.md
-2. core/MASTER_PROMPT.md
-3. input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
+2. core/MODE_STATE_MATRIX.md
+3. core/MASTER_PROMPT.md
 4. core/SESSION_STATE_MACHINE.md
-5. core/LIVE_INTERFACE_PRECEDENCE.md
-6. protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY.md
-7. protocols/WORKBOOK_REFERENCE_BOUNDARY.md
-8. modes/APPROVED_HANDOFF_MODE.md
-9. modes/CORRECTION_MODE.md
-10. protocols/CONTROL_EXISTENCE_FAILURE.md
-11. commands/SESSION_COMMANDS.md
-12. protocols/PER_ELEMENT_INSTRUCTION.md
-13. protocols/CLASS_APPLICATION_SAFETY.md
-14. protocols/COMPLETION_GATE.md
-15. protocols/STEP_SIZE_CONTRACT.md
-16. protocols/RISK_ADJUSTED_STEP_SIZE.md
-17. protocols/V3_V4_SEPARATION_GUARD.md
-18. protocols/LAYOUT_COMPLETENESS_CHECKLIST.md
-19. protocols/STYLE_SYSTEM_CAPABILITY_GATE.md
-20. protocols/CONTROLLED_OVERLAY_STAGE_PATTERN.md
-21. protocols/REPEATED_ELEMENT_DUPLICATION_PROTOCOL.md
-22. protocols/RESPONSIVE_WORKFLOW_GUARD.md
-23. protocols/READING_ORDER_CHECKLIST.md
-24. schemas/builder-context-package.schema.json
-25. schemas/session-state.schema.json
-26. schemas/checkpoint.schema.json
+5. input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
+6. docs/START_INTAKE_POLICY.md
+7. protocols/NEW_CHAT_START_INTAKE.md
+8. core/LIVE_INTERFACE_PRECEDENCE.md
+9. protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY.md
+10. protocols/WORKBOOK_REFERENCE_BOUNDARY.md
+11. modes/APPROVED_HANDOFF_MODE.md
+12. modes/CORRECTION_MODE.md
+13. protocols/CONTROL_EXISTENCE_FAILURE.md
+14. commands/SESSION_COMMANDS.md
+15. protocols/PER_ELEMENT_INSTRUCTION.md
+16. protocols/CLASS_APPLICATION_SAFETY.md
+17. protocols/COMPLETION_GATE.md
+18. protocols/STEP_SIZE_CONTRACT.md
+19. protocols/RISK_ADJUSTED_STEP_SIZE.md
+20. protocols/V3_V4_SEPARATION_GUARD.md
+21. protocols/LAYOUT_COMPLETENESS_CHECKLIST.md
+22. protocols/STYLE_SYSTEM_CAPABILITY_GATE.md
+23. protocols/CONTROLLED_OVERLAY_STAGE_PATTERN.md
+24. protocols/REPEATED_ELEMENT_DUPLICATION_PROTOCOL.md
+25. protocols/RESPONSIVE_WORKFLOW_GUARD.md
+26. protocols/READING_ORDER_CHECKLIST.md
+27. schemas/builder-context-package.schema.json
+28. schemas/session-state.schema.json
+29. schemas/checkpoint.schema.json
+30. schemas/intake-result.schema.json
 ```
 
 Optional fallback-only file:
@@ -122,19 +151,39 @@ Attach or paste:
 
 ```text
 Builder_Context_Package
-original/reference section screenshot if available
+reference screenshot if available
+checkpoint/status summary only if continuing previous work
+current Elementor Structure Panel or editor screenshot if available
 ```
 
 The original section screenshot is only `visual_reference_only` unless it is a current Elementor editor/frontend screenshot used as execution evidence.
 
 ---
 
-## Expected First Response Behavior
+## Start Intake Behavior
+
+When the user says `شروع`, the assistant should:
+
+```text
+1. enter START_INTAKE_MODE / INTAKE_WAITING;
+2. inspect attachments and pasted JSON before asking again;
+3. avoid re-requesting valid data already provided;
+4. ask only for blocking missing inputs;
+5. output a short intake_checklist when inputs are partial;
+6. validate Builder_Context_Package when present;
+7. produce intake_result when intake is evaluated;
+8. enter APPROVED_HANDOFF_MODE / BUILD_ACTIVE only after the package passes the input contract.
+```
+
+---
+
+## Expected First Response Behavior After Valid Package
 
 The first assistant response should:
 
 ```text
-- activate APPROVED_HANDOFF_MODE;
+- activate APPROVED_HANDOFF_MODE / BUILD_ACTIVE;
+- include STATE_CAPSULE when session state matters;
 - confirm selected_candidate_id;
 - preserve package flags and unknowns;
 - produce only the first small action batch;
@@ -184,6 +233,9 @@ manual_session:
   session_id:
   date:
   package_file:
+  workflow_mode:
+  runtime_state:
+  state_capsule:
   first_response_matches_expected: yes/no/partial
   first_batch_executed_in_real_elementor: yes/no
   checkpoint_created: yes/no
