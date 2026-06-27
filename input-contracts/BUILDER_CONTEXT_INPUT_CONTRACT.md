@@ -1,7 +1,7 @@
 # input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT
 
-Version: 0.1.3
-Status: active_initial
+Version: 0.2.3
+Status: active
 Purpose: validate Builder_Context_Package before interactive execution
 
 ---
@@ -55,21 +55,20 @@ required_fields:
   - confirmation_sentence
 ```
 
-Recommended but not always blocking:
+---
 
-```yaml
-recommended_fields:
-  - source_payload_ledger
-  - widget_mapping_table
-  - editable_content_map
-  - decoration_only_map
-  - asset_replacement_map
-  - scoped_css_need_map
-  - responsive_qa_seed
-  - audit_flags_to_preserve
-  - unknowns_to_preserve
-  - builder_assistant_prompt_seed
+## Runtime Batch Cap
+
+Runtime output must follow:
+
+```text
+protocols/STEP_SIZE_CONTRACT.md
+protocols/RISK_ADJUSTED_STEP_SIZE.md
 ```
+
+Default runtime max is 5 actions.
+
+If a compatible package contains more than 5 actions in `first_builder_batch`, do not reject the package only for that reason. Split the batch and emit no more than 5 actions, using fewer when risk requires it.
 
 ---
 
@@ -95,9 +94,17 @@ versioned_documentation
 unverified
 ```
 
-`Unverified element type` is allowed in the package, but it is a runtime warning. The Builder Assistant must not perform generation-sensitive edits until the selected element is verified in the current Elementor UI.
+`Unverified element type` is a runtime warning. The Builder Assistant must not perform generation-sensitive edits until the selected element is verified in the current Elementor UI.
 
 If `element_generation` is not `Unverified element type`, `element_generation_source` must not be `unverified`.
+
+---
+
+## Official Docs And Reference Boundary
+
+Official Elementor documentation is the primary external source for standard Elementor capability claims.
+
+Workbook and case memory are reference layers only. They do not prove current UI control existence, exact panel path, installed-version support, exact numeric values, or production readiness.
 
 ---
 
@@ -157,6 +164,7 @@ input_authorization:
   class_map_available: true/false
   first_batch_available: true/false
   production_ready_allowed: false
+  runtime_action_cap: 5
   blocking_missing_items: []
   carried_flags: []
   carried_unknowns: []
@@ -191,6 +199,7 @@ The input contract passes when:
 - approved tree and class map are available;
 - element_generation and element_generation_source are available for approved tree nodes and first builder actions;
 - forbidden work is visible;
+- runtime output cap is enforced at 5 or fewer actions;
 - no internal identity conflict exists;
 - production_ready_allowed is false;
 - the next safe builder action is known.
