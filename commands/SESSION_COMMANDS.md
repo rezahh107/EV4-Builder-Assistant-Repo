@@ -1,6 +1,6 @@
 # commands/SESSION_COMMANDS
 
-Version: 0.2.3
+Version: 0.2.4
 Status: active
 Purpose: Persian control commands for the builder session
 
@@ -8,9 +8,12 @@ Purpose: Persian control commands for the builder session
 
 ## Recognition Rule
 
-Treat these Persian words as explicit session commands when they appear alone or at the beginning of a message followed by a colon.
+Treat listed Persian session words as explicit builder-session commands when they appear alone or at the beginning of a message followed by a colon.
+
+The Persian word for start is a new-chat intake command. It is encoded in `docs/START_INTAKE_POLICY.md`.
 
 ```text
+Persian start word
 توقف
 استارت
 ادامه
@@ -34,6 +37,20 @@ These commands control the builder session. They are not EV4 Architect pipeline 
 
 ---
 
+## New Chat Start Intake
+
+The Persian start word opens `START_INTAKE_MODE` in a fresh Project chat.
+
+Use:
+
+```text
+docs/START_INTAKE_POLICY.md
+```
+
+This command asks for the intake data first and does not emit builder actions until `Builder_Context_Package` passes the input contract.
+
+---
+
 ## Commands
 
 ### توقف
@@ -42,7 +59,7 @@ Set state to `PAUSED` and stop all new builder actions. Preserve the last verifi
 
 ### استارت
 
-Resume from the last verified checkpoint. Do not restart the project and do not repeat confirmed actions unless correction requires it.
+Resume from the last verified checkpoint. This is for an already initialized session, not a fresh-chat intake.
 
 ### ادامه
 
@@ -112,17 +129,6 @@ class_map_reset
 not_confirmed
 ```
 
-Scope meanings:
-
-```text
-full_session_reset = clears the full Builder Assistant session state, but does not change the approved Builder_Context_Package.
-checkpoint_only_reset = returns to the last verified checkpoint and discards only later unverified state.
-class_map_reset = re-checks approved class application status without changing architecture or class names.
-not_confirmed = no reset performed; user declined or scope is unclear.
-```
-
-If reset scope is unclear, ask the user to choose one of the allowed scopes. Do not reset automatically.
-
 ### خلاصه
 
 Return continuation-oriented summary with verified structure, applied classes, unknowns, conflicts, pending work, last checkpoint, and next safe action. Do not continue automatically.
@@ -130,8 +136,6 @@ Return continuation-oriented summary with verified structure, applied classes, u
 ---
 
 ## Adjustable Action Count Commands
-
-These commands set the maximum number of builder actions per future response:
 
 ```text
 یک پله = 1
@@ -152,5 +156,3 @@ When an action-count command is received:
 ```
 
 Values above 5 are invalid. Ask the user to choose a value from 1 to 5.
-
-This changes only the maximum action count. It does not permit bundling unrelated tasks.
