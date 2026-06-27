@@ -1,6 +1,6 @@
 # input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT
 
-Version: 0.1.1
+Version: 0.1.2
 Status: active_initial
 Purpose: validate Builder_Context_Package before interactive execution
 
@@ -45,9 +45,11 @@ required_fields:
   - selected_candidate_locked
   - production_ready_allowed
   - approved_structure_tree
+  - approved_structure_tree[].element_generation
   - class_creation_application_map
   - forbidden_work
   - first_builder_batch
+  - first_builder_batch.actions[].element_generation
   - confirmation_sentence
 ```
 
@@ -69,15 +71,32 @@ recommended_fields:
 
 ---
 
+## Element Generation Requirement
+
+`element_generation` must be one of:
+
+```text
+V4 Atomic Element
+V3 element
+Shared compatibility element
+Unverified element type
+```
+
+`Unverified element type` is allowed in the package, but it is a runtime warning. The Builder Assistant must not perform generation-sensitive edits until the selected element is verified in the current Elementor UI.
+
+---
+
 ## Blocking Conditions
 
-Stop and ask for the missing/corrected package when:
+Stop and ask for the missing or corrected package when:
 
 ```text
 - selected_candidate_id is missing;
 - selected_candidate_locked is not true;
 - production_ready_allowed is not false;
 - approved_structure_tree is missing;
+- approved_structure_tree item lacks element_generation;
+- first_builder_batch action lacks element_generation;
 - class_creation_application_map is missing;
 - forbidden_work is missing;
 - package tries to authorize redesign or scoring;
@@ -116,6 +135,7 @@ input_authorization:
   package_status:
   schema_file_available: true/false
   structure_tree_available: true/false
+  element_generation_available: true/false
   class_map_available: true/false
   first_batch_available: true/false
   production_ready_allowed: false
@@ -132,8 +152,9 @@ Do not:
 
 ```text
 - repair the package silently;
-- invent missing classes;
-- invent missing nodes;
+- add missing classes by assumption;
+- add missing nodes by assumption;
+- assign element_generation without package or UI evidence;
 - infer selected_candidate_id from screenshot;
 - convert missing fields into assumptions;
 - start building before blocking conflicts are resolved.
@@ -149,6 +170,7 @@ The input contract passes when:
 - Builder_Context_Package is present;
 - selected candidate is locked;
 - approved tree and class map are available;
+- element_generation is available for approved tree nodes and first builder actions;
 - forbidden work is visible;
 - no internal identity conflict exists;
 - production_ready_allowed is false;
