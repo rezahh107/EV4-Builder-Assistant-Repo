@@ -1,0 +1,31 @@
+{
+  "schema": "ev4-builder-session-state@0.1.0",
+  "workflow_mode": "START_INTAKE_MODE",
+  "runtime_state": "BUILD_ACTIVE",
+  "state_capsule": "[STATE workflow=START_INTAKE_MODE state=BUILD_ACTIVE cp=cp-001 batch=BATCH-001 risk=low]",
+  "current_state": "BUILD_ACTIVE",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "last_verified_checkpoint": {
+    "schema": "ev4-builder-checkpoint@0.1.0",
+    "checkpoint_id": "cp-001",
+    "created_from": "user_confirmation",
+    "current_section": "Smart Home Connector",
+    "current_handoff_or_context_package": "examples/smart-home-connector/builder_context_package.json",
+    "selected_candidate_id": "ARCH-FAM-C",
+    "completed_elements": [
+      "Smart Home Section / Root"
+    ],
+    "applied_classes": [
+      "smart-home__section--root"
+    ],
+    "verified_settings": [],
+    "unconfirmed_settings": [],
+    "active_warnings": [],
+    "unresolved_evidence": [],
+    "last_completed_action": "BATCH-001-A01",
+    "next_pending_action": "BATCH-001-A02"
+  },
+  "max_actions_per_turn": 5,
+  "active_warnings": [],
+  "unresolved_evidence": []
+}
