@@ -1,6 +1,6 @@
 # commands/SESSION_COMMANDS
 
-Version: 0.1.0
+Version: 0.1.1
 Status: active_initial
 Purpose: Persian control commands for the builder session
 
@@ -22,6 +22,13 @@ Treat these Persian words as explicit session commands when they appear alone or
 مستندات
 ریست
 خلاصه
+یک پله
+دو پله
+سه پله
+چهار پله
+پنج پله
+شش پله
+تعداد پله: N
 ```
 
 These commands control the builder session. They are not EV4 Architect pipeline commands.
@@ -32,61 +39,29 @@ These commands control the builder session. They are not EV4 Architect pipeline 
 
 ### توقف
 
-Set state to `PAUSED`.
-
-```text
-- Stop all new builder actions immediately.
-- Preserve last verified checkpoint.
-- Answer only the current question or investigate the reported issue.
-- Do not resume until استارت or ادامه.
-```
+Set state to `PAUSED` and stop all new builder actions. Preserve the last verified checkpoint. Do not resume until `استارت` or `ادامه`.
 
 ### استارت
 
-Resume from last verified checkpoint.
-
-```text
-- Do not restart the project.
-- Do not repeat confirmed actions unless correction requires it.
-- Identify the resumed checkpoint.
-- Continue only if no blocker remains.
-```
+Resume from the last verified checkpoint. Do not restart the project and do not repeat confirmed actions unless correction requires it.
 
 ### ادامه
 
-Continue with the next uncompleted builder batch only when safe.
-
-```text
-- Does not automatically confirm the previous batch.
-- If previous batch is unconfirmed, ask whether to confirm or proceed despite risk.
-```
+Continue with the next uncompleted builder batch only when safe. This does not automatically confirm the previous batch.
 
 ### تایید
 
-Mark latest completed batch as user-confirmed.
-
-```text
-- Create a new verified checkpoint.
-- Do not automatically provide next batch unless user also says ادامه or asks to proceed.
-```
+Mark the latest completed batch as user-confirmed and create a verified checkpoint. Do not automatically provide the next batch unless the user also asks to continue.
 
 ### اصلاح
 
-Set state to `CORRECTION_MODE`.
-
-```text
-- Stop new implementation.
-- Identify incorrect/unsupported instruction.
-- State affected actions.
-- Give smallest corrected path.
-- Wait for confirmation.
-```
+Set state to `CORRECTION_MODE`. Stop new implementation, identify the incorrect or unsupported instruction, provide the smallest corrected path, and wait for confirmation.
 
 ### بررسی
 
-Set state to `REVIEW_MODE`.
+Set state to `REVIEW_MODE`. Inspect only provided evidence and do not continue automatically.
 
-Inspect only provided evidence:
+Evidence may include:
 
 ```text
 Elementor screenshot
@@ -97,19 +72,6 @@ DOM diagnostic
 Computed CSS
 Export JSON
 ```
-
-Return:
-
-```text
-confirmed
-provisional
-unknown
-discrepancies
-missing evidence
-whether checkpoint can be confirmed
-```
-
-Do not continue automatically.
 
 ### وضعیت
 
@@ -128,88 +90,49 @@ Active warnings
 Safe to continue
 ```
 
-No new build actions unless user also says ادامه.
+No new build actions unless user also says `ادامه`.
 
 ### عقب
 
-Return to checkpoint before latest unconfirmed batch.
-
-```text
-- Identify discarded unconfirmed actions.
-- State what should be reverted.
-- Preserve earlier confirmed checkpoint.
-```
-
-Do not undo earlier confirmed checkpoints without explicit authorization.
+Return to the checkpoint before the latest unconfirmed batch. Identify discarded unconfirmed actions and preserve earlier confirmed checkpoints.
 
 ### مستندات
 
-Verify the requested behavior using official Elementor V4+ sources when web/source access is available.
-
-Return:
-
-```text
-exact behavior being verified
-applicable Elementor generation/version
-source result
-whether control is confirmed for this installation
-difference between documentation and user's screenshot
-safe implementation consequence
-```
-
-Do not continue automatically.
+Verify the requested behavior using official Elementor V4+ sources when source access is available. Report the safe implementation consequence and do not continue automatically.
 
 ### ریست
 
-Do not reset immediately.
-
-Ask reset scope:
-
-```text
-latest unconfirmed batch
-current section
-all builder progress
-project-specific handoff
-entire session state
-```
-
-State exactly what would be lost.
+Do not reset immediately. Ask reset scope first and state exactly what would be lost.
 
 ### خلاصه
 
-Return continuation-oriented summary:
-
-```text
-verified structure
-verified classes
-verified values
-provisional values
-unknowns
-conflicts
-corrected instructions
-pending work
-last checkpoint
-next safe action
-```
-
-Do not continue automatically.
+Return continuation-oriented summary with verified structure, applied classes, unknowns, conflicts, pending work, last checkpoint, and next safe action. Do not continue automatically.
 
 ---
 
-## Adjustable Action Count
+## Adjustable Action Count Commands
 
-The user may set maximum action count:
+These commands set the maximum number of builder actions per future response:
 
 ```text
-یک پله
-دو پله
-سه پله
-چهار پله
-پنج پله
-شش پله
-تعداد پله: N
+یک پله = 1
+دو پله = 2
+سه پله = 3
+چهار پله = 4
+پنج پله = 5
+شش پله = 6
+تعداد پله: N = any integer from 1 to 6
 ```
 
-Where `N` is 1–6.
+When an action-count command is received:
+
+```text
+1. Update max_actions_per_turn within 1..6.
+2. Report the new maximum.
+3. Preserve the current session state.
+4. Do not emit a new builder batch unless the user also says ادامه.
+```
+
+Values above 6 are invalid. Ask the user to choose a value from 1 to 6.
 
 This changes only the maximum action count. It does not permit bundling unrelated tasks.
