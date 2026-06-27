@@ -68,6 +68,17 @@ jobs:
         run: |
           npm run validate:cross-field
 
+      - name: Ensure cross-field invalid fixtures fail
+        run: |
+          for file in tests/invalid-cross-field/*.json; do
+            if node scripts/validate-package.mjs "$file"; then
+              echo "Cross-field invalid fixture unexpectedly passed: $file"
+              exit 1
+            else
+              echo "Cross-field invalid fixture correctly failed: $file"
+            fi
+          done
+
       - name: Validate checkpoint fixtures
         run: |
           npx --yes ajv-cli@5 validate \
