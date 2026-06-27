@@ -1,0 +1,23 @@
+{
+  "schema": "ev4-builder-intake-result@0.1.0",
+  "workflow_mode": "APPROVED_HANDOFF_MODE",
+  "runtime_state": "BUILD_ACTIVE",
+  "present_inputs": [
+    "Builder_Context_Package"
+  ],
+  "validated_inputs": [
+    "Builder_Context_Package"
+  ],
+  "blocking_missing_inputs": [],
+  "optional_missing_inputs": [],
+  "conflicts": [],
+  "package_status": "approved_handoff",
+  "selected_candidate_id": null,
+  "package_digest": "sha256:test-invalid-no-candidate",
+  "decision": "approved",
+  "eligible_workflow_mode": "APPROVED_HANDOFF_MODE",
+  "eligible_runtime_state": "BUILD_ACTIVE",
+  "guidance": [
+    "Invalid: approved intake requires selected_candidate_id."
+  ]
+}
