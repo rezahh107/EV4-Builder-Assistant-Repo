@@ -1,6 +1,6 @@
 # protocols/PER_ELEMENT_INSTRUCTION
 
-Version: 0.1.1
+Version: 0.1.2
 Status: active_initial
 Purpose: define required fields for every Elementor builder action
 
@@ -20,6 +20,7 @@ When creating or editing an element, include as many as applicable:
 Parent element
 Elementor element type
 V4/V3/shared/unverified category
+Element generation source
 Structure Panel name
 Active class
 Local or Global class status
@@ -33,9 +34,54 @@ Expected visible result
 
 ---
 
-## Value Evidence Labels
+## Element Generation Labels
 
-Use these labels for values:
+```text
+V4 Atomic Element
+V3 element
+Shared compatibility element
+Unverified element type
+```
+
+## Element Generation Source Labels
+
+```text
+architect_export
+builder_context_package
+elementor_ui_screenshot
+user_statement
+versioned_documentation
+unverified
+```
+
+If `element_generation` is not `Unverified element type`, `element_generation_source` must not be `unverified`.
+
+---
+
+## Output Shape for Each Action
+
+```yaml
+action:
+  action_id:
+  target_element:
+  parent:
+  element_type:
+  element_generation:
+  element_generation_source:
+  structure_panel_name:
+  active_class:
+  class_scope:
+  panel_path:
+  control_name:
+  value:
+  value_evidence_label:
+  do_not_change:
+  expected_result:
+```
+
+---
+
+## Value Evidence Labels
 
 ```text
 confirmed_implementation_value
@@ -60,28 +106,6 @@ Wrong: .smart-home__feature-card--default
 ```
 
 In Elementor `CSS Classes`, enter class names without a leading dot.
-
----
-
-## Output Shape for Each Action
-
-```yaml
-action:
-  action_id:
-  target_element:
-  parent:
-  element_type:
-  element_generation: V4 Atomic Element | V3 element | Shared compatibility element | Unverified element type
-  structure_panel_name:
-  active_class:
-  class_scope: approved_global | approved_local | unverified | not_applicable
-  panel_path:
-  control_name:
-  value:
-  value_evidence_label:
-  do_not_change:
-  expected_result:
-```
 
 ---
 
@@ -122,6 +146,8 @@ Stop before editing when:
 - class is missing from approved map;
 - control is not visible;
 - element_generation is Unverified element type and affects the instruction;
+- element_generation_source is missing;
+- element_generation_source is unverified while element_generation is not Unverified element type;
 - V3/V4 element generation is unclear and affects the instruction;
 - value source is insufficient for a non-temporary value.
 ```
