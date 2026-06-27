@@ -1,5 +1,50 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.3.1 — 2026-06-27
+
+### Hardened
+
+- Updated `PROJECT_INSTRUCTIONS.md` so `workflow_mode` and `runtime_state` are separated in the primary Project Instructions layer.
+- Updated `core/MASTER_PROMPT.md` so `PAUSED`, `CORRECTION`, `REVIEW_ONLY`, and `COMPLETED` are runtime states, not workflow modes.
+- Hardened `schemas/intake-result.schema.json` with route invariants:
+  - missing `Builder_Context_Package` must be `blocked_missing_input`;
+  - missing `Builder_Context_Package` must appear in `blocking_missing_inputs`;
+  - `approved` and `approved_with_optional_gaps` require present and validated `Builder_Context_Package`;
+  - approved intake requires non-null `selected_candidate_id` and `package_status`;
+  - optional screenshots alone cannot block intake;
+  - approved/blocked decisions must match their workflow/runtime route.
+- Hardened `schemas/session-state.schema.json` with:
+  - `dependentRequired` pairing for `workflow_mode` and `runtime_state`;
+  - allowed workflow/runtime combinations;
+  - normalized `current_state` compatibility for `CORRECTION` and `REVIEW_ONLY`.
+- Expanded CI fixture coverage for `intake_result_*.json` and `session_state_*.json` fixtures.
+- Updated `package.json` scripts for full intake-result and session-state validation.
+
+### Added
+
+- Valid intake fixtures:
+  - `tests/valid/intake_result_approved.json`
+  - `tests/valid/intake_result_blocked_missing_builder_context_package.json`
+  - `tests/valid/intake_result_blocked_invalid_package.json`
+  - `tests/valid/intake_result_blocked_conflict.json`
+- Invalid intake fixtures:
+  - `tests/invalid/intake_result_builder_package_missing_but_approved.json`
+  - `tests/invalid/intake_result_approved_with_blocking_missing_input.json`
+  - `tests/invalid/intake_result_approved_without_selected_candidate_id.json`
+  - `tests/invalid/intake_result_optional_screenshot_blocks_alone.json`
+  - `tests/invalid/intake_result_workflow_runtime_mismatch.json`
+- Session-state fixtures:
+  - `tests/valid/session_state_mode_state.json`
+  - `tests/invalid/session_state_workflow_runtime_mismatch.json`
+
+### Status
+
+- GitHub Actions validation should be run after v0.3.1.
+- No Smart Home architecture, class names, `selected_candidate_id`, or production-readiness rules were changed.
+- Production readiness remains false.
+
+---
+
 ## v0.3.0 — 2026-06-27
 
 ### Added
