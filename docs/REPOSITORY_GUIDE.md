@@ -1,7 +1,7 @@
 # REPOSITORY_GUIDE — EV4 Builder Assistant
 
-Version: 0.2.2
-Status: ci_pass_and_manual_session_seed_added
+Version: 0.2.3
+Status: official_docs_priority_and_reference_layer_added
 Date: 2026-06-27
 
 ---
@@ -28,6 +28,18 @@ EV4 Responsive Architect
 ```
 
 This repository is only the middle system.
+
+---
+
+## v0.2.3 Rule
+
+```text
+Official Elementor docs = primary external standard source.
+Current Elementor UI = primary executable control evidence.
+Builder_Context_Package = approved build source of truth.
+Workbook/reference layer = learning and methodology source.
+Case memory = practical lessons, not universal architecture.
+```
 
 ---
 
@@ -74,6 +86,8 @@ scripts/                     = cross-field validators
 examples/                    = reusable examples and Smart Home seed
 tests/                       = valid and invalid fixtures
 docs/                        = setup, CI, and repository guides
+references/                  = workbook and learning reference layer
+cases/                       = case memory from practical sessions
 .github/workflows/           = CI validation
 ```
 
@@ -88,6 +102,44 @@ v0.1.2 = generation fields, reset scopes, Fresh Image fallback
 v0.2.0 = examples and validation seed
 v0.2.1 = hardening pass with generation source and cross-field validator
 v0.2.2 = CI pass recorded and manual session seed added
+v0.2.3 = official docs priority, workbook reference layer, TUYA case memory, risk-adjusted step size
+```
+
+---
+
+## Reference And Case Layer
+
+Workbook reference files:
+
+```text
+references/tuya-workbook/README.md
+references/tuya-workbook/WORKBOOK_USAGE_POLICY.md
+references/tuya-workbook/WORKBOOK_LESSON_INDEX.md
+references/tuya-workbook/EXTRACTED_BUILDER_RULES.md
+```
+
+Case memory files:
+
+```text
+cases/tuya-step-by-step/CASE_LESSONS.md
+cases/tuya-step-by-step/CASE_PATCH_MAP.md
+```
+
+Reference layers help the model explain concepts and choose safer patterns. They must not override official Elementor docs, current UI evidence, or the approved package.
+
+---
+
+## New Protocols In v0.2.3
+
+```text
+protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY.md
+protocols/WORKBOOK_REFERENCE_BOUNDARY.md
+protocols/RISK_ADJUSTED_STEP_SIZE.md
+protocols/STYLE_SYSTEM_CAPABILITY_GATE.md
+protocols/CONTROLLED_OVERLAY_STAGE_PATTERN.md
+protocols/REPEATED_ELEMENT_DUPLICATION_PROTOCOL.md
+protocols/RESPONSIVE_WORKFLOW_GUARD.md
+protocols/READING_ORDER_CHECKLIST.md
 ```
 
 ---
@@ -106,7 +158,7 @@ Manual runbook:
 docs/CI_VALIDATION_RUNBOOK.md
 ```
 
-Current status:
+Last known status:
 
 ```yaml
 schema_validation_workflow:
@@ -115,37 +167,7 @@ schema_validation_workflow:
   date: 2026-06-27
 ```
 
-The workflow validates:
-
-```text
-1. valid Builder_Context_Package fixture passes.
-2. Smart Home example package passes.
-3. invalid Builder_Context_Package fixtures fail.
-4. cross-field invalid fixtures fail.
-5. valid checkpoint fixture passes.
-6. invalid checkpoint fixture fails.
-7. session-state.schema.json compiles with checkpoint.schema.json.
-8. cross-field package integrity passes.
-```
-
----
-
-## Cross-Field Rules
-
-The validator checks:
-
-```text
-- node_id uniqueness
-- action_id uniqueness
-- child node references
-- class map node references
-- first batch target references
-- action active_class references
-- widget class references
-- element_generation and element_generation_source consistency
-- production_ready_allowed must remain false
-- selected_candidate_locked must remain true
-```
+Run validation again after v0.2.3 changes.
 
 ---
 
@@ -157,53 +179,22 @@ Setup guide:
 docs/CHATGPT_PROJECT_SETUP_GUIDE.md
 ```
 
-Upload or paste in this order:
-
-```text
-1. PROJECT_INSTRUCTIONS.md
-2. core/MASTER_PROMPT.md
-3. input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
-4. core/SESSION_STATE_MACHINE.md
-5. core/LIVE_INTERFACE_PRECEDENCE.md
-6. modes/APPROVED_HANDOFF_MODE.md
-7. modes/CORRECTION_MODE.md
-8. protocols/CONTROL_EXISTENCE_FAILURE.md
-9. commands/SESSION_COMMANDS.md
-10. protocols/PER_ELEMENT_INSTRUCTION.md
-11. protocols/CLASS_APPLICATION_SAFETY.md
-12. protocols/COMPLETION_GATE.md
-13. modes/FRESH_IMAGE_MODE.md only if fallback behavior is needed
-```
-
-Then start a session with:
-
-```text
-Builder_Context_Package
-+ original section screenshot
-+ request to begin interactive Elementor build
-```
-
-For Smart Home Connector, use:
-
-```text
-examples/smart-home-connector/start_session_prompt.md
-examples/smart-home-connector/builder_context_package.json
-examples/smart-home-connector/MANUAL_SESSION_001.md
-```
+Use the setup guide as the source of the current upload order. It now includes official-doc priority protocols, reference-layer policies, and TUYA case memory.
 
 ---
 
 ## Runtime Decisions To Preserve
 
 ```text
-- max_actions_per_turn stays bounded to 1..6.
+- max_actions_per_turn defaults to 5 and is bounded to 1..5 at runtime.
+- Use risk-adjusted step size.
+- Official Elementor docs are the primary external source for standard capability claims.
+- Current UI evidence is required for executable control paths.
 - Data vs Instruction Rule canonical source is MASTER_PROMPT §3.
-- control-existence failure uses correction_response, not a separate top-level shape.
+- control-existence failure uses correction_response or insufficient_evidence.
 - Unverified element type stops generation-sensitive edits.
-- element_generation and element_generation_source must be carried by the package where possible.
 - FRESH_IMAGE_MODE must remain fallback-only.
 - Builder Assistant must not become Architect.
-- valid/invalid fixtures must stay aligned with schema changes.
 - Architect repo must remain compatible with the Builder Assistant consumer schema.
 ```
 
@@ -219,8 +210,6 @@ schemas/ev4-builder-context-package.schema.json
 STATUS_0.16.2_BUILDER_FEED_SCHEMA_SYNC.md
 ```
 
-This prevents `/builder-feed-export` from emitting packages that the Builder Assistant immediately rejects.
-
 ---
 
 ## Manual Session Seed
@@ -230,8 +219,6 @@ First manual-session seed:
 ```text
 examples/smart-home-connector/MANUAL_SESSION_001.md
 ```
-
-This file records expected first runtime state, first batch contract, expected checkpoint, preserved unknowns, and real-execution status.
 
 Current status:
 
@@ -249,9 +236,7 @@ Do not turn this repo into another EV4 Architect pipeline.
 
 Do not add scoring, recommendation, or architecture candidate selection here.
 
-Do not let `FRESH_IMAGE_MODE` become the default path when `Builder_Context_Package` exists.
-
-Do not remove correction mode or live interface precedence.
+Do not let workbook or case memory override official docs, current UI evidence, or Builder_Context_Package.
 
 Do not claim production readiness from Builder Assistant completion alone.
 
@@ -268,6 +253,7 @@ v0.3.0 — Real Builder Session Evidence
 Required work:
 
 ```text
+- run schema validation again after v0.2.3 changes;
 - create/use the actual ChatGPT Builder Assistant Project;
 - start Smart Home session using the setup guide and package;
 - execute the first batch in Elementor;
