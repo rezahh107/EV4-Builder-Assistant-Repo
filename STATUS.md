@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
-Version: 0.1.0
-Status: initial_runtime_foundation_created
+Version: 0.1.1
+Status: review_fixes_applied
 Date: 2026-06-27
 
 ---
@@ -12,14 +12,14 @@ Date: 2026-06-27
 project_status:
   repo_initialized: true
   README: active
-  PROJECT_INSTRUCTIONS: active_initial
-  MASTER_PROMPT: active_initial
-  input_contracts: active_initial
+  PROJECT_INSTRUCTIONS: active_initial_v0.1.1
+  MASTER_PROMPT: active_initial_v0.1.1
+  input_contracts: active_initial_v0.1.1
   core_runtime_files: active_initial
-  modes: partial_initial
-  protocols: partial_initial
-  commands: active_initial
-  schemas: initial
+  modes: partial_initial_v0.1.1
+  protocols: partial_initial_v0.1.1
+  commands: active_initial_v0.1.1
+  schemas: initial_with_builder_context_package
   examples: pending
   tests: pending
   production_ready: false
@@ -45,8 +45,31 @@ protocols/COMPLETION_GATE.md
 protocols/STEP_SIZE_CONTRACT.md
 protocols/V3_V4_SEPARATION_GUARD.md
 protocols/LAYOUT_COMPLETENESS_CHECKLIST.md
+schemas/builder-context-package.schema.json
 schemas/session-state.schema.json
 schemas/checkpoint.schema.json
+```
+
+---
+
+## Review Fixes Applied
+
+```yaml
+review_fixes:
+  bounded_action_count:
+    status: clarified
+    note: max_actions_per_turn remains intentionally bounded to 1..6
+  action_count_commands:
+    status: added_to_SESSION_COMMANDS
+  builder_context_package_schema:
+    status: added
+  data_vs_instruction_duplication:
+    status: reduced
+    canonical_source: core/MASTER_PROMPT.md section 3
+  unverified_element_type_protocol:
+    status: added
+  correction_output_shapes:
+    status: unified_under_correction_response
 ```
 
 ---
@@ -65,7 +88,6 @@ It executes approved handoffs interactively in Elementor.
 
 ```text
 modes/FRESH_IMAGE_MODE.md
-schemas/builder-context-package.schema.json
 examples/_template/
 examples/smart-home-connector/
 tests/valid/builder_context_package.json
@@ -81,6 +103,7 @@ docs/REPOSITORY_GUIDE.md final expansion
 validation_state:
   markdown_written: true
   schema_stubs_written: true
+  builder_context_package_schema_written: true
   schema_ci: not_configured
   real_builder_session_test: not_run
   smart_home_example: pending
