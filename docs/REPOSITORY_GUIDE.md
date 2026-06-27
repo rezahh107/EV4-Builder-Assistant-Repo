@@ -1,7 +1,7 @@
 # REPOSITORY_GUIDE — EV4 Builder Assistant
 
-Version: 0.1.1
-Status: initial_living_guide_review_fixed
+Version: 0.1.2
+Status: initial_living_guide_schema_and_mode_fixed
 Date: 2026-06-27
 
 ---
@@ -10,7 +10,7 @@ Date: 2026-06-27
 
 This guide explains what this repository is, why it exists, how the files relate to each other, and how to continue development later without losing the original design intent.
 
-This is a living guide. It must be expanded again after examples, tests, and real builder-session validation are added.
+This is a living guide. It must be expanded again after examples, tests, schema CI, and real builder-session validation are added.
 
 ---
 
@@ -85,8 +85,10 @@ Mode-specific behavior.
 ```text
 APPROVED_HANDOFF_MODE.md
 CORRECTION_MODE.md
-FRESH_IMAGE_MODE.md later
+FRESH_IMAGE_MODE.md
 ```
+
+`FRESH_IMAGE_MODE.md` is fallback-only and must not replace `APPROVED_HANDOFF_MODE` when `Builder_Context_Package` exists.
 
 ### `protocols/`
 
@@ -126,6 +128,13 @@ Machine-checkable package, state, and checkpoint structures.
 builder-context-package.schema.json
 session-state.schema.json
 checkpoint.schema.json
+```
+
+`builder-context-package.schema.json` now requires `element_generation` in both:
+
+```text
+approved_structure_tree[]
+first_builder_batch.actions[]
 ```
 
 ---
@@ -172,6 +181,19 @@ The first runtime foundation was created in this order:
 
 ---
 
+## What v0.1.2 Fixed
+
+```text
+1. Added element_generation to approved_structure_tree nodes.
+2. Added element_generation to first_builder_batch actions.
+3. Added minItems: 1 to widget_mapping_table.
+4. Changed selected_candidate_locked from const true to enum [true] with documentation.
+5. Added reset scope enum.
+6. Added FRESH_IMAGE_MODE.md as fallback-only mode.
+```
+
+---
+
 ## Design Principles Used
 
 The repository follows these principles:
@@ -195,7 +217,9 @@ Runtime behavior is designed with:
 - correction mode;
 - small reversible steps;
 - evidence labels;
-- completion gate instead of over-claiming.
+- completion gate instead of over-claiming;
+- V3/V4 generation classification;
+- schema-backed Builder_Context_Package validation.
 ```
 
 ---
@@ -217,6 +241,7 @@ Upload or paste in this order:
 10. protocols/PER_ELEMENT_INSTRUCTION.md
 11. protocols/CLASS_APPLICATION_SAFETY.md
 12. protocols/COMPLETION_GATE.md
+13. modes/FRESH_IMAGE_MODE.md only if fallback behavior is needed
 ```
 
 Then start a session with:
@@ -236,6 +261,7 @@ Builder_Context_Package
 - Data vs Instruction Rule canonical source is MASTER_PROMPT §3;
 - control-existence failure uses correction_response, not a separate top-level shape;
 - Unverified element type stops generation-sensitive edits;
+- element_generation must be carried by the package where possible;
 - FRESH_IMAGE_MODE must remain fallback-only;
 - Builder Assistant must not become Architect.
 ```
@@ -271,6 +297,7 @@ Required work:
 - add examples/smart-home-connector/;
 - add tests/valid/builder_context_package.json;
 - add tests/invalid/missing_selected_candidate.json;
+- add schema validation workflow after fixtures exist;
 - update README and STATUS;
 - run a real Builder_Context_Package through the assistant prompt manually.
 ```
