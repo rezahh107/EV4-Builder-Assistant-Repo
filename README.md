@@ -1,6 +1,6 @@
 # EV4 Builder Assistant Repo
 
-Status: review_fixes_applied_v0.1.1  
+Status: schema_and_mode_fixes_applied_v0.1.2  
 Role: interactive_elementor_execution_assistant  
 Primary upstream: [`elementor-v4-architect-prompt-pack`](https://github.com/rezahh107/elementor-v4-architect-prompt-pack)  
 Primary input package: `Builder_Context_Package`  
@@ -107,7 +107,8 @@ EV4-Builder-Assistant-Repo/
 │
 ├─ modes/
 │  ├─ APPROVED_HANDOFF_MODE.md
-│  └─ CORRECTION_MODE.md
+│  ├─ CORRECTION_MODE.md
+│  └─ FRESH_IMAGE_MODE.md
 │
 ├─ protocols/
 │  ├─ CONTROL_EXISTENCE_FAILURE.md
@@ -136,16 +137,18 @@ EV4-Builder-Assistant-Repo/
 Pending planned folders/files:
 
 ```text
-modes/FRESH_IMAGE_MODE.md
 examples/_template/
 examples/smart-home-connector/
 tests/valid/
 tests/invalid/
+.github/workflows/schema-validation.yml
 ```
 
 ---
 
-## Review Fixes in v0.1.1
+## Review Fixes
+
+### v0.1.1
 
 ```text
 - builder-context-package.schema.json اضافه شد.
@@ -154,6 +157,17 @@ tests/invalid/
 - Data vs Instruction Rule در MASTER_PROMPT canonical شد.
 - رفتار Unverified element type تعریف شد.
 - correction output shapes یکپارچه شد و همه زیر correction_response قرار گرفتند.
+```
+
+### v0.1.2
+
+```text
+- element_generation به approved_structure_tree nodeها اضافه شد.
+- element_generation به first_builder_batch actionها اضافه شد.
+- widget_mapping_table حالا minItems: 1 دارد.
+- selected_candidate_locked از const به enum[true] با description منتقل شد.
+- reset scope enum در SESSION_COMMANDS تعریف شد.
+- FRESH_IMAGE_MODE.md به‌صورت fallback-only اضافه شد.
 ```
 
 ---
@@ -174,11 +188,15 @@ tests/invalid/
 
 ### `schemas/builder-context-package.schema.json`
 
-schema اصلی برای اعتبارسنجی پکیج ورودی خروجی `/builder-feed-export`.
+schema اصلی برای اعتبارسنجی پکیج ورودی خروجی `/builder-feed-export`. این schema اکنون `element_generation` را برای nodeها و actionهای اولیه حمل می‌کند.
 
 ### `commands/SESSION_COMMANDS.md`
 
-فرمان‌های session از جمله `توقف`، `ادامه`، `تایید`، `اصلاح` و تنظیم تعداد actionها با `یک پله` تا `شش پله`.
+فرمان‌های session از جمله `توقف`، `ادامه`، `تایید`، `اصلاح`، `ریست`، و تنظیم تعداد actionها با `یک پله` تا `شش پله`.
+
+### `modes/FRESH_IMAGE_MODE.md`
+
+fallback-only است و نباید جایگزین مسیر audit‌شده `EV4 Architect → Builder_Context_Package` شود.
 
 ### `modes/CORRECTION_MODE.md`
 
@@ -241,28 +259,6 @@ visual reference only
 
 ---
 
-## Session Loop
-
-```text
-Action Batch
-    │
-    ▼
-Builder اجرا می‌کند
-    │
-    ▼
-تایید / screenshot / گزارش مشکل
-    │
-    ▼
-Builder Assistant checkpoint می‌سازد
-    │
-    ▼
-Batch بعدی
-```
-
-هیچ actionی بدون evidence یا confirmation نباید verified فرض شود.
-
----
-
 ## Session Commands
 
 ```text
@@ -287,6 +283,15 @@ Batch بعدی
 ```
 
 `N` فقط از 1 تا 6 مجاز است.
+
+Reset scopes:
+
+```text
+full_session_reset
+checkpoint_only_reset
+class_map_reset
+not_confirmed
+```
 
 ---
 
@@ -370,10 +375,10 @@ project_status:
   master_prompt: active_initial_v0.1.1
   input_contracts: active_initial_v0.1.1
   core_files: active_initial
-  modes: partial_initial_v0.1.1
-  protocols: partial_initial_v0.1.1
-  commands: active_initial_v0.1.1
-  schemas: initial_with_builder_context_package
+  modes: all_initial_modes_present
+  protocols: partial_initial_v0.1.2
+  commands: active_initial_v0.1.2
+  schemas: initial_with_builder_context_package_v0.1.2
   examples: pending
   tests: pending
   production_ready: false
