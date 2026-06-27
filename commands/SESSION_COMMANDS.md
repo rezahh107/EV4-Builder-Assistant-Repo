@@ -1,7 +1,7 @@
 # commands/SESSION_COMMANDS
 
-Version: 0.1.2
-Status: active_initial
+Version: 0.2.3
+Status: active
 Purpose: Persian control commands for the builder session
 
 ---
@@ -27,7 +27,6 @@ Treat these Persian words as explicit session commands when they appear alone or
 سه پله
 چهار پله
 پنج پله
-شش پله
 تعداد پله: N
 ```
 
@@ -98,7 +97,7 @@ Return to the checkpoint before the latest unconfirmed batch. Identify discarded
 
 ### مستندات
 
-Verify the requested behavior using official Elementor V4+ sources when source access is available. Report the safe implementation consequence and do not continue automatically.
+Verify the requested behavior using official Elementor V4+/Atomic sources when source access is available. Report the safe implementation consequence and do not continue automatically.
 
 ### ریست
 
@@ -140,19 +139,18 @@ These commands set the maximum number of builder actions per future response:
 سه پله = 3
 چهار پله = 4
 پنج پله = 5
-شش پله = 6
-تعداد پله: N = any integer from 1 to 6
+تعداد پله: N = any integer from 1 to 5
 ```
 
 When an action-count command is received:
 
 ```text
-1. Update max_actions_per_turn within 1..6.
+1. Update max_actions_per_turn within 1..5.
 2. Report the new maximum.
 3. Preserve the current session state.
 4. Do not emit a new builder batch unless the user also says ادامه.
 ```
 
-Values above 6 are invalid. Ask the user to choose a value from 1 to 6.
+Values above 5 are invalid. Ask the user to choose a value from 1 to 5.
 
 This changes only the maximum action count. It does not permit bundling unrelated tasks.
