@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
-Version: 0.2.2
-Status: ci_pass_and_manual_session_seed_added
+Version: 0.2.3
+Status: official_docs_priority_and_reference_layer_added
 Date: 2026-06-27
 
 ---
@@ -10,44 +10,45 @@ Date: 2026-06-27
 
 ```yaml
 project_status:
-  README: active_v0.2.1
-  PROJECT_INSTRUCTIONS: active_initial_v0.1.1
-  MASTER_PROMPT: active_initial_v0.1.1
-  input_contracts: active_initial_v0.1.3
+  README: active_v0.2.3
+  PROJECT_INSTRUCTIONS: active_v0.2.3
+  MASTER_PROMPT: active_v0.2.3
+  live_interface_precedence: active_v0.2.3
   schemas: hardened_with_generation_source
   examples: template_and_smart_home_seed_hardened
   tests: expanded_valid_invalid_checkpoint_and_cross_field_fixtures
   cross_field_validator: added
   schema_validation_workflow: passed_user_reported
-  chatgpt_project_setup_guide: added
+  chatgpt_project_setup_guide: active_v0.2.3
   manual_session_seed: added
+  official_elementor_docs_priority: added
+  workbook_reference_layer: added
+  tuya_case_memory: added
+  risk_adjusted_step_size: added
+  action_default_max: 5
   upstream_architect_schema_sync: applied
   production_ready: false
 ```
 
 ---
 
-## Key Files
+## New Key Files
 
 ```text
-README.md
-PROJECT_INSTRUCTIONS.md
-core/MASTER_PROMPT.md
-input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
-schemas/builder-context-package.schema.json
-schemas/session-state.schema.json
-schemas/checkpoint.schema.json
-scripts/validate-package.mjs
-package.json
-.github/workflows/schema-validation.yml
-docs/CI_VALIDATION_RUNBOOK.md
-docs/CHATGPT_PROJECT_SETUP_GUIDE.md
-docs/REPOSITORY_GUIDE.md
-examples/smart-home-connector/builder_context_package.json
-examples/smart-home-connector/start_session_prompt.md
-examples/smart-home-connector/expected_first_response.md
-examples/smart-home-connector/MANUAL_SESSION_001.md
-examples/smart-home-connector/notes.md
+protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY.md
+protocols/WORKBOOK_REFERENCE_BOUNDARY.md
+protocols/RISK_ADJUSTED_STEP_SIZE.md
+protocols/STYLE_SYSTEM_CAPABILITY_GATE.md
+protocols/CONTROLLED_OVERLAY_STAGE_PATTERN.md
+protocols/REPEATED_ELEMENT_DUPLICATION_PROTOCOL.md
+protocols/RESPONSIVE_WORKFLOW_GUARD.md
+protocols/READING_ORDER_CHECKLIST.md
+references/tuya-workbook/README.md
+references/tuya-workbook/WORKBOOK_USAGE_POLICY.md
+references/tuya-workbook/WORKBOOK_LESSON_INDEX.md
+references/tuya-workbook/EXTRACTED_BUILDER_RULES.md
+cases/tuya-step-by-step/CASE_LESSONS.md
+cases/tuya-step-by-step/CASE_PATCH_MAP.md
 ```
 
 ---
@@ -64,22 +65,9 @@ validation_state:
   invalid_cross_field_fixture_added: true
   checkpoint_fixture_added: true
   cross_field_validation_script_added: true
+  reference_layer_added_after_ci: true
   real_builder_session_test: not_run
   smart_home_manual_session_seed: added
-  project_instruction_upload_test: pending
-```
-
----
-
-## Manual Session State
-
-```yaml
-manual_session:
-  session_seed_file: examples/smart-home-connector/MANUAL_SESSION_001.md
-  setup_guide: docs/CHATGPT_PROJECT_SETUP_GUIDE.md
-  target_example: examples/smart-home-connector/
-  real_elementor_execution: not_run
-  production_ready: false
 ```
 
 ---
@@ -88,8 +76,10 @@ manual_session:
 
 ```text
 EV4 Builder Assistant is not EV4 Architect.
-It does not score, recommend, redesign, or claim production readiness.
-It executes approved handoffs interactively in Elementor.
+Official Elementor docs are the primary external source for standard capability claims.
+Current Elementor UI evidence is required for executable control paths.
+Workbook and TUYA case memory are reference layers, not runtime authority over current UI.
+Production ready remains false.
 ```
 
 ---
@@ -97,6 +87,7 @@ It executes approved handoffs interactively in Elementor.
 ## Pending Next Work
 
 ```text
+run schema validation again after v0.2.3 docs/protocol updates
 create/use the actual ChatGPT Builder Assistant Project
 start Smart Home session using docs/CHATGPT_PROJECT_SETUP_GUIDE.md
 execute the first batch in Elementor
