@@ -1,6 +1,6 @@
 # EV4 Builder Assistant Repo
 
-Status: schema_and_mode_fixes_applied_v0.1.2  
+Status: example_and_validation_seed_v0.2.0  
 Role: interactive_elementor_execution_assistant  
 Primary upstream: [`elementor-v4-architect-prompt-pack`](https://github.com/rezahh107/elementor-v4-architect-prompt-pack)  
 Primary input package: `Builder_Context_Package`  
@@ -37,23 +37,10 @@ Structure Label را این بگذار.
 
 ---
 
-## تصویر ذهنی سیستم
+## جریان کلی
 
 ```text
-EV4 Architect Repo
-= دفتر مهندسی / معمار / ناظر
-
-EV4 Builder Assistant Repo
-= استادکار کنار دست تو داخل Elementor
-```
-
-```text
-[Reference Section Screenshot]
-        │
-        ▼
 EV4 Architect Pipeline
-/intake → /decompose → /architectures → /score-evidence → /score-audit
-→ /recommend → /build-tree → /implementation → /final-audit → /handoff-export
         │
         ▼
 /builder-feed-export
@@ -62,7 +49,7 @@ EV4 Architect Pipeline
 Builder_Context_Package
         │
         ▼
-New Chat / EV4 Builder Assistant Project
+EV4 Builder Assistant Project
         │
         ▼
 Interactive Elementor Build
@@ -80,18 +67,9 @@ Builder Assistant تصمیم‌گیر معماری نیست؛
 مجری کنترل‌شده معماری تاییدشده است.
 ```
 
-یا ساده‌تر:
-
-```text
-Architect می‌گوید «چه بساز».
-Builder Assistant می‌گوید «الان دقیقاً چه بساز و کجا تایید بگیر».
-```
-
 ---
 
 ## Runtime Repository Structure
-
-این ریپو بر اساس runtime flow سازمان‌دهی شده است، نه صرفاً بر اساس نوع فایل.
 
 ```text
 EV4-Builder-Assistant-Repo/
@@ -130,113 +108,81 @@ EV4-Builder-Assistant-Repo/
 │  ├─ session-state.schema.json
 │  └─ checkpoint.schema.json
 │
-└─ docs/
-   └─ REPOSITORY_GUIDE.md
+├─ examples/
+│  ├─ _template/
+│  └─ smart-home-connector/
+│
+├─ tests/
+│  ├─ valid/
+│  └─ invalid/
+│
+├─ docs/
+│  └─ REPOSITORY_GUIDE.md
+│
+└─ .github/workflows/
+   └─ schema-validation.yml
 ```
 
-Pending planned folders/files:
+---
+
+## Current Validation Seed
+
+The repository now includes:
 
 ```text
-examples/_template/
-examples/smart-home-connector/
-tests/valid/
-tests/invalid/
+schemas/builder-context-package.schema.json
+tests/valid/builder_context_package.json
+tests/invalid/missing_selected_candidate.json
 .github/workflows/schema-validation.yml
 ```
 
----
-
-## Review Fixes
-
-### v0.1.1
+The workflow validates that:
 
 ```text
-- builder-context-package.schema.json اضافه شد.
-- max_actions_per_turn صریحاً به 1..6 محدود شد.
-- commandهای یک پله تا شش پله به SESSION_COMMANDS اضافه شدند.
-- Data vs Instruction Rule در MASTER_PROMPT canonical شد.
-- رفتار Unverified element type تعریف شد.
-- correction output shapes یکپارچه شد و همه زیر correction_response قرار گرفتند.
-```
-
-### v0.1.2
-
-```text
-- element_generation به approved_structure_tree nodeها اضافه شد.
-- element_generation به first_builder_batch actionها اضافه شد.
-- widget_mapping_table حالا minItems: 1 دارد.
-- selected_candidate_locked از const به enum[true] با description منتقل شد.
-- reset scope enum در SESSION_COMMANDS تعریف شد.
-- FRESH_IMAGE_MODE.md به‌صورت fallback-only اضافه شد.
+- the valid Builder_Context_Package fixture passes;
+- the missing selected_candidate_id fixture fails;
+- session-state.schema.json compiles with checkpoint.schema.json.
 ```
 
 ---
 
-## مهم‌ترین فایل‌ها
+## Examples
 
-### `PROJECT_INSTRUCTIONS.md`
+### `_template`
 
-خلاصه اجرایی همیشه‌فعال برای ChatGPT Project. این فایل باید در تنظیمات Project استفاده شود.
+Reusable starting point for future examples:
 
-### `core/MASTER_PROMPT.md`
+```text
+examples/_template/README.md
+examples/_template/start_session_prompt.md
+examples/_template/builder_context_package.template.json
+```
 
-پرامپت runtime اصلی. `Data vs Instruction Rule` canonical در این فایل است.
+### `smart-home-connector`
 
-### `input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md`
+Seed example for the Smart Home Connector section:
 
-قبل از شروع session بررسی می‌کند که `Builder_Context_Package` معتبر و کافی است یا نه.
+```text
+examples/smart-home-connector/README.md
+examples/smart-home-connector/builder_context_package.json
+examples/smart-home-connector/start_session_prompt.md
+examples/smart-home-connector/expected_first_response.md
+examples/smart-home-connector/notes.md
+```
 
-### `schemas/builder-context-package.schema.json`
-
-schema اصلی برای اعتبارسنجی پکیج ورودی خروجی `/builder-feed-export`. این schema اکنون `element_generation` را برای nodeها و actionهای اولیه حمل می‌کند.
-
-### `commands/SESSION_COMMANDS.md`
-
-فرمان‌های session از جمله `توقف`، `ادامه`، `تایید`، `اصلاح`، `ریست`، و تنظیم تعداد actionها با `یک پله` تا `شش پله`.
-
-### `modes/FRESH_IMAGE_MODE.md`
-
-fallback-only است و نباید جایگزین مسیر audit‌شده `EV4 Architect → Builder_Context_Package` شود.
-
-### `modes/CORRECTION_MODE.md`
-
-حالت اصلاح با خروجی canonical `correction_response`.
-
-### `docs/REPOSITORY_GUIDE.md`
-
-راهنمای زنده ریپو؛ در آخرین مرحله باید به راهنمای کامل نهایی تبدیل شود.
+This example uses `ARCH-FAM-C` and remains a builder execution example, not a new architecture analysis.
 
 ---
 
-## Primary Mode — APPROVED_HANDOFF_MODE
-
-وقتی `Builder_Context_Package` وجود دارد، Builder Assistant باید در `APPROVED_HANDOFF_MODE` شروع کند.
-
-مجاز است:
+## Important Runtime Fixes
 
 ```text
-- راهنمایی قدم‌به‌قدم ساخت در Elementor بدهد.
-- approved Structure Panel labels را اعمال کند.
-- approved classها را اعمال کند.
-- editable content را حفظ کند.
-- decorative layer boundary را حفظ کند.
-- برای ابهام UI از کاربر screenshot بخواهد.
-- checkpoint بسازد و با confirmation جلو برود.
-```
-
-ممنوع است:
-
-```text
-- scoring را دوباره اجرا کند.
-- recommendation را دوباره اجرا کند.
-- selected_candidate را تغییر دهد.
-- architecture را redesign کند.
-- approved classها را حذف یا اضافه کند.
-- meaningful text را به SVG/image/HTML تبدیل کند.
-- cards را clickable فرض کند.
-- Dynamic Loop را بدون data source تأییدشده فرض کند.
-- mobile connector behavior را حدس بزند.
-- production readiness claim کند.
+- element_generation is required for approved_structure_tree nodes.
+- element_generation is required for first_builder_batch actions.
+- widget_mapping_table requires at least one item.
+- selected_candidate_locked must be true for valid packages.
+- reset scopes are explicit.
+- FRESH_IMAGE_MODE is fallback-only.
 ```
 
 ---
@@ -249,13 +195,13 @@ fallback-only است و نباید جایگزین مسیر audit‌شده `EV4 A
 3. EV4 Builder Assistant Project Instructions / Master Prompt
 ```
 
-نقش عکس در این چت:
+The screenshot is:
 
 ```text
 visual reference only
 ```
 
-یعنی عکس برای یادآوری ظاهر کلی و validation بصری است، نه برای تغییر architecture.
+unless it is a current Elementor editor/frontend evidence screenshot.
 
 ---
 
@@ -340,28 +286,6 @@ This Builder Assistant repo consumes:
 /builder-feed-export → Builder_Context_Package
 ```
 
-Then it turns that package into a controlled interactive Elementor build session.
-
----
-
-## Relationship to EV4 Responsive Architect
-
-`EV4 Responsive Architect` is downstream of real builder execution.
-
-Builder Assistant output can later feed responsive validation:
-
-```text
-Builder completed structure
-+ frontend screenshots
-+ tablet/mobile screenshots
-+ builder feedback
-        │
-        ▼
-EV4 Responsive Architect
-```
-
-This repo does not perform full responsive repair. It may collect evidence and report unchecked responsive items, but actual responsive repair belongs to the responsive pipeline.
-
 ---
 
 ## Current Status
@@ -369,23 +293,16 @@ This repo does not perform full responsive repair. It may collect evidence and r
 ```yaml
 project_status:
   repo_initialized: true
-  readme_initialized: true
-  review_fixes_applied: true
-  project_instructions: active_initial_v0.1.1
-  master_prompt: active_initial_v0.1.1
-  input_contracts: active_initial_v0.1.1
-  core_files: active_initial
-  modes: all_initial_modes_present
-  protocols: partial_initial_v0.1.2
-  commands: active_initial_v0.1.2
-  schemas: initial_with_builder_context_package_v0.1.2
-  examples: pending
-  tests: pending
+  examples_template: added
+  smart_home_example: added_seed
+  valid_fixture: added
+  invalid_fixture: added
+  schema_validation_workflow: added
   production_ready: false
 ```
 
 Next recommended step:
 
 ```text
-Create examples/_template and examples/smart-home-connector using a real Builder_Context_Package.
+Wait for GitHub Actions result, then fix workflow/schema/fixtures if CI reports anything.
 ```
