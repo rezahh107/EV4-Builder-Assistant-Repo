@@ -74,9 +74,11 @@ EV4-Builder-Assistant-Repo/
 │  └─ smart-home-connector/
 ├─ tests/
 │  ├─ valid/
-│  └─ invalid/
+│  ├─ invalid/
+│  └─ invalid-cross-field/
 ├─ docs/
-│  └─ REPOSITORY_GUIDE.md
+│  ├─ REPOSITORY_GUIDE.md
+│  └─ CI_VALIDATION_RUNBOOK.md
 └─ .github/workflows/
    └─ schema-validation.yml
 ```
@@ -92,8 +94,10 @@ schemas/builder-context-package.schema.json
 tests/valid/builder_context_package.json
 tests/valid/checkpoint.json
 tests/invalid/*.json
+tests/invalid-cross-field/*.json
 scripts/validate-package.mjs
 .github/workflows/schema-validation.yml
+docs/CI_VALIDATION_RUNBOOK.md
 ```
 
 Checks include:
@@ -106,6 +110,7 @@ valid checkpoint passes
 invalid checkpoint fails
 session-state schema compiles with checkpoint schema
 cross-field package integrity passes
+cross-field invalid fixtures fail
 ```
 
 Cross-field validation checks:
@@ -127,6 +132,12 @@ Local commands:
 npm run validate:cross-field
 npm run validate:builder-context
 npm run validate:checkpoint
+```
+
+Manual GitHub Actions run:
+
+```text
+Actions → Schema validation → Run workflow → branch main
 ```
 
 ---
@@ -262,9 +273,10 @@ project_status:
   smart_home_example: added_seed_hardened
   valid_fixture: added
   invalid_fixtures: expanded
+  invalid_cross_field_fixture: added
   checkpoint_fixtures: added
   cross_field_validator: added
-  schema_validation_workflow: hardened
+  schema_validation_workflow: hardened_with_manual_run
   architect_schema_sync: applied
   production_ready: false
 ```
@@ -272,5 +284,5 @@ project_status:
 Next recommended step:
 
 ```text
-Watch GitHub Actions result, then fix workflow/schema/fixtures if CI reports anything. After CI passes, run a real Smart Home Builder Assistant session and record findings.
+Run Schema validation manually from GitHub Actions. If it passes, start a real Smart Home Builder Assistant session and record findings. If it fails, use docs/CI_VALIDATION_RUNBOOK.md for triage.
 ```
