@@ -1,0 +1,25 @@
+{
+  "schema": "ev4-builder-intake-result@0.1.0",
+  "workflow_mode": "START_INTAKE_MODE",
+  "runtime_state": "EVIDENCE_REQUIRED",
+  "present_inputs": [
+    "reference_screenshot"
+  ],
+  "validated_inputs": [],
+  "blocking_missing_inputs": [
+    "Builder_Context_Package"
+  ],
+  "optional_missing_inputs": [
+    "elementor_structure_or_editor_screenshot"
+  ],
+  "conflicts": [],
+  "package_status": null,
+  "selected_candidate_id": null,
+  "package_digest": null,
+  "decision": "blocked_missing_input",
+  "eligible_workflow_mode": "START_INTAKE_MODE",
+  "eligible_runtime_state": "EVIDENCE_REQUIRED",
+  "guidance": [
+    "Builder_Context_Package is blocking; do not build from screenshot alone."
+  ]
+}
