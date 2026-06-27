@@ -1,6 +1,6 @@
 # Notes — Smart Home Connector Example
 
-Status: manual_session_seed_added_v0.2.2
+Status: reference_layer_added_v0.2.3
 
 ---
 
@@ -19,9 +19,30 @@ schema_validation_workflow:
   status: passed
   evidence_source: user_reported_github_ui
   date: 2026-06-27
+  note: run again after v0.2.3 reference-layer changes
 ```
 
-The repository now has schema, fixture, checkpoint, and cross-field validation coverage.
+The repository has schema, fixture, checkpoint, and cross-field validation coverage.
+
+---
+
+## v0.2.3 Reference Rules
+
+```text
+Official Elementor docs are the primary external source for standard capability claims.
+Current Elementor UI evidence is required for executable control paths.
+TUYA workbook is a methodology/reference layer.
+TUYA step-by-step case is case memory, not a fixed architecture template.
+```
+
+Related files:
+
+```text
+protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY.md
+protocols/WORKBOOK_REFERENCE_BOUNDARY.md
+references/tuya-workbook/EXTRACTED_BUILDER_RULES.md
+cases/tuya-step-by-step/CASE_LESSONS.md
+```
 
 ---
 
@@ -54,6 +75,18 @@ exact token values unknown
 
 ---
 
+## Smart Home Transfer Rules
+
+```text
+Feature cards: meaningful flow content.
+House visual: visual core.
+Connector lines: decoration-only overlay.
+Mobile/tablet connector behavior: unresolved until evidence.
+Repeated cards: build one, verify, duplicate.
+```
+
+---
+
 ## Element Generation Labels
 
 This example uses:
@@ -69,14 +102,6 @@ architect_export
 ```
 
 In a real builder session, the live Elementor UI can still override practical control paths through `LIVE_INTERFACE_PRECEDENCE`.
-
----
-
-## Fixture Relationship
-
-The file `tests/valid/builder_context_package.json` is a smaller validation fixture.
-
-The file `examples/smart-home-connector/builder_context_package.json` is a richer example package.
 
 ---
 
@@ -98,6 +123,7 @@ real_session:
   session_id:
   date:
   first_response_matches_expected: yes/no/partial
+  official_docs_checked_when_needed: yes/no/not_needed
   first_batch_executed_in_elementor: yes/no
   checkpoint_created: yes/no
   editor_screenshot_checked: yes/no
