@@ -1,8 +1,7 @@
 # EV4 Builder Assistant Repo
 
-Status: example_and_validation_seed_v0.2.0  
+Status: hardening_pass_v0.2.1  
 Role: interactive_elementor_execution_assistant  
-Primary upstream: [`elementor-v4-architect-prompt-pack`](https://github.com/rezahh107/elementor-v4-architect-prompt-pack)  
 Primary input package: `Builder_Context_Package`  
 Primary mode: `APPROVED_HANDOFF_MODE`
 
@@ -12,28 +11,12 @@ Primary mode: `APPROVED_HANDOFF_MODE`
 
 `EV4 Builder Assistant` معمار نیست؛ **استادکار تعاملی Elementor** است.
 
-معمار می‌گوید:
-
 ```text
-چه چیزی باید ساخته شود؟
-کدام architecture انتخاب شده؟
-کدام Structure Panel tree تأیید شده؟
-کدام classها مجازند؟
-کدام بخش‌ها editable هستند؟
-کدام بخش‌ها decorative هستند؟
-چه چیزهایی هنوز unknown هستند؟
+Architect می‌گوید چه بساز.
+Builder Assistant می‌گوید الان دقیقاً چه action کوچکی انجام بده.
 ```
 
-Builder Assistant می‌گوید:
-
-```text
-الان این Container را بساز.
-Structure Label را این بگذار.
-این class را بدون نقطه وارد کن.
-بعد از انجام، تایید کن تا برویم مرحله بعد.
-```
-
-بنابراین نقش این ریپو **اجرای قدم‌به‌قدم معماری تأییدشده در Elementor** است، نه تحلیل دوباره معماری.
+نقش این ریپو اجرای قدم‌به‌قدم معماری تأییدشده در Elementor است، نه تحلیل دوباره معماری.
 
 ---
 
@@ -77,113 +60,101 @@ EV4-Builder-Assistant-Repo/
 ├─ PROJECT_INSTRUCTIONS.md
 ├─ STATUS.md
 ├─ CHANGELOG.md
-│
+├─ package.json
 ├─ core/
-│  ├─ MASTER_PROMPT.md
-│  ├─ SESSION_STATE_MACHINE.md
-│  └─ LIVE_INTERFACE_PRECEDENCE.md
-│
 ├─ modes/
-│  ├─ APPROVED_HANDOFF_MODE.md
-│  ├─ CORRECTION_MODE.md
-│  └─ FRESH_IMAGE_MODE.md
-│
 ├─ protocols/
-│  ├─ CONTROL_EXISTENCE_FAILURE.md
-│  ├─ COMPLETION_GATE.md
-│  ├─ CLASS_APPLICATION_SAFETY.md
-│  ├─ STEP_SIZE_CONTRACT.md
-│  ├─ PER_ELEMENT_INSTRUCTION.md
-│  ├─ LAYOUT_COMPLETENESS_CHECKLIST.md
-│  └─ V3_V4_SEPARATION_GUARD.md
-│
 ├─ input-contracts/
-│  └─ BUILDER_CONTEXT_INPUT_CONTRACT.md
-│
 ├─ commands/
-│  └─ SESSION_COMMANDS.md
-│
 ├─ schemas/
-│  ├─ builder-context-package.schema.json
-│  ├─ session-state.schema.json
-│  └─ checkpoint.schema.json
-│
+├─ scripts/
+│  └─ validate-package.mjs
 ├─ examples/
 │  ├─ _template/
 │  └─ smart-home-connector/
-│
 ├─ tests/
 │  ├─ valid/
 │  └─ invalid/
-│
 ├─ docs/
 │  └─ REPOSITORY_GUIDE.md
-│
 └─ .github/workflows/
    └─ schema-validation.yml
 ```
 
 ---
 
-## Current Validation Seed
+## Validation in v0.2.1
 
-The repository now includes:
+The repo now validates both schema shape and cross-field package integrity.
 
 ```text
 schemas/builder-context-package.schema.json
 tests/valid/builder_context_package.json
-tests/invalid/missing_selected_candidate.json
+tests/valid/checkpoint.json
+tests/invalid/*.json
+scripts/validate-package.mjs
 .github/workflows/schema-validation.yml
 ```
 
-The workflow validates that:
+Checks include:
 
 ```text
-- the valid Builder_Context_Package fixture passes;
-- the missing selected_candidate_id fixture fails;
-- session-state.schema.json compiles with checkpoint.schema.json.
+valid package passes
+Smart Home example package passes
+invalid package fixtures fail
+valid checkpoint passes
+invalid checkpoint fails
+session-state schema compiles with checkpoint schema
+cross-field package integrity passes
 ```
 
----
-
-## Examples
-
-### `_template`
-
-Reusable starting point for future examples:
+Cross-field validation checks:
 
 ```text
-examples/_template/README.md
-examples/_template/start_session_prompt.md
-examples/_template/builder_context_package.template.json
+duplicate node_id
+duplicate action_id
+child node references
+class map node references
+first batch target references
+action active_class references
+widget class references
+element_generation / element_generation_source consistency
 ```
 
-### `smart-home-connector`
-
-Seed example for the Smart Home Connector section:
+Local commands:
 
 ```text
-examples/smart-home-connector/README.md
-examples/smart-home-connector/builder_context_package.json
-examples/smart-home-connector/start_session_prompt.md
-examples/smart-home-connector/expected_first_response.md
-examples/smart-home-connector/notes.md
+npm run validate:cross-field
+npm run validate:builder-context
+npm run validate:checkpoint
 ```
-
-This example uses `ARCH-FAM-C` and remains a builder execution example, not a new architecture analysis.
 
 ---
 
 ## Important Runtime Fixes
 
 ```text
-- element_generation is required for approved_structure_tree nodes.
-- element_generation is required for first_builder_batch actions.
-- widget_mapping_table requires at least one item.
-- selected_candidate_locked must be true for valid packages.
-- reset scopes are explicit.
-- FRESH_IMAGE_MODE is fallback-only.
+element_generation is required for approved_structure_tree nodes.
+element_generation_source is required for approved_structure_tree nodes.
+element_generation is required for first_builder_batch actions.
+element_generation_source is required for first_builder_batch actions.
+widget_mapping_table requires at least one item.
+selected_candidate_locked must be true for valid packages.
+reset scopes are explicit.
+FRESH_IMAGE_MODE is fallback-only.
+Architect repo schema is synchronized with this consumer schema.
 ```
+
+---
+
+## Examples
+
+```text
+examples/_template/
+examples/smart-home-connector/
+```
+
+The Smart Home example uses `ARCH-FAM-C` and remains a builder execution example, not a new architecture analysis.
 
 ---
 
@@ -195,13 +166,7 @@ This example uses `ARCH-FAM-C` and remains a builder execution example, not a ne
 3. EV4 Builder Assistant Project Instructions / Master Prompt
 ```
 
-The screenshot is:
-
-```text
-visual reference only
-```
-
-unless it is a current Elementor editor/frontend evidence screenshot.
+The original section screenshot is `visual_reference_only` unless it is a current Elementor editor/frontend evidence screenshot.
 
 ---
 
@@ -272,18 +237,19 @@ not_applicable
 
 ---
 
-## Relationship to EV4 Architect
+## Upstream Sync
 
-Upstream repo:
-
-```text
-https://github.com/rezahh107/elementor-v4-architect-prompt-pack
-```
-
-This Builder Assistant repo consumes:
+This repo consumes:
 
 ```text
 /builder-feed-export → Builder_Context_Package
+```
+
+The upstream Architect repo has been synchronized through:
+
+```text
+stages/11_BUILDER_FEED_EXPORT_v1.1_HARDENING_PATCH.md
+schemas/ev4-builder-context-package.schema.json
 ```
 
 ---
@@ -292,17 +258,19 @@ This Builder Assistant repo consumes:
 
 ```yaml
 project_status:
-  repo_initialized: true
   examples_template: added
-  smart_home_example: added_seed
+  smart_home_example: added_seed_hardened
   valid_fixture: added
-  invalid_fixture: added
-  schema_validation_workflow: added
+  invalid_fixtures: expanded
+  checkpoint_fixtures: added
+  cross_field_validator: added
+  schema_validation_workflow: hardened
+  architect_schema_sync: applied
   production_ready: false
 ```
 
 Next recommended step:
 
 ```text
-Wait for GitHub Actions result, then fix workflow/schema/fixtures if CI reports anything.
+Watch GitHub Actions result, then fix workflow/schema/fixtures if CI reports anything. After CI passes, run a real Smart Home Builder Assistant session and record findings.
 ```
