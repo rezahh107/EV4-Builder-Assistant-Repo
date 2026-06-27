@@ -5,11 +5,15 @@ on:
     paths:
       - 'schemas/**'
       - 'tests/**'
+      - 'examples/**'
+      - 'scripts/**'
       - '.github/workflows/schema-validation.yml'
   pull_request:
     paths:
       - 'schemas/**'
       - 'tests/**'
+      - 'examples/**'
+      - 'scripts/**'
       - '.github/workflows/schema-validation.yml'
 
 jobs:
@@ -25,7 +29,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Validate valid Builder_Context_Package fixture
+      - name: Validate valid Builder_Context_Package fixtures
         run: |
           npx --yes ajv-cli@5 validate \
             --spec=draft2020 \
@@ -33,17 +37,53 @@ jobs:
             -s schemas/builder-context-package.schema.json \
             -d tests/valid/builder_context_package.json
 
-      - name: Ensure missing selected_candidate_id fixture is invalid
-        run: |
-          if npx --yes ajv-cli@5 validate \
+          npx --yes ajv-cli@5 validate \
             --spec=draft2020 \
             --strict=false \
             -s schemas/builder-context-package.schema.json \
-            -d tests/invalid/missing_selected_candidate.json; then
-            echo "Invalid fixture unexpectedly passed validation."
+            -d examples/smart-home-connector/builder_context_package.json
+
+      - name: Ensure invalid Builder_Context_Package fixtures fail
+        run: |
+          for file in tests/invalid/*.json; do
+            case "$file" in
+              tests/invalid/checkpoint_missing_id.json) continue ;;
+            esac
+
+            if npx --yes ajv-cli@5 validate \
+              --spec=draft2020 \
+              --strict=false \
+              -s schemas/builder-context-package.schema.json \
+              -d "$file"; then
+              echo "Invalid fixture unexpectedly passed validation: $file"
+              exit 1
+            else
+              echo "Invalid fixture correctly failed validation: $file"
+            fi
+          done
+
+      - name: Run cross-field package validation
+        run: |
+          node scripts/validate-package.mjs tests/valid/builder_context_package.json
+          node scripts/validate-package.mjs examples/smart-home-connector/builder_context_package.json
+
+      - name: Validate checkpoint fixtures
+        run: |
+          npx --yes ajv-cli@5 validate \
+            --spec=draft2020 \
+            --strict=false \
+            -s schemas/checkpoint.schema.json \
+            -d tests/valid/checkpoint.json
+
+          if npx --yes ajv-cli@5 validate \
+            --spec=draft2020 \
+            --strict=false \
+            -s schemas/checkpoint.schema.json \
+            -d tests/invalid/checkpoint_missing_id.json; then
+            echo "Invalid checkpoint fixture unexpectedly passed validation."
             exit 1
           else
-            echo "Invalid fixture correctly failed validation."
+            echo "Invalid checkpoint fixture correctly failed validation."
           fi
 
       - name: Compile session-state schema
