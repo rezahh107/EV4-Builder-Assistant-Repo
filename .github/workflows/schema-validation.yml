@@ -7,6 +7,7 @@ on:
       - 'tests/**'
       - 'examples/**'
       - 'scripts/**'
+      - 'package.json'
       - '.github/workflows/schema-validation.yml'
   pull_request:
     paths:
@@ -14,6 +15,7 @@ on:
       - 'tests/**'
       - 'examples/**'
       - 'scripts/**'
+      - 'package.json'
       - '.github/workflows/schema-validation.yml'
 
 jobs:
@@ -64,8 +66,7 @@ jobs:
 
       - name: Run cross-field package validation
         run: |
-          node scripts/validate-package.mjs tests/valid/builder_context_package.json
-          node scripts/validate-package.mjs examples/smart-home-connector/builder_context_package.json
+          npm run validate:cross-field
 
       - name: Validate checkpoint fixtures
         run: |
