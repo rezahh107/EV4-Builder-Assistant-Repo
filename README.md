@@ -1,6 +1,6 @@
 # EV4 Builder Assistant Repo
 
-Status: runtime_foundation_created_v0.1.0  
+Status: review_fixes_applied_v0.1.1  
 Role: interactive_elementor_execution_assistant  
 Primary upstream: [`elementor-v4-architect-prompt-pack`](https://github.com/rezahh107/elementor-v4-architect-prompt-pack)  
 Primary input package: `Builder_Context_Package`  
@@ -47,8 +47,6 @@ EV4 Builder Assistant Repo
 = استادکار کنار دست تو داخل Elementor
 ```
 
-جریان کلی:
-
 ```text
 [Reference Section Screenshot]
         │
@@ -68,9 +66,6 @@ New Chat / EV4 Builder Assistant Project
         │
         ▼
 Interactive Elementor Build
-        │
-        ▼
-Frontend screenshots / builder feedback
         │
         ▼
 Optional downstream: EV4 Responsive Architect
@@ -130,6 +125,7 @@ EV4-Builder-Assistant-Repo/
 │  └─ SESSION_COMMANDS.md
 │
 ├─ schemas/
+│  ├─ builder-context-package.schema.json
 │  ├─ session-state.schema.json
 │  └─ checkpoint.schema.json
 │
@@ -141,11 +137,23 @@ Pending planned folders/files:
 
 ```text
 modes/FRESH_IMAGE_MODE.md
-schemas/builder-context-package.schema.json
 examples/_template/
 examples/smart-home-connector/
 tests/valid/
 tests/invalid/
+```
+
+---
+
+## Review Fixes in v0.1.1
+
+```text
+- builder-context-package.schema.json اضافه شد.
+- max_actions_per_turn صریحاً به 1..6 محدود شد.
+- commandهای یک پله تا شش پله به SESSION_COMMANDS اضافه شدند.
+- Data vs Instruction Rule در MASTER_PROMPT canonical شد.
+- رفتار Unverified element type تعریف شد.
+- correction output shapes یکپارچه شد و همه زیر correction_response قرار گرفتند.
 ```
 
 ---
@@ -158,31 +166,27 @@ tests/invalid/
 
 ### `core/MASTER_PROMPT.md`
 
-پرامپت runtime اصلی که نقش، modeها، forbidden work، action batching، checkpoint، correction mode و completion gate را تعریف می‌کند.
+پرامپت runtime اصلی. `Data vs Instruction Rule` canonical در این فایل است.
 
 ### `input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md`
 
 قبل از شروع session بررسی می‌کند که `Builder_Context_Package` معتبر و کافی است یا نه.
 
-### `core/SESSION_STATE_MACHINE.md`
+### `schemas/builder-context-package.schema.json`
 
-stateهای session و `last_verified_checkpoint` را تعریف می‌کند.
+schema اصلی برای اعتبارسنجی پکیج ورودی خروجی `/builder-feed-export`.
 
-### `core/LIVE_INTERFACE_PRECEDENCE.md`
+### `commands/SESSION_COMMANDS.md`
 
-می‌گوید در اختلاف بین مستندات و UI واقعی Elementor، UI فعلی کاربر برای اجرای عملی اولویت دارد.
-
-### `modes/APPROVED_HANDOFF_MODE.md`
-
-حالت اصلی کار با handoff آماده.
+فرمان‌های session از جمله `توقف`، `ادامه`، `تایید`، `اصلاح` و تنظیم تعداد actionها با `یک پله` تا `شش پله`.
 
 ### `modes/CORRECTION_MODE.md`
 
-وقتی control وجود ندارد، instruction اشتباه است، class اشتباه فعال است، یا UI تضاد دارد.
+حالت اصلاح با خروجی canonical `correction_response`.
 
 ### `docs/REPOSITORY_GUIDE.md`
 
-راهنمای زنده ریپو؛ فعلاً initial است و در آخرین مرحله باید به راهنمای کامل نهایی تبدیل شود.
+راهنمای زنده ریپو؛ در آخرین مرحله باید به راهنمای کامل نهایی تبدیل شود.
 
 ---
 
@@ -220,8 +224,6 @@ stateهای session و `last_verified_checkpoint` را تعریف می‌کند.
 ---
 
 ## Required Inputs for a New Chat
-
-برای شروع یک Builder Assistant session معمولاً این سه چیز لازم است:
 
 ```text
 1. Builder_Context_Package
@@ -263,8 +265,6 @@ Batch بعدی
 
 ## Session Commands
 
-این commandها در چت Builder Assistant پشتیبانی می‌شوند:
-
 ```text
 توقف
 استارت
@@ -277,9 +277,16 @@ Batch بعدی
 مستندات
 ریست
 خلاصه
+یک پله
+دو پله
+سه پله
+چهار پله
+پنج پله
+شش پله
+تعداد پله: N
 ```
 
-این‌ها commandهای builder session هستند، نه commandهای EV4 Architect pipeline.
+`N` فقط از 1 تا 6 مجاز است.
 
 ---
 
@@ -358,15 +365,15 @@ This repo does not perform full responsive repair. It may collect evidence and r
 project_status:
   repo_initialized: true
   readme_initialized: true
-  runtime_structure_created: true
-  project_instructions: active_initial
-  master_prompt: active_initial
-  input_contracts: active_initial
+  review_fixes_applied: true
+  project_instructions: active_initial_v0.1.1
+  master_prompt: active_initial_v0.1.1
+  input_contracts: active_initial_v0.1.1
   core_files: active_initial
-  modes: partial_initial
-  protocols: partial_initial
-  commands: active_initial
-  schemas: initial
+  modes: partial_initial_v0.1.1
+  protocols: partial_initial_v0.1.1
+  commands: active_initial_v0.1.1
+  schemas: initial_with_builder_context_package
   examples: pending
   tests: pending
   production_ready: false
