@@ -1,9 +1,9 @@
 # EV4 Builder Assistant Repo
 
-Status: reference_layer_v0.2.3  
+Status: mode_state_intake_foundation_added_v0.3.0  
 Role: interactive_elementor_execution_assistant  
 Primary input package: `Builder_Context_Package`  
-Primary mode: `APPROVED_HANDOFF_MODE`
+Primary workflow mode after valid intake: `APPROVED_HANDOFF_MODE`
 
 ---
 
@@ -16,17 +16,42 @@ Architect می‌گوید چه بساز.
 Builder Assistant می‌گوید الان دقیقاً چه action کوچکی انجام بده.
 ```
 
-نقش این ریپو اجرای قدم‌به‌قدم معماری تأییدشده در Elementor است، نه تحلیل دوباره معماری.
+نقش این repo اجرای قدم‌به‌قدم معماری تأییدشده در Elementor است، نه تحلیل دوباره معماری.
 
 ---
 
-## اصل جدید v0.2.3
+## اصل v0.3.0
+
+Patch 1 foundation دو مفهوم را جدا می‌کند:
+
+```yaml
+workflow_mode:
+  - START_INTAKE_MODE
+  - APPROVED_HANDOFF_MODE
+  - FRESH_IMAGE_MODE_LIMITED
+
+runtime_state:
+  - INTAKE_WAITING
+  - INTAKE_VALIDATING
+  - BUILD_ACTIVE
+  - WAITING_FOR_CONFIRMATION
+  - EVIDENCE_REQUIRED
+  - CORRECTION
+  - REVIEW_ONLY
+  - PAUSED
+  - COMPLETED
+```
 
 ```text
-Official Elementor docs = منبع اصلی خارجی برای قابلیت‌ها و استانداردهای Elementor
-Current Elementor UI = منبع اصلی برای اینکه الان چه چیزی واقعاً قابل انتخاب است
-Builder_Context_Package = منبع اصلی ساختار تأییدشده پروژه
-Workbook/Case Memory = مرجع آموزشی و روش‌شناسی، نه سند قطعی کنترل‌های زنده
+workflow_mode = کدام workflow فعال است
+runtime_state = الان داخل آن workflow چه اتفاقی در جریان است
+```
+
+`CORRECTION_MODE` و `REVIEW_MODE` فقط legacy aliases هستند:
+
+```yaml
+CORRECTION_MODE: CORRECTION
+REVIEW_MODE: REVIEW_ONLY
 ```
 
 ---
@@ -59,42 +84,68 @@ EV4-Builder-Assistant-Repo/
 
 ---
 
-## Added Reference Layer
+## Key Runtime Files
 
 ```text
-references/tuya-workbook/README.md
-references/tuya-workbook/WORKBOOK_USAGE_POLICY.md
-references/tuya-workbook/WORKBOOK_LESSON_INDEX.md
-references/tuya-workbook/EXTRACTED_BUILDER_RULES.md
-cases/tuya-step-by-step/CASE_LESSONS.md
-cases/tuya-step-by-step/CASE_PATCH_MAP.md
+core/MODE_STATE_MATRIX.md
+core/SESSION_STATE_MACHINE.md
+core/MASTER_PROMPT.md
+input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
+docs/START_INTAKE_POLICY.md
+protocols/NEW_CHAT_START_INTAKE.md
+commands/SESSION_COMMANDS.md
 ```
 
 ---
 
-## Added Protocols
+## Intake Foundation
+
+Fresh-chat intake starts with:
 
 ```text
-protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY.md
-protocols/WORKBOOK_REFERENCE_BOUNDARY.md
-protocols/RISK_ADJUSTED_STEP_SIZE.md
-protocols/STYLE_SYSTEM_CAPABILITY_GATE.md
-protocols/CONTROLLED_OVERLAY_STAGE_PATTERN.md
-protocols/REPEATED_ELEMENT_DUPLICATION_PROTOCOL.md
-protocols/RESPONSIVE_WORKFLOW_GUARD.md
-protocols/READING_ORDER_CHECKLIST.md
+شروع
 ```
+
+The assistant must inspect pasted/attached data before asking again, must not re-request valid data already provided, and must ask only for blocking missing items.
+
+When inputs are partial, it uses a compact:
+
+```text
+intake_checklist
+```
+
+When intake is evaluated, it uses:
+
+```text
+schemas/intake-result.schema.json
+```
+
+---
+
+## STATE_CAPSULE
+
+Builder-session replies may include a compact one-line state capsule when session state matters:
+
+```text
+[STATE workflow=APPROVED_HANDOFF_MODE state=WAITING_FOR_CONFIRMATION cp=CP-001 batch=BATCH-001 risk=low]
+```
+
+It is not a checkpoint replacement.
 
 ---
 
 ## Validation
 
-The repo validates schema shape, negative fixtures, checkpoint fixtures, and cross-field package integrity.
+The repo validates schema shape, negative fixtures, checkpoint fixtures, intake result fixtures, and cross-field package integrity.
 
 ```text
 schemas/builder-context-package.schema.json
+schemas/session-state.schema.json
+schemas/checkpoint.schema.json
+schemas/intake-result.schema.json
 tests/valid/builder_context_package.json
 tests/valid/checkpoint.json
+tests/valid/intake_result_approved_with_optional_gaps.json
 tests/invalid/*.json
 tests/invalid-cross-field/*.json
 scripts/validate-package.mjs
@@ -108,6 +159,7 @@ Local commands:
 npm run validate:cross-field
 npm run validate:builder-context
 npm run validate:checkpoint
+npm run validate:intake-result
 ```
 
 ---
@@ -126,6 +178,7 @@ missing control or insufficient evidence: 0 actions, ask for evidence
 ## Session Commands
 
 ```text
+شروع
 توقف
 استارت
 ادامه
@@ -168,13 +221,11 @@ not_applicable
 
 ```yaml
 project_status:
-  repo_ready_for_controlled_use: true
-  official_elementor_docs_priority: added
-  workbook_reference_layer: added
-  tuya_case_memory: added
-  risk_adjusted_step_size: added
-  action_default_max: 5
-  schema_validation_workflow: passed_user_reported
+  mode_state_matrix: added
+  state_capsule_rule: added
+  intake_checklist: added
+  intake_result_schema: added
+  schema_validation_workflow: updated_for_intake_result
   real_elementor_execution: not_run
   production_ready: false
 ```
@@ -182,5 +233,5 @@ project_status:
 Next recommended step:
 
 ```text
-Run or continue the first real Builder Assistant session, then record actual Elementor findings in examples/smart-home-connector/notes.md.
+Run GitHub Actions schema validation for v0.3.0, then continue only with the next explicitly requested patch.
 ```
