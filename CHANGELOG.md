@@ -1,5 +1,37 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.1.2 — 2026-06-27
+
+### Fixed
+
+- Added `element_generation` to `approved_structure_tree` nodes in `schemas/builder-context-package.schema.json`.
+- Added `element_generation` to `first_builder_batch.actions` in `schemas/builder-context-package.schema.json`.
+- Added shared `$defs.element_generation` enum:
+  - `V4 Atomic Element`
+  - `V3 element`
+  - `Shared compatibility element`
+  - `Unverified element type`
+- Added `minItems: 1` to `widget_mapping_table`.
+- Changed `selected_candidate_locked` from `const: true` to `enum: [true]` with explanatory description for valid/invalid fixture clarity.
+- Added reset scope enum to `commands/SESSION_COMMANDS.md`:
+  - `full_session_reset`
+  - `checkpoint_only_reset`
+  - `class_map_reset`
+  - `not_confirmed`
+
+### Added
+
+- `modes/FRESH_IMAGE_MODE.md` as fallback-only mode.
+
+### Status
+
+- All initial modes are now present.
+- Examples and tests still pending.
+- Schema CI is still pending and should be added after valid/invalid fixtures exist.
+- Production readiness remains false.
+
+---
+
 ## v0.1.1 — 2026-06-27
 
 ### Fixed
