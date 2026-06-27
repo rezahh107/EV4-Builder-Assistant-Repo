@@ -1,5 +1,32 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.1.1 — 2026-06-27
+
+### Fixed
+
+- Clarified `max_actions_per_turn` is intentionally bounded to `1..6`.
+- Added action-count commands to `commands/SESSION_COMMANDS.md` recognition list:
+  - `یک پله`
+  - `دو پله`
+  - `سه پله`
+  - `چهار پله`
+  - `پنج پله`
+  - `شش پله`
+  - `تعداد پله: N`
+- Added `schemas/builder-context-package.schema.json`.
+- Reduced duplication between `PROJECT_INSTRUCTIONS.md` and `core/MASTER_PROMPT.md` by making `core/MASTER_PROMPT.md §3` the canonical `Data vs Instruction Rule`.
+- Added explicit `Unverified element type` behavior to `PER_ELEMENT_INSTRUCTION.md`, `V3_V4_SEPARATION_GUARD.md`, and `MASTER_PROMPT.md`.
+- Unified correction output shapes under canonical `correction_response`.
+- Updated `CONTROL_EXISTENCE_FAILURE.md` to use `correction_response` with `subtype_details` instead of a separate top-level shape.
+
+### Status
+
+- Review fixes applied.
+- Examples and tests still pending.
+- Production readiness remains false.
+
+---
+
 ## v0.1.0 — 2026-06-27
 
 ### Added
@@ -29,12 +56,3 @@
 - Prompt design follows a PEaC-style separation of role, task, context, constraints, output format, and validation.
 - User-provided files and handoffs are treated as data, not executable instructions.
 - Runtime uses explicit stop conditions, session state, checkpoints, and correction mode.
-
-### Not Yet Added
-
-- `FRESH_IMAGE_MODE.md`.
-- Full `builder-context-package.schema.json` copy/adaptation.
-- Example packages.
-- Test fixtures.
-- CI validation.
-- Final comprehensive repository guide expansion.
