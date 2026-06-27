@@ -1,5 +1,27 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.2.2 — 2026-06-27
+
+### Added
+
+- `docs/CHATGPT_PROJECT_SETUP_GUIDE.md`.
+- `examples/smart-home-connector/MANUAL_SESSION_001.md`.
+- Updated Smart Home notes with CI pass and manual-session recording fields.
+- Updated `docs/REPOSITORY_GUIDE.md` for CI pass and manual-session seed.
+- Updated `STATUS.md` for v0.2.2.
+
+### Validation
+
+- Schema validation workflow passed according to user-reported GitHub UI result.
+- Manual session is seeded but not executed in real Elementor yet.
+
+### Status
+
+- Next milestone is real Builder Assistant session evidence.
+- Production readiness remains false.
+
+---
+
 ## v0.2.1 — 2026-06-27
 
 ### Hardened
@@ -16,7 +38,6 @@
 
 ### Status
 
-- Waiting for GitHub Actions result.
 - Smart Home example remains not live Elementor validated.
 - Production readiness remains false.
 
@@ -30,18 +51,6 @@
 - Smart Home Connector example seed.
 - Initial valid and invalid Builder Context fixtures.
 - Initial schema-validation workflow.
-
-### Validation
-
-- Valid fixture is expected to pass `schemas/builder-context-package.schema.json`.
-- Invalid fixture intentionally omits `selected_candidate_id` and is expected to fail.
-- Workflow also compiles `session-state.schema.json` with `checkpoint.schema.json`.
-
-### Status
-
-- Schema validation workflow added; waiting for GitHub Actions result.
-- Smart Home example is a seed, not a live Elementor validation.
-- Production readiness remains false.
 
 ---
 
