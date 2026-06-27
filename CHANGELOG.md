@@ -1,5 +1,44 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.3.0 — 2026-06-27
+
+### Added
+
+- Mode/state foundation:
+  - `core/MODE_STATE_MATRIX.md`
+- One-line public state marker rule:
+  - `STATE_CAPSULE`
+- Structured fresh-chat intake result schema:
+  - `schemas/intake-result.schema.json`
+- Intake result fixtures:
+  - `tests/valid/intake_result_approved_with_optional_gaps.json`
+  - `tests/invalid/intake_result_missing_decision.json`
+
+### Changed
+
+- Updated `core/SESSION_STATE_MACHINE.md` to separate `workflow_mode` from `runtime_state`.
+- Updated `docs/START_INTAKE_POLICY.md` with `intake_checklist`, attachment/pasted JSON inspection, and blocking-only re-request rules.
+- Updated `protocols/NEW_CHAT_START_INTAKE.md` to emit compact `intake_checklist` / `intake_result` behavior.
+- Updated `commands/SESSION_COMMANDS.md` so `شروع`, `استارت`, `توقف`, `بررسی`, and `اصلاح` map to normalized workflow/state behavior.
+- Updated `schemas/session-state.schema.json` with optional `workflow_mode`, `runtime_state`, and `state_capsule` fields while preserving legacy `current_state` compatibility.
+- Updated `.github/workflows/schema-validation.yml` and `package.json` to validate intake result fixtures.
+- Updated `STATUS.md` for v0.3.0.
+
+### Compatibility
+
+- `CORRECTION_MODE` and `REVIEW_MODE` remain legacy names only.
+- Preferred runtime states are now `CORRECTION` and `REVIEW_ONLY`.
+- `START_INTAKE_MODE`, `APPROVED_HANDOFF_MODE`, and `FRESH_IMAGE_MODE_LIMITED` are workflow modes, not runtime states.
+
+### Status
+
+- Local JSON Schema check for `schemas/intake-result.schema.json` passed with the valid fixture.
+- Local invalid fixture check rejected missing `decision` as expected.
+- GitHub Actions validation is pending after this patch.
+- Production readiness remains false.
+
+---
+
 ## v0.2.3 — 2026-06-27
 
 ### Added
