@@ -1,7 +1,7 @@
 # REPOSITORY_GUIDE — EV4 Builder Assistant
 
-Version: 0.2.0
-Status: example_and_validation_seed_added
+Version: 0.2.1
+Status: hardening_pass_applied
 Date: 2026-06-27
 
 ---
@@ -62,154 +62,53 @@ Next Action Batch
 
 ## File Families
 
-### `PROJECT_INSTRUCTIONS.md`
-
-Compact always-on instruction layer for the ChatGPT Project.
-
-### `core/`
-
-Always-active runtime behavior.
-
 ```text
-MASTER_PROMPT.md
-SESSION_STATE_MACHINE.md
-LIVE_INTERFACE_PRECEDENCE.md
-```
-
-### `modes/`
-
-Mode-specific behavior.
-
-```text
-APPROVED_HANDOFF_MODE.md
-CORRECTION_MODE.md
-FRESH_IMAGE_MODE.md
-```
-
-`FRESH_IMAGE_MODE.md` is fallback-only and must not replace `APPROVED_HANDOFF_MODE` when `Builder_Context_Package` exists.
-
-### `protocols/`
-
-Runtime guardrails used inside modes.
-
-```text
-CONTROL_EXISTENCE_FAILURE.md
-CLASS_APPLICATION_SAFETY.md
-PER_ELEMENT_INSTRUCTION.md
-STEP_SIZE_CONTRACT.md
-V3_V4_SEPARATION_GUARD.md
-LAYOUT_COMPLETENESS_CHECKLIST.md
-COMPLETION_GATE.md
-```
-
-### `input-contracts/`
-
-Pre-runtime gates.
-
-```text
-BUILDER_CONTEXT_INPUT_CONTRACT.md
-```
-
-### `commands/`
-
-Persian session command behavior.
-
-```text
-SESSION_COMMANDS.md
-```
-
-### `schemas/`
-
-Machine-checkable package, state, and checkpoint structures.
-
-```text
-builder-context-package.schema.json
-session-state.schema.json
-checkpoint.schema.json
-```
-
-### `examples/`
-
-Reusable example material.
-
-```text
-examples/_template/
-examples/smart-home-connector/
-```
-
-### `tests/`
-
-Schema validation fixtures.
-
-```text
-tests/valid/builder_context_package.json
-tests/invalid/missing_selected_candidate.json
-```
-
-### `.github/workflows/`
-
-Automation for schema validation.
-
-```text
-schema-validation.yml
+PROJECT_INSTRUCTIONS.md      = compact always-on ChatGPT Project instruction layer
+core/                        = always-active runtime behavior
+modes/                       = APPROVED_HANDOFF_MODE, CORRECTION_MODE, FRESH_IMAGE_MODE
+protocols/                   = runtime guardrails
+input-contracts/             = pre-runtime package gates
+commands/                    = Persian session commands
+schemas/                     = package, session, checkpoint schemas
+scripts/                     = cross-field validators
+examples/                    = reusable examples and Smart Home seed
+tests/                       = valid and invalid fixtures
+.github/workflows/           = CI validation
 ```
 
 ---
 
-## How We Built The Repo
+## Version History Summary
 
 ### v0.1.0
 
-Created the initial runtime foundation:
-
-```text
-PROJECT_INSTRUCTIONS.md
-core/MASTER_PROMPT.md
-input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
-core/SESSION_STATE_MACHINE.md
-core/LIVE_INTERFACE_PRECEDENCE.md
-modes/APPROVED_HANDOFF_MODE.md
-modes/CORRECTION_MODE.md
-protocols/*
-schemas/session-state.schema.json
-schemas/checkpoint.schema.json
-```
+Initial runtime foundation.
 
 ### v0.1.1
 
-Fixed review issues:
-
-```text
-builder-context-package.schema.json
-bounded max_actions_per_turn
-session action-count commands
-canonical Data vs Instruction Rule
-Unverified element type behavior
-unified correction_response
-```
+Review fixes: Builder Context schema, bounded action count, canonical Data vs Instruction rule, Unverified element behavior, unified correction response.
 
 ### v0.1.2
 
-Fixed schema and mode gaps:
-
-```text
-element_generation in approved_structure_tree
-element_generation in first_builder_batch.actions
-widget_mapping_table minItems: 1
-reset scope enum
-FRESH_IMAGE_MODE.md fallback-only
-```
+Schema and mode gaps: generation fields, widget mapping `minItems`, reset scopes, fallback-only Fresh Image mode.
 
 ### v0.2.0
 
-Added examples and validation seed:
+Examples and validation seed: example template, Smart Home example, first valid/invalid fixtures, initial CI.
+
+### v0.2.1
+
+Hardening pass:
 
 ```text
-examples/_template/
-examples/smart-home-connector/
-tests/valid/builder_context_package.json
-tests/invalid/missing_selected_candidate.json
-.github/workflows/schema-validation.yml
+element_generation_source required
+expanded invalid fixtures
+checkpoint fixtures added
+cross-field validator added
+package.json validation scripts added
+workflow hardened
+Smart Home example hardened
+Architect repo schema sync applied
 ```
 
 ---
@@ -220,8 +119,12 @@ The workflow validates:
 
 ```text
 1. valid Builder_Context_Package fixture passes.
-2. invalid missing_selected_candidate fixture fails.
-3. session-state.schema.json compiles with checkpoint.schema.json.
+2. Smart Home example package passes.
+3. invalid Builder_Context_Package fixtures fail.
+4. valid checkpoint fixture passes.
+5. invalid checkpoint fixture fails.
+6. session-state.schema.json compiles with checkpoint.schema.json.
+7. cross-field package integrity passes.
 ```
 
 Workflow file:
@@ -230,7 +133,38 @@ Workflow file:
 .github/workflows/schema-validation.yml
 ```
 
-The workflow uses `ajv-cli` with Draft 2020 support.
+Cross-field validator:
+
+```text
+scripts/validate-package.mjs
+```
+
+Local validation commands:
+
+```text
+npm run validate:cross-field
+npm run validate:builder-context
+npm run validate:checkpoint
+```
+
+---
+
+## Cross-Field Rules
+
+The validator checks:
+
+```text
+- node_id uniqueness
+- action_id uniqueness
+- child node references
+- class map node references
+- first batch target references
+- action active_class references
+- widget class references
+- element_generation and element_generation_source consistency
+- production_ready_allowed must remain false
+- selected_candidate_locked must remain true
+```
 
 ---
 
@@ -274,15 +208,30 @@ examples/smart-home-connector/builder_context_package.json
 ## Runtime Decisions To Preserve
 
 ```text
-- max_actions_per_turn stays bounded to 1..6;
-- Data vs Instruction Rule canonical source is MASTER_PROMPT §3;
-- control-existence failure uses correction_response, not a separate top-level shape;
-- Unverified element type stops generation-sensitive edits;
-- element_generation must be carried by the package where possible;
-- FRESH_IMAGE_MODE must remain fallback-only;
-- Builder Assistant must not become Architect;
+- max_actions_per_turn stays bounded to 1..6.
+- Data vs Instruction Rule canonical source is MASTER_PROMPT §3.
+- control-existence failure uses correction_response, not a separate top-level shape.
+- Unverified element type stops generation-sensitive edits.
+- element_generation and element_generation_source must be carried by the package where possible.
+- FRESH_IMAGE_MODE must remain fallback-only.
+- Builder Assistant must not become Architect.
 - valid/invalid fixtures must stay aligned with schema changes.
+- Architect repo must remain compatible with the Builder Assistant consumer schema.
 ```
+
+---
+
+## Upstream Sync
+
+Architect repo synchronization is recorded in:
+
+```text
+stages/11_BUILDER_FEED_EXPORT_v1.1_HARDENING_PATCH.md
+schemas/ev4-builder-context-package.schema.json
+STATUS_0.16.2_BUILDER_FEED_SCHEMA_SYNC.md
+```
+
+This prevents `/builder-feed-export` from emitting packages that the Builder Assistant immediately rejects.
 
 ---
 
@@ -305,7 +254,7 @@ Do not claim production readiness from Builder Assistant completion alone.
 Recommended next milestone:
 
 ```text
-v0.2.1 — CI Repair If Needed
+v0.2.2 — CI Result Repair / Manual Session Seed
 ```
 
 Required work:
