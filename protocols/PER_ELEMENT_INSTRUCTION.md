@@ -1,6 +1,6 @@
 # protocols/PER_ELEMENT_INSTRUCTION
 
-Version: 0.1.0
+Version: 0.1.1
 Status: active_initial
 Purpose: define required fields for every Elementor builder action
 
@@ -85,6 +85,33 @@ action:
 
 ---
 
+## Unverified Element Type Protocol
+
+`Unverified element type` is a stop label when the element generation affects the next instruction.
+
+If generation affects panel path, class workflow, layout controls, responsive controls, or V3/V4 compatibility:
+
+```text
+1. Do not edit the element.
+2. Set state to EVIDENCE_REQUIRED or CORRECTION_MODE.
+3. Ask for one targeted screenshot of the selected element and visible panel.
+4. Do not provide version-sensitive controls.
+5. Resume only after the element type is verified or a safe generation-independent action is available.
+```
+
+If generation does not affect the next action, a safe generation-independent action may continue, but the element must remain labeled `Unverified element type` until evidence resolves it.
+
+Safe generation-independent actions are limited to:
+
+```text
+- naming a Structure Panel item when visible;
+- asking for screenshot evidence;
+- reading current state;
+- confirming already visible class spelling.
+```
+
+---
+
 ## Stop Conditions
 
 Stop before editing when:
@@ -94,6 +121,7 @@ Stop before editing when:
 - wrong class chip is active;
 - class is missing from approved map;
 - control is not visible;
+- element_generation is Unverified element type and affects the instruction;
 - V3/V4 element generation is unclear and affects the instruction;
 - value source is insufficient for a non-temporary value.
 ```
