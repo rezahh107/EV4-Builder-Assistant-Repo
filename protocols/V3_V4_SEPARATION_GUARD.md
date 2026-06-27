@@ -1,6 +1,6 @@
 # protocols/V3_V4_SEPARATION_GUARD
 
-Version: 0.1.0
+Version: 0.1.1
 Status: active_initial
 Purpose: prevent Elementor generation confusion
 
@@ -64,13 +64,37 @@ The following do not prove Grid availability:
 
 ## If Generation Is Unknown
 
+`Unverified element type` is not permission to continue by assumption.
+
 If the selected element generation is unknown and affects the instruction:
 
 ```text
 1. Stop.
-2. Ask for a targeted screenshot of the selected element and panel.
+2. Ask for one targeted screenshot of the selected element and panel.
 3. Mark element_generation: Unverified element type.
-4. Do not provide version-sensitive controls until verified.
+4. Set state to EVIDENCE_REQUIRED or CORRECTION_MODE.
+5. Do not provide version-sensitive controls until verified.
+```
+
+If generation does not affect the next action, only generation-independent actions may continue.
+
+Allowed generation-independent actions:
+
+```text
+- request screenshot evidence;
+- read visible Structure Panel name;
+- confirm class spelling already visible in UI;
+- report status.
+```
+
+Forbidden while unverified:
+
+```text
+- use generation-specific panel path;
+- apply generation-specific layout controls;
+- infer Grid/Flex behavior;
+- migrate V3 to V4;
+- change class workflow.
 ```
 
 ---
