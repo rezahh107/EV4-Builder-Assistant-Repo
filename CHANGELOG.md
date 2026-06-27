@@ -1,5 +1,48 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.2.3 — 2026-06-27
+
+### Added
+
+- Official Elementor docs priority protocol:
+  - `protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY.md`
+- Workbook reference boundary:
+  - `protocols/WORKBOOK_REFERENCE_BOUNDARY.md`
+- TUYA case memory:
+  - `cases/tuya-step-by-step/CASE_LESSONS.md`
+  - `cases/tuya-step-by-step/CASE_PATCH_MAP.md`
+- TUYA workbook reference layer:
+  - `references/tuya-workbook/README.md`
+  - `references/tuya-workbook/WORKBOOK_USAGE_POLICY.md`
+  - `references/tuya-workbook/WORKBOOK_LESSON_INDEX.md`
+  - `references/tuya-workbook/EXTRACTED_BUILDER_RULES.md`
+- New practical builder protocols:
+  - `protocols/RISK_ADJUSTED_STEP_SIZE.md`
+  - `protocols/STYLE_SYSTEM_CAPABILITY_GATE.md`
+  - `protocols/CONTROLLED_OVERLAY_STAGE_PATTERN.md`
+  - `protocols/REPEATED_ELEMENT_DUPLICATION_PROTOCOL.md`
+  - `protocols/RESPONSIVE_WORKFLOW_GUARD.md`
+  - `protocols/READING_ORDER_CHECKLIST.md`
+
+### Changed
+
+- Updated `PROJECT_INSTRUCTIONS.md` to make official Elementor docs the primary external source for standard capability claims.
+- Updated `core/MASTER_PROMPT.md` with official-doc priority, workbook/case boundaries, and new reference protocols.
+- Updated `core/LIVE_INTERFACE_PRECEDENCE.md` to separate standard capability priority from executable UI priority.
+- Updated `protocols/STEP_SIZE_CONTRACT.md` default action limit from 6 to 5.
+- Updated `commands/SESSION_COMMANDS.md` action-count commands to support 1..5.
+- Updated `schemas/session-state.schema.json` to bound `max_actions_per_turn` to 1..5.
+- Updated `docs/CHATGPT_PROJECT_SETUP_GUIDE.md` with new protocol upload order and reference files.
+- Updated `README.md` and `STATUS.md` for v0.2.3.
+
+### Status
+
+- Schema validation should be run again after these documentation/protocol changes.
+- Real Elementor execution remains not run.
+- Production readiness remains false.
+
+---
+
 ## v0.2.2 — 2026-06-27
 
 ### Added
@@ -36,11 +79,6 @@
 - Updated Smart Home example package and template package for generation-source compatibility.
 - Synced upstream Architect schema and Stage 11 hardening patch.
 
-### Status
-
-- Smart Home example remains not live Elementor validated.
-- Production readiness remains false.
-
 ---
 
 ## v0.2.0 — 2026-06-27
@@ -63,10 +101,7 @@
 - Added `minItems: 1` to `widget_mapping_table`.
 - Clarified `selected_candidate_locked` valid value.
 - Added reset scope enum.
-
-### Added
-
-- `modes/FRESH_IMAGE_MODE.md` as fallback-only mode.
+- Added `modes/FRESH_IMAGE_MODE.md` as fallback-only mode.
 
 ---
 
@@ -74,7 +109,7 @@
 
 ### Fixed
 
-- Clarified `max_actions_per_turn` is bounded to `1..6`.
+- Clarified early `max_actions_per_turn` boundary before v0.2.3 changed runtime default to 5.
 - Added action-count commands.
 - Added Builder Context schema.
 - Canonicalized `Data vs Instruction Rule` in `core/MASTER_PROMPT.md`.
