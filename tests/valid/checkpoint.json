@@ -1,0 +1,26 @@
+{
+  "schema": "ev4-builder-checkpoint@0.1.0",
+  "checkpoint_id": "cp-001",
+  "created_from": "user_confirmation",
+  "current_section": "Smart Home Connector",
+  "current_handoff_or_context_package": "examples/smart-home-connector/builder_context_package.json",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "completed_elements": [
+    "Smart Home Section / Root",
+    "Smart Home Section / Relative Stage"
+  ],
+  "applied_classes": [
+    "smart-home__section--root",
+    "smart-home__stage--relative"
+  ],
+  "verified_settings": [],
+  "unconfirmed_settings": [],
+  "active_warnings": [
+    "mobile/tablet behavior unresolved"
+  ],
+  "unresolved_evidence": [
+    "connector geometry unresolved"
+  ],
+  "last_completed_action": "BATCH-001-A02",
+  "next_pending_action": "BATCH-001-A03"
+}
