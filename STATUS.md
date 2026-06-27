@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
-Version: 0.2.0
-Status: example_and_validation_seed_added
+Version: 0.2.1
+Status: hardening_pass_applied
 Date: 2026-06-27
 
 ---
@@ -11,24 +11,25 @@ Date: 2026-06-27
 ```yaml
 project_status:
   repo_initialized: true
-  README: active_v0.2.0
+  README: active_v0.2.1
   PROJECT_INSTRUCTIONS: active_initial_v0.1.1
   MASTER_PROMPT: active_initial_v0.1.1
-  input_contracts: active_initial_v0.1.2
+  input_contracts: active_initial_v0.1.3
   core_runtime_files: active_initial
   modes: all_initial_modes_present
   protocols: partial_initial_v0.1.2
   commands: active_initial_v0.1.2
-  schemas: initial_with_element_generation
-  examples: template_and_smart_home_seed_added
-  tests: valid_and_invalid_seed_added
-  schema_validation_workflow: added
+  schemas: hardened_with_generation_source
+  examples: template_and_smart_home_seed_hardened
+  tests: expanded_valid_invalid_and_checkpoint_fixtures
+  cross_field_validator: added
+  schema_validation_workflow: hardened
   production_ready: false
 ```
 
 ---
 
-## Files Created
+## Files Created / Maintained
 
 ```text
 PROJECT_INSTRUCTIONS.md
@@ -50,6 +51,8 @@ protocols/LAYOUT_COMPLETENESS_CHECKLIST.md
 schemas/builder-context-package.schema.json
 schemas/session-state.schema.json
 schemas/checkpoint.schema.json
+scripts/validate-package.mjs
+package.json
 examples/_template/README.md
 examples/_template/start_session_prompt.md
 examples/_template/builder_context_package.template.json
@@ -59,41 +62,40 @@ examples/smart-home-connector/start_session_prompt.md
 examples/smart-home-connector/expected_first_response.md
 examples/smart-home-connector/notes.md
 tests/valid/builder_context_package.json
+tests/valid/checkpoint.json
 tests/invalid/missing_selected_candidate.json
+tests/invalid/missing_element_generation.json
+tests/invalid/empty_widget_mapping_table.json
+tests/invalid/selected_candidate_unlocked.json
+tests/invalid/production_ready_true.json
+tests/invalid/first_batch_too_many_actions.json
+tests/invalid/unapproved_extra_field.json
+tests/invalid/checkpoint_missing_id.json
 .github/workflows/schema-validation.yml
 ```
 
 ---
 
-## Review Fixes Applied
+## Hardening Applied
 
 ```yaml
-review_fixes:
-  bounded_action_count:
-    status: clarified
-    note: max_actions_per_turn remains intentionally bounded to 1..6
-  action_count_commands:
-    status: added_to_SESSION_COMMANDS
-  builder_context_package_schema:
+hardening:
+  architect_schema_sync:
+    status: applied_in_upstream_repo
+    upstream_repo: elementor-v4-architect-prompt-pack
+  element_generation_source:
+    status: required_for_tree_nodes_and_first_batch_actions
+  invalid_fixtures:
+    status: expanded
+  checkpoint_fixtures:
     status: added
-  data_vs_instruction_duplication:
-    status: reduced
-    canonical_source: core/MASTER_PROMPT.md section 3
-  unverified_element_type_protocol:
+  cross_field_validator:
     status: added
-  correction_output_shapes:
-    status: unified_under_correction_response
-  element_generation_schema_gap:
-    status: fixed
-    note: approved_structure_tree nodes and first_builder_batch actions now require element_generation
-  element_generation_input_contract:
-    status: fixed
-  widget_mapping_table_min_items:
-    status: fixed
-  reset_scope_enum:
-    status: added
-  fresh_image_mode:
-    status: added_fallback_only
+    file: scripts/validate-package.mjs
+  workflow:
+    status: validates_schema_fixtures_checkpoint_and_cross_field_logic
+  package_json:
+    status: added_for_local_validation_scripts
 ```
 
 ---
@@ -105,12 +107,15 @@ validation_state:
   markdown_written: true
   builder_context_package_schema_written: true
   element_generation_schema_binding: true
+  element_generation_source_schema_binding: true
   element_generation_input_contract_binding: true
   valid_fixture_added: true
-  invalid_fixture_added: true
+  invalid_fixture_set_expanded: true
+  checkpoint_fixture_added: true
+  cross_field_validation_script_added: true
   schema_ci: added_waiting_for_github_actions_result
   real_builder_session_test: not_run
-  smart_home_example: seed_added
+  smart_home_example: seed_hardened_not_live_validated
   project_instruction_upload_test: pending
 ```
 
@@ -132,5 +137,6 @@ It executes approved handoffs interactively in Elementor.
 watch schema-validation workflow result
 fix CI/schema/fixtures if needed
 run a manual Builder Assistant session using examples/smart-home-connector/
+record real session findings in examples/smart-home-connector/notes.md
 expand docs/REPOSITORY_GUIDE.md into final guide after real run evidence
 ```
