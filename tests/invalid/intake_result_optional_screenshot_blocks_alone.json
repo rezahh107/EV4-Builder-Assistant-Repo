@@ -1,0 +1,25 @@
+{
+  "schema": "ev4-builder-intake-result@0.1.0",
+  "workflow_mode": "START_INTAKE_MODE",
+  "runtime_state": "EVIDENCE_REQUIRED",
+  "present_inputs": [
+    "Builder_Context_Package"
+  ],
+  "validated_inputs": [
+    "Builder_Context_Package"
+  ],
+  "blocking_missing_inputs": [
+    "reference_screenshot"
+  ],
+  "optional_missing_inputs": [],
+  "conflicts": [],
+  "package_status": "approved_handoff",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "package_digest": "sha256:test-invalid-optional-blocker",
+  "decision": "blocked_missing_input",
+  "eligible_workflow_mode": "START_INTAKE_MODE",
+  "eligible_runtime_state": "EVIDENCE_REQUIRED",
+  "guidance": [
+    "Invalid: optional screenshot alone must not block intake."
+  ]
+}
