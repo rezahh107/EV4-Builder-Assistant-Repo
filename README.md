@@ -1,6 +1,6 @@
 # EV4 Builder Assistant Repo
 
-Status: mode_state_intake_foundation_added_v0.3.0  
+Status: mode_state_intake_foundation_hardened_v0.3.1  
 Role: interactive_elementor_execution_assistant  
 Primary input package: `Builder_Context_Package`  
 Primary workflow mode after valid intake: `APPROVED_HANDOFF_MODE`
@@ -20,9 +20,9 @@ Builder Assistant می‌گوید الان دقیقاً چه action کوچکی �
 
 ---
 
-## اصل v0.3.0
+## اصل v0.3.1
 
-Patch 1 foundation دو مفهوم را جدا می‌کند:
+دو مفهوم جدا هستند و در Project Instructions، Master Prompt، schema و CI enforce می‌شوند:
 
 ```yaml
 workflow_mode:
@@ -52,6 +52,18 @@ runtime_state = الان داخل آن workflow چه اتفاقی در جریا�
 ```yaml
 CORRECTION_MODE: CORRECTION
 REVIEW_MODE: REVIEW_ONLY
+```
+
+---
+
+## v0.3.1 Hardening
+
+```text
+PROJECT_INSTRUCTIONS.md and core/MASTER_PROMPT.md now use workflow_mode/runtime_state split.
+schemas/intake-result.schema.json enforces approved/blocked routing invariants.
+schemas/session-state.schema.json enforces workflow_mode/runtime_state pairing.
+CI validates all tests/valid/intake_result_*.json and tests/invalid/intake_result_*.json.
+CI validates session-state workflow/runtime mismatch fixtures.
 ```
 
 ---
@@ -87,9 +99,10 @@ EV4-Builder-Assistant-Repo/
 ## Key Runtime Files
 
 ```text
+PROJECT_INSTRUCTIONS.md
 core/MODE_STATE_MATRIX.md
-core/SESSION_STATE_MACHINE.md
 core/MASTER_PROMPT.md
+core/SESSION_STATE_MACHINE.md
 input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
 docs/START_INTAKE_POLICY.md
 protocols/NEW_CHAT_START_INTAKE.md
@@ -108,7 +121,7 @@ Fresh-chat intake starts with:
 
 The assistant must inspect pasted/attached data before asking again, must not re-request valid data already provided, and must ask only for blocking missing items.
 
-When inputs are partial, it uses a compact:
+When inputs are partial, it uses:
 
 ```text
 intake_checklist
@@ -119,6 +132,8 @@ When intake is evaluated, it uses:
 ```text
 schemas/intake-result.schema.json
 ```
+
+Approved intake requires a present and validated `Builder_Context_Package`, non-null `selected_candidate_id`, non-null `package_status`, no conflicts, and no blocking missing inputs.
 
 ---
 
@@ -136,7 +151,7 @@ It is not a checkpoint replacement.
 
 ## Validation
 
-The repo validates schema shape, negative fixtures, checkpoint fixtures, intake result fixtures, and cross-field package integrity.
+The repo validates schema shape, negative fixtures, checkpoint fixtures, intake result fixtures, session-state fixtures, and cross-field package integrity.
 
 ```text
 schemas/builder-context-package.schema.json
@@ -145,7 +160,8 @@ schemas/checkpoint.schema.json
 schemas/intake-result.schema.json
 tests/valid/builder_context_package.json
 tests/valid/checkpoint.json
-tests/valid/intake_result_approved_with_optional_gaps.json
+tests/valid/intake_result_*.json
+tests/valid/session_state_mode_state.json
 tests/invalid/*.json
 tests/invalid-cross-field/*.json
 scripts/validate-package.mjs
@@ -160,6 +176,7 @@ npm run validate:cross-field
 npm run validate:builder-context
 npm run validate:checkpoint
 npm run validate:intake-result
+npm run validate:session-state
 ```
 
 ---
@@ -221,11 +238,14 @@ not_applicable
 
 ```yaml
 project_status:
-  mode_state_matrix: added
-  state_capsule_rule: added
-  intake_checklist: added
-  intake_result_schema: added
-  schema_validation_workflow: updated_for_intake_result
+  mode_state_matrix: active
+  project_instructions: hardened_v0.3.1
+  master_prompt: hardened_v0.3.1
+  state_capsule_rule: active
+  intake_checklist: active
+  intake_result_schema: hardened
+  session_state_schema: hardened
+  schema_validation_workflow: expanded_fixture_coverage
   real_elementor_execution: not_run
   production_ready: false
 ```
@@ -233,5 +253,5 @@ project_status:
 Next recommended step:
 
 ```text
-Run GitHub Actions schema validation for v0.3.0, then continue only with the next explicitly requested patch.
+Run GitHub Actions schema validation for v0.3.1, then review any CI failures before adding new runtime features.
 ```
