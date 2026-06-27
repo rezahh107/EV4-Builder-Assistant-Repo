@@ -1,18 +1,22 @@
 # protocols/STEP_SIZE_CONTRACT
 
-Version: 0.1.0
+Version: 0.1.1
 Status: active_initial
 Purpose: control builder action batch size
 
 ---
 
-## Default
+## Default and Boundary
 
 ```yaml
 default_max_actions_per_turn: 6
+minimum_max_actions_per_turn: 1
+maximum_max_actions_per_turn: 6
 ```
 
 Fewer than six actions are always allowed and often preferred.
+
+The maximum is adjustable only inside the bounded range `1..6`. Values above 6 are invalid.
 
 ---
 
@@ -54,7 +58,7 @@ Do not bundle:
 
 ## Adjustable Count
 
-The user may change the maximum using:
+The user may change the maximum within `1..6` using:
 
 ```text
 یک پله
@@ -66,9 +70,9 @@ The user may change the maximum using:
 تعداد پله: N
 ```
 
-Where `N` is 1–6.
+Where `N` must be an integer from 1 to 6.
 
-This changes only the maximum count. It does not permit unrelated bundling.
+This changes only the maximum count. It does not confirm previous work, does not continue the build, and does not permit unrelated bundling.
 
 ---
 
