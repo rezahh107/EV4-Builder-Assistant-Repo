@@ -1,7 +1,7 @@
 # REPOSITORY_GUIDE — EV4 Builder Assistant
 
-Version: 0.2.1
-Status: hardening_pass_applied
+Version: 0.2.2
+Status: ci_pass_and_manual_session_seed_added
 Date: 2026-06-27
 
 ---
@@ -10,7 +10,7 @@ Date: 2026-06-27
 
 This guide explains what this repository is, why it exists, how the files relate to each other, and how to continue development later without losing the original design intent.
 
-This is a living guide. It must be expanded again after CI results and real builder-session validation are available.
+This is still a living guide. It must be expanded again after a real Elementor execution session is recorded.
 
 ---
 
@@ -73,6 +73,7 @@ schemas/                     = package, session, checkpoint schemas
 scripts/                     = cross-field validators
 examples/                    = reusable examples and Smart Home seed
 tests/                       = valid and invalid fixtures
+docs/                        = setup, CI, and repository guides
 .github/workflows/           = CI validation
 ```
 
@@ -80,52 +81,18 @@ tests/                       = valid and invalid fixtures
 
 ## Version History Summary
 
-### v0.1.0
-
-Initial runtime foundation.
-
-### v0.1.1
-
-Review fixes: Builder Context schema, bounded action count, canonical Data vs Instruction rule, Unverified element behavior, unified correction response.
-
-### v0.1.2
-
-Schema and mode gaps: generation fields, widget mapping `minItems`, reset scopes, fallback-only Fresh Image mode.
-
-### v0.2.0
-
-Examples and validation seed: example template, Smart Home example, first valid/invalid fixtures, initial CI.
-
-### v0.2.1
-
-Hardening pass:
-
 ```text
-element_generation_source required
-expanded invalid fixtures
-checkpoint fixtures added
-cross-field validator added
-package.json validation scripts added
-workflow hardened
-Smart Home example hardened
-Architect repo schema sync applied
+v0.1.0 = initial runtime foundation
+v0.1.1 = review fixes and Builder Context schema
+v0.1.2 = generation fields, reset scopes, Fresh Image fallback
+v0.2.0 = examples and validation seed
+v0.2.1 = hardening pass with generation source and cross-field validator
+v0.2.2 = CI pass recorded and manual session seed added
 ```
 
 ---
 
 ## Schema Validation
-
-The workflow validates:
-
-```text
-1. valid Builder_Context_Package fixture passes.
-2. Smart Home example package passes.
-3. invalid Builder_Context_Package fixtures fail.
-4. valid checkpoint fixture passes.
-5. invalid checkpoint fixture fails.
-6. session-state.schema.json compiles with checkpoint.schema.json.
-7. cross-field package integrity passes.
-```
 
 Workflow file:
 
@@ -133,18 +100,32 @@ Workflow file:
 .github/workflows/schema-validation.yml
 ```
 
-Cross-field validator:
+Manual runbook:
 
 ```text
-scripts/validate-package.mjs
+docs/CI_VALIDATION_RUNBOOK.md
 ```
 
-Local validation commands:
+Current status:
+
+```yaml
+schema_validation_workflow:
+  status: passed
+  evidence_source: user_reported_github_ui
+  date: 2026-06-27
+```
+
+The workflow validates:
 
 ```text
-npm run validate:cross-field
-npm run validate:builder-context
-npm run validate:checkpoint
+1. valid Builder_Context_Package fixture passes.
+2. Smart Home example package passes.
+3. invalid Builder_Context_Package fixtures fail.
+4. cross-field invalid fixtures fail.
+5. valid checkpoint fixture passes.
+6. invalid checkpoint fixture fails.
+7. session-state.schema.json compiles with checkpoint.schema.json.
+8. cross-field package integrity passes.
 ```
 
 ---
@@ -169,6 +150,12 @@ The validator checks:
 ---
 
 ## How To Use In A ChatGPT Project
+
+Setup guide:
+
+```text
+docs/CHATGPT_PROJECT_SETUP_GUIDE.md
+```
 
 Upload or paste in this order:
 
@@ -201,6 +188,7 @@ For Smart Home Connector, use:
 ```text
 examples/smart-home-connector/start_session_prompt.md
 examples/smart-home-connector/builder_context_package.json
+examples/smart-home-connector/MANUAL_SESSION_001.md
 ```
 
 ---
@@ -235,6 +223,26 @@ This prevents `/builder-feed-export` from emitting packages that the Builder Ass
 
 ---
 
+## Manual Session Seed
+
+First manual-session seed:
+
+```text
+examples/smart-home-connector/MANUAL_SESSION_001.md
+```
+
+This file records expected first runtime state, first batch contract, expected checkpoint, preserved unknowns, and real-execution status.
+
+Current status:
+
+```yaml
+manual_session_seed: added
+real_elementor_execution: not_run
+production_ready: false
+```
+
+---
+
 ## What Not To Do Later
 
 Do not turn this repo into another EV4 Architect pipeline.
@@ -254,15 +262,16 @@ Do not claim production readiness from Builder Assistant completion alone.
 Recommended next milestone:
 
 ```text
-v0.2.2 — CI Result Repair / Manual Session Seed
+v0.3.0 — Real Builder Session Evidence
 ```
 
 Required work:
 
 ```text
-- watch GitHub Actions result;
-- fix schema/workflow/fixtures if CI fails;
-- run a manual Smart Home Builder Assistant session;
+- create/use the actual ChatGPT Builder Assistant Project;
+- start Smart Home session using the setup guide and package;
+- execute the first batch in Elementor;
+- provide confirmation or Structure Panel screenshot;
 - record observed issues in examples/smart-home-connector/notes.md;
 - expand this guide after real execution evidence.
 ```
