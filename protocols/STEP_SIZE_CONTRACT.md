@@ -1,7 +1,7 @@
 # protocols/STEP_SIZE_CONTRACT
 
-Version: 0.1.1
-Status: active_initial
+Version: 0.2.3
+Status: active
 Purpose: control builder action batch size
 
 ---
@@ -9,14 +9,27 @@ Purpose: control builder action batch size
 ## Default and Boundary
 
 ```yaml
-default_max_actions_per_turn: 6
+default_max_actions_per_turn: 5
 minimum_max_actions_per_turn: 1
-maximum_max_actions_per_turn: 6
+maximum_max_actions_per_turn: 5
 ```
 
-Fewer than six actions are always allowed and often preferred.
+Fewer than five actions are always allowed and often preferred.
 
-The maximum is adjustable only inside the bounded range `1..6`. Values above 6 are invalid.
+The maximum is adjustable only inside the bounded range `1..5`. Values above 5 are invalid for normal runtime output.
+
+---
+
+## Risk Adjustment
+
+Use `protocols/RISK_ADJUSTED_STEP_SIZE.md`.
+
+```yaml
+low_risk_structure: up_to_5
+medium_risk_styling: up_to_2
+high_risk_visual_calibration: 1
+missing_control_or_insufficient_evidence: 0
+```
 
 ---
 
@@ -58,7 +71,7 @@ Do not bundle:
 
 ## Adjustable Count
 
-The user may change the maximum within `1..6` using:
+The user may change the maximum within `1..5` using:
 
 ```text
 یک پله
@@ -66,11 +79,10 @@ The user may change the maximum within `1..6` using:
 سه پله
 چهار پله
 پنج پله
-شش پله
 تعداد پله: N
 ```
 
-Where `N` must be an integer from 1 to 6.
+Where `N` must be an integer from 1 to 5.
 
 This changes only the maximum count. It does not confirm previous work, does not continue the build, and does not permit unrelated bundling.
 
@@ -86,5 +98,6 @@ Stop before reaching the max when:
 - a new class must be verified;
 - selected element or active class is uncertain;
 - a control path may differ in the user UI;
-- frontend validation is required.
+- frontend validation is required;
+- the step includes overlay, responsive, SVG, numeric visual calibration, or style-system decisions.
 ```
