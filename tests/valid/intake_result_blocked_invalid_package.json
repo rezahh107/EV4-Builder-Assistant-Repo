@@ -1,0 +1,23 @@
+{
+  "schema": "ev4-builder-intake-result@0.1.0",
+  "workflow_mode": "START_INTAKE_MODE",
+  "runtime_state": "EVIDENCE_REQUIRED",
+  "present_inputs": [
+    "Builder_Context_Package"
+  ],
+  "validated_inputs": [],
+  "blocking_missing_inputs": [],
+  "optional_missing_inputs": [
+    "reference_screenshot"
+  ],
+  "conflicts": [],
+  "package_status": "invalid_schema",
+  "selected_candidate_id": null,
+  "package_digest": null,
+  "decision": "blocked_invalid_package",
+  "eligible_workflow_mode": "START_INTAKE_MODE",
+  "eligible_runtime_state": "EVIDENCE_REQUIRED",
+  "guidance": [
+    "Package is present but invalid; request corrected Builder_Context_Package."
+  ]
+}
