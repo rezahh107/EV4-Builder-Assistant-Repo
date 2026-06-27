@@ -1,7 +1,7 @@
 # commands/SESSION_COMMANDS
 
-Version: 0.2.4
-Status: active
+Version: 0.3.0
+Status: mode_state_intake_foundation_added
 Purpose: Persian control commands for the builder session
 
 ---
@@ -10,10 +10,10 @@ Purpose: Persian control commands for the builder session
 
 Treat listed Persian session words as explicit builder-session commands when they appear alone or at the beginning of a message followed by a colon.
 
-The Persian word for start is a new-chat intake command. It is encoded in `docs/START_INTAKE_POLICY.md`.
+These commands control the Builder Assistant session. They are not EV4 Architect pipeline commands.
 
 ```text
-Persian start word
+شروع
 توقف
 استارت
 ادامه
@@ -33,13 +33,55 @@ Persian start word
 تعداد پله: N
 ```
 
-These commands control the builder session. They are not EV4 Architect pipeline commands.
+---
+
+## Mode/State Rule
+
+Commands must update `workflow_mode` and `runtime_state` separately.
+
+```yaml
+workflow_mode:
+  - START_INTAKE_MODE
+  - APPROVED_HANDOFF_MODE
+  - FRESH_IMAGE_MODE_LIMITED
+
+runtime_state:
+  - INTAKE_WAITING
+  - INTAKE_VALIDATING
+  - BUILD_ACTIVE
+  - WAITING_FOR_CONFIRMATION
+  - EVIDENCE_REQUIRED
+  - CORRECTION
+  - REVIEW_ONLY
+  - PAUSED
+  - COMPLETED
+```
+
+Legacy names:
+
+```yaml
+CORRECTION_MODE: CORRECTION
+REVIEW_MODE: REVIEW_ONLY
+```
 
 ---
 
-## New Chat Start Intake
+## Commands
 
-The Persian start word opens `START_INTAKE_MODE` in a fresh Project chat.
+### شروع
+
+Starts or safely reruns intake.
+
+Set:
+
+```yaml
+workflow_mode: START_INTAKE_MODE
+runtime_state: INTAKE_WAITING
+```
+
+Before asking again, inspect attachments, pasted JSON, copied package text, and current message content.
+
+Do not delete initialized state or verified checkpoints.
 
 Use:
 
@@ -47,35 +89,79 @@ Use:
 docs/START_INTAKE_POLICY.md
 ```
 
-This command asks for the intake data first and does not emit builder actions until `Builder_Context_Package` passes the input contract.
+If valid `Builder_Context_Package` is already provided, validate it and route to:
 
----
-
-## Commands
+```yaml
+workflow_mode: APPROVED_HANDOFF_MODE
+runtime_state: BUILD_ACTIVE
+```
 
 ### توقف
 
-Set state to `PAUSED` and stop all new builder actions. Preserve the last verified checkpoint. Do not resume until `استارت` or `ادامه`.
+Set:
+
+```yaml
+runtime_state: PAUSED
+```
+
+Keep the current `workflow_mode` unchanged. Preserve the last verified checkpoint and the previous resumable runtime state.
+
+Do not resume until `استارت` or `ادامه`.
 
 ### استارت
 
-Resume from the last verified checkpoint. This is for an already initialized session, not a fresh-chat intake.
+Resume from an initialized session/checkpoint.
+
+This is not fresh-chat intake.
+
+If currently paused, restore previous `workflow_mode` and previous resumable `runtime_state`.
+
+If no initialized session/checkpoint exists, route to `START_INTAKE_MODE` and ask only for blocking intake data.
 
 ### ادامه
 
-Continue with the next uncompleted builder batch only when safe. This does not automatically confirm the previous batch.
+Continue with the next uncompleted builder batch only when safe.
+
+This does not automatically confirm the previous batch.
+
+If the session is paused, `ادامه` may resume only when a previous resumable state is known and no blocker exists.
 
 ### تایید
 
-Mark the latest completed batch as user-confirmed and create a verified checkpoint. Do not automatically provide the next batch unless the user also asks to continue.
+Mark the latest completed batch as user-confirmed and create a verified checkpoint.
+
+Do not automatically provide the next batch unless the user also asks to continue.
+
+If accepted after a waiting batch, route:
+
+```yaml
+workflow_mode: APPROVED_HANDOFF_MODE
+runtime_state: BUILD_ACTIVE
+```
 
 ### اصلاح
 
-Set state to `CORRECTION_MODE`. Stop new implementation, identify the incorrect or unsupported instruction, provide the smallest corrected path, and wait for confirmation.
+Set:
+
+```yaml
+runtime_state: CORRECTION
+```
+
+Keep the current `workflow_mode` unchanged.
+
+Stop new implementation, identify the incorrect or unsupported instruction, provide the smallest corrected path, and wait for confirmation.
 
 ### بررسی
 
-Set state to `REVIEW_MODE`. Inspect only provided evidence and do not continue automatically.
+Set:
+
+```yaml
+runtime_state: REVIEW_ONLY
+```
+
+Keep the current `workflow_mode` unchanged.
+
+Inspect only provided evidence and do not continue automatically.
 
 Evidence may include:
 
@@ -94,7 +180,9 @@ Export JSON
 Return concise state report only:
 
 ```text
-Current state
+Workflow mode
+Runtime state
+State capsule
 Last verified checkpoint
 Completed structure
 Applied classes
@@ -151,7 +239,7 @@ When an action-count command is received:
 ```text
 1. Update max_actions_per_turn within 1..5.
 2. Report the new maximum.
-3. Preserve the current session state.
+3. Preserve workflow_mode and runtime_state.
 4. Do not emit a new builder batch unless the user also says ادامه.
 ```
 
