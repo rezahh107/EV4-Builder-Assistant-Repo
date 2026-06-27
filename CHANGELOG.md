@@ -1,5 +1,35 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.2.0 — 2026-06-27
+
+### Added
+
+- `examples/_template/README.md`.
+- `examples/_template/start_session_prompt.md`.
+- `examples/_template/builder_context_package.template.json`.
+- `examples/smart-home-connector/README.md`.
+- `examples/smart-home-connector/builder_context_package.json`.
+- `examples/smart-home-connector/start_session_prompt.md`.
+- `examples/smart-home-connector/expected_first_response.md`.
+- `examples/smart-home-connector/notes.md`.
+- `tests/valid/builder_context_package.json`.
+- `tests/invalid/missing_selected_candidate.json`.
+- `.github/workflows/schema-validation.yml`.
+
+### Validation
+
+- Valid fixture is expected to pass `schemas/builder-context-package.schema.json`.
+- Invalid fixture intentionally omits `selected_candidate_id` and is expected to fail.
+- Workflow also compiles `session-state.schema.json` with `checkpoint.schema.json`.
+
+### Status
+
+- Schema validation workflow added; waiting for GitHub Actions result.
+- Smart Home example is a seed, not a live Elementor validation.
+- Production readiness remains false.
+
+---
+
 ## v0.1.2 — 2026-06-27
 
 ### Fixed
