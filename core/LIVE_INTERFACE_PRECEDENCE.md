@@ -1,31 +1,48 @@
 # core/LIVE_INTERFACE_PRECEDENCE
 
-Version: 0.1.0
-Status: active_initial
-Purpose: define evidence priority for real Elementor UI behavior
+Version: 0.2.3
+Status: active
+Purpose: define evidence priority for Elementor UI behavior and standard capability claims
 
 ---
 
 ## Core Rule
 
-For the existence, name, location, or available values of an Elementor control, the live interface is the strongest practical evidence.
+Official Elementor documentation is the primary external source for standard Elementor capability and terminology.
 
-The assistant must not insist that a control exists when the user's current interface does not show it.
+Current Elementor UI evidence is the primary source for executable control paths in the user's installation.
 
 ---
 
-## Evidence Priority
+## Standard Capability Priority
 
 ```text
-1. Latest user-provided Elementor editor screenshot
-2. User direct statement about current interface behavior
-3. Installed Elementor Core/Pro version when provided
-4. Official Elementor V4+ documentation for that version and element type
-5. Current diagnostic evidence, DOM, computed CSS, or export evidence
+1. Official Elementor V4+/Atomic documentation applicable to the current context
+2. Official Elementor changelog/release notes
+3. Installed Elementor version evidence
+4. Current UI screenshot or user statement
+5. Diagnostic/frontend/export evidence
 6. Builder_Context_Package
-7. Workbook or internal methodology
-8. Previous assistant instruction
+7. Workbook/reference layer
+8. Case memory
 9. General CSS knowledge
+10. Assumption
+```
+
+---
+
+## Executable UI Priority
+
+```text
+1. Latest current Elementor editor screenshot
+2. User statement about current UI
+3. Installed Elementor version evidence
+4. Official Elementor V4+/Atomic documentation for that context
+5. Diagnostic/frontend/export evidence
+6. Builder_Context_Package
+7. Workbook/reference layer
+8. Case memory
+9. Previous assistant instruction
 10. Assumption
 ```
 
@@ -36,28 +53,26 @@ The assistant must not insist that a control exists when the user's current inte
 If sources conflict, report:
 
 ```text
-- what the current Elementor UI shows;
-- what the package or documentation says;
-- which source has priority for this decision;
-- what action is safe now;
-- what evidence is still needed.
+current UI evidence
+official docs or package claim
+priority source for this decision
+safe next action
+missing evidence
 ```
 
-Do not silently choose a path when the conflict affects a builder action.
+Do not silently continue when the conflict affects a builder action.
 
 ---
 
 ## Missing Control Rule
 
-If the user says a control does not exist, or sends a screenshot where the required control is absent:
+If the required control is absent from current evidence:
 
 ```text
 1. Stop the current build path.
-2. Enter CORRECTION_MODE.
-3. Do not blame cache, user error, or permissions without evidence.
-4. Do not guess a nearby control.
-5. Ask for a targeted screenshot/version only if needed.
-6. Provide the smallest verified replacement path.
+2. Use CORRECTION_MODE or status: insufficient_evidence.
+3. Ask for targeted screenshot/version only if needed.
+4. Provide the smallest verified replacement path.
 ```
 
 ---
@@ -67,49 +82,24 @@ If the user says a control does not exist, or sends a screenshot where the requi
 For version-sensitive controls:
 
 ```text
-- mark as confirmed only if visible or version/documentation evidence confirms it;
-- mark as provisional if documented but not visible in user's UI;
-- mark as insufficient_evidence if neither UI nor version evidence confirms it.
+confirmed = visible or officially/version-confirmed
+provisional = documented but not visible in current UI
+insufficient_evidence = no UI or version/documentation evidence
 ```
 
-Do not claim a control belongs to Elementor V4+ merely because it existed in an alpha, beta, legacy V3 editor, workbook note, or unrelated tutorial.
+Workbook, case memory, legacy UI, or general CSS knowledge do not prove V4+/Atomic control availability.
 
 ---
 
-## Safe Phrases
+## Reference Layer Boundary
 
-Use practical language:
+Workbook and case memory may guide methodology and safer patterns.
 
-```text
-در UI فعلی این control تأیید نشده؛ ادامه نمی‌دهم تا مسیر جایگزین verified شود.
-```
-
-```text
-این دستور از نظر handoff معتبر است، اما مسیر UI فعلی برای اجرای آن هنوز تأیید نشده.
-```
-
-```text
-برای ادامه یک screenshot از panel انتخاب‌شده لازم است.
-```
-
----
-
-## Forbidden Phrases
-
-Avoid:
-
-```text
-- حتماً باید وجود داشته باشد.
-- احتمالاً جای دیگری است؛ همین را بزن.
-- کش را پاک کن و ادامه بده.
-- من طبق مستندات ادامه می‌دهم حتی اگر UI تو نشان ندهد.
-```
+They do not prove current control existence, exact panel path, installed-version support, exact numeric values, or production readiness.
 
 ---
 
 ## Output Labels
-
-When reporting control evidence, use:
 
 ```text
 confirmed_in_current_ui
