@@ -1,6 +1,6 @@
 # modes/CORRECTION_MODE
 
-Version: 0.1.0
+Version: 0.1.1
 Status: active_initial
 Purpose: repair unsupported builder instructions without redesigning architecture
 
@@ -15,6 +15,7 @@ Enter `CORRECTION_MODE` when:
 - user sends a screenshot contradicting the instruction;
 - wrong Elementor element is selected;
 - wrong class is active;
+- element_generation is Unverified element type and affects the instruction;
 - previous instruction used unsupported V3/V4 panel path;
 - action caused unexpected visible behavior;
 - user command is اصلاح;
@@ -33,12 +34,21 @@ Do not use correction as an excuse to redesign.
 
 ---
 
-## Required Response
+## Canonical Correction Envelope
 
-A correction response must include:
+All correction-like situations must use this envelope. Specialized protocols may fill `subtype_details`, but they must not create a different top-level shape.
 
 ```yaml
 correction_response:
+  correction_type:
+    enum:
+      - missing_control
+      - wrong_class_active
+      - wrong_element_selected
+      - V3_V4_mismatch
+      - unverified_element_generation
+      - layout_unexpected
+      - architecture_conflict
   issue_status: confirmed | provisional | insufficient_evidence
   unsupported_or_disputed_instruction:
   evidence:
@@ -46,8 +56,11 @@ correction_response:
   still_valid_work:
   rollback_required:
   smallest_verified_replacement_path:
-  confirmation_needed:
+  confirmation_needed: true
+  subtype_details:
 ```
+
+For control-existence failures, `subtype_details` must follow `protocols/CONTROL_EXISTENCE_FAILURE.md` but remain inside this canonical envelope.
 
 ---
 
@@ -87,16 +100,19 @@ correction_response:
 ```yaml
 correction_types:
   missing_control:
-    route: live_interface_precedence
+    route: protocols/CONTROL_EXISTENCE_FAILURE.md
 
   wrong_class_active:
-    route: class_application_safety
+    route: protocols/CLASS_APPLICATION_SAFETY.md
 
   wrong_element_selected:
-    route: per_element_instruction_contract
+    route: protocols/PER_ELEMENT_INSTRUCTION.md
 
   V3_V4_mismatch:
-    route: V3_V4_SEPARATION_GUARD
+    route: protocols/V3_V4_SEPARATION_GUARD.md
+
+  unverified_element_generation:
+    route: protocols/V3_V4_SEPARATION_GUARD.md
 
   layout_unexpected:
     route: request_targeted_screenshot_or_frontend_evidence
