@@ -14,7 +14,7 @@ project_status:
   README: active_v0.1.2
   PROJECT_INSTRUCTIONS: active_initial_v0.1.1
   MASTER_PROMPT: active_initial_v0.1.1
-  input_contracts: active_initial_v0.1.1
+  input_contracts: active_initial_v0.1.2
   core_runtime_files: active_initial
   modes: all_initial_modes_present
   protocols: partial_initial_v0.1.2
@@ -74,6 +74,8 @@ review_fixes:
   element_generation_schema_gap:
     status: fixed
     note: approved_structure_tree nodes and first_builder_batch actions now require element_generation
+  element_generation_input_contract:
+    status: fixed
   widget_mapping_table_min_items:
     status: fixed
   reset_scope_enum:
@@ -115,6 +117,7 @@ validation_state:
   schema_stubs_written: true
   builder_context_package_schema_written: true
   element_generation_schema_binding: true
+  element_generation_input_contract_binding: true
   schema_ci: not_configured
   real_builder_session_test: not_run
   smart_home_example: pending
