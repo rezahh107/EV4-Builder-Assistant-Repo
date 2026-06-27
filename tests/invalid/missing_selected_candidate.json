@@ -20,6 +20,7 @@
       "class_name": "smart-home__section--root",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "root",
       "children": []
     }
@@ -64,6 +65,7 @@
         "target_element": "Smart Home Section / Root",
         "element_type": "Container",
         "element_generation": "Shared compatibility element",
+        "element_generation_source": "architect_export",
         "instruction": "Create root Container.",
         "expected_result": "Root exists."
       }
