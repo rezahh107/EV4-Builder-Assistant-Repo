@@ -26,6 +26,7 @@
       "class_name": "replace__section--root",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "root",
       "children": ["n-002"]
     },
@@ -35,6 +36,7 @@
       "class_name": "replace__child--default",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "content_child",
       "children": []
     }
@@ -87,6 +89,7 @@
         "parent": "page root",
         "element_type": "Container",
         "element_generation": "Shared compatibility element",
+        "element_generation_source": "architect_export",
         "structure_panel_name": "REPLACE / Root",
         "active_class": "replace__section--root",
         "instruction": "Create the approved root element and apply the approved class without a leading dot.",
