@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/checkpoint.schema.json",
+  "title": "EV4 Builder Checkpoint",
+  "type": "object",
+  "required": [
+    "schema",
+    "checkpoint_id",
+    "current_section",
+    "completed_elements",
+    "applied_classes",
+    "verified_settings",
+    "unconfirmed_settings",
+    "last_completed_action",
+    "next_pending_action"
+  ],
+  "properties": {
+    "schema": {
+      "const": "ev4-builder-checkpoint@0.1.0"
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_from": {
+      "enum": [
+        "user_confirmation",
+        "editor_screenshot",
+        "frontend_screenshot",
+        "diagnostic_evidence",
+        "manual_status_import",
+        "initial"
+      ]
+    },
+    "current_section": {
+      "type": ["string", "null"]
+    },
+    "current_handoff_or_context_package": {
+      "type": ["string", "null"]
+    },
+    "selected_candidate_id": {
+      "type": ["string", "null"]
+    },
+    "completed_elements": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "applied_classes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "verified_settings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "unconfirmed_settings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "active_warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "unresolved_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "last_completed_action": {
+      "type": ["string", "null"]
+    },
+    "next_pending_action": {
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": false
+}
