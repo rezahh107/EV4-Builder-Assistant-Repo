@@ -64,8 +64,9 @@ jobs:
         run: |
           for file in tests/invalid/*.json; do
             case "$file" in
-              tests/invalid/checkpoint_missing_id.json) continue ;;
-              tests/invalid/intake_result_missing_decision.json) continue ;;
+              tests/invalid/checkpoint_*.json) continue ;;
+              tests/invalid/intake_result_*.json) continue ;;
+              tests/invalid/session_state_*.json) continue ;;
             esac
 
             if npx --yes ajv-cli@5 validate \
@@ -116,21 +117,46 @@ jobs:
 
       - name: Validate intake result fixtures
         run: |
+          for file in tests/valid/intake_result_*.json; do
+            npx --yes ajv-cli@5 validate \
+              --spec=draft2020 \
+              --strict=false \
+              -s schemas/intake-result.schema.json \
+              -d "$file"
+          done
+
+          for file in tests/invalid/intake_result_*.json; do
+            if npx --yes ajv-cli@5 validate \
+              --spec=draft2020 \
+              --strict=false \
+              -s schemas/intake-result.schema.json \
+              -d "$file"; then
+              echo "Invalid intake result fixture unexpectedly passed validation: $file"
+              exit 1
+            else
+              echo "Invalid intake result fixture correctly failed validation: $file"
+            fi
+          done
+
+      - name: Validate session-state fixtures
+        run: |
           npx --yes ajv-cli@5 validate \
             --spec=draft2020 \
             --strict=false \
-            -s schemas/intake-result.schema.json \
-            -d tests/valid/intake_result_approved_with_optional_gaps.json
+            -s schemas/session-state.schema.json \
+            -r schemas/checkpoint.schema.json \
+            -d tests/valid/session_state_mode_state.json
 
           if npx --yes ajv-cli@5 validate \
             --spec=draft2020 \
             --strict=false \
-            -s schemas/intake-result.schema.json \
-            -d tests/invalid/intake_result_missing_decision.json; then
-            echo "Invalid intake result fixture unexpectedly passed validation."
+            -s schemas/session-state.schema.json \
+            -r schemas/checkpoint.schema.json \
+            -d tests/invalid/session_state_workflow_runtime_mismatch.json; then
+            echo "Invalid session-state fixture unexpectedly passed validation."
             exit 1
           else
-            echo "Invalid intake result fixture correctly failed validation."
+            echo "Invalid session-state fixture correctly failed validation."
           fi
 
       - name: Compile session-state schema
