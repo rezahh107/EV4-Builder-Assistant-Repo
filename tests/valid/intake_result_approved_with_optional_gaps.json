@@ -1,0 +1,27 @@
+{
+  "schema": "ev4-builder-intake-result@0.1.0",
+  "workflow_mode": "APPROVED_HANDOFF_MODE",
+  "runtime_state": "BUILD_ACTIVE",
+  "present_inputs": [
+    "Builder_Context_Package"
+  ],
+  "validated_inputs": [
+    "Builder_Context_Package"
+  ],
+  "blocking_missing_inputs": [],
+  "optional_missing_inputs": [
+    "reference_screenshot",
+    "elementor_structure_or_editor_screenshot"
+  ],
+  "conflicts": [],
+  "package_status": "approved_handoff",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "package_digest": null,
+  "decision": "approved_with_optional_gaps",
+  "eligible_workflow_mode": "APPROVED_HANDOFF_MODE",
+  "eligible_runtime_state": "BUILD_ACTIVE",
+  "guidance": [
+    "reference_screenshot is optional; continue with visible warning if visual evidence is missing.",
+    "current Elementor Structure Panel screenshot is optional unless a continuation claim requires checkpoint evidence."
+  ]
+}
