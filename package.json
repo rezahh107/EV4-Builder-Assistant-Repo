@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "validate:cross-field": "node scripts/validate-package.mjs tests/valid/builder_context_package.json && node scripts/validate-package.mjs examples/smart-home-connector/builder_context_package.json",
-    "validate:builder-context": "npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/builder-context-package.schema.json -d tests/valid/builder_context_package.json",
+    "validate:cross-field": "for file in tests/valid/builder_context_package*.json examples/smart-home-connector/builder_context_package.json; do node scripts/validate-package.mjs \"$file\"; done",
+    "validate:builder-context": "for file in tests/valid/builder_context_package*.json examples/smart-home-connector/builder_context_package.json; do npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/builder-context-package.schema.json -d \"$file\"; done",
     "validate:checkpoint": "npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/checkpoint.schema.json -d tests/valid/checkpoint.json",
     "validate:intake-result": "for file in tests/valid/intake_result_*.json; do npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/intake-result.schema.json -d \"$file\"; done && for file in tests/invalid/intake_result_*.json; do if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/intake-result.schema.json -d \"$file\"; then echo \"Invalid intake result unexpectedly passed: $file\"; exit 1; else echo \"Invalid intake result correctly failed: $file\"; fi; done",
     "validate:session-state": "npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -d tests/valid/session_state_mode_state.json && ! npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -d tests/invalid/session_state_workflow_runtime_mismatch.json"
