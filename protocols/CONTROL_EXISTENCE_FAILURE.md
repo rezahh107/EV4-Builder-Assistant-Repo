@@ -1,6 +1,6 @@
 # protocols/CONTROL_EXISTENCE_FAILURE
 
-Version: 0.1.0
+Version: 0.1.1
 Status: active_initial
 Purpose: handle missing or contradicted Elementor controls safely
 
@@ -20,18 +20,29 @@ This protocol activates when:
 
 ---
 
-## Required Response
+## Canonical Output Shape
+
+Control-existence failure must use the canonical `correction_response` envelope from `modes/CORRECTION_MODE.md`.
+
+Do not emit a separate top-level `control_existence_failure` object.
 
 ```yaml
-control_existence_failure:
-  issue_status: confirmed
-  unsupported_instruction:
-  current_interface_evidence:
-  affected_later_actions:
+correction_response:
+  correction_type: missing_control
+  issue_status: confirmed | provisional | insufficient_evidence
+  unsupported_or_disputed_instruction:
+  evidence:
+  affected_actions:
   still_valid_work:
   rollback_required:
-  verified_replacement_path:
-  wait_for_confirmation: true
+  smallest_verified_replacement_path:
+  confirmation_needed: true
+  subtype_details:
+    control_name:
+    current_interface_evidence:
+    control_evidence_label:
+    replacement_control_or_path:
+    version_confirmation_needed: yes/no
 ```
 
 ---
