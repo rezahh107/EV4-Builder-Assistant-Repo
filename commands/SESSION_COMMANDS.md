@@ -1,6 +1,6 @@
 # commands/SESSION_COMMANDS
 
-Version: 0.1.1
+Version: 0.1.2
 Status: active_initial
 Purpose: Persian control commands for the builder session
 
@@ -103,6 +103,26 @@ Verify the requested behavior using official Elementor V4+ sources when source a
 ### ریست
 
 Do not reset immediately. Ask reset scope first and state exactly what would be lost.
+
+Allowed reset scopes:
+
+```text
+full_session_reset
+checkpoint_only_reset
+class_map_reset
+not_confirmed
+```
+
+Scope meanings:
+
+```text
+full_session_reset = clears the full Builder Assistant session state, but does not change the approved Builder_Context_Package.
+checkpoint_only_reset = returns to the last verified checkpoint and discards only later unverified state.
+class_map_reset = re-checks approved class application status without changing architecture or class names.
+not_confirmed = no reset performed; user declined or scope is unclear.
+```
+
+If reset scope is unclear, ask the user to choose one of the allowed scopes. Do not reset automatically.
 
 ### خلاصه
 
