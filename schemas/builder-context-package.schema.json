@@ -12,6 +12,17 @@
         "Unverified element type"
       ],
       "description": "Elementor generation classification required to prevent V3/V4 panel-path drift. Use Unverified element type only when the package cannot prove generation and the Builder Assistant must request UI evidence before generation-sensitive edits."
+    },
+    "element_generation_source": {
+      "enum": [
+        "architect_export",
+        "builder_context_package",
+        "elementor_ui_screenshot",
+        "user_statement",
+        "versioned_documentation",
+        "unverified"
+      ],
+      "description": "Evidence/source for element_generation. Use unverified only with Unverified element type or when runtime evidence is explicitly missing."
     }
   },
   "type": "object",
@@ -38,29 +49,16 @@
     "builder_assistant_prompt_seed"
   ],
   "properties": {
-    "schema": {
-      "const": "ev4-builder-context-package@1.0.0"
-    },
-    "source_stage": {
-      "const": "/builder-feed-export"
-    },
-    "source_handoff_stage": {
-      "const": "/handoff-export"
-    },
-    "package_status": {
-      "enum": ["ready", "ready_with_visible_flags", "blocked"]
-    },
-    "selected_candidate_id": {
-      "type": "string",
-      "minLength": 1
-    },
+    "schema": { "const": "ev4-builder-context-package@1.0.0" },
+    "source_stage": { "const": "/builder-feed-export" },
+    "source_handoff_stage": { "const": "/handoff-export" },
+    "package_status": { "enum": ["ready", "ready_with_visible_flags", "blocked"] },
+    "selected_candidate_id": { "type": "string", "minLength": 1 },
     "selected_candidate_locked": {
       "enum": [true],
       "description": "Must always be true for a valid Builder_Context_Package. Invalid fixtures may intentionally set false to test assistant rejection behavior."
     },
-    "production_ready_allowed": {
-      "const": false
-    },
+    "production_ready_allowed": { "const": false },
     "source_payload_ledger": {
       "type": "array",
       "minItems": 1,
@@ -90,18 +88,16 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["node_id", "structure_label", "element_type", "element_generation", "role"],
+        "required": ["node_id", "structure_label", "element_type", "element_generation", "element_generation_source", "role"],
         "properties": {
           "node_id": { "type": "string", "minLength": 1 },
           "structure_label": { "type": "string", "minLength": 1 },
           "class_name": { "type": ["string", "null"] },
           "element_type": { "type": "string", "minLength": 1 },
           "element_generation": { "$ref": "#/$defs/element_generation" },
+          "element_generation_source": { "$ref": "#/$defs/element_generation_source" },
           "role": { "type": "string", "minLength": 1 },
-          "children": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
+          "children": { "type": "array", "items": { "type": "string" } }
         },
         "additionalProperties": false
       }
@@ -125,9 +121,7 @@
           "related_structure_label": { "type": "string", "minLength": 1 },
           "elementor_node_or_element": { "type": "string", "minLength": 1 },
           "when_to_create": { "type": "string", "minLength": 1 },
-          "reusable_or_one_off": {
-            "enum": ["reusable", "one_off", "section_scoped", "unknown"]
-          },
+          "reusable_or_one_off": { "enum": ["reusable", "one_off", "section_scoped", "unknown"] },
           "purpose": { "type": "string", "minLength": 1 },
           "css_needed_now": { "enum": ["yes", "no", "later", "unknown"] },
           "notes_or_unknowns": { "type": "string" }
@@ -147,10 +141,7 @@
           "recommended_widget_or_element": { "type": "string", "minLength": 1 },
           "editable_content": { "type": "string" },
           "why_this_mapping": { "type": "string", "minLength": 1 },
-          "unknowns": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
+          "unknowns": { "type": "array", "items": { "type": "string" } }
         },
         "additionalProperties": false
       }
@@ -221,29 +212,16 @@
       "type": "object",
       "required": ["unresolved_breakpoints", "connector_behavior_status", "meaningful_content_visibility_rule"],
       "properties": {
-        "unresolved_breakpoints": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
+        "unresolved_breakpoints": { "type": "array", "items": { "type": "string" } },
         "connector_behavior_status": { "type": "string" },
         "meaningful_content_visibility_rule": { "type": "string" },
         "notes": { "type": "string" }
       },
       "additionalProperties": false
     },
-    "audit_flags_to_preserve": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "unknowns_to_preserve": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "forbidden_work": {
-      "type": "array",
-      "minItems": 1,
-      "items": { "type": "string" }
-    },
+    "audit_flags_to_preserve": { "type": "array", "items": { "type": "string" } },
+    "unknowns_to_preserve": { "type": "array", "items": { "type": "string" } },
+    "forbidden_work": { "type": "array", "minItems": 1, "items": { "type": "string" } },
     "first_builder_batch": {
       "type": "object",
       "required": ["max_actions", "actions"],
@@ -255,20 +233,18 @@
           "maxItems": 6,
           "items": {
             "type": "object",
-            "required": ["action_id", "target_element", "element_generation", "instruction", "expected_result"],
+            "required": ["action_id", "target_element", "element_generation", "element_generation_source", "instruction", "expected_result"],
             "properties": {
               "action_id": { "type": "string", "minLength": 1 },
               "target_element": { "type": "string", "minLength": 1 },
               "parent": { "type": "string" },
               "element_type": { "type": "string" },
               "element_generation": { "$ref": "#/$defs/element_generation" },
+              "element_generation_source": { "$ref": "#/$defs/element_generation_source" },
               "structure_panel_name": { "type": "string" },
               "active_class": { "type": "string" },
               "instruction": { "type": "string", "minLength": 1 },
-              "properties_not_to_change": {
-                "type": "array",
-                "items": { "type": "string" }
-              },
+              "properties_not_to_change": { "type": "array", "items": { "type": "string" } },
               "expected_result": { "type": "string", "minLength": 1 }
             },
             "additionalProperties": false
