@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
-Version: 0.1.1
-Status: review_fixes_applied
+Version: 0.1.2
+Status: schema_generation_and_mode_fixes_applied
 Date: 2026-06-27
 
 ---
@@ -11,15 +11,15 @@ Date: 2026-06-27
 ```yaml
 project_status:
   repo_initialized: true
-  README: active
+  README: active_v0.1.2
   PROJECT_INSTRUCTIONS: active_initial_v0.1.1
   MASTER_PROMPT: active_initial_v0.1.1
   input_contracts: active_initial_v0.1.1
   core_runtime_files: active_initial
-  modes: partial_initial_v0.1.1
-  protocols: partial_initial_v0.1.1
-  commands: active_initial_v0.1.1
-  schemas: initial_with_builder_context_package
+  modes: all_initial_modes_present
+  protocols: partial_initial_v0.1.2
+  commands: active_initial_v0.1.2
+  schemas: initial_with_element_generation
   examples: pending
   tests: pending
   production_ready: false
@@ -37,6 +37,7 @@ core/SESSION_STATE_MACHINE.md
 core/LIVE_INTERFACE_PRECEDENCE.md
 modes/APPROVED_HANDOFF_MODE.md
 modes/CORRECTION_MODE.md
+modes/FRESH_IMAGE_MODE.md
 protocols/CONTROL_EXISTENCE_FAILURE.md
 commands/SESSION_COMMANDS.md
 protocols/PER_ELEMENT_INSTRUCTION.md
@@ -70,6 +71,15 @@ review_fixes:
     status: added
   correction_output_shapes:
     status: unified_under_correction_response
+  element_generation_schema_gap:
+    status: fixed
+    note: approved_structure_tree nodes and first_builder_batch actions now require element_generation
+  widget_mapping_table_min_items:
+    status: fixed
+  reset_scope_enum:
+    status: added
+  fresh_image_mode:
+    status: added_fallback_only
 ```
 
 ---
@@ -87,12 +97,12 @@ It executes approved handoffs interactively in Elementor.
 ## Pending Next Files
 
 ```text
-modes/FRESH_IMAGE_MODE.md
 examples/_template/
 examples/smart-home-connector/
 tests/valid/builder_context_package.json
 tests/invalid/missing_selected_candidate.json
 docs/REPOSITORY_GUIDE.md final expansion
+.github/workflows/schema-validation.yml after tests exist
 ```
 
 ---
@@ -104,6 +114,7 @@ validation_state:
   markdown_written: true
   schema_stubs_written: true
   builder_context_package_schema_written: true
+  element_generation_schema_binding: true
   schema_ci: not_configured
   real_builder_session_test: not_run
   smart_home_example: pending
