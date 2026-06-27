@@ -1,7 +1,7 @@
 # REPOSITORY_GUIDE — EV4 Builder Assistant
 
-Version: 0.1.0
-Status: initial_living_guide
+Version: 0.1.1
+Status: initial_living_guide_review_fixed
 Date: 2026-06-27
 
 ---
@@ -66,7 +66,7 @@ Next Action Batch
 
 The compact always-on instruction layer for the ChatGPT Project.
 
-It should stay concise and under project instruction limits.
+It should stay concise and under project instruction limits. It points to `core/MASTER_PROMPT.md §3` for the canonical `Data vs Instruction Rule`.
 
 ### `core/`
 
@@ -120,9 +120,10 @@ SESSION_COMMANDS.md
 
 ### `schemas/`
 
-Machine-checkable state and checkpoint structures.
+Machine-checkable package, state, and checkpoint structures.
 
 ```text
+builder-context-package.schema.json
 session-state.schema.json
 checkpoint.schema.json
 ```
@@ -154,6 +155,19 @@ The first runtime foundation was created in this order:
 18. STATUS.md
 19. CHANGELOG.md
 20. docs/REPOSITORY_GUIDE.md
+```
+
+---
+
+## What v0.1.1 Fixed
+
+```text
+1. Added schemas/builder-context-package.schema.json.
+2. Clarified max_actions_per_turn is intentionally bounded to 1..6.
+3. Added one-step to six-step commands to SESSION_COMMANDS.
+4. Reduced Data vs Instruction duplication by making MASTER_PROMPT §3 canonical.
+5. Defined Unverified element type behavior.
+6. Unified correction output shapes under correction_response.
 ```
 
 ---
@@ -215,6 +229,19 @@ Builder_Context_Package
 
 ---
 
+## Runtime Decisions To Preserve
+
+```text
+- max_actions_per_turn stays bounded to 1..6;
+- Data vs Instruction Rule canonical source is MASTER_PROMPT §3;
+- control-existence failure uses correction_response, not a separate top-level shape;
+- Unverified element type stops generation-sensitive edits;
+- FRESH_IMAGE_MODE must remain fallback-only;
+- Builder Assistant must not become Architect.
+```
+
+---
+
 ## What Not To Do Later
 
 Do not turn this repo into another EV4 Architect pipeline.
@@ -240,7 +267,6 @@ v0.2.0 — Example and Validation Seed
 Required work:
 
 ```text
-- add schemas/builder-context-package.schema.json;
 - add examples/_template/;
 - add examples/smart-home-connector/;
 - add tests/valid/builder_context_package.json;
