@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/session-state.schema.json",
   "title": "EV4 Builder Session State",
-  "description": "Session state for EV4 Builder Assistant. max_actions_per_turn is intentionally bounded to 1..5 by STEP_SIZE_CONTRACT.",
+  "description": "Session state for EV4 Builder Assistant. Patch 1 adds workflow_mode/runtime_state separation while preserving legacy current_state compatibility. max_actions_per_turn is intentionally bounded to 1..5 by STEP_SIZE_CONTRACT.",
   "type": "object",
   "required": [
     "schema",
@@ -15,8 +15,39 @@
     "schema": {
       "const": "ev4-builder-session-state@0.1.0"
     },
-    "current_state": {
+    "workflow_mode": {
+      "description": "Preferred Patch 1 workflow enum. It answers which workflow is active.",
       "enum": [
+        "START_INTAKE_MODE",
+        "APPROVED_HANDOFF_MODE",
+        "FRESH_IMAGE_MODE_LIMITED"
+      ]
+    },
+    "runtime_state": {
+      "description": "Preferred Patch 1 runtime enum. It answers what is happening now inside the workflow.",
+      "enum": [
+        "INTAKE_WAITING",
+        "INTAKE_VALIDATING",
+        "BUILD_ACTIVE",
+        "WAITING_FOR_CONFIRMATION",
+        "EVIDENCE_REQUIRED",
+        "CORRECTION",
+        "REVIEW_ONLY",
+        "PAUSED",
+        "COMPLETED"
+      ]
+    },
+    "state_capsule": {
+      "type": "string",
+      "maxLength": 180,
+      "pattern": "^\\[STATE workflow=(START_INTAKE_MODE|APPROVED_HANDOFF_MODE|FRESH_IMAGE_MODE_LIMITED) state=(INTAKE_WAITING|INTAKE_VALIDATING|BUILD_ACTIVE|WAITING_FOR_CONFIRMATION|EVIDENCE_REQUIRED|CORRECTION|REVIEW_ONLY|PAUSED|COMPLETED)( cp=[A-Za-z0-9._:-]+)?( batch=[A-Za-z0-9._:-]+)? risk=(low|medium|high|blocked)\\]$",
+      "description": "Optional one-line public state capsule for builder-session replies where state matters. It is not a checkpoint replacement."
+    },
+    "current_state": {
+      "description": "Legacy field retained for backward compatibility. Prefer runtime_state for new data. CORRECTION_MODE maps to CORRECTION; REVIEW_MODE maps to REVIEW_ONLY.",
+      "enum": [
+        "INTAKE_WAITING",
+        "INTAKE_VALIDATING",
         "BUILD_ACTIVE",
         "PAUSED",
         "QUESTION_MODE",
@@ -24,6 +55,8 @@
         "EVIDENCE_REQUIRED",
         "CORRECTION_MODE",
         "REVIEW_MODE",
+        "CORRECTION",
+        "REVIEW_ONLY",
         "COMPLETED"
       ]
     },
