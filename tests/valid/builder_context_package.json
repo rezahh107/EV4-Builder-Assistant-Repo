@@ -164,6 +164,10 @@
       }
     ]
   },
-  "confirmation_sentence": "Root and Relative Stage are created.",
-  "builder_assistant_prompt_seed": "Start in APPROVED_HANDOFF_MODE. Use this package as source of truth. Do not redesign, rescore, or claim production readiness."
+  "confirmation_request": {
+    "confirmation_id": "CONFIRM-BATCH-001",
+    "confirmed_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
+    "expected_user_token": "تایید BATCH-001",
+    "template_id": "standard_batch_confirmation"
+  }
 }
