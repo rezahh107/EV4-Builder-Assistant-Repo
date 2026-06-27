@@ -32,6 +32,7 @@
       "class_name": "smart-home__section--root",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "root",
       "children": ["n-002"]
     },
@@ -41,6 +42,7 @@
       "class_name": "smart-home__stage--relative",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "relative_stage",
       "children": ["n-003", "n-031"]
     },
@@ -50,6 +52,7 @@
       "class_name": "smart-home__content-layer--primary",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "content_layer",
       "children": ["n-004", "n-029"]
     },
@@ -59,6 +62,7 @@
       "class_name": "smart-home__feature-grid--primary",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "feature_cards_group",
       "children": ["n-005"]
     },
@@ -68,6 +72,7 @@
       "class_name": "smart-home__feature-card--default",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "feature_card_repeated_pattern",
       "children": ["n-006", "n-007", "n-008"]
     },
@@ -77,6 +82,7 @@
       "class_name": "smart-home__card-icon--default",
       "element_type": "Icon or Image Widget",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "feature_card_icon",
       "children": []
     },
@@ -86,6 +92,7 @@
       "class_name": "smart-home__card-title--default",
       "element_type": "Heading Widget",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "feature_card_title",
       "children": []
     },
@@ -95,6 +102,7 @@
       "class_name": "smart-home__card-text--default",
       "element_type": "Text Editor Widget",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "feature_card_subtitle",
       "children": []
     },
@@ -104,6 +112,7 @@
       "class_name": "smart-home__visual-core--house",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "visual_core",
       "children": ["n-030"]
     },
@@ -113,6 +122,7 @@
       "class_name": "smart-home__house-asset--core",
       "element_type": "Image or SVG Widget",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "house_asset",
       "children": []
     },
@@ -122,6 +132,7 @@
       "class_name": "smart-home__connector-layer--decorative",
       "element_type": "Container",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "decorative_connector_layer",
       "children": ["n-032"]
     },
@@ -131,6 +142,7 @@
       "class_name": "smart-home__connector-lines--decorative",
       "element_type": "SVG Widget",
       "element_generation": "Shared compatibility element",
+      "element_generation_source": "architect_export",
       "role": "decorative_connector_lines",
       "children": []
     }
@@ -185,6 +197,76 @@
       "purpose": "shared repeated feature card styling hook",
       "css_needed_now": "no",
       "notes_or_unknowns": "Duplicate only after one card pattern is confirmed."
+    },
+    {
+      "class_name": "smart-home__card-icon--default",
+      "related_structure_label": "Feature Card 01 / Icon",
+      "elementor_node_or_element": "n-006",
+      "when_to_create": "when creating card icon",
+      "reusable_or_one_off": "reusable",
+      "purpose": "shared icon asset hook",
+      "css_needed_now": "no",
+      "notes_or_unknowns": "Icon semantics unresolved."
+    },
+    {
+      "class_name": "smart-home__card-title--default",
+      "related_structure_label": "Feature Card 01 / Title",
+      "elementor_node_or_element": "n-007",
+      "when_to_create": "when creating card title",
+      "reusable_or_one_off": "reusable",
+      "purpose": "editable card title text hook",
+      "css_needed_now": "no",
+      "notes_or_unknowns": "Do not flatten to SVG/image/HTML."
+    },
+    {
+      "class_name": "smart-home__card-text--default",
+      "related_structure_label": "Feature Card 01 / Subtitle",
+      "elementor_node_or_element": "n-008",
+      "when_to_create": "when creating card subtitle",
+      "reusable_or_one_off": "reusable",
+      "purpose": "editable card subtitle text hook",
+      "css_needed_now": "no",
+      "notes_or_unknowns": "Do not flatten to SVG/image/HTML."
+    },
+    {
+      "class_name": "smart-home__visual-core--house",
+      "related_structure_label": "Smart Home Section / Visual Core",
+      "elementor_node_or_element": "n-029",
+      "when_to_create": "when creating visual core Container",
+      "reusable_or_one_off": "section_scoped",
+      "purpose": "central visual core wrapper",
+      "css_needed_now": "no",
+      "notes_or_unknowns": "House accessibility semantics unresolved."
+    },
+    {
+      "class_name": "smart-home__house-asset--core",
+      "related_structure_label": "Visual Core / House Asset",
+      "elementor_node_or_element": "n-030",
+      "when_to_create": "when adding house asset",
+      "reusable_or_one_off": "one_off",
+      "purpose": "central house asset hook",
+      "css_needed_now": "no",
+      "notes_or_unknowns": "Real asset file not included in example."
+    },
+    {
+      "class_name": "smart-home__connector-layer--decorative",
+      "related_structure_label": "Smart Home Section / Decorative Connector Layer",
+      "elementor_node_or_element": "n-031",
+      "when_to_create": "when creating decorative connector layer",
+      "reusable_or_one_off": "section_scoped",
+      "purpose": "decorative connector layer boundary",
+      "css_needed_now": "later",
+      "notes_or_unknowns": "Connector behavior unresolved on responsive."
+    },
+    {
+      "class_name": "smart-home__connector-lines--decorative",
+      "related_structure_label": "Connector Layer / Association Lines",
+      "elementor_node_or_element": "n-032",
+      "when_to_create": "when adding decorative connector SVG",
+      "reusable_or_one_off": "one_off",
+      "purpose": "decorative association lines hook",
+      "css_needed_now": "later",
+      "notes_or_unknowns": "Must not contain meaningful text."
     }
   ],
   "widget_mapping_table": [
@@ -287,6 +369,7 @@
         "parent": "page root",
         "element_type": "Container",
         "element_generation": "Shared compatibility element",
+        "element_generation_source": "architect_export",
         "structure_panel_name": "Smart Home Section / Root",
         "active_class": "smart-home__section--root",
         "instruction": "Create the root Container and apply class smart-home__section--root without a leading dot.",
@@ -299,6 +382,7 @@
         "parent": "Smart Home Section / Root",
         "element_type": "Container",
         "element_generation": "Shared compatibility element",
+        "element_generation_source": "architect_export",
         "structure_panel_name": "Smart Home Section / Relative Stage",
         "active_class": "smart-home__stage--relative",
         "instruction": "Create the relative stage Container inside root and apply class smart-home__stage--relative without a leading dot.",
@@ -311,6 +395,7 @@
         "parent": "Smart Home Section / Relative Stage",
         "element_type": "Container",
         "element_generation": "Shared compatibility element",
+        "element_generation_source": "architect_export",
         "structure_panel_name": "Smart Home Section / Content Layer",
         "active_class": "smart-home__content-layer--primary",
         "instruction": "Create the content layer Container inside relative stage and apply class smart-home__content-layer--primary without a leading dot.",
