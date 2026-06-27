@@ -1,0 +1,21 @@
+{
+  "schema": "ev4-builder-intake-result@0.1.0",
+  "workflow_mode": "APPROVED_HANDOFF_MODE",
+  "runtime_state": "BUILD_ACTIVE",
+  "present_inputs": [
+    "reference_screenshot"
+  ],
+  "validated_inputs": [],
+  "blocking_missing_inputs": [],
+  "optional_missing_inputs": [],
+  "conflicts": [],
+  "package_status": null,
+  "selected_candidate_id": null,
+  "package_digest": null,
+  "decision": "approved",
+  "eligible_workflow_mode": "APPROVED_HANDOFF_MODE",
+  "eligible_runtime_state": "BUILD_ACTIVE",
+  "guidance": [
+    "Invalid: missing Builder_Context_Package cannot be approved."
+  ]
+}
