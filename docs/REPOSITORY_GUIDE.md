@@ -1,7 +1,7 @@
 # REPOSITORY_GUIDE — EV4 Builder Assistant
 
-Version: 0.1.2
-Status: initial_living_guide_schema_and_mode_fixed
+Version: 0.2.0
+Status: example_and_validation_seed_added
 Date: 2026-06-27
 
 ---
@@ -10,7 +10,7 @@ Date: 2026-06-27
 
 This guide explains what this repository is, why it exists, how the files relate to each other, and how to continue development later without losing the original design intent.
 
-This is a living guide. It must be expanded again after examples, tests, schema CI, and real builder-session validation are added.
+This is a living guide. It must be expanded again after CI results and real builder-session validation are available.
 
 ---
 
@@ -64,9 +64,7 @@ Next Action Batch
 
 ### `PROJECT_INSTRUCTIONS.md`
 
-The compact always-on instruction layer for the ChatGPT Project.
-
-It should stay concise and under project instruction limits. It points to `core/MASTER_PROMPT.md §3` for the canonical `Data vs Instruction Rule`.
+Compact always-on instruction layer for the ChatGPT Project.
 
 ### `core/`
 
@@ -130,97 +128,109 @@ session-state.schema.json
 checkpoint.schema.json
 ```
 
-`builder-context-package.schema.json` now requires `element_generation` in both:
+### `examples/`
+
+Reusable example material.
 
 ```text
-approved_structure_tree[]
-first_builder_batch.actions[]
+examples/_template/
+examples/smart-home-connector/
+```
+
+### `tests/`
+
+Schema validation fixtures.
+
+```text
+tests/valid/builder_context_package.json
+tests/invalid/missing_selected_candidate.json
+```
+
+### `.github/workflows/`
+
+Automation for schema validation.
+
+```text
+schema-validation.yml
 ```
 
 ---
 
-## How We Built v0.1.0
+## How We Built The Repo
 
-The first runtime foundation was created in this order:
+### v0.1.0
+
+Created the initial runtime foundation:
 
 ```text
-1. PROJECT_INSTRUCTIONS.md
-2. core/MASTER_PROMPT.md
-3. input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
-4. core/SESSION_STATE_MACHINE.md
-5. core/LIVE_INTERFACE_PRECEDENCE.md
-6. modes/APPROVED_HANDOFF_MODE.md
-7. modes/CORRECTION_MODE.md
-8. protocols/CONTROL_EXISTENCE_FAILURE.md
-9. commands/SESSION_COMMANDS.md
-10. protocols/PER_ELEMENT_INSTRUCTION.md
-11. protocols/CLASS_APPLICATION_SAFETY.md
-12. protocols/COMPLETION_GATE.md
-13. protocols/STEP_SIZE_CONTRACT.md
-14. protocols/V3_V4_SEPARATION_GUARD.md
-15. protocols/LAYOUT_COMPLETENESS_CHECKLIST.md
-16. schemas/session-state.schema.json
-17. schemas/checkpoint.schema.json
-18. STATUS.md
-19. CHANGELOG.md
-20. docs/REPOSITORY_GUIDE.md
+PROJECT_INSTRUCTIONS.md
+core/MASTER_PROMPT.md
+input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
+core/SESSION_STATE_MACHINE.md
+core/LIVE_INTERFACE_PRECEDENCE.md
+modes/APPROVED_HANDOFF_MODE.md
+modes/CORRECTION_MODE.md
+protocols/*
+schemas/session-state.schema.json
+schemas/checkpoint.schema.json
+```
+
+### v0.1.1
+
+Fixed review issues:
+
+```text
+builder-context-package.schema.json
+bounded max_actions_per_turn
+session action-count commands
+canonical Data vs Instruction Rule
+Unverified element type behavior
+unified correction_response
+```
+
+### v0.1.2
+
+Fixed schema and mode gaps:
+
+```text
+element_generation in approved_structure_tree
+element_generation in first_builder_batch.actions
+widget_mapping_table minItems: 1
+reset scope enum
+FRESH_IMAGE_MODE.md fallback-only
+```
+
+### v0.2.0
+
+Added examples and validation seed:
+
+```text
+examples/_template/
+examples/smart-home-connector/
+tests/valid/builder_context_package.json
+tests/invalid/missing_selected_candidate.json
+.github/workflows/schema-validation.yml
 ```
 
 ---
 
-## What v0.1.1 Fixed
+## Schema Validation
+
+The workflow validates:
 
 ```text
-1. Added schemas/builder-context-package.schema.json.
-2. Clarified max_actions_per_turn is intentionally bounded to 1..6.
-3. Added one-step to six-step commands to SESSION_COMMANDS.
-4. Reduced Data vs Instruction duplication by making MASTER_PROMPT §3 canonical.
-5. Defined Unverified element type behavior.
-6. Unified correction output shapes under correction_response.
+1. valid Builder_Context_Package fixture passes.
+2. invalid missing_selected_candidate fixture fails.
+3. session-state.schema.json compiles with checkpoint.schema.json.
 ```
 
----
-
-## What v0.1.2 Fixed
+Workflow file:
 
 ```text
-1. Added element_generation to approved_structure_tree nodes.
-2. Added element_generation to first_builder_batch actions.
-3. Added minItems: 1 to widget_mapping_table.
-4. Changed selected_candidate_locked from const true to enum [true] with documentation.
-5. Added reset scope enum.
-6. Added FRESH_IMAGE_MODE.md as fallback-only mode.
+.github/workflows/schema-validation.yml
 ```
 
----
-
-## Design Principles Used
-
-The repository follows these principles:
-
-```text
-Prompt = Task + Context + Constraints + Format + Validation
-```
-
-```text
-Reliable Output = Prompt + Data + Tools + Validation + Human Review
-```
-
-Runtime behavior is designed with:
-
-```text
-- explicit role boundary;
-- data-vs-instruction separation;
-- forbidden work list;
-- stop conditions;
-- checkpointing;
-- correction mode;
-- small reversible steps;
-- evidence labels;
-- completion gate instead of over-claiming;
-- V3/V4 generation classification;
-- schema-backed Builder_Context_Package validation.
-```
+The workflow uses `ajv-cli` with Draft 2020 support.
 
 ---
 
@@ -252,6 +262,13 @@ Builder_Context_Package
 + request to begin interactive Elementor build
 ```
 
+For Smart Home Connector, use:
+
+```text
+examples/smart-home-connector/start_session_prompt.md
+examples/smart-home-connector/builder_context_package.json
+```
+
 ---
 
 ## Runtime Decisions To Preserve
@@ -263,7 +280,8 @@ Builder_Context_Package
 - Unverified element type stops generation-sensitive edits;
 - element_generation must be carried by the package where possible;
 - FRESH_IMAGE_MODE must remain fallback-only;
-- Builder Assistant must not become Architect.
+- Builder Assistant must not become Architect;
+- valid/invalid fixtures must stay aligned with schema changes.
 ```
 
 ---
@@ -287,19 +305,17 @@ Do not claim production readiness from Builder Assistant completion alone.
 Recommended next milestone:
 
 ```text
-v0.2.0 — Example and Validation Seed
+v0.2.1 — CI Repair If Needed
 ```
 
 Required work:
 
 ```text
-- add examples/_template/;
-- add examples/smart-home-connector/;
-- add tests/valid/builder_context_package.json;
-- add tests/invalid/missing_selected_candidate.json;
-- add schema validation workflow after fixtures exist;
-- update README and STATUS;
-- run a real Builder_Context_Package through the assistant prompt manually.
+- watch GitHub Actions result;
+- fix schema/workflow/fixtures if CI fails;
+- run a manual Smart Home Builder Assistant session;
+- record observed issues in examples/smart-home-connector/notes.md;
+- expand this guide after real execution evidence.
 ```
 
 ---
@@ -318,5 +334,7 @@ Before considering this repo stable, create a full final guide that includes:
 - correction workflow;
 - checkpoint examples;
 - completion report example;
-- what to hand off to EV4 Responsive Architect.
+- what to hand off to EV4 Responsive Architect;
+- CI validation workflow behavior;
+- real builder-session lessons.
 ```
