@@ -123,6 +123,35 @@
       "type": "array",
       "items": { "$ref": "#/$defs/input_name" },
       "uniqueItems": true
+    },
+    "has_builder_context_package": {
+      "contains": { "const": "Builder_Context_Package" }
+    },
+    "approved_runtime_route": {
+      "properties": {
+        "workflow_mode": { "const": "APPROVED_HANDOFF_MODE" },
+        "runtime_state": { "const": "BUILD_ACTIVE" },
+        "eligible_workflow_mode": { "const": "APPROVED_HANDOFF_MODE" },
+        "eligible_runtime_state": { "const": "BUILD_ACTIVE" }
+      }
+    },
+    "blocked_runtime_route": {
+      "properties": {
+        "workflow_mode": { "const": "START_INTAKE_MODE" },
+        "runtime_state": { "const": "EVIDENCE_REQUIRED" },
+        "eligible_workflow_mode": { "const": "START_INTAKE_MODE" },
+        "eligible_runtime_state": { "const": "EVIDENCE_REQUIRED" }
+      }
+    },
+    "valid_approved_package_fields": {
+      "properties": {
+        "present_inputs": { "$ref": "#/$defs/has_builder_context_package" },
+        "validated_inputs": { "$ref": "#/$defs/has_builder_context_package" },
+        "blocking_missing_inputs": { "maxItems": 0 },
+        "conflicts": { "maxItems": 0 },
+        "package_status": { "type": "string", "minLength": 1 },
+        "selected_candidate_id": { "type": "string", "minLength": 1 }
+      }
     }
   },
   "allOf": [
@@ -130,9 +159,7 @@
       "if": {
         "properties": {
           "present_inputs": {
-            "not": {
-              "contains": { "const": "Builder_Context_Package" }
-            }
+            "not": { "$ref": "#/$defs/has_builder_context_package" }
           }
         },
         "required": ["present_inputs"]
@@ -140,8 +167,11 @@
       "then": {
         "properties": {
           "decision": { "const": "blocked_missing_input" },
+          "blocking_missing_inputs": { "$ref": "#/$defs/has_builder_context_package" },
           "eligible_workflow_mode": { "const": "START_INTAKE_MODE" },
-          "eligible_runtime_state": { "const": "EVIDENCE_REQUIRED" }
+          "eligible_runtime_state": { "const": "EVIDENCE_REQUIRED" },
+          "workflow_mode": { "const": "START_INTAKE_MODE" },
+          "runtime_state": { "const": "EVIDENCE_REQUIRED" }
         }
       }
     },
@@ -151,11 +181,11 @@
         "required": ["decision"]
       },
       "then": {
-        "properties": {
-          "blocking_missing_inputs": { "maxItems": 0 },
-          "eligible_workflow_mode": { "const": "APPROVED_HANDOFF_MODE" },
-          "eligible_runtime_state": { "const": "BUILD_ACTIVE" }
-        }
+        "allOf": [
+          { "$ref": "#/$defs/approved_runtime_route" },
+          { "$ref": "#/$defs/valid_approved_package_fields" },
+          { "properties": { "optional_missing_inputs": { "maxItems": 0 } } }
+        ]
       }
     },
     {
@@ -164,12 +194,11 @@
         "required": ["decision"]
       },
       "then": {
-        "properties": {
-          "blocking_missing_inputs": { "maxItems": 0 },
-          "optional_missing_inputs": { "minItems": 1 },
-          "eligible_workflow_mode": { "const": "APPROVED_HANDOFF_MODE" },
-          "eligible_runtime_state": { "const": "BUILD_ACTIVE" }
-        }
+        "allOf": [
+          { "$ref": "#/$defs/approved_runtime_route" },
+          { "$ref": "#/$defs/valid_approved_package_fields" },
+          { "properties": { "optional_missing_inputs": { "minItems": 1 } } }
+        ]
       }
     },
     {
@@ -178,28 +207,70 @@
         "required": ["decision"]
       },
       "then": {
-        "properties": {
-          "blocking_missing_inputs": { "minItems": 1 },
-          "eligible_workflow_mode": { "const": "START_INTAKE_MODE" },
-          "eligible_runtime_state": { "const": "EVIDENCE_REQUIRED" }
-        }
+        "allOf": [
+          { "$ref": "#/$defs/blocked_runtime_route" },
+          { "properties": { "blocking_missing_inputs": { "minItems": 1 } } }
+        ]
       }
     },
     {
       "if": {
-        "properties": {
-          "blocking_missing_inputs": {
-            "contains": { "const": "reference_screenshot" },
-            "maxItems": 1
-          }
-        },
-        "required": ["blocking_missing_inputs"]
+        "properties": { "decision": { "const": "blocked_invalid_package" } },
+        "required": ["decision"]
       },
       "then": {
-        "not": {
-          "properties": { "decision": { "const": "blocked_missing_input" } },
-          "required": ["decision"]
-        }
+        "allOf": [
+          { "$ref": "#/$defs/blocked_runtime_route" },
+          { "properties": { "present_inputs": { "$ref": "#/$defs/has_builder_context_package" } } }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision": { "const": "blocked_conflict" } },
+        "required": ["decision"]
+      },
+      "then": {
+        "allOf": [
+          { "$ref": "#/$defs/blocked_runtime_route" },
+          { "properties": { "conflicts": { "minItems": 1 } } }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision": { "const": "blocked_package_status" } },
+        "required": ["decision"]
+      },
+      "then": {
+        "allOf": [
+          { "$ref": "#/$defs/blocked_runtime_route" },
+          { "properties": { "package_status": { "type": "string", "minLength": 1 } } }
+        ]
+      }
+    },
+    {
+      "not": {
+        "properties": {
+          "decision": { "const": "blocked_missing_input" },
+          "blocking_missing_inputs": {
+            "maxItems": 1,
+            "contains": { "const": "reference_screenshot" }
+          }
+        },
+        "required": ["decision", "blocking_missing_inputs"]
+      }
+    },
+    {
+      "not": {
+        "properties": {
+          "decision": { "const": "blocked_missing_input" },
+          "blocking_missing_inputs": {
+            "maxItems": 1,
+            "contains": { "const": "elementor_structure_or_editor_screenshot" }
+          }
+        },
+        "required": ["decision", "blocking_missing_inputs"]
       }
     }
   ],
