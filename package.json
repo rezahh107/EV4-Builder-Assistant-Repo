@@ -7,6 +7,6 @@
     "validate:cross-field": "node scripts/validate-package.mjs tests/valid/builder_context_package.json && node scripts/validate-package.mjs examples/smart-home-connector/builder_context_package.json",
     "validate:builder-context": "npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/builder-context-package.schema.json -d tests/valid/builder_context_package.json",
     "validate:checkpoint": "npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/checkpoint.schema.json -d tests/valid/checkpoint.json",
-    "validate:intake-result": "npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/intake-result.schema.json -d tests/valid/intake_result_approved_with_optional_gaps.json"
+    "validate:intake-result": "for file in tests/valid/intake_result_*.json; do npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/intake-result.schema.json -d \"$file\"; done && for file in tests/invalid/intake_result_*.json; do if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/intake-result.schema.json -d \"$file\"; then echo \"Invalid intake result unexpectedly passed: $file\"; exit 1; else echo \"Invalid intake result correctly failed: $file\"; fi; done"
   }
 }
