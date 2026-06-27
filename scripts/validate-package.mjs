@@ -14,6 +14,7 @@ const resolved = path.resolve(filePath);
 const pkg = JSON.parse(fs.readFileSync(resolved, 'utf8'));
 const errors = [];
 const blockingDiagnostics = [];
+const EXECUTABLE_PACKAGE_STATUSES = new Set(['ready', 'ready_with_visible_flags']);
 
 const DIAGNOSTICS = {
   BLOCKED_PACKAGE_STATUS: ['EV4-PKG-001', 'BLOCKED_PACKAGE_STATUS'],
@@ -27,6 +28,7 @@ const DIAGNOSTICS = {
   GENERATION_SOURCE_MISMATCH: ['EV4-PKG-009', 'GENERATION_SOURCE_MISMATCH'],
   INPUT_AUTHORIZATION_MISMATCH: ['EV4-PKG-010', 'INPUT_AUTHORIZATION_MISMATCH'],
   PACKAGE_DIGEST_MISMATCH: ['EV4-PKG-011', 'PACKAGE_DIGEST_MISMATCH'],
+  PACKAGE_STATUS_NOT_EXECUTABLE: ['EV4-PKG-012', 'PACKAGE_STATUS_NOT_EXECUTABLE'],
   DUPLICATE_ID: ['EV4-PKG-101', 'DUPLICATE_ID'],
   CHILD_NODE_UNKNOWN: ['EV4-PKG-102', 'CHILD_NODE_UNKNOWN'],
   CLASS_TARGET_UNKNOWN: ['EV4-PKG-103', 'CLASS_TARGET_UNKNOWN'],
@@ -90,11 +92,15 @@ function expectedDecision(value, diagnostics) {
     return 'blocked_package_status';
   }
 
+  if (!EXECUTABLE_PACKAGE_STATUSES.has(value.package_status)) {
+    return 'blocked_invalid_package';
+  }
+
   if (diagnostics.some((diag) => ['EV4-PKG-004', 'EV4-PKG-006', 'EV4-PKG-007', 'EV4-PKG-008'].includes(diag.id))) {
     return 'blocked_missing_input';
   }
 
-  if (diagnostics.some((diag) => ['EV4-PKG-002', 'EV4-PKG-003'].includes(diag.id))) {
+  if (diagnostics.some((diag) => ['EV4-PKG-002', 'EV4-PKG-003', 'EV4-PKG-012'].includes(diag.id))) {
     return 'blocked_invalid_package';
   }
 
@@ -134,6 +140,11 @@ if (pkg.package_status === 'blocked') {
   fail(
     DIAGNOSTICS.BLOCKED_PACKAGE_STATUS,
     'package_status blocked cannot enter APPROVED_HANDOFF_MODE.'
+  );
+} else if (!EXECUTABLE_PACKAGE_STATUSES.has(pkg.package_status)) {
+  fail(
+    DIAGNOSTICS.PACKAGE_STATUS_NOT_EXECUTABLE,
+    `package_status must be ready or ready_with_visible_flags for executable validation; received ${pkg.package_status}.`
   );
 }
 
