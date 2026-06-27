@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/intake-result.schema.json",
+  "title": "EV4 Builder Intake Result",
+  "description": "Structured result of START_INTAKE_MODE for EV4 Builder Assistant fresh-chat intake.",
+  "type": "object",
+  "required": [
+    "schema",
+    "workflow_mode",
+    "runtime_state",
+    "present_inputs",
+    "validated_inputs",
+    "blocking_missing_inputs",
+    "optional_missing_inputs",
+    "conflicts",
+    "package_status",
+    "selected_candidate_id",
+    "package_digest",
+    "decision",
+    "eligible_workflow_mode",
+    "eligible_runtime_state",
+    "guidance"
+  ],
+  "properties": {
+    "schema": {
+      "const": "ev4-builder-intake-result@0.1.0"
+    },
+    "workflow_mode": {
+      "enum": [
+        "START_INTAKE_MODE",
+        "APPROVED_HANDOFF_MODE",
+        "FRESH_IMAGE_MODE_LIMITED"
+      ]
+    },
+    "runtime_state": {
+      "enum": [
+        "INTAKE_WAITING",
+        "INTAKE_VALIDATING",
+        "BUILD_ACTIVE",
+        "WAITING_FOR_CONFIRMATION",
+        "EVIDENCE_REQUIRED",
+        "CORRECTION",
+        "REVIEW_ONLY",
+        "PAUSED",
+        "COMPLETED"
+      ]
+    },
+    "present_inputs": {
+      "$ref": "#/$defs/input_name_array"
+    },
+    "validated_inputs": {
+      "$ref": "#/$defs/input_name_array"
+    },
+    "blocking_missing_inputs": {
+      "$ref": "#/$defs/input_name_array"
+    },
+    "optional_missing_inputs": {
+      "$ref": "#/$defs/input_name_array"
+    },
+    "conflicts": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "package_status": {
+      "type": ["string", "null"]
+    },
+    "selected_candidate_id": {
+      "type": ["string", "null"]
+    },
+    "package_digest": {
+      "type": ["string", "null"],
+      "description": "Optional digest/fingerprint of the accepted package. Null when digesting is unavailable."
+    },
+    "decision": {
+      "enum": [
+        "approved",
+        "approved_with_optional_gaps",
+        "blocked_missing_input",
+        "blocked_invalid_package",
+        "blocked_conflict",
+        "blocked_package_status"
+      ]
+    },
+    "eligible_workflow_mode": {
+      "enum": [
+        "START_INTAKE_MODE",
+        "APPROVED_HANDOFF_MODE",
+        "FRESH_IMAGE_MODE_LIMITED",
+        null
+      ]
+    },
+    "eligible_runtime_state": {
+      "enum": [
+        "INTAKE_WAITING",
+        "INTAKE_VALIDATING",
+        "BUILD_ACTIVE",
+        "WAITING_FOR_CONFIRMATION",
+        "EVIDENCE_REQUIRED",
+        "CORRECTION",
+        "REVIEW_ONLY",
+        "PAUSED",
+        "COMPLETED",
+        null
+      ]
+    },
+    "guidance": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "input_name": {
+      "enum": [
+        "Builder_Context_Package",
+        "reference_screenshot",
+        "checkpoint_or_status_summary",
+        "elementor_structure_or_editor_screenshot"
+      ]
+    },
+    "input_name_array": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/input_name" },
+      "uniqueItems": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "present_inputs": {
+            "not": {
+              "contains": { "const": "Builder_Context_Package" }
+            }
+          }
+        },
+        "required": ["present_inputs"]
+      },
+      "then": {
+        "properties": {
+          "decision": { "const": "blocked_missing_input" },
+          "eligible_workflow_mode": { "const": "START_INTAKE_MODE" },
+          "eligible_runtime_state": { "const": "EVIDENCE_REQUIRED" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision": { "const": "approved" } },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "blocking_missing_inputs": { "maxItems": 0 },
+          "eligible_workflow_mode": { "const": "APPROVED_HANDOFF_MODE" },
+          "eligible_runtime_state": { "const": "BUILD_ACTIVE" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision": { "const": "approved_with_optional_gaps" } },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "blocking_missing_inputs": { "maxItems": 0 },
+          "optional_missing_inputs": { "minItems": 1 },
+          "eligible_workflow_mode": { "const": "APPROVED_HANDOFF_MODE" },
+          "eligible_runtime_state": { "const": "BUILD_ACTIVE" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision": { "const": "blocked_missing_input" } },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "blocking_missing_inputs": { "minItems": 1 },
+          "eligible_workflow_mode": { "const": "START_INTAKE_MODE" },
+          "eligible_runtime_state": { "const": "EVIDENCE_REQUIRED" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "blocking_missing_inputs": {
+            "contains": { "const": "reference_screenshot" },
+            "maxItems": 1
+          }
+        },
+        "required": ["blocking_missing_inputs"]
+      },
+      "then": {
+        "not": {
+          "properties": { "decision": { "const": "blocked_missing_input" } },
+          "required": ["decision"]
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
