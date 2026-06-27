@@ -1,0 +1,11 @@
+{
+  "name": "ev4-builder-assistant-repo",
+  "version": "0.2.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate:cross-field": "node scripts/validate-package.mjs tests/valid/builder_context_package.json && node scripts/validate-package.mjs examples/smart-home-connector/builder_context_package.json",
+    "validate:builder-context": "npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/builder-context-package.schema.json -d tests/valid/builder_context_package.json",
+    "validate:checkpoint": "npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/checkpoint.schema.json -d tests/valid/checkpoint.json"
+  }
+}
