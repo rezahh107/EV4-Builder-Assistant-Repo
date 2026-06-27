@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/session-state.schema.json",
+  "title": "EV4 Builder Session State",
+  "type": "object",
+  "required": [
+    "schema",
+    "current_state",
+    "selected_candidate_id",
+    "last_verified_checkpoint",
+    "max_actions_per_turn"
+  ],
+  "properties": {
+    "schema": {
+      "const": "ev4-builder-session-state@0.1.0"
+    },
+    "current_state": {
+      "enum": [
+        "BUILD_ACTIVE",
+        "PAUSED",
+        "QUESTION_MODE",
+        "WAITING_FOR_CONFIRMATION",
+        "EVIDENCE_REQUIRED",
+        "CORRECTION_MODE",
+        "REVIEW_MODE",
+        "COMPLETED"
+      ]
+    },
+    "selected_candidate_id": {
+      "type": ["string", "null"]
+    },
+    "last_verified_checkpoint": {
+      "$ref": "./checkpoint.schema.json"
+    },
+    "max_actions_per_turn": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
+    },
+    "active_warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "unresolved_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}
