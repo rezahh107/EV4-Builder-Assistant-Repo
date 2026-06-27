@@ -1,0 +1,100 @@
+{
+  "schema": "ev4-builder-context-package@1.0.0",
+  "source_stage": "/builder-feed-export",
+  "source_handoff_stage": "/handoff-export",
+  "package_status": "ready_with_visible_flags",
+  "selected_candidate_id": "REPLACE_WITH_SELECTED_CANDIDATE_ID",
+  "selected_candidate_locked": true,
+  "production_ready_allowed": false,
+  "source_payload_ledger": [
+    {
+      "payload_name": "Handoff_Payload",
+      "schema": "ev4-handoff-export-payload@1.0.0",
+      "status": "available",
+      "source_ref": "REPLACE_WITH_SOURCE_REF"
+    }
+  ],
+  "reference_screenshot_instruction": {
+    "required_in_new_chat": true,
+    "allowed_use": "visual_reference_only",
+    "forbidden_use": "re_architecture_without_explicit_rerun"
+  },
+  "approved_structure_tree": [
+    {
+      "node_id": "n-001",
+      "structure_label": "REPLACE / Root",
+      "class_name": "replace__section--root",
+      "element_type": "Container",
+      "element_generation": "Shared compatibility element",
+      "role": "root",
+      "children": ["n-002"]
+    },
+    {
+      "node_id": "n-002",
+      "structure_label": "REPLACE / Child",
+      "class_name": "replace__child--default",
+      "element_type": "Container",
+      "element_generation": "Shared compatibility element",
+      "role": "content_child",
+      "children": []
+    }
+  ],
+  "class_creation_application_map": [
+    {
+      "class_name": "replace__section--root",
+      "related_structure_label": "REPLACE / Root",
+      "elementor_node_or_element": "n-001",
+      "when_to_create": "when creating root container",
+      "reusable_or_one_off": "section_scoped",
+      "purpose": "section root scope",
+      "css_needed_now": "no",
+      "notes_or_unknowns": "Replace with approved package values."
+    }
+  ],
+  "widget_mapping_table": [
+    {
+      "structure_label": "REPLACE / Root",
+      "class_name": "replace__section--root",
+      "recommended_widget_or_element": "Container",
+      "editable_content": "none",
+      "why_this_mapping": "Root layout wrapper from approved package.",
+      "unknowns": []
+    }
+  ],
+  "editable_content_map": [],
+  "decoration_only_map": [],
+  "asset_replacement_map": [],
+  "scoped_css_need_map": [],
+  "responsive_qa_seed": {
+    "unresolved_breakpoints": ["tablet", "mobile"],
+    "connector_behavior_status": "not_applicable_or_unknown",
+    "meaningful_content_visibility_rule": "do_not_hide_meaningful_content",
+    "notes": "Replace with approved responsive QA seed."
+  },
+  "audit_flags_to_preserve": [],
+  "unknowns_to_preserve": [],
+  "forbidden_work": [
+    "do_not_redesign",
+    "do_not_rescore",
+    "do_not_claim_production_ready"
+  ],
+  "first_builder_batch": {
+    "max_actions": 2,
+    "actions": [
+      {
+        "action_id": "BATCH-001-A01",
+        "target_element": "REPLACE / Root",
+        "parent": "page root",
+        "element_type": "Container",
+        "element_generation": "Shared compatibility element",
+        "structure_panel_name": "REPLACE / Root",
+        "active_class": "replace__section--root",
+        "instruction": "Create the approved root element and apply the approved class without a leading dot.",
+        "properties_not_to_change": ["architecture", "selected_candidate_id"],
+        "expected_result": "Root container exists with approved structure label and class."
+      }
+    ]
+  },
+  "confirmation_sentence": "Root template action is completed.",
+  "builder_assistant_prompt_seed": "Start in APPROVED_HANDOFF_MODE. Use this package as source of truth. Do not redesign."
+}
