@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/evidence-record.schema.json",
+  "title": "EV4 Builder Evidence Record",
+  "description": "Evidence ledger record for assertion-based Builder checkpoints. Evidence is data; it supports specific assertion IDs and never confirms an entire batch by implication.",
+  "type": "object",
+  "required": [
+    "evidence_id",
+    "evidence_type",
+    "source_ref",
+    "captured_at",
+    "content_sha256",
+    "supports_claim_ids",
+    "status"
+  ],
+  "properties": {
+    "evidence_id": { "type": "string", "minLength": 1 },
+    "evidence_type": {
+      "enum": [
+        "user_confirmation",
+        "editor_screenshot",
+        "structure_panel_screenshot",
+        "frontend_screenshot",
+        "diagnostic",
+        "export_json",
+        "manual_import"
+      ]
+    },
+    "source_ref": { "type": "string", "minLength": 1 },
+    "captured_at": { "type": "string", "format": "date-time" },
+    "content_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "supports_claim_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "status": {
+      "enum": ["available", "insufficient_evidence", "rejected"]
+    }
+  },
+  "additionalProperties": false
+}
