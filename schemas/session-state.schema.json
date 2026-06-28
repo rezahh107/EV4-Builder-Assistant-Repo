@@ -2,40 +2,26 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/session-state.schema.json",
   "title": "EV4 Builder Session State",
-  "description": "Session state for EV4 Builder Assistant. workflow_mode/runtime_state are paired when either is present. max_actions_per_turn is intentionally bounded to 1..5 by STEP_SIZE_CONTRACT.",
+  "description": "Session state for EV4 Builder Assistant. CORRECTION caused by a build-impacting incident requires a machine-checkable repair_packet.",
   "type": "object",
   "required": ["schema", "current_state", "selected_candidate_id", "last_verified_checkpoint", "max_actions_per_turn"],
   "properties": {
     "schema": { "const": "ev4-builder-session-state@0.1.0" },
-    "workflow_mode": {
-      "description": "Preferred workflow enum. It answers which workflow is active.",
-      "enum": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"]
-    },
-    "runtime_state": {
-      "description": "Preferred runtime enum. It answers what is happening now inside the workflow.",
-      "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"]
-    },
+    "workflow_mode": { "enum": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"] },
+    "runtime_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"] },
     "state_capsule": {
       "type": "string",
       "maxLength": 180,
-      "pattern": "^\\[STATE workflow=(START_INTAKE_MODE|APPROVED_HANDOFF_MODE|FRESH_IMAGE_MODE_LIMITED) state=(INTAKE_WAITING|INTAKE_VALIDATING|BUILD_ACTIVE|WAITING_FOR_CONFIRMATION|EVIDENCE_REQUIRED|CORRECTION|REVIEW_ONLY|PAUSED|COMPLETED)( cp=[A-Za-z0-9._:-]+)?( batch=[A-Za-z0-9._:-]+)? risk=(low|medium|high|blocked)\\]$",
-      "description": "Optional one-line public state capsule for builder-session replies where state matters. It is not a checkpoint replacement."
+      "pattern": "^\\[STATE workflow=(START_INTAKE_MODE|APPROVED_HANDOFF_MODE|FRESH_IMAGE_MODE_LIMITED) state=(INTAKE_WAITING|INTAKE_VALIDATING|BUILD_ACTIVE|WAITING_FOR_CONFIRMATION|EVIDENCE_REQUIRED|CORRECTION|REVIEW_ONLY|PAUSED|COMPLETED)( cp=[A-Za-z0-9._:-]+)?( batch=[A-Za-z0-9._:-]+)? risk=(low|medium|high|blocked)\\]$"
     },
-    "current_state": {
-      "description": "Legacy field retained for backward compatibility. Prefer runtime_state for new data. CORRECTION_MODE maps to CORRECTION; REVIEW_MODE maps to REVIEW_ONLY.",
-      "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "PAUSED", "QUESTION_MODE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION_MODE", "REVIEW_MODE", "CORRECTION", "REVIEW_ONLY", "COMPLETED"]
-    },
+    "current_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "PAUSED", "QUESTION_MODE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION_MODE", "REVIEW_MODE", "CORRECTION", "REVIEW_ONLY", "COMPLETED"] },
     "selected_candidate_id": { "type": ["string", "null"] },
     "last_verified_checkpoint": { "$ref": "./checkpoint.schema.json" },
-    "max_actions_per_turn": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 5,
-      "description": "User-adjustable maximum action count. Valid values are 1..5 only."
-    },
+    "max_actions_per_turn": { "type": "integer", "minimum": 1, "maximum": 5 },
     "known_control_map": { "type": "array", "items": { "$ref": "#/$defs/known_control_entry" } },
     "ui_vocabulary_map": { "type": "array", "items": { "$ref": "#/$defs/ui_vocabulary_entry" } },
     "recovery_state": { "$ref": "#/$defs/recovery_state" },
+    "repair_packet": { "$ref": "./repair-packet.schema.json" },
     "active_warnings": { "type": "array", "items": { "type": "string" } },
     "unresolved_evidence": { "type": "array", "items": { "type": "string" } }
   },
@@ -101,7 +87,11 @@
     },
     {
       "if": { "properties": { "runtime_state": { "const": "CORRECTION" } }, "required": ["runtime_state"] },
-      "then": { "properties": { "current_state": { "enum": ["CORRECTION", "CORRECTION_MODE"] } } }
+      "then": { "required": ["repair_packet"], "properties": { "current_state": { "enum": ["CORRECTION", "CORRECTION_MODE"] } } }
+    },
+    {
+      "if": { "properties": { "current_state": { "enum": ["CORRECTION", "CORRECTION_MODE"] } }, "required": ["current_state"] },
+      "then": { "required": ["repair_packet"] }
     },
     {
       "if": { "properties": { "runtime_state": { "const": "REVIEW_ONLY" } }, "required": ["runtime_state"] },
