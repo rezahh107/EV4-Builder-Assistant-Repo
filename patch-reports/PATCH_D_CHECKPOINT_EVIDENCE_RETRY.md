@@ -37,6 +37,15 @@ Audit hardening commits:
 fbad79567ed1eb2317643ec47cd06c8451be8551 Patch D audit: add checkpoint cross-field validator
 95694a34ae594182bdf38ab5886ff5fad90711e7 Patch D audit: add invalid checkpoint evidence-ref fixture
 f54fa9ae66a56bf0fdfbc18138baf76e255334e4 Patch D audit: wire checkpoint cross-field validation
+8bcb5ecc23c8a84db6c46db4d3435acc476787c2 Patch D audit: update report with hardening results
+```
+
+Merge-prep review commits:
+
+```text
+354b205984043a5932287d2f106a60e5f1a812d7 Patch D merge prep: accept uppercase package SHA256
+6259ed53eebddd60530417c7973736c5fbbc3e1d Patch D merge prep: relax evidence SHA256 case pattern
+20fe15b42752c23403000796056dd2c9138fcd39 Patch D merge prep: make manual checkpoint example schema-valid
 ```
 
 ## Files changed
@@ -65,6 +74,7 @@ tests/valid/checkpoint_v0_2.json
   - schema جدید برای evidence ledger اضافه شد.
   - `evidence_type` شامل `user_confirmation`, `editor_screenshot`, `structure_panel_screenshot`, `frontend_screenshot`, `diagnostic`, `export_json`, `manual_import` است.
   - هر evidence record فقط claim IDs مشخص‌شده در `supports_claim_ids` را پشتیبانی می‌کند.
+  - `content_sha256` هر دو حالت lowercase و uppercase hex را می‌پذیرد.
 
 - `schemas/checkpoint.schema.json`
   - backward-compatible شد و با `oneOf` از دو نسخه پشتیبانی می‌کند:
@@ -72,6 +82,7 @@ tests/valid/checkpoint_v0_2.json
     - `ev4-builder-checkpoint@0.2.0`
   - checkpoint v0.2 شامل `assertions`, `evidence_ledger`, `confirmed_action_ids`, `unconfirmed_action_ids`, و `retry_policy` است.
   - assertion با `status: confirmed` باید حداقل یک `evidence_refs` داشته باشد.
+  - `package_sha256` هر دو حالت lowercase و uppercase hex را می‌پذیرد.
   - `retry_policy.max_retry_per_action` با مقدار ثابت `3` enforce می‌شود.
 
 ## New evidence model
@@ -139,6 +150,7 @@ retry_policy:
 
 - `examples/smart-home-connector/MANUAL_SESSION_001.md`
   - نمونه checkpoint به شکل assertion/evidence v0.2 اضافه شد، بدون تغییر معماری یا classهای تأییدشده.
+  - مثال YAML با فیلدهای required در schema هماهنگ شد: `package_sha256`, `created_at`, `captured_at`, `content_sha256`.
 
 ## Fixtures
 
@@ -175,7 +187,7 @@ Invalid cross-field fixture:
 GitHub Actions روی PR #6 اجرا شد:
 
 ```text
-Schema validation run #101: success
+Schema validation run #102: success
 ```
 
 Relevant commands covered by CI:
@@ -186,10 +198,11 @@ npm run validate:session-state
 npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -r schemas/evidence-record.schema.json
 ```
 
-Previous complete workflow run also passed:
+Previous complete workflow runs also passed:
 
 ```text
 Schema validation run #96: success
+Schema validation run #101: success
 ```
 
 ## Failures / skips
