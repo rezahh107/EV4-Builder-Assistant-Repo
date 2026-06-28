@@ -1,7 +1,7 @@
 # commands/SESSION_COMMANDS
 
-Version: 0.3.1
-Status: ui_confidence_and_guidance_footer_linked
+Version: 0.3.3
+Status: user_facing_builder_ux_added
 Purpose: Persian control commands for the builder session
 
 ---
@@ -25,6 +25,9 @@ These commands control the Builder Assistant session. They are not EV4 Architect
 مستندات
 ریست
 خلاصه
+جزئیات
+جزئیات فنی
+پیش‌نمایش
 یک پله
 دو پله
 سه پله
@@ -66,6 +69,21 @@ REVIEW_MODE: REVIEW_ONLY
 
 ---
 
+## User-Facing Output Policy
+
+Use:
+
+```text
+protocols/BUILDER_BATCH_OUTPUT_FORMAT.md
+protocols/USER_FACING_RESPONSE_POLICY.md
+```
+
+Normal builder output is for the user, not for schema debugging.
+
+Hide internal fields such as `element_generation_source`, `package_digest`, `input_authorization`, and `Control path: insufficient_evidence` unless the user asks `جزئیات فنی`, `بررسی`, `وضعیت`, or the session is in `CORRECTION` / `EVIDENCE_REQUIRED`.
+
+---
+
 ## Guidance Footer Preference
 
 ```yaml
@@ -93,12 +111,6 @@ Before asking again, inspect attachments, pasted JSON, copied package text, and 
 
 Do not delete initialized state or verified checkpoints.
 
-Use:
-
-```text
-docs/START_INTAKE_POLICY.md
-```
-
 If valid `Builder_Context_Package` is already provided, validate it and route to:
 
 ```yaml
@@ -116,7 +128,7 @@ runtime_state: PAUSED
 
 Keep the current `workflow_mode` unchanged. Preserve the last verified checkpoint and the previous resumable runtime state.
 
-Do not resume until `استارت` or `ادامه`.
+Return a compact copy-pasteable session summary if meaningful.
 
 ### استارت
 
@@ -134,15 +146,19 @@ Continue with the next uncompleted builder batch only when safe.
 
 This does not automatically confirm the previous batch.
 
-If the session is paused, `ادامه` may resume only when a previous resumable state is known and no blocker exists.
+Do not repeat previous instructions. If a blocker exists, ask for the single blocking evidence/action.
 
 ### تایید
 
-Mark the latest completed batch as user-confirmed and create a verified checkpoint.
+Accept confirmation only when it maps to the active structured confirmation request, expected confirmation token, or qualifying evidence for the active batch.
 
-Accept confirmation only when it maps to the active structured confirmation request or qualifying evidence for the active batch.
+After a valid token, use active silence:
 
-Do not automatically provide the next batch unless the user also asks to continue.
+```text
+✓ تایید شد — ادامه می‌دهیم.
+```
+
+Then provide the next safe batch if no blocker exists. Do not explain checkpoint loop, scope, or assertion internals unless the user asks `وضعیت`, `بررسی`, or `جزئیات فنی`.
 
 If accepted after a waiting batch, route:
 
@@ -188,6 +204,7 @@ DOM diagnostic
 Computed CSS
 Export JSON
 known_control_map
+ui_vocabulary_map
 ```
 
 ### وضعیت
@@ -204,6 +221,7 @@ Applied classes
 Active selected element
 Current class
 Known control map summary
+UI vocabulary map summary
 Next pending action
 Unresolved evidence
 Active warnings
@@ -211,6 +229,37 @@ Safe to continue
 ```
 
 No new build actions unless user also says `ادامه`.
+
+### جزئیات / جزئیات فنی
+
+Show the technical fields hidden from normal builder batches, only as diagnostics:
+
+```text
+element_generation
+element_generation_source
+input_authorization status
+package_digest status
+confirmed_action_ids / unconfirmed_action_ids
+known_control_map
+ui_vocabulary_map
+evidence status
+control path evidence
+```
+
+Do not continue automatically.
+
+### پیش‌نمایش
+
+Describe the next likely batch without executing it.
+
+Rules:
+
+```text
+- Do not create or update checkpoint.
+- Do not mark any action confirmed.
+- Do not ask for confirmation token as if the batch was emitted.
+- Start with: پیش‌نمایش batch بعدی — هنوز اجرا نشده.
+```
 
 ### عقب
 
@@ -237,7 +286,22 @@ not_confirmed
 
 ### خلاصه
 
-Return continuation-oriented summary with verified structure, applied classes, unknowns, conflicts, pending work, last checkpoint, known UI-control evidence, and next safe action. Do not continue automatically.
+Return a copy-pasteable continuation summary. Do not continue automatically.
+
+Required shape:
+
+```text
+خلاصه session — برای ادامه نگه دار
+
+selected_candidate_id:
+checkpoint:
+تاییدشده:
+بعدی:
+UI تو:
+production_ready: false
+
+برای ادامه در چت بعدی بنویس: `استارت`
+```
 
 ---
 
@@ -258,7 +322,4 @@ When an action-count command is received:
 1. Update max_actions_per_turn within 1..5.
 2. Report the new maximum.
 3. Preserve workflow_mode and runtime_state.
-4. Do not emit a new builder batch unless the user also says ادامه.
 ```
-
-Values above 5 are invalid. Ask the user to choose a value from 1 to 5.
