@@ -1,0 +1,87 @@
+{
+  "schema": "ev4-chatgpt-project-source-pack-manifest@1.0.0",
+  "pack_root": "dist/chatgpt-project",
+  "generated_at": "2026-06-28T06:45:00Z",
+  "limits": {
+    "project_instructions_max_chars": 8000,
+    "project_instructions_warning_chars": 7800,
+    "knowledge_file_max_count": 25
+  },
+  "project_instructions_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
+  "knowledge_dir": "dist/chatgpt-project/knowledge",
+  "duplicate_project_instructions_in_knowledge_allowed": false,
+  "files": [
+    {
+      "path": "dist/chatgpt-project/BUILD_REPORT.json",
+      "sha256": "e3342f5e2e246d8226b04df9ad23204187cade896da76adae8b21a9f5f0a9783",
+      "bytes": 362,
+      "chars": 362
+    },
+    {
+      "path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
+      "sha256": "0d51f4bfab11ea2e1d9ac81c223386b8627c6afba86bafbbea020fcedaae9c12",
+      "bytes": 3938,
+      "chars": 3930
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
+      "sha256": "b5b05b386633a8efcf55175bd30f771db984451bd2feab16a74c0fafb9db545e",
+      "bytes": 761,
+      "chars": 761
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/02_INPUT_AUTHORIZATION.md",
+      "sha256": "e8cf2838eff22e1e5045952a732496ceeba556bf751c166a0e4269294f60407d",
+      "bytes": 914,
+      "chars": 914
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/03_MODE_STATE_COMMANDS.md",
+      "sha256": "0747bb49f7530397d3c231032184f652a60e3638f14a53a06c5e8e6a2a9a6fae",
+      "bytes": 627,
+      "chars": 593
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/04_ACTION_BATCH_AND_CLASS_SAFETY.md",
+      "sha256": "e7659c1f950d2abcda8a083d559f828c0891526e601a159be3f465bc752cf49b",
+      "bytes": 717,
+      "chars": 717
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/05_UI_EVIDENCE_AND_CORRECTION.md",
+      "sha256": "88c48cd55c6d041473a38765247d83ed73e17a86c8a5b9fb6fab95a88ab182d4",
+      "bytes": 729,
+      "chars": 729
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/06_LAYOUT_STYLE_RESPONSIVE_ACCESSIBILITY.md",
+      "sha256": "e17bacb27ce341b531394940c7990d345be4bfeb69ab053dd6f29c1707717a15",
+      "bytes": 622,
+      "chars": 622
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/07_CHECKPOINT_EVIDENCE_COMPLETION.md",
+      "sha256": "43d5cb860b11e8db14b4f866433a82652129170ba823326005de07b5b30cf5c1",
+      "bytes": 730,
+      "chars": 726
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/08_OFFICIAL_ELEMENTOR_CAPABILITY_INDEX.md",
+      "sha256": "5e764a600eba1832eed1a2619cb61fc0fe8aafe33841510659b23a78efc7e685",
+      "bytes": 562,
+      "chars": 562
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/09_REFERENCE_METHODS_BOUNDARY.md",
+      "sha256": "c1ea79b51724bd1105090210ba7a1dc47bbeb39d248b3ef06f3c0a855283f173",
+      "bytes": 574,
+      "chars": 574
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/smart-home-connector.compact.md",
+      "sha256": "ad4cb9debaff8404c6408ac07a3c64d67422bd41757e7a443b6154bcc1315314",
+      "bytes": 643,
+      "chars": 643
+    }
+  ]
+}
