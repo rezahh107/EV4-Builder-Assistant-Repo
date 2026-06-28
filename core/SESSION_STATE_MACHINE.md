@@ -1,8 +1,8 @@
 # core/SESSION_STATE_MACHINE
 
-Version: 0.3.1
-Status: checkpoint_evidence_retry_added
-Purpose: normalized runtime state, workflow mode, checkpoint, evidence assertion, and STATE_CAPSULE contract
+Version: 0.3.3
+Status: user_facing_builder_ux_added
+Purpose: normalized runtime state, workflow mode, checkpoint, evidence assertion, UI vocabulary, and STATE_CAPSULE contract
 
 ---
 
@@ -32,10 +32,6 @@ runtime_state:
 
 `runtime_state` answers what is happening now inside that workflow.
 
-Do not put `START_INTAKE_MODE`, `APPROVED_HANDOFF_MODE`, or `FRESH_IMAGE_MODE_LIMITED` into runtime state.
-
-Do not put `PAUSED`, `WAITING_FOR_CONFIRMATION`, `EVIDENCE_REQUIRED`, `CORRECTION`, or `REVIEW_ONLY` into workflow mode.
-
 Canonical transition details live in:
 
 ```text
@@ -45,8 +41,6 @@ core/MODE_STATE_MATRIX.md
 ---
 
 ## Legacy Runtime Name Normalization
-
-Older docs and session notes may still say:
 
 ```yaml
 legacy_runtime_names:
@@ -97,26 +91,46 @@ COMPLETED:
 
 Include a one-line `STATE_CAPSULE` only in Builder Assistant session replies where session state matters.
 
-It is a public drift-prevention marker, not a large JSON block.
-
 Recommended shape:
 
 ```text
 [STATE workflow=APPROVED_HANDOFF_MODE state=WAITING_FOR_CONFIRMATION cp=CP-001 batch=BATCH-001 risk=low]
 ```
 
-Rules:
+Use `risk=blocked` when the session is in `EVIDENCE_REQUIRED` or cannot continue safely.
 
-```text
-- Use English identifiers.
-- Keep it one line.
-- Do not include private reasoning.
-- Do not use it in unrelated repo maintenance reports unless useful.
-- It must not replace checkpoint schema.
-- It must help prevent session drift.
+---
+
+## UI Vocabulary And Known Controls
+
+Maintain a compact `ui_vocabulary_map` when the user's Elementor labels differ from package architecture terms.
+
+```yaml
+ui_vocabulary_map:
+  - vocabulary_key: layout_parent
+    architecture_term: Container
+    user_ui_label: Flexbox
+    confirmed_by: user_statement | screenshot
+    confirmed_at_checkpoint: CP-001
+    status: confirmed | unknown | changed | insufficient_evidence
 ```
 
-Use `risk=blocked` when the session is in `EVIDENCE_REQUIRED` or cannot continue safely.
+Maintain `known_control_map` for verified UI controls.
+
+```yaml
+known_control_map:
+  - control_name: CSS Classes field
+    panel_name: Advanced
+    element_generation:
+    confirmed_by: user_statement | screenshot | documentation | installed_version
+    evidence_ref:
+    status: confirmed | missing | version_sensitive | insufficient_evidence
+```
+
+Rules:
+- Use these maps to make future user-facing output match the user's UI.
+- Do not ask the same vocabulary/control question again when a confirmed map entry exists.
+- If later evidence contradicts a map entry, mark it `changed` or `insufficient_evidence` and enter `CORRECTION` if it affects the next action.
 
 ---
 
@@ -139,6 +153,8 @@ last_verified_checkpoint:
   batch_id:
   confirmed_action_ids: []
   unconfirmed_action_ids: []
+  known_control_map: []
+  ui_vocabulary_map: []
   assertions:
     - assertion_id:
       subject_ref:
@@ -190,8 +206,6 @@ runtime_state: CORRECTION
 
 ## Retry Policy
 
-Canonical retry policy:
-
 ```yaml
 MAX_RETRY_COUNT: 3
 retry_policy:
@@ -199,16 +213,6 @@ retry_policy:
   retry_1: clarify_instruction
   retry_2: request_targeted_screenshot
   retry_3: enter_CORRECTION
-```
-
-Rules:
-
-```text
-- Retry count is per action, not per session.
-- retry_1 clarifies the exact instruction and expected evidence.
-- retry_2 requests one targeted screenshot or diagnostic artifact.
-- retry_3 enters CORRECTION and stops downstream actions.
-- Do not ask the user to confirm hashes in this patch.
 ```
 
 ---
@@ -222,19 +226,11 @@ Create or update a verified checkpoint only when at least one assertion is suppo
 - screenshot that visibly confirms the assertion;
 - frontend/diagnostic/export evidence that confirms the assertion;
 - user sends the expected structured confirmation token for the latest completed batch;
-- manual status import with assertion/evidence mapping.
+- manual status import with assertion/evidence mapping;
+- user confirms a UI vocabulary/control label.
 ```
 
-Do not create a confirmed checkpoint from:
-
-```text
-- silence;
-- a new unrelated question;
-- a partial screenshot that does not show the target;
-- an assumption that a prior instruction was followed;
-- a vague “done” that cannot be mapped to assertion IDs;
-- a user message that reports a problem.
-```
+Do not create a confirmed checkpoint from silence, unrelated questions, unsupported screenshots, assumptions, vague “done”, or a user message that reports a problem.
 
 ---
 
@@ -242,73 +238,17 @@ Do not create a confirmed checkpoint from:
 
 Use `core/MODE_STATE_MATRIX.md` as the canonical transition table.
 
-Minimum required transitions:
+A valid `تایید BATCH-XXX` may confirm and proceed to the next safe batch when no blocker exists. The reply must use active silence: one short confirmation line, then the next batch.
 
-```yaml
-minimum_transitions:
-  fresh_شروع:
-    to_workflow_mode: START_INTAKE_MODE
-    to_runtime_state: INTAKE_WAITING
-
-  valid_package_received:
-    to_workflow_mode: APPROVED_HANDOFF_MODE
-    to_runtime_state: BUILD_ACTIVE
-
-  missing_required_input:
-    to_workflow_mode: START_INTAKE_MODE
-    to_runtime_state: EVIDENCE_REQUIRED
-
-  insufficient_checkpoint_evidence:
-    to_workflow_mode: current workflow_mode
-    to_runtime_state: EVIDENCE_REQUIRED
-
-  retry_3_reached:
-    to_workflow_mode: current workflow_mode
-    to_runtime_state: CORRECTION
-
-  user_says_توقف:
-    to_workflow_mode: current workflow_mode
-    to_runtime_state: PAUSED
-
-  user_says_استارت_after_pause:
-    to_workflow_mode: previous workflow_mode
-    to_runtime_state: previous resumable runtime_state
-
-  user_reports_missing_control:
-    to_workflow_mode: current workflow_mode
-    to_runtime_state: CORRECTION
-
-  user_asks_بررسی:
-    to_workflow_mode: current workflow_mode
-    to_runtime_state: REVIEW_ONLY
-
-  batch_emitted:
-    to_workflow_mode: APPROVED_HANDOFF_MODE
-    to_runtime_state: WAITING_FOR_CONFIRMATION
-
-  confirmation_accepted:
-    to_workflow_mode: APPROVED_HANDOFF_MODE
-    to_runtime_state: BUILD_ACTIVE
-
-  completion_report:
-    to_workflow_mode: current workflow_mode
-    to_runtime_state: COMPLETED
-```
-
----
-
-## Transition Guards
+Transition guards:
 
 ```text
 - Do not leave PAUSED unless user says استارت or ادامه.
 - Do not leave CORRECTION until a corrected path is confirmed or evidence resolves the issue.
 - Do not leave EVIDENCE_REQUIRED until blocking evidence is provided or route is changed.
 - Do not treat ادامه as تایید.
-- Do not treat تایید as permission to continue unless the message also asks to continue.
 - Do not treat silence as confirmation.
 - Do not treat screenshot evidence as batch-wide confirmation.
-- Do not enter APPROVED_HANDOFF_MODE from image-only input unless FRESH_IMAGE_MODE_LIMITED was explicitly accepted and then a valid Builder_Context_Package is later provided.
-- Do not treat optional screenshot absence as a blocker unless the active contract specifically requires it.
 ```
 
 ---
@@ -330,6 +270,8 @@ Completed structure:
 Applied classes:
 Active selected element:
 Current class:
+Known control map summary:
+UI vocabulary map summary:
 Next pending action:
 Unresolved evidence:
 Active warnings:
