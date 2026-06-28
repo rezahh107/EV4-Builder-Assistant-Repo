@@ -1,7 +1,7 @@
 # CHATGPT_PROJECT_SETUP_GUIDE — EV4 Builder Assistant
 
 Version: 0.3.2
-Status: deployable_project_pack_added
+Status: package_trust_and_guidance_sync_added
 Date: 2026-06-28
 
 ---
@@ -54,6 +54,8 @@ knowledge_file_count: 10
 knowledge_file_limit: 25
 ```
 
+The compact pack includes the Patch C trust boundary, `SMART_GUIDANCE_FOOTER v0.2`, and a compact summary of `UI_INSTRUCTION_CONFIDENCE_GATE` inside the existing knowledge set. It does not duplicate Project Instructions inside Knowledge.
+
 ---
 
 ## Pack Verification
@@ -92,3 +94,5 @@ For the Smart Home test seed, use:
 examples/smart-home-connector/start_session_prompt.md
 examples/smart-home-connector/expected_first_response.md
 ```
+
+The Smart Home package example now uses structured `confirmation_request`. Legacy `builder_assistant_prompt_seed` and `confirmation_sentence` must not be used as executable runtime instructions.
