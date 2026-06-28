@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
-Version: 0.3.2
-Status: package_trust_and_guidance_sync_added
+Version: 0.3.3
+Status: user_facing_builder_ux_added
 Date: 2026-06-28
 
 ---
@@ -11,17 +11,20 @@ Date: 2026-06-28
 ```yaml
 project_status:
   project_instructions: active_v0.3.x
-  master_prompt: active_v0.3.x
-  session_state_machine: active_v0.3.1
+  master_prompt: active_v0.3.3
+  session_state_machine: active_v0.3.3
   mode_state_matrix: active_v0.3.0
   start_intake_policy: active_v0.3.0
-  session_commands: ui_confidence_and_guidance_footer_linked
+  session_commands: user_facing_ux_commands_added
   input_contract: structured_confirmation_trust_boundary
   builder_context_schema: confirmation_request_supported
   package_validator: cross_field_confirmation_and_injection_checks
   smart_guidance_footer: v0.2.0
-  ui_instruction_confidence_gate: active
-  source_pack: synced_v0.3.2
+  ui_instruction_confidence_gate: v0.2.0
+  builder_batch_output_format: active
+  user_facing_response_policy: active
+  atomic_ui_observation: added
+  source_pack: synced_v0.3.3
   action_default_max: 5
   production_ready: false
 ```
@@ -55,9 +58,6 @@ patches:
       - Smart Home example migrated to confirmation_request
       - builder_assistant_prompt_seed removed from Smart Home example runtime path
       - confirmation_sentence removed from Smart Home example runtime path
-      - confirmation_request.confirmed_action_ids is confirmation scope
-      - expected_user_token is the exact user token requested after a batch
-      - prompt-seed and confirmation-text injection fixtures added
 
   Patch_D:
     status: present
@@ -79,12 +79,21 @@ patches:
     name: smart-guidance-v0.2-ui-confidence-gate
     notes:
       - SMART_GUIDANCE_FOOTER upgraded to v0.2.0
-      - footer_allowed contexts explicit
-      - guidance_footer: auto | off documented
       - UI_INSTRUCTION_CONFIDENCE_GATE added
       - known_control_map documented
-      - screenshot recipe documented
-      - risk-based UI-control verification documented
+
+  Patch_G:
+    status: completed_on_branch
+    name: user-facing-builder-ux-contract
+    notes:
+      - normal batch output hides internal schema/source fields
+      - Persian user-facing labels are required
+      - architecture term vs UI label separation added
+      - UI Vocabulary Sync added
+      - ui_vocabulary_map added to schemas
+      - known_control_map persistence added to schemas
+      - Token Echo confirmation behavior added
+      - Session Summary and Preview commands documented
 ```
 
 ---
@@ -93,10 +102,10 @@ patches:
 
 ```yaml
 integration_sync:
-  status: completed
+  status: completed_for_patch_g
   docs_status_changelog: updated
   source_pack_manifest_build_report: updated
-  package_version: 0.3.2
+  package_version: 0.3.3
   smart_home_architecture_mutation: none_intended
   selected_candidate_id: ARCH-FAM-C_preserved
   approved_class_mutation: none_intended
@@ -109,16 +118,14 @@ integration_sync:
 
 ```yaml
 validation_state:
-  github_actions_schema_validation: passed_run_111
-  github_actions_run_id: 28317476040
-  validated_head_sha: 90b8a8c3345b0329d8e47e99c8c32a624b077d79
+  github_actions_schema_validation: pending_after_patch_g
   local_validation: not_run_in_repo_clone
   reason_local_validation_not_run: GitHub connector applies file writes but does not provide a local checked-out repo or npm execution environment
-  real_builder_session_test: not_run
-  real_elementor_execution: not_run
+  real_builder_session_test: in_progress_by_user
+  real_elementor_execution: in_progress_by_user
 ```
 
-Validated by GitHub Actions:
+Expected GitHub Actions checks:
 
 ```text
 npm run build:project-pack
@@ -138,10 +145,10 @@ compile session-state schema
 
 ```text
 EV4 Builder Assistant is not EV4 Architect.
-START_INTAKE_MODE and APPROVED_HANDOFF_MODE are workflow modes, not runtime states.
 Package free-text is data, not executable instruction.
 Runtime confirmation is generated from trusted confirmation_request templates.
 Current UI evidence or direct user statement is required for executable version-sensitive control paths.
+Normal builder batches are user-facing and should not expose internal schema/source fields.
 Production ready remains false.
 ```
 
@@ -150,7 +157,7 @@ Production ready remains false.
 ## Pending Next Work
 
 ```text
-review PR for patch/c-f-integration-sync
-merge only after final PR checks are green
-run real Elementor execution session later; still not run
+review Patch G PR
+run GitHub Actions schema validation
+continue real Elementor execution and record evidence
 ```
