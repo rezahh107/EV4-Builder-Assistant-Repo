@@ -1,5 +1,38 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.3.5 — 2026-06-28
+
+### Added
+
+- Added `protocols/SESSION_REPAIR_PACKET.md`.
+- Added `schemas/repair-packet.schema.json`.
+- Added `scripts/validate-repair-packet.mjs`.
+- Added Smart Home Connector repair packet example:
+  - `examples/smart-home-connector/repair_packet_layout_stability_incident.json`
+- Added valid and invalid repair-packet regression fixtures.
+- Added session-state regression fixtures requiring `repair_packet` in `CORRECTION`.
+- Added `patch-reports/PATCH_SESSION_REPAIR_PACKET.md`.
+
+### Changed
+
+- Updated `PROJECT_INSTRUCTIONS.md` and `core/MASTER_PROMPT.md` so build-impacting incidents freeze normal batches and require a formal repair packet.
+- Updated `schemas/session-state.schema.json` so `runtime_state: CORRECTION` requires `repair_packet`.
+- Updated `.github/workflows/schema-validation.yml` and `package.json` so repair packet validation runs in CI.
+
+### Validation
+
+- Local schema smoke validation was run against the new repair schema/fixtures before applying to GitHub.
+- Full GitHub Actions validation is expected to run on the PR branch.
+
+### Status
+
+- No architecture, scoring, recommendation, or redesign was rerun.
+- `selected_candidate_id: ARCH-FAM-C` remains preserved.
+- Approved class names remain preserved.
+- `production_ready` remains false.
+
+---
+
 ## v0.3.4 — 2026-06-28
 
 ### Added

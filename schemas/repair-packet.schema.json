@@ -1,0 +1,633 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/repair-packet.schema.json",
+  "title": "EV4 Builder Session Repair Packet",
+  "description": "Machine-checkable incident repair artifact for interrupted EV4 Builder Assistant sessions. The packet freezes normal build flow, scopes affected work, defines rollback and evidence requirements, and blocks resume until a repair-specific confirmation or targeted evidence is provided.",
+  "type": "object",
+  "required": [
+    "schema",
+    "incident_id",
+    "workflow_mode",
+    "runtime_state",
+    "selected_candidate_id",
+    "trigger",
+    "last_safe_checkpoint",
+    "active_batch",
+    "affected_actions",
+    "confirmed_work",
+    "still_valid_work",
+    "invalid_or_unverified_work",
+    "rollback_required",
+    "smallest_verified_repair_path",
+    "evidence_required",
+    "resume_condition",
+    "root_fix_required",
+    "production_ready"
+  ],
+  "properties": {
+    "schema": {
+      "const": "ev4-builder-session-repair-packet@1.0.0"
+    },
+    "incident_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^INCIDENT-[A-Z0-9]+(?:-[A-Z0-9]+)*$"
+    },
+    "workflow_mode": {
+      "$ref": "#/$defs/workflow_mode"
+    },
+    "runtime_state": {
+      "const": "CORRECTION"
+    },
+    "selected_candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trigger": {
+      "$ref": "#/$defs/trigger"
+    },
+    "last_safe_checkpoint": {
+      "$ref": "#/$defs/last_safe_checkpoint"
+    },
+    "active_batch": {
+      "$ref": "#/$defs/active_batch"
+    },
+    "affected_actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/affected_action"
+      }
+    },
+    "confirmed_work": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/confirmed_work_item"
+      }
+    },
+    "still_valid_work": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/still_valid_work_item"
+      }
+    },
+    "invalid_or_unverified_work": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/invalid_or_unverified_work_item"
+      }
+    },
+    "rollback_required": {
+      "$ref": "#/$defs/rollback_required"
+    },
+    "smallest_verified_repair_path": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/repair_action"
+      }
+    },
+    "evidence_required": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/evidence_requirement"
+      }
+    },
+    "resume_condition": {
+      "$ref": "#/$defs/resume_condition"
+    },
+    "root_fix_required": {
+      "$ref": "#/$defs/root_fix_required"
+    },
+    "production_ready": {
+      "const": false
+    }
+  },
+  "$defs": {
+    "workflow_mode": {
+      "enum": [
+        "START_INTAKE_MODE",
+        "APPROVED_HANDOFF_MODE",
+        "FRESH_IMAGE_MODE_LIMITED"
+      ]
+    },
+    "incident_type": {
+      "enum": [
+        "wrong_instruction",
+        "missing_ui_control",
+        "ui_path_version_mismatch",
+        "wrong_selected_element",
+        "wrong_active_class",
+        "package_evidence_conflict",
+        "visible_frontend_editor_contradiction",
+        "layout_instability",
+        "unsupported_assumption",
+        "repeated_unclear_failing_action",
+        "root_pipeline_gap"
+      ]
+    },
+    "trigger": {
+      "type": "object",
+      "required": [
+        "type",
+        "reported_by",
+        "description",
+        "evidence_refs"
+      ],
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/incident_type"
+        },
+        "reported_by": {
+          "enum": [
+            "user",
+            "assistant",
+            "screenshot",
+            "diagnostic",
+            "validator"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "last_safe_checkpoint": {
+      "type": "object",
+      "required": [
+        "checkpoint_id",
+        "batch_id",
+        "status",
+        "selected_candidate_id",
+        "evidence_refs"
+      ],
+      "properties": {
+        "checkpoint_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "batch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "confirmed",
+            "partially_confirmed"
+          ]
+        },
+        "selected_candidate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "active_batch": {
+      "type": "object",
+      "required": [
+        "batch_id",
+        "status"
+      ],
+      "properties": {
+        "batch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "emitted",
+            "waiting_for_confirmation",
+            "interrupted",
+            "blocked",
+            "unknown"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "affected_action": {
+      "type": "object",
+      "required": [
+        "action_id",
+        "batch_id",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "action_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "batch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "affected",
+            "invalid",
+            "unverified",
+            "blocked"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "work_base": {
+      "type": "object",
+      "required": [
+        "work_id",
+        "description",
+        "status",
+        "evidence_refs"
+      ],
+      "properties": {
+        "work_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string"
+        },
+        "related_action_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "confirmed_work_item": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/work_base"
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "confirmed"
+            },
+            "evidence_refs": {
+              "minItems": 1
+            }
+          }
+        }
+      ]
+    },
+    "still_valid_work_item": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/work_base"
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "still_valid"
+            },
+            "evidence_refs": {
+              "minItems": 1
+            }
+          }
+        }
+      ]
+    },
+    "invalid_or_unverified_work_item": {
+      "type": "object",
+      "required": [
+        "work_id",
+        "description",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "work_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "invalid",
+            "unverified",
+            "blocked"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related_action_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "rollback_required": {
+      "type": "object",
+      "required": [
+        "value",
+        "reason"
+      ],
+      "properties": {
+        "value": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "repair_action": {
+      "type": "object",
+      "required": [
+        "repair_action_id",
+        "instruction",
+        "allowed_scope",
+        "status"
+      ],
+      "properties": {
+        "repair_action_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^REPAIR-[A-Z0-9]+(?:-[A-Z0-9]+)*-A\\d{2}$"
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowed_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "evidence_required",
+            "ready_for_user_confirmation"
+          ]
+        },
+        "must_not_change": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence_requirement": {
+      "type": "object",
+      "required": [
+        "evidence_id",
+        "evidence_type",
+        "request",
+        "blocks_resume"
+      ],
+      "properties": {
+        "evidence_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^EVIDENCE-[A-Z0-9]+(?:-[A-Z0-9]+)*$"
+        },
+        "evidence_type": {
+          "enum": [
+            "user_confirmation",
+            "editor_screenshot",
+            "structure_panel_screenshot",
+            "frontend_screenshot",
+            "diagnostic",
+            "export_json",
+            "manual_import"
+          ]
+        },
+        "request": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blocks_resume": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "required_screenshot": {
+      "type": "object",
+      "required": [
+        "required",
+        "screenshot_type",
+        "target"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "screenshot_type": {
+          "enum": [
+            "editor",
+            "structure_panel",
+            "frontend",
+            "responsive_editor"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "resume_condition": {
+      "type": "object",
+      "required": [
+        "expected_user_token",
+        "required_screenshot"
+      ],
+      "properties": {
+        "expected_user_token": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^تایید (CORRECTION|REPAIR)-[A-Z0-9]+(?:-[A-Z0-9]+)*$"
+        },
+        "required_screenshot": {
+          "$ref": "#/$defs/required_screenshot"
+        },
+        "resume_runtime_state": {
+          "const": "BUILD_ACTIVE"
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "expected_user_token": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "expected_user_token"
+          ]
+        },
+        {
+          "properties": {
+            "required_screenshot": {
+              "properties": {
+                "required": {
+                  "const": true
+                }
+              }
+            }
+          },
+          "required": [
+            "required_screenshot"
+          ]
+        }
+      ],
+      "additionalProperties": false
+    },
+    "root_fix_required": {
+      "type": "object",
+      "required": [
+        "value",
+        "repo_scope",
+        "reason"
+      ],
+      "properties": {
+        "value": {
+          "type": "boolean"
+        },
+        "repo_scope": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "value": {
+                "const": true
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          "then": {
+            "properties": {
+              "repo_scope": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "trigger": {
+            "properties": {
+              "type": {
+                "const": "root_pipeline_gap"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          }
+        },
+        "required": [
+          "trigger"
+        ]
+      },
+      "then": {
+        "properties": {
+          "root_fix_required": {
+            "properties": {
+              "value": {
+                "const": true
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

@@ -36,6 +36,7 @@ jobs:
               tests/invalid/checkpoint_*.json) continue ;;
               tests/invalid/intake_result_*.json) continue ;;
               tests/invalid/session_state_*.json) continue ;;
+              tests/invalid/repair_packet*.json) continue ;;
             esac
             if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/builder-context-package.schema.json -d "$file"; then
               echo "Invalid fixture unexpectedly passed validation: $file"
@@ -66,22 +67,20 @@ jobs:
 
       - name: Validate intake result fixtures
         run: |
-          for file in tests/valid/intake_result_*.json; do
-            npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/intake-result.schema.json -d "$file"
-          done
-          for file in tests/invalid/intake_result_*.json; do
-            if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/intake-result.schema.json -d "$file"; then
-              echo "Invalid intake result fixture unexpectedly passed validation: $file"
-              exit 1
-            else
-              echo "Invalid intake result correctly failed: $file"
-            fi
-          done
+          npm run validate:intake-result
 
       - name: Validate session-state fixtures
         run: |
           npm run validate:session-state
 
+      - name: Validate repair packet fixtures
+        run: |
+          npm run validate:repair-packet
+
       - name: Compile session-state schema
         run: |
-          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -r schemas/evidence-record.schema.json
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -r schemas/evidence-record.schema.json -r schemas/repair-packet.schema.json
+
+      - name: Compile repair-packet schema
+        run: |
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/repair-packet.schema.json

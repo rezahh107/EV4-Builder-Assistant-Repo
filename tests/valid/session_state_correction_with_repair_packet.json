@@ -1,0 +1,75 @@
+{
+  "schema": "ev4-builder-session-state@0.1.0",
+  "workflow_mode": "APPROVED_HANDOFF_MODE",
+  "runtime_state": "CORRECTION",
+  "state_capsule": "[STATE workflow=APPROVED_HANDOFF_MODE state=CORRECTION cp=CP-005 batch=BATCH-006 risk=blocked]",
+  "current_state": "CORRECTION",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "last_verified_checkpoint": {
+    "schema": "ev4-builder-checkpoint@0.1.0",
+    "checkpoint_id": "CP-005",
+    "created_from": "user_confirmation",
+    "current_section": "Smart Home Connector",
+    "current_handoff_or_context_package": "examples/smart-home-connector/builder_context_package.json",
+    "selected_candidate_id": "ARCH-FAM-C",
+    "completed_elements": ["Smart Home Section / Root", "Smart Home Section / Relative Stage", "Smart Home Section / Content Layer", "Smart Home Section / Feature Cards Group", "Smart Home Section / Visual Core", "Visual Core / House Asset"],
+    "applied_classes": ["smart-home__section--root", "smart-home__stage--relative", "smart-home__content-layer--primary", "smart-home__feature-grid--primary", "smart-home__visual-core--house", "smart-home__house-asset--core"],
+    "verified_settings": ["structure and approved classes through BATCH-005"],
+    "unconfirmed_settings": ["Feature Cards Group layout completeness before content entry"],
+    "active_warnings": ["layout_stability_incident_active"],
+    "unresolved_evidence": ["EVIDENCE-LAYOUT-001"],
+    "last_completed_action": "BATCH-005-A01",
+    "next_pending_action": "REPAIR-LAYOUT-001-A01"
+  },
+  "max_actions_per_turn": 5,
+  "repair_packet": {
+    "schema": "ev4-builder-session-repair-packet@1.0.0",
+    "incident_id": "INCIDENT-LAYOUT-001",
+    "workflow_mode": "APPROVED_HANDOFF_MODE",
+    "runtime_state": "CORRECTION",
+    "selected_candidate_id": "ARCH-FAM-C",
+    "trigger": {
+      "type": "layout_instability",
+      "reported_by": "user",
+      "description": "Feature Cards Group layout stability was not verified before content entry after BATCH-005.",
+      "evidence_refs": ["USER-REPORT-001"]
+    },
+    "last_safe_checkpoint": {
+      "checkpoint_id": "CP-005",
+      "batch_id": "BATCH-005",
+      "status": "confirmed",
+      "selected_candidate_id": "ARCH-FAM-C",
+      "evidence_refs": ["CONFIRM-BATCH-005"]
+    },
+    "active_batch": { "batch_id": "BATCH-006", "status": "interrupted" },
+    "affected_actions": [
+      { "action_id": "BATCH-006-A01", "batch_id": "BATCH-006", "status": "unverified", "reason": "Text/content entry was attempted before Feature Cards Group layout controls were verified." }
+    ],
+    "confirmed_work": [
+      { "work_id": "WORK-ROOT-STAGE-CONTENT", "description": "Root, relative stage, and content layer were confirmed through BATCH-005.", "status": "confirmed", "related_action_ids": ["BATCH-001-A01", "BATCH-001-A02", "BATCH-001-A03"], "evidence_refs": ["CONFIRM-BATCH-005"] }
+    ],
+    "still_valid_work": [
+      { "work_id": "WORK-ROOT-STAGE-CONTENT-LAYER", "description": "Root, relative stage, and content layer are still valid.", "status": "still_valid", "related_action_ids": ["BATCH-001-A01", "BATCH-001-A02", "BATCH-001-A03"], "evidence_refs": ["CONFIRM-BATCH-005"] },
+      { "work_id": "WORK-CARDS-VISUAL-HOUSE", "description": "Feature card structure, visual core, and house asset remain valid; only pre-content layout stabilization is unresolved.", "status": "still_valid", "related_action_ids": ["BATCH-002-A01", "BATCH-003-A01", "BATCH-004-A01", "BATCH-005-A01"], "evidence_refs": ["CONFIRM-BATCH-005"] }
+    ],
+    "invalid_or_unverified_work": [
+      { "work_id": "WORK-TEXT-BEFORE-LAYOUT-STABILITY", "description": "Text entry before layout stabilization is unverified and must not be treated as confirmed.", "status": "unverified", "reason": "Layout controls for Feature Cards Group were not checked before content entry.", "related_action_ids": ["BATCH-006-A01"], "evidence_refs": ["USER-REPORT-001"] }
+    ],
+    "rollback_required": { "value": false, "reason": "No rollback required; confirmed structure remains valid and only the affected action is blocked." },
+    "smallest_verified_repair_path": [
+      { "repair_action_id": "REPAIR-LAYOUT-001-A01", "instruction": "Select Smart Home Section / Feature Cards Group and verify layout controls before any content entry.", "allowed_scope": "Feature Cards Group layout controls only.", "status": "evidence_required", "must_not_change": ["selected_candidate_id", "smart-home__feature-grid--primary", "approved structure"] }
+    ],
+    "evidence_required": [
+      { "evidence_id": "EVIDENCE-LAYOUT-001", "evidence_type": "editor_screenshot", "request": "Screenshot showing Feature Cards Group selected, active class visible, and layout controls/panel state.", "blocks_resume": true }
+    ],
+    "resume_condition": {
+      "expected_user_token": "تایید CORRECTION-LAYOUT",
+      "required_screenshot": { "required": true, "screenshot_type": "editor", "target": "affected element and relevant control panel" },
+      "resume_runtime_state": "BUILD_ACTIVE"
+    },
+    "root_fix_required": { "value": true, "repo_scope": ["protocols", "schemas", "validators", "tests"], "reason": "Incident exposes a root pipeline gap that needs repository-level enforcement." },
+    "production_ready": false
+  },
+  "active_warnings": ["normal build batches blocked until repair confirmation/evidence"],
+  "unresolved_evidence": ["EVIDENCE-LAYOUT-001"]
+}
