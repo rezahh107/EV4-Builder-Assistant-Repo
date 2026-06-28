@@ -7,6 +7,8 @@ const root = process.cwd();
 const packDir = path.join(root, 'dist', 'chatgpt-project');
 const manifestPath = path.join(packDir, 'SOURCE_PACK_MANIFEST.json');
 const reportPath = path.join(packDir, 'BUILD_REPORT.json');
+const CRLF = String.fromCharCode(13, 10);
+const LF = String.fromCharCode(10);
 
 function fail(message) {
   console.error(`Project pack validation failed: ${message}`);
@@ -14,7 +16,7 @@ function fail(message) {
 }
 
 function readText(filePath) {
-  return fs.readFileSync(filePath, 'utf8');
+  return fs.readFileSync(filePath, 'utf8').split(CRLF).join(LF);
 }
 
 function sha256(content) {
