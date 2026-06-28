@@ -1,6 +1,6 @@
 # EV4 Builder Assistant Repo
 
-Status: package_trust_and_guidance_sync_added_v0.3.2  
+Status: user_facing_builder_ux_added_v0.3.3  
 Role: interactive_elementor_execution_assistant  
 Primary input package: `Builder_Context_Package`  
 Primary workflow mode after valid intake: `APPROVED_HANDOFF_MODE`
@@ -20,7 +20,7 @@ Builder Assistant می‌گوید الان دقیقاً چه action کوچکی �
 
 ---
 
-## v0.3.2 Summary
+## v0.3.3 Summary
 
 ```text
 Patch A: workflow_mode / runtime_state / STATE_CAPSULE foundation present.
@@ -29,9 +29,62 @@ Patch C: structured confirmation migration completed.
 Patch D: checkpoint v0.2 assertion/evidence and retry policy present.
 Patch E: deployable ChatGPT project source pack present.
 Patch F: SMART_GUIDANCE_FOOTER v0.2 and UI_INSTRUCTION_CONFIDENCE_GATE added.
+Patch G: user-facing builder UX contract added.
 ```
 
 Production readiness remains false.
+
+---
+
+## User-Facing Builder UX
+
+Normal builder batches are concise Persian execution instructions.
+
+They show only what the user needs to act:
+
+```text
+هدف
+داخل
+نوع عنصر
+نام در Structure Panel
+کلاس
+تغییر نده
+نتیجه مورد انتظار
+```
+
+They hide internal schema/source fields unless the user asks `جزئیات فنی`, `بررسی`, or `وضعیت`.
+
+Hidden from normal batches:
+
+```text
+element_generation
+element_generation_source
+input_authorization
+package_digest
+Control path: insufficient_evidence
+```
+
+Use:
+
+```text
+protocols/BUILDER_BATCH_OUTPUT_FORMAT.md
+protocols/USER_FACING_RESPONSE_POLICY.md
+```
+
+---
+
+## UI Vocabulary
+
+`Container` may be an architecture/package term. It is not always the user-facing Elementor UI label.
+
+Use `ui_vocabulary_map` to remember the user's actual UI label, for example:
+
+```yaml
+architecture_term: Container
+user_ui_label: Flexbox
+```
+
+A user-provided Atomic UI screenshot showed labels such as `Div block` and `Flexbox`; this is local UI evidence, not universal official documentation.
 
 ---
 
@@ -66,7 +119,7 @@ If a control is missing or unverified, use `insufficient_evidence` or enter `COR
 
 ## Smart Guidance Footer
 
-`SMART_GUIDANCE_FOOTER` is now v0.2 and restricted:
+`SMART_GUIDANCE_FOOTER` is v0.2 and restricted:
 
 ```yaml
 guidance_footer: auto | off
@@ -104,6 +157,7 @@ EV4-Builder-Assistant-Repo/
 ├─ tests/
 ├─ docs/
 ├─ references/
+│  ├─ elementor-ui/
 │  └─ tuya-workbook/
 ├─ cases/
 │  └─ tuya-step-by-step/
@@ -115,12 +169,13 @@ EV4-Builder-Assistant-Repo/
 ## Key Runtime Files
 
 ```text
-PROJECT_INSTRUCTIONS.md
 core/MODE_STATE_MATRIX.md
 core/MASTER_PROMPT.md
 core/SESSION_STATE_MACHINE.md
 core/LIVE_INTERFACE_PRECEDENCE.md
 input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
+protocols/BUILDER_BATCH_OUTPUT_FORMAT.md
+protocols/USER_FACING_RESPONSE_POLICY.md
 protocols/SMART_GUIDANCE_FOOTER.md
 protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md
 commands/SESSION_COMMANDS.md
@@ -155,12 +210,13 @@ GitHub Actions workflow:
 
 ```yaml
 project_status:
-  version: 0.3.2
-  status: package_trust_and_guidance_sync_added
+  version: 0.3.3
+  status: user_facing_builder_ux_added
   structured_confirmation: completed
   smart_guidance_footer: v0.2.0
   ui_instruction_confidence_gate: active
+  user_facing_builder_ux: active
   source_pack: synced
-  real_elementor_execution: not_run
+  real_elementor_execution: in_progress_by_user
   production_ready: false
 ```
