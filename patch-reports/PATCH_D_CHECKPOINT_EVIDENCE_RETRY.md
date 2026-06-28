@@ -104,9 +104,19 @@ Invalid:
 
 ## Validation result
 
-در این محیط validation محلی با checkout واقعی اجرا نشد. انتظار اجرای CI روی PR وجود دارد.
+GitHub Actions روی PR #6 اجرا شد:
 
-Connector inspection انجام شد و فایل‌ها روی branch `patch/d-checkpoint-evidence-retry` نوشته شدند.
+```text
+Schema validation run #95: success
+```
+
+موارد مربوط به Patch D در CI:
+
+```text
+npm run validate:checkpoint: success
+validate:session-state with schemas/evidence-record.schema.json: success
+Compile session-state schema with checkpoint + evidence-record refs: success
+```
 
 ## Migration notes
 
