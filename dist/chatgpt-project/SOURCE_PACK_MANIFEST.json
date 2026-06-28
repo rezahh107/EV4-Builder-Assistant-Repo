@@ -1,7 +1,7 @@
 {
   "schema": "ev4-chatgpt-project-source-pack-manifest@1.0.0",
   "pack_root": "dist/chatgpt-project",
-  "generated_at": "2026-06-28T06:45:00Z",
+  "generated_at": "2026-06-28T09:00:00Z",
   "limits": {
     "project_instructions_max_chars": 8000,
     "project_instructions_warning_chars": 7800,
@@ -13,15 +13,15 @@
   "files": [
     {
       "path": "dist/chatgpt-project/BUILD_REPORT.json",
-      "sha256": "e3342f5e2e246d8226b04df9ad23204187cade896da76adae8b21a9f5f0a9783",
+      "sha256": "cd241a9c702f04960f3d474c433d7200984541ec672896f40ad6607e27604c85",
       "bytes": 362,
       "chars": 362
     },
     {
       "path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "sha256": "0d51f4bfab11ea2e1d9ac81c223386b8627c6afba86bafbbea020fcedaae9c12",
-      "bytes": 3938,
-      "chars": 3930
+      "sha256": "d49d931d7308cc7fe574db3300a679866eced5be1e8445b5af8e4735e25f5caa",
+      "bytes": 5131,
+      "chars": 5123
     },
     {
       "path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
@@ -31,9 +31,9 @@
     },
     {
       "path": "dist/chatgpt-project/knowledge/02_INPUT_AUTHORIZATION.md",
-      "sha256": "e8cf2838eff22e1e5045952a732496ceeba556bf751c166a0e4269294f60407d",
-      "bytes": 914,
-      "chars": 914
+      "sha256": "0235406fefe3455786e741a565b18244d5febb28c3febf354908c43c87434547",
+      "bytes": 1161,
+      "chars": 1161
     },
     {
       "path": "dist/chatgpt-project/knowledge/03_MODE_STATE_COMMANDS.md",
@@ -49,9 +49,9 @@
     },
     {
       "path": "dist/chatgpt-project/knowledge/05_UI_EVIDENCE_AND_CORRECTION.md",
-      "sha256": "88c48cd55c6d041473a38765247d83ed73e17a86c8a5b9fb6fab95a88ab182d4",
-      "bytes": 729,
-      "chars": 729
+      "sha256": "f7881f61018faa26ac69c39a03967e4206d05980083ce88f0c09f7824d646f08",
+      "bytes": 1945,
+      "chars": 1945
     },
     {
       "path": "dist/chatgpt-project/knowledge/06_LAYOUT_STYLE_RESPONSIVE_ACCESSIBILITY.md",
@@ -79,9 +79,9 @@
     },
     {
       "path": "dist/chatgpt-project/knowledge/smart-home-connector.compact.md",
-      "sha256": "ad4cb9debaff8404c6408ac07a3c64d67422bd41757e7a443b6154bcc1315314",
-      "bytes": 643,
-      "chars": 643
+      "sha256": "7a4c18811e38aea815e35c09a9e3317e3e853469fae25b79e96c398dcbb56fb1",
+      "bytes": 1020,
+      "chars": 1015
     }
   ]
 }
