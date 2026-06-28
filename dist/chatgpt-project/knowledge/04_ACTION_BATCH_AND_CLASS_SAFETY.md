@@ -8,8 +8,24 @@ Risk-adjusted batch size:
 - high-risk visual/responsive/overlay/SVG: 1 action
 - missing control or insufficient evidence: 0 actions
 
-Per-action details should include:
-target element, parent, Elementor element type, element_generation, element_generation_source, Structure Panel name, active class, control path, value/evidence status, protected properties, and expected result.
+User-facing batch fields:
+- هدف
+- داخل
+- نوع عنصر
+- نام در Structure Panel
+- کلاس
+- تغییر نده
+- نتیجه مورد انتظار
+
+Hide internal fields in normal builder batches:
+- element_generation
+- element_generation_source
+- input_authorization
+- package_digest
+- Value / evidence status
+- Control path: insufficient_evidence
+
+Show hidden fields only in جزئیات فنی, بررسی, وضعیت, CORRECTION, or EVIDENCE_REQUIRED.
 
 Class safety:
 Use approved class names exactly. In Elementor CSS Classes, enter class names without a leading dot.

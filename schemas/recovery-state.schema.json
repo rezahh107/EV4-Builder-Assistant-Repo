@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/recovery-state.schema.json",
+  "title": "EV4 Builder Recovery State",
+  "type": "object",
+  "required": ["max_repeat_before_escape", "retry_count", "escape_hatch_required"],
+  "properties": {
+    "last_safe_checkpoint": { "type": ["string", "null"] },
+    "active_action_id": { "type": ["string", "null"] },
+    "retry_count": { "type": "integer", "minimum": 0 },
+    "max_repeat_before_escape": { "const": 2 },
+    "escape_hatch_required": { "type": "boolean" },
+    "still_valid_work": { "type": "array", "items": { "type": "string" } },
+    "invalid_or_unverified_work": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

@@ -29,3 +29,6 @@ STATE_CAPSULE example:
 [STATE workflow=APPROVED_HANDOFF_MODE state=WAITING_FOR_CONFIRMATION cp=CP-001 batch=BATCH-001 risk=low]
 
 Never treat workflow_mode and runtime_state as the same field.
+
+User-facing output:
+Normal builder batches are concise Persian execution instructions. Internal/source fields are hidden unless user asks جزئیات فنی, بررسی, or وضعیت.

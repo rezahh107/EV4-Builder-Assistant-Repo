@@ -4,38 +4,16 @@
   "title": "EV4 Builder Session State",
   "description": "Session state for EV4 Builder Assistant. workflow_mode/runtime_state are paired when either is present. max_actions_per_turn is intentionally bounded to 1..5 by STEP_SIZE_CONTRACT.",
   "type": "object",
-  "required": [
-    "schema",
-    "current_state",
-    "selected_candidate_id",
-    "last_verified_checkpoint",
-    "max_actions_per_turn"
-  ],
+  "required": ["schema", "current_state", "selected_candidate_id", "last_verified_checkpoint", "max_actions_per_turn"],
   "properties": {
-    "schema": {
-      "const": "ev4-builder-session-state@0.1.0"
-    },
+    "schema": { "const": "ev4-builder-session-state@0.1.0" },
     "workflow_mode": {
-      "description": "Preferred Patch 1 workflow enum. It answers which workflow is active.",
-      "enum": [
-        "START_INTAKE_MODE",
-        "APPROVED_HANDOFF_MODE",
-        "FRESH_IMAGE_MODE_LIMITED"
-      ]
+      "description": "Preferred workflow enum. It answers which workflow is active.",
+      "enum": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"]
     },
     "runtime_state": {
-      "description": "Preferred Patch 1 runtime enum. It answers what is happening now inside the workflow.",
-      "enum": [
-        "INTAKE_WAITING",
-        "INTAKE_VALIDATING",
-        "BUILD_ACTIVE",
-        "WAITING_FOR_CONFIRMATION",
-        "EVIDENCE_REQUIRED",
-        "CORRECTION",
-        "REVIEW_ONLY",
-        "PAUSED",
-        "COMPLETED"
-      ]
+      "description": "Preferred runtime enum. It answers what is happening now inside the workflow.",
+      "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"]
     },
     "state_capsule": {
       "type": "string",
@@ -45,40 +23,63 @@
     },
     "current_state": {
       "description": "Legacy field retained for backward compatibility. Prefer runtime_state for new data. CORRECTION_MODE maps to CORRECTION; REVIEW_MODE maps to REVIEW_ONLY.",
-      "enum": [
-        "INTAKE_WAITING",
-        "INTAKE_VALIDATING",
-        "BUILD_ACTIVE",
-        "PAUSED",
-        "QUESTION_MODE",
-        "WAITING_FOR_CONFIRMATION",
-        "EVIDENCE_REQUIRED",
-        "CORRECTION_MODE",
-        "REVIEW_MODE",
-        "CORRECTION",
-        "REVIEW_ONLY",
-        "COMPLETED"
-      ]
+      "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "PAUSED", "QUESTION_MODE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION_MODE", "REVIEW_MODE", "CORRECTION", "REVIEW_ONLY", "COMPLETED"]
     },
-    "selected_candidate_id": {
-      "type": ["string", "null"]
-    },
-    "last_verified_checkpoint": {
-      "$ref": "./checkpoint.schema.json"
-    },
+    "selected_candidate_id": { "type": ["string", "null"] },
+    "last_verified_checkpoint": { "$ref": "./checkpoint.schema.json" },
     "max_actions_per_turn": {
       "type": "integer",
       "minimum": 1,
       "maximum": 5,
-      "description": "User-adjustable maximum action count. Valid values are 1..5 only. Values above 5 are intentionally rejected."
+      "description": "User-adjustable maximum action count. Valid values are 1..5 only."
     },
-    "active_warnings": {
-      "type": "array",
-      "items": { "type": "string" }
+    "known_control_map": { "type": "array", "items": { "$ref": "#/$defs/known_control_entry" } },
+    "ui_vocabulary_map": { "type": "array", "items": { "$ref": "#/$defs/ui_vocabulary_entry" } },
+    "recovery_state": { "$ref": "#/$defs/recovery_state" },
+    "active_warnings": { "type": "array", "items": { "type": "string" } },
+    "unresolved_evidence": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "known_control_entry": {
+      "type": "object",
+      "required": ["control_name", "status"],
+      "properties": {
+        "control_name": { "type": "string", "minLength": 1 },
+        "panel_name": { "type": ["string", "null"] },
+        "element_generation": { "type": ["string", "null"] },
+        "confirmed_by": { "enum": ["user_statement", "screenshot", "documentation", "installed_version", null] },
+        "evidence_ref": { "type": ["string", "null"] },
+        "status": { "enum": ["confirmed", "missing", "version_sensitive", "insufficient_evidence"] },
+        "session_confirmed_at": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
     },
-    "unresolved_evidence": {
-      "type": "array",
-      "items": { "type": "string" }
+    "ui_vocabulary_entry": {
+      "type": "object",
+      "required": ["vocabulary_key", "architecture_term", "status"],
+      "properties": {
+        "vocabulary_key": { "type": "string", "minLength": 1 },
+        "architecture_term": { "type": "string", "minLength": 1 },
+        "user_ui_label": { "type": ["string", "null"] },
+        "confirmed_by": { "enum": ["user_statement", "screenshot", "documentation", "installed_version", null] },
+        "confirmed_at_checkpoint": { "type": ["string", "null"] },
+        "status": { "enum": ["confirmed", "unknown", "changed", "insufficient_evidence"] }
+      },
+      "additionalProperties": false
+    },
+    "recovery_state": {
+      "type": "object",
+      "required": ["max_repeat_before_escape", "retry_count", "escape_hatch_required"],
+      "properties": {
+        "last_safe_checkpoint": { "type": ["string", "null"] },
+        "active_action_id": { "type": ["string", "null"] },
+        "retry_count": { "type": "integer", "minimum": 0 },
+        "max_repeat_before_escape": { "const": 2 },
+        "escape_hatch_required": { "type": "boolean" },
+        "still_valid_work": { "type": "array", "items": { "type": "string" } },
+        "invalid_or_unverified_work": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
     }
   },
   "dependentRequired": {
@@ -87,63 +88,27 @@
   },
   "allOf": [
     {
-      "if": {
-        "properties": { "workflow_mode": { "const": "START_INTAKE_MODE" } },
-        "required": ["workflow_mode"]
-      },
-      "then": {
-        "properties": {
-          "runtime_state": {
-            "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "EVIDENCE_REQUIRED", "REVIEW_ONLY", "CORRECTION", "PAUSED", "COMPLETED"]
-          }
-        }
-      }
+      "if": { "properties": { "workflow_mode": { "const": "START_INTAKE_MODE" } }, "required": ["workflow_mode"] },
+      "then": { "properties": { "runtime_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "EVIDENCE_REQUIRED", "REVIEW_ONLY", "CORRECTION", "PAUSED", "COMPLETED"] } } }
     },
     {
-      "if": {
-        "properties": { "workflow_mode": { "const": "APPROVED_HANDOFF_MODE" } },
-        "required": ["workflow_mode"]
-      },
-      "then": {
-        "properties": {
-          "runtime_state": {
-            "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"]
-          }
-        }
-      }
+      "if": { "properties": { "workflow_mode": { "const": "APPROVED_HANDOFF_MODE" } }, "required": ["workflow_mode"] },
+      "then": { "properties": { "runtime_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"] } } }
     },
     {
-      "if": {
-        "properties": { "workflow_mode": { "const": "FRESH_IMAGE_MODE_LIMITED" } },
-        "required": ["workflow_mode"]
-      },
-      "then": {
-        "properties": {
-          "runtime_state": {
-            "enum": ["INTAKE_WAITING", "EVIDENCE_REQUIRED", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"]
-          }
-        }
-      }
+      "if": { "properties": { "workflow_mode": { "const": "FRESH_IMAGE_MODE_LIMITED" } }, "required": ["workflow_mode"] },
+      "then": { "properties": { "runtime_state": { "enum": ["INTAKE_WAITING", "EVIDENCE_REQUIRED", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"] } } }
     },
     {
-      "if": {
-        "properties": { "runtime_state": { "const": "CORRECTION" } },
-        "required": ["runtime_state"]
-      },
+      "if": { "properties": { "runtime_state": { "const": "CORRECTION" } }, "required": ["runtime_state"] },
       "then": { "properties": { "current_state": { "enum": ["CORRECTION", "CORRECTION_MODE"] } } }
     },
     {
-      "if": {
-        "properties": { "runtime_state": { "const": "REVIEW_ONLY" } },
-        "required": ["runtime_state"]
-      },
+      "if": { "properties": { "runtime_state": { "const": "REVIEW_ONLY" } }, "required": ["runtime_state"] },
       "then": { "properties": { "current_state": { "enum": ["REVIEW_ONLY", "REVIEW_MODE", "QUESTION_MODE"] } } }
     },
     {
-      "if": {
-        "properties": { "runtime_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "PAUSED", "COMPLETED", "INTAKE_WAITING", "INTAKE_VALIDATING"] } },
-        "required": ["runtime_state"]
-      },
+      "if": { "properties": { "runtime_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "PAUSED", "COMPLETED", "INTAKE_WAITING", "INTAKE_VALIDATING"] } }, "required": ["runtime_state"] },
       "then": { "properties": { "current_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "PAUSED", "COMPLETED", "INTAKE_WAITING", "INTAKE_VALIDATING"] } } }
     }
   ],

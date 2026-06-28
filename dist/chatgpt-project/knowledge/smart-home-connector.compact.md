@@ -28,4 +28,8 @@ Builder constraints:
 - meaningful text must stay editable
 - production_ready remains false
 
+User-facing Atomic UI evidence:
+- screenshot shows Atomic Elements with Div block and Flexbox.
+- architecture term Container should be mapped to the user's confirmed UI label before practical instruction.
+
 Use the package as build source of truth and current Elementor UI evidence for executable paths.
