@@ -109,18 +109,34 @@ as Knowledge files.
 
 ## Validation result
 
-Pending PR CI at report creation time.
+GitHub Actions روی PR #7 اجرا شد:
 
-Expected commands:
-
-```bash
-npm run build:project-pack
-npm run validate:builder-context
-npm run validate:cross-field
-npm run validate:checkpoint
-npm run validate:intake-result
-npm run validate:session-state
+```text
+Schema validation run #97: success
 ```
+
+Relevant Patch E step:
+
+```text
+Validate ChatGPT project source pack: success
+```
+
+Full workflow also passed existing repo validation:
+
+```text
+validate:builder-context: success
+validate:cross-field: success
+validate:checkpoint: success
+validate:intake-result: success
+validate:session-state: success
+session-state schema compile: success
+```
+
+## How to upload
+
+1. Paste `dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt` into ChatGPT Project Instructions.
+2. Upload all files from `dist/chatgpt-project/knowledge/` as Knowledge.
+3. Keep `SOURCE_PACK_MANIFEST.json` and `BUILD_REPORT.json` as verification artifacts; upload them only if you want audit metadata available in the project.
 
 ## Scope notes
 
