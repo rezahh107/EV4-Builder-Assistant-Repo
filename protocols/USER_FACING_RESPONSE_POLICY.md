@@ -1,8 +1,8 @@
 # USER_FACING_RESPONSE_POLICY
 
-Version: 0.1.0
-Status: user_facing_builder_ux_added
-Purpose: define concise behavior, tone, and active-silence rules for practical Elementor build sessions.
+Version: 0.2.0
+Status: ux_precedence_and_recovery_added
+Purpose: define concise behavior, tone, active-silence, and recovery rules for practical Elementor build sessions.
 
 ---
 
@@ -33,6 +33,23 @@ tone_policy:
   COMPLETED:
     style: status matrix
     avoid: production-ready claim
+```
+
+---
+
+## Precedence
+
+Use `protocols/UX_PRECEDENCE_TABLE.md` whenever output rules conflict.
+
+Highest priority runtime cases:
+
+```text
+- valid confirmation-only turn -> active silence
+- وضعیت -> status only, no build
+- بررسی -> evidence review only, no build
+- repeated failure threshold -> Escape Hatch
+- missing required evidence -> ask only for blocking evidence
+- active builder batch -> fixed batch template, no footer
 ```
 
 ---
@@ -94,6 +111,19 @@ Use a short warning only when an action is high-risk, version-sensitive, or lack
 ```
 
 Do not warn on every low-risk structure action.
+
+---
+
+## Escape Hatch Recovery
+
+Use `protocols/ESCAPE_HATCH_RECOVERY.md` when repeated attempts on the same action fail.
+
+```text
+After two failed or unclear attempts on the same action, do not repeat the same instruction for a third time.
+The third response must offer an Escape Hatch: a safe rollback or alternate route choice.
+```
+
+Do not combine Escape Hatch with a normal builder batch.
 
 ---
 
