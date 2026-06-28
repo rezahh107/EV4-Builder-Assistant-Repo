@@ -1,7 +1,7 @@
 # modes/CORRECTION_MODE
 
-Version: 0.1.2
-Status: checkpoint_retry_policy_added
+Version: 0.1.3
+Status: ui_confidence_gate_linked
 Purpose: repair unsupported builder instructions without redesigning architecture
 
 ---
@@ -16,6 +16,7 @@ Enter `CORRECTION_MODE` when:
 - wrong Elementor element is selected;
 - wrong class is active;
 - element_generation is Unverified element type and affects the instruction;
+- exact UI control path is unverified and blocks the current action;
 - previous instruction used unsupported V3/V4 panel path;
 - action caused unexpected visible behavior;
 - checkpoint evidence contradicts an assertion;
@@ -23,6 +24,8 @@ Enter `CORRECTION_MODE` when:
 - user command is اصلاح;
 - user asks to fix an earlier instruction.
 ```
+
+Use `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md` to classify missing or unverified UI controls before continuing.
 
 ---
 
@@ -89,7 +92,7 @@ correction_response:
   subtype_details:
 ```
 
-For control-existence failures, `subtype_details` must follow `protocols/CONTROL_EXISTENCE_FAILURE.md` but remain inside this canonical envelope.
+For control-existence failures, `subtype_details` must follow `protocols/CONTROL_EXISTENCE_FAILURE.md` and `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md` while remaining inside this canonical envelope.
 
 ---
 
@@ -106,6 +109,35 @@ For control-existence failures, `subtype_details` must follow `protocols/CONTROL
 8. Provide the smallest verified correction path.
 9. Wait for confirmation or targeted evidence.
 ```
+
+If UI evidence is needed, use:
+
+```text
+Screenshot target:
+- selected element:
+- show:
+- active class:
+- panel/tab:
+- crop:
+```
+
+---
+
+## known_control_map Use
+
+When a control is disputed, update or reference a compact map:
+
+```yaml
+known_control_map:
+  - control_name:
+    panel_name:
+    element_generation:
+    confirmed_by: user_statement | screenshot | documentation | installed_version
+    evidence_ref:
+    status: confirmed | missing | version_sensitive | insufficient_evidence
+```
+
+Do not repeat an instruction for a control marked `missing` or `insufficient_evidence`.
 
 ---
 
@@ -131,7 +163,9 @@ For control-existence failures, `subtype_details` must follow `protocols/CONTROL
 ```yaml
 correction_types:
   missing_control:
-    route: protocols/CONTROL_EXISTENCE_FAILURE.md
+    route:
+      - protocols/CONTROL_EXISTENCE_FAILURE.md
+      - protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md
 
   wrong_class_active:
     route: protocols/CLASS_APPLICATION_SAFETY.md
