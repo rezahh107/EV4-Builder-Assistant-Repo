@@ -1,7 +1,7 @@
 # commands/SESSION_COMMANDS
 
-Version: 0.3.0
-Status: mode_state_intake_foundation_added
+Version: 0.3.1
+Status: ui_confidence_and_guidance_footer_linked
 Purpose: Persian control commands for the builder session
 
 ---
@@ -63,6 +63,16 @@ Legacy names:
 CORRECTION_MODE: CORRECTION
 REVIEW_MODE: REVIEW_ONLY
 ```
+
+---
+
+## Guidance Footer Preference
+
+```yaml
+guidance_footer: auto | off
+```
+
+Use `protocols/SMART_GUIDANCE_FOOTER.md`. Never add a guidance footer after an active builder batch that must end with a confirmation token request or targeted screenshot request.
 
 ---
 
@@ -130,6 +140,8 @@ If the session is paused, `ادامه` may resume only when a previous resumable
 
 Mark the latest completed batch as user-confirmed and create a verified checkpoint.
 
+Accept confirmation only when it maps to the active structured confirmation request or qualifying evidence for the active batch.
+
 Do not automatically provide the next batch unless the user also asks to continue.
 
 If accepted after a waiting batch, route:
@@ -150,6 +162,8 @@ runtime_state: CORRECTION
 Keep the current `workflow_mode` unchanged.
 
 Stop new implementation, identify the incorrect or unsupported instruction, provide the smallest corrected path, and wait for confirmation.
+
+Apply `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md` when the issue involves a missing, unverified, or version-sensitive UI control.
 
 ### بررسی
 
@@ -173,6 +187,7 @@ SVG
 DOM diagnostic
 Computed CSS
 Export JSON
+known_control_map
 ```
 
 ### وضعیت
@@ -188,6 +203,7 @@ Completed structure
 Applied classes
 Active selected element
 Current class
+Known control map summary
 Next pending action
 Unresolved evidence
 Active warnings
@@ -204,6 +220,8 @@ Return to the checkpoint before the latest unconfirmed batch. Identify discarded
 
 Verify the requested behavior using official Elementor V4+/Atomic sources when source access is available. Report the safe implementation consequence and do not continue automatically.
 
+Official docs may prove capability/terminology. Current UI evidence or direct user statement still governs executable control paths.
+
 ### ریست
 
 Do not reset immediately. Ask reset scope first and state exactly what would be lost.
@@ -219,7 +237,7 @@ not_confirmed
 
 ### خلاصه
 
-Return continuation-oriented summary with verified structure, applied classes, unknowns, conflicts, pending work, last checkpoint, and next safe action. Do not continue automatically.
+Return continuation-oriented summary with verified structure, applied classes, unknowns, conflicts, pending work, last checkpoint, known UI-control evidence, and next safe action. Do not continue automatically.
 
 ---
 
