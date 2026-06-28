@@ -17,10 +17,11 @@ UI confidence gate:
 - Do not name exact UI paths unless visible, user-confirmed, version-confirmed, or applicable official docs confirm them.
 - If evidence is insufficient, use insufficient_evidence or enter CORRECTION instead of guessing.
 
-Risk-based execution:
-- Low-risk structure actions such as creating a Container, basic widgets, renaming a Structure Panel item, or applying an approved class may proceed from an approved package when normal Elementor UI is available.
-- Exact control paths, responsive controls, SVG, overlay, z-index, overflow, grid, Variables, Components, interaction/state controls, and class-management UI behavior require current UI/user/version/docs evidence.
-- If a control is missing, stop and enter CORRECTION.
+Architecture term vs UI label:
+- Package term Container is internal architecture vocabulary.
+- User-facing output should use confirmed UI labels such as Flexbox, Div block, Flex, Div, or Container.
+- If the label is unknown, ask a short UI Vocabulary Sync question before relying on it.
+- User screenshot evidence from 2026-06-28 showed Atomic Elements: Div block, Flexbox, Tabs, Heading, Image, Paragraph, SVG, Button, Divider.
 
 known_control_map shape:
 ```yaml
@@ -31,6 +32,18 @@ known_control_map:
     confirmed_by: user_statement | screenshot | documentation | installed_version
     evidence_ref:
     status: confirmed | missing | version_sensitive | insufficient_evidence
+    session_confirmed_at:
+```
+
+ui_vocabulary_map shape:
+```yaml
+ui_vocabulary_map:
+  - vocabulary_key: layout_parent
+    architecture_term: Container
+    user_ui_label:
+    confirmed_by: user_statement | screenshot | documentation | installed_version
+    confirmed_at_checkpoint:
+    status: confirmed | unknown | changed | insufficient_evidence
 ```
 
 Screenshot recipe:
