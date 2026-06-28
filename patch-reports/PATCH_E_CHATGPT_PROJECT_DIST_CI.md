@@ -89,9 +89,19 @@ dist/chatgpt-project/knowledge/
 
 ## Validation result
 
-Pending PR CI at report creation time.
+GitHub Actions روی PR #8 اجرا شد:
 
-Expected commands:
+```text
+Schema validation run #108: success
+```
+
+Relevant Patch E step:
+
+```text
+Validate ChatGPT project source pack: success
+```
+
+Full workflow also passed existing repo validation:
 
 ```bash
 npm run build:project-pack
