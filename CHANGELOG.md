@@ -44,20 +44,24 @@
   - `dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt`
   - `dist/chatgpt-project/knowledge/02_INPUT_AUTHORIZATION.md`
   - `dist/chatgpt-project/knowledge/05_UI_EVIDENCE_AND_CORRECTION.md`
+  - `dist/chatgpt-project/knowledge/smart-home-connector.compact.md`
   - `dist/chatgpt-project/SOURCE_PACK_MANIFEST.json`
   - `dist/chatgpt-project/BUILD_REPORT.json`
 
 ### Validation
 
-- Validation commands were not run locally from a checked-out repo because the GitHub connector does not provide a local npm execution environment.
-- Expected validation commands:
+- GitHub Actions `Schema validation` passed on run `111` for head `90b8a8c3345b0329d8e47e99c8c32a624b077d79`.
+- Passed steps included:
   - `npm run build:project-pack`
-  - `npm run validate:builder-context`
+  - valid Builder_Context_Package fixture validation
+  - invalid Builder_Context_Package rejection
   - `npm run validate:cross-field`
+  - invalid cross-field fixture rejection
   - `npm run validate:checkpoint`
-  - `npm run validate:intake-result`
+  - intake-result fixture validation
   - `npm run validate:session-state`
-- GitHub Actions validation should run on the PR branch.
+  - session-state schema compilation
+- Local npm validation was not run from a checked-out repo because the GitHub connector does not provide a local npm execution environment.
 
 ### Status
 
