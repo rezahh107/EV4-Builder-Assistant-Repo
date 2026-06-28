@@ -1,7 +1,7 @@
 # protocols/COMPLETION_GATE
 
-Version: 0.1.0
-Status: active_initial
+Version: 0.1.1
+Status: checkpoint_evidence_assertions_added
 Purpose: prevent over-claiming build completion or production readiness
 
 ---
@@ -11,6 +11,8 @@ Purpose: prevent over-claiming build completion or production readiness
 A Builder Assistant session may report build progress, but it must not claim production readiness without real evidence.
 
 Completion is not one Boolean. It is a checklist of separately verified states.
+
+For Patch D, completion status should be derived from checkpoint assertions and evidence records, not from broad batch-level confidence.
 
 ---
 
@@ -40,7 +42,7 @@ completion_gate:
 
 ```yaml
 confirmed:
-  meaning: verified by user confirmation, screenshot, frontend evidence, diagnostic, or export evidence
+  meaning: verified by explicit assertion-level evidence_refs in the checkpoint evidence_ledger
 
 not_checked:
   meaning: no check has been performed yet
@@ -51,6 +53,21 @@ insufficient_evidence:
 not_applicable:
   meaning: item structurally does not apply to this build and reason is stated
 ```
+
+---
+
+## Evidence Boundary
+
+```text
+- A screenshot confirms only visible assertions it supports.
+- A structure-panel screenshot does not prove frontend rendering.
+- A frontend screenshot does not prove hidden Elementor control values.
+- Silence does not confirm anything.
+- Vague “done” does not confirm detailed assertions unless it maps to the expected minimal confirmation token/action IDs.
+- Completion items must not be upgraded from insufficient_evidence to confirmed without evidence_refs.
+```
+
+If a completion item depends on missing or partial evidence, keep it as `insufficient_evidence` or `not_checked` and route runtime to `EVIDENCE_REQUIRED` when continued building depends on it.
 
 ---
 
@@ -94,6 +111,8 @@ Builder Session Result
 - Responsive:
 - Accessibility:
 - Export/EDIS:
+- Evidence ledger:
+- Assertion statuses:
 - Remaining unknowns:
 - Recommended next system:
 ```

@@ -58,13 +58,7 @@ jobs:
 
       - name: Validate checkpoint fixtures
         run: |
-          npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/checkpoint.schema.json -d tests/valid/checkpoint.json
-          if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/checkpoint.schema.json -d tests/invalid/checkpoint_missing_session_id.json; then
-            echo "Invalid checkpoint fixture unexpectedly passed validation."
-            exit 1
-          else
-            echo "Invalid checkpoint fixture correctly failed."
-          fi
+          npm run validate:checkpoint
 
       - name: Validate intake result fixtures
         run: |
@@ -82,14 +76,8 @@ jobs:
 
       - name: Validate session-state fixtures
         run: |
-          npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -d tests/valid/session_state_mode_state.json
-          if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -d tests/invalid/session_state_workflow_runtime_mismatch.json; then
-            echo "Invalid session-state fixture unexpectedly passed validation."
-            exit 1
-          else
-            echo "Invalid session-state fixture correctly failed."
-          fi
+          npm run validate:session-state
 
       - name: Compile session-state schema
         run: |
-          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -r schemas/evidence-record.schema.json

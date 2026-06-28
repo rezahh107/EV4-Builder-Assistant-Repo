@@ -1,0 +1,27 @@
+{
+  "schema": "ev4-builder-checkpoint@0.2.0",
+  "checkpoint_id": "smart-home-cp-invalid-002",
+  "checkpoint_sequence": 1,
+  "parent_checkpoint_id": null,
+  "package_id": "examples/smart-home-connector/builder_context_package.json",
+  "package_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "workflow_mode": "APPROVED_HANDOFF_MODE",
+  "runtime_state": "EVIDENCE_REQUIRED",
+  "batch_id": "BATCH-001",
+  "confirmed_action_ids": [],
+  "unconfirmed_action_ids": ["BATCH-001-A01"],
+  "assertions": [
+    {
+      "assertion_id": "ASSERT-001",
+      "subject_ref": "BATCH-001-A01",
+      "claim": "Root Container exists.",
+      "status": "insufficient_evidence",
+      "evidence_refs": []
+    }
+  ],
+  "evidence_ledger": [],
+  "retry_policy": {"max_retry_per_action": 4, "retry_1": "clarify_instruction", "retry_2": "request_targeted_screenshot", "retry_3": "enter_CORRECTION"},
+  "created_at": "2026-06-28T06:00:00Z",
+  "created_from": "manual_import"
+}

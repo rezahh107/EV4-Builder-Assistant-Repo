@@ -1,8 +1,8 @@
 # core/SESSION_STATE_MACHINE
 
-Version: 0.3.0
-Status: mode_state_intake_foundation_added
-Purpose: normalized runtime state, workflow mode, checkpoint, and STATE_CAPSULE contract
+Version: 0.3.1
+Status: checkpoint_evidence_retry_added
+Purpose: normalized runtime state, workflow mode, checkpoint, evidence assertion, and STATE_CAPSULE contract
 
 ---
 
@@ -78,7 +78,7 @@ EVIDENCE_REQUIRED:
   meaning: missing package field, screenshot, version evidence, UI evidence, checkpoint, or status summary blocks continuation
 
 CORRECTION:
-  meaning: previous instruction/control/path is disputed, missing, or unsupported
+  meaning: previous instruction/control/path is disputed, missing, unsupported, or has reached retry_3
 
 REVIEW_ONLY:
   meaning: inspect evidence only and do not continue automatically
@@ -122,49 +122,117 @@ Use `risk=blocked` when the session is in `EVIDENCE_REQUIRED` or cannot continue
 
 ## Last Verified Checkpoint
 
-A checkpoint must include:
+Legacy checkpoint `ev4-builder-checkpoint@0.1.0` remains valid for compatibility.
+
+New checkpoints should prefer assertion/evidence model `ev4-builder-checkpoint@0.2.0`:
 
 ```yaml
 last_verified_checkpoint:
   checkpoint_id:
+  checkpoint_sequence:
+  parent_checkpoint_id:
+  package_id:
+  package_sha256:
+  selected_candidate_id:
   workflow_mode:
   runtime_state:
-  current_section:
-  current_handoff_or_context_package:
-  selected_candidate_id:
-  completed_elements:
-  applied_classes:
-  verified_settings:
-  unconfirmed_settings:
-  active_warnings:
-  unresolved_evidence:
-  last_completed_action:
-  next_pending_action:
+  batch_id:
+  confirmed_action_ids: []
+  unconfirmed_action_ids: []
+  assertions:
+    - assertion_id:
+      subject_ref:
+      claim:
+      status: confirmed | not_checked | insufficient_evidence | not_applicable
+      evidence_refs: []
+  evidence_ledger: []
+  retry_policy:
+    max_retry_per_action: 3
+    retry_1: clarify_instruction
+    retry_2: request_targeted_screenshot
+    retry_3: enter_CORRECTION
+  created_at:
+  created_from:
 ```
 
 If an older checkpoint only has `current_state`, map it to `runtime_state` before using it in a new reply.
 
 ---
 
-## Checkpoint Creation Rule
+## Evidence Confirmation Rule
 
-Create or update a verified checkpoint only when at least one of these is present:
+Evidence confirms only the specific assertions it supports.
 
 ```text
-- explicit user confirmation;
-- screenshot that visibly confirms the action;
-- frontend/diagnostic evidence that confirms the action;
-- user says تایید for the latest completed batch;
-- manual status import.
+- A screenshot confirms only visible assertions in that screenshot.
+- A structure-panel screenshot may confirm structure and class assertions visible in the panel, not frontend rendering.
+- A frontend screenshot may confirm visible layout/rendering assertions, not hidden Elementor settings.
+- A diagnostic or export JSON confirms only claims traceable to that artifact.
+- Silence confirms nothing.
+- Vague “done” does not confirm detailed assertions unless the package expected only minimal confirmation for those exact action IDs.
 ```
 
-Do not create a checkpoint from:
+When evidence is partial, mark unsupported assertions as `insufficient_evidence` or `not_checked`; do not mark the whole batch confirmed.
+
+If required evidence is insufficient:
+
+```yaml
+runtime_state: EVIDENCE_REQUIRED
+```
+
+If evidence contradicts the instruction or a repeated retry reaches the limit:
+
+```yaml
+runtime_state: CORRECTION
+```
+
+---
+
+## Retry Policy
+
+Canonical retry policy:
+
+```yaml
+MAX_RETRY_COUNT: 3
+retry_policy:
+  max_retry_per_action: 3
+  retry_1: clarify_instruction
+  retry_2: request_targeted_screenshot
+  retry_3: enter_CORRECTION
+```
+
+Rules:
+
+```text
+- Retry count is per action, not per session.
+- retry_1 clarifies the exact instruction and expected evidence.
+- retry_2 requests one targeted screenshot or diagnostic artifact.
+- retry_3 enters CORRECTION and stops downstream actions.
+- Do not ask the user to confirm hashes in this patch.
+```
+
+---
+
+## Checkpoint Creation Rule
+
+Create or update a verified checkpoint only when at least one assertion is supported by evidence:
+
+```text
+- explicit user confirmation mapped to confirmed_action_ids;
+- screenshot that visibly confirms the assertion;
+- frontend/diagnostic/export evidence that confirms the assertion;
+- user sends the expected structured confirmation token for the latest completed batch;
+- manual status import with assertion/evidence mapping.
+```
+
+Do not create a confirmed checkpoint from:
 
 ```text
 - silence;
 - a new unrelated question;
 - a partial screenshot that does not show the target;
 - an assumption that a prior instruction was followed;
+- a vague “done” that cannot be mapped to assertion IDs;
 - a user message that reports a problem.
 ```
 
@@ -189,6 +257,14 @@ minimum_transitions:
   missing_required_input:
     to_workflow_mode: START_INTAKE_MODE
     to_runtime_state: EVIDENCE_REQUIRED
+
+  insufficient_checkpoint_evidence:
+    to_workflow_mode: current workflow_mode
+    to_runtime_state: EVIDENCE_REQUIRED
+
+  retry_3_reached:
+    to_workflow_mode: current workflow_mode
+    to_runtime_state: CORRECTION
 
   user_says_توقف:
     to_workflow_mode: current workflow_mode
@@ -229,6 +305,8 @@ minimum_transitions:
 - Do not leave EVIDENCE_REQUIRED until blocking evidence is provided or route is changed.
 - Do not treat ادامه as تایید.
 - Do not treat تایید as permission to continue unless the message also asks to continue.
+- Do not treat silence as confirmation.
+- Do not treat screenshot evidence as batch-wide confirmation.
 - Do not enter APPROVED_HANDOFF_MODE from image-only input unless FRESH_IMAGE_MODE_LIMITED was explicitly accepted and then a valid Builder_Context_Package is later provided.
 - Do not treat optional screenshot absence as a blocker unless the active contract specifically requires it.
 ```
@@ -244,6 +322,10 @@ Workflow mode:
 Runtime state:
 State capsule:
 Last verified checkpoint:
+Confirmed action IDs:
+Unconfirmed action IDs:
+Assertion statuses:
+Evidence ledger summary:
 Completed structure:
 Applied classes:
 Active selected element:
