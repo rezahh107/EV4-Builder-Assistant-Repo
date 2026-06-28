@@ -1,6 +1,6 @@
 # modes/APPROVED_HANDOFF_MODE
 
-Version: 0.1.1
+Version: 0.1.2
 Status: active_initial
 Purpose: build from audited EV4 Builder_Context_Package
 
@@ -8,16 +8,26 @@ Purpose: build from audited EV4 Builder_Context_Package
 
 ## When This Mode Applies
 
-Use `APPROVED_HANDOFF_MODE` when the user provides any of:
+Use `APPROVED_HANDOFF_MODE` only after the provided `Builder_Context_Package` passes `input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md` with:
 
-```text
-- Builder_Context_Package
-- completed /builder-feed-export output
-- completed /handoff-export plus class/tree map
-- approved EV4 build sequence
+```yaml
+input_authorization:
+  decision: approved
+  eligible_workflow_mode: APPROVED_HANDOFF_MODE
+  eligible_runtime_state: BUILD_ACTIVE
 ```
 
-This is the default mode for this repo.
+Compatible older packages may omit an embedded `input_authorization`, but the Builder Assistant must compute the same authorization before entering this mode.
+
+Do not use `APPROVED_HANDOFF_MODE` for:
+
+```text
+- package_status: blocked
+- blocked_missing_input
+- blocked_invalid_package
+- blocked_conflict
+- blocked_package_status
+```
 
 ---
 
@@ -98,13 +108,17 @@ Runtime behavior:
 
 ## First Response Pattern
 
-When the package is complete, the first response should include:
+When the package is authorized and complete, the first response should include:
 
 ```text
 APPROVED_HANDOFF_MODE فعال شد.
 selected_candidate_id: [value]
 source_of_truth: Builder_Context_Package
 production_ready: false
+
+input_authorization:
+- decision: approved
+- package_digest: [sha256 if supplied or computed]
 
 Current verified scope:
 - package authorization: pass
@@ -116,11 +130,12 @@ Actions:
 ...
 
 Verification request:
+Confirm only these action IDs: [confirmation_request.confirmed_action_ids]
 Send exactly:
 [confirmation_request.expected_user_token generated through trusted template]
 ```
 
-If the package is incomplete, do not start actions. Ask only for the missing blocking input.
+If the package is incomplete, blocked, or internally conflicting, do not start actions. Ask only for the missing or corrected blocking input.
 
 ---
 
