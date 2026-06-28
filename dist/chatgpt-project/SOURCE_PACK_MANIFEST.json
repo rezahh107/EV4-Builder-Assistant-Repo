@@ -1,7 +1,7 @@
 {
   "schema": "ev4-chatgpt-project-source-pack-manifest@1.0.0",
   "pack_root": "dist/chatgpt-project",
-  "generated_at": "2026-06-28T14:30:00Z",
+  "generated_at": "2026-06-28T15:00:00Z",
   "limits": {
     "project_instructions_max_chars": 8000,
     "project_instructions_warning_chars": 7800,
@@ -13,15 +13,15 @@
   "files": [
     {
       "path": "dist/chatgpt-project/BUILD_REPORT.json",
-      "sha256": "b8cd9b840c2a985d86da55646f4195f6cd30a8f517fa33a55b08c36cfab05bdb",
+      "sha256": "9d57a9054e927c378c2e1ef9cf9517802aec494d31a7d96d74034514ffe8d5cb",
       "bytes": 361,
       "chars": 361
     },
     {
       "path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "sha256": "c73d28d8af5a9dd1a2638f5d68b0cd4afdc7a322ef78a526e8f38daa25a1e3fa",
-      "bytes": 6024,
-      "chars": 5852
+      "sha256": "45041bbc68a421ce021e38cb1989a3453aeb2e670ef18551fd5ca68e57697afe",
+      "bytes": 6729,
+      "chars": 6547
     },
     {
       "path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
@@ -76,6 +76,12 @@
       "sha256": "c1ea79b51724bd1105090210ba7a1dc47bbeb39d248b3ef06f3c0a855283f173",
       "bytes": 574,
       "chars": 574
+    },
+    {
+      "path": "dist/chatgpt-project/knowledge/10_USER_FACING_UX_RECOVERY.md",
+      "sha256": "08a5f69f3f40a24aa0f2c416d5cc77066a4d93cf0a824bfed0154455723a980d",
+      "bytes": 1096,
+      "chars": 1081
     },
     {
       "path": "dist/chatgpt-project/knowledge/smart-home-connector.compact.md",
