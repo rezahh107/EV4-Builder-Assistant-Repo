@@ -1,7 +1,7 @@
 {
   "schema": "ev4-chatgpt-project-build-report@1.0.0",
-  "generated_at": "2026-06-28T06:45:00Z",
-  "project_instructions_chars": 3930,
+  "generated_at": "2026-06-28T09:00:00Z",
+  "project_instructions_chars": 5123,
   "project_instructions_limit": 8000,
   "project_instructions_warning_threshold": 7800,
   "knowledge_file_count": 10,

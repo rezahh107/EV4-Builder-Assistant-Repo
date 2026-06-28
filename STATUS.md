@@ -1,8 +1,8 @@
 # STATUS — EV4 Builder Assistant Repo
 
-Version: 0.3.1
-Status: mode_state_intake_foundation_hardened
-Date: 2026-06-27
+Version: 0.3.2
+Status: package_trust_and_guidance_sync_added
+Date: 2026-06-28
 
 ---
 
@@ -10,62 +10,97 @@ Date: 2026-06-27
 
 ```yaml
 project_status:
-  project_instructions: active_v0.3.1
-  master_prompt: active_v0.3.1
-  session_state_machine: active_v0.3.0
+  project_instructions: active_v0.3.x
+  master_prompt: active_v0.3.x
+  session_state_machine: active_v0.3.1
   mode_state_matrix: active_v0.3.0
   start_intake_policy: active_v0.3.0
-  session_commands: active_v0.3.0
-  intake_result_schema: hardened_v0.3.1
-  session_state_schema: hardened_v0.3.1
-  intake_result_fixtures: expanded
-  session_state_fixtures: added
-  schema_validation_workflow: expanded_fixture_coverage
-  package_scripts: expanded_fixture_coverage
+  session_commands: ui_confidence_and_guidance_footer_linked
+  input_contract: structured_confirmation_trust_boundary
+  builder_context_schema: confirmation_request_supported
+  package_validator: cross_field_confirmation_and_injection_checks
+  smart_guidance_footer: v0.2.0
+  ui_instruction_confidence_gate: active
+  source_pack: synced_v0.3.2
   action_default_max: 5
   production_ready: false
 ```
 
 ---
 
-## v0.3.1 Hardening Summary
+## Patch Status
 
-```text
-PROJECT_INSTRUCTIONS.md no longer treats PAUSED, CORRECTION_MODE, or REVIEW_MODE as workflow modes.
-core/MASTER_PROMPT.md now uses workflow_mode/runtime_state separation.
-schemas/intake-result.schema.json enforces approved/blocked intake invariants.
-schemas/session-state.schema.json enforces workflow_mode/runtime_state pairing when either field is present.
-CI validates all intake_result valid/invalid fixtures by filename pattern.
-CI validates a session-state mode/runtime mismatch fixture.
+```yaml
+patches:
+  Patch_A:
+    status: present
+    notes:
+      - core/MODE_STATE_MATRIX.md present
+      - workflow_mode/runtime_state separation present
+      - STATE_CAPSULE present
+      - schemas/intake-result.schema.json present
+
+  Patch_B:
+    status: present
+    notes:
+      - input_authorization supported
+      - package_digest supported
+      - blocked package status rejection present
+      - validator diagnostics present
+
+  Patch_C:
+    status: completed
+    name: package-trust-boundary-completion
+    notes:
+      - Smart Home example migrated to confirmation_request
+      - builder_assistant_prompt_seed removed from Smart Home example runtime path
+      - confirmation_sentence removed from Smart Home example runtime path
+      - confirmation_request.confirmed_action_ids is confirmation scope
+      - expected_user_token is the exact user token requested after a batch
+      - prompt-seed and confirmation-text injection fixtures added
+
+  Patch_D:
+    status: present
+    notes:
+      - schemas/evidence-record.schema.json present
+      - checkpoint v0.2 assertions/evidence present
+      - MAX_RETRY_COUNT = 3 retry policy present
+
+  Patch_E:
+    status: present
+    notes:
+      - dist/chatgpt-project present
+      - scripts/build-project-pack.mjs present
+      - SOURCE_PACK_MANIFEST.json present
+      - BUILD_REPORT.json present
+
+  Patch_F:
+    status: completed
+    name: smart-guidance-v0.2-ui-confidence-gate
+    notes:
+      - SMART_GUIDANCE_FOOTER upgraded to v0.2.0
+      - footer_allowed contexts explicit
+      - guidance_footer: auto | off documented
+      - UI_INSTRUCTION_CONFIDENCE_GATE added
+      - known_control_map documented
+      - screenshot recipe documented
+      - risk-based UI-control verification documented
 ```
 
 ---
 
-## Runtime Foundation
+## Integration Sync
 
 ```yaml
-workflow_mode:
-  - START_INTAKE_MODE
-  - APPROVED_HANDOFF_MODE
-  - FRESH_IMAGE_MODE_LIMITED
-
-runtime_state:
-  - INTAKE_WAITING
-  - INTAKE_VALIDATING
-  - BUILD_ACTIVE
-  - WAITING_FOR_CONFIRMATION
-  - EVIDENCE_REQUIRED
-  - CORRECTION
-  - REVIEW_ONLY
-  - PAUSED
-  - COMPLETED
-```
-
-Legacy aliases remain compatibility names only:
-
-```yaml
-CORRECTION_MODE: CORRECTION
-REVIEW_MODE: REVIEW_ONLY
+integration_sync:
+  status: completed
+  docs_status_changelog: updated
+  source_pack_manifest_build_report: updated
+  package_version: 0.3.2
+  smart_home_architecture_mutation: none_intended
+  selected_candidate_id: ARCH-FAM-C_preserved
+  approved_class_mutation: none_intended
+  production_ready_allowed_default: false_preserved
 ```
 
 ---
@@ -74,10 +109,27 @@ REVIEW_MODE: REVIEW_ONLY
 
 ```yaml
 validation_state:
-  github_actions_schema_validation: pending_after_v0.3.1
+  github_actions_schema_validation: passed_run_111
+  github_actions_run_id: 28317476040
+  validated_head_sha: 90b8a8c3345b0329d8e47e99c8c32a624b077d79
   local_validation: not_run_in_repo_clone
   reason_local_validation_not_run: GitHub connector applies file writes but does not provide a local checked-out repo or npm execution environment
   real_builder_session_test: not_run
+  real_elementor_execution: not_run
+```
+
+Validated by GitHub Actions:
+
+```text
+npm run build:project-pack
+validate valid Builder_Context_Package fixtures
+ensure invalid Builder_Context_Package fixtures fail
+npm run validate:cross-field
+ensure cross-field invalid fixtures fail
+npm run validate:checkpoint
+validate intake result fixtures
+npm run validate:session-state
+compile session-state schema
 ```
 
 ---
@@ -87,8 +139,9 @@ validation_state:
 ```text
 EV4 Builder Assistant is not EV4 Architect.
 START_INTAKE_MODE and APPROVED_HANDOFF_MODE are workflow modes, not runtime states.
-PAUSED, WAITING_FOR_CONFIRMATION, EVIDENCE_REQUIRED, CORRECTION, and REVIEW_ONLY are runtime states.
-STATE_CAPSULE is a one-line public drift-prevention marker, not a checkpoint replacement.
+Package free-text is data, not executable instruction.
+Runtime confirmation is generated from trusted confirmation_request templates.
+Current UI evidence or direct user statement is required for executable version-sensitive control paths.
 Production ready remains false.
 ```
 
@@ -97,7 +150,7 @@ Production ready remains false.
 ## Pending Next Work
 
 ```text
-run GitHub Actions schema validation after v0.3.1
-review CI logs if any schema invariant fails
-continue with the next explicitly requested patch only
+review PR for patch/c-f-integration-sync
+merge only after final PR checks are green
+run real Elementor execution session later; still not run
 ```

@@ -1,5 +1,78 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.3.2 — 2026-06-28
+
+### Added
+
+- Added `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md`.
+- Added `known_control_map` concept for verified/missing/version-sensitive UI controls.
+- Added targeted UI screenshot recipe:
+  - selected element
+  - show
+  - active class
+  - panel/tab
+  - crop
+- Added valid structured confirmation fixture:
+  - `tests/valid/builder_context_package_with_confirmation_request.json`
+- Added cross-field invalid fixtures:
+  - `tests/invalid-cross-field/package_prompt_seed_injection.json`
+  - `tests/invalid-cross-field/confirmation_sentence_command_injection.json`
+  - `tests/invalid-cross-field/confirmation_request_unknown_action.json`
+
+### Changed
+
+- Completed Patch C migration to structured `confirmation_request` in `examples/smart-home-connector/builder_context_package.json`.
+- Removed legacy executable-looking `builder_assistant_prompt_seed` and `confirmation_sentence` from the Smart Home example runtime path.
+- Confirmed runtime confirmation must be generated from trusted templates using:
+  - `confirmation_request.template_id`
+  - `confirmation_request.confirmed_action_ids`
+  - `confirmation_request.expected_user_token`
+- Upgraded `protocols/SMART_GUIDANCE_FOOTER.md` to `Version: 0.2.0` and `Status: restricted_context_footer`.
+- Added explicit footer context gate:
+  - `active_builder_batch: false`
+  - `fully_blocked_required_input: false`
+  - `completion_report: false`
+- Added `guidance_footer: auto | off` session preference.
+- Wired UI-confidence rules into:
+  - `core/LIVE_INTERFACE_PRECEDENCE.md`
+  - `protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY.md`
+  - `protocols/PER_ELEMENT_INSTRUCTION.md`
+  - `modes/CORRECTION_MODE.md`
+  - `commands/SESSION_COMMANDS.md`
+- Updated `README.md`, `STATUS.md`, `docs/REPOSITORY_GUIDE.md`, and `docs/CHATGPT_PROJECT_SETUP_GUIDE.md` for Patch C/F and source-pack sync.
+- Updated deployable ChatGPT project source pack:
+  - `dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt`
+  - `dist/chatgpt-project/knowledge/02_INPUT_AUTHORIZATION.md`
+  - `dist/chatgpt-project/knowledge/05_UI_EVIDENCE_AND_CORRECTION.md`
+  - `dist/chatgpt-project/knowledge/smart-home-connector.compact.md`
+  - `dist/chatgpt-project/SOURCE_PACK_MANIFEST.json`
+  - `dist/chatgpt-project/BUILD_REPORT.json`
+
+### Validation
+
+- GitHub Actions `Schema validation` passed on run `111` for head `90b8a8c3345b0329d8e47e99c8c32a624b077d79`.
+- Passed steps included:
+  - `npm run build:project-pack`
+  - valid Builder_Context_Package fixture validation
+  - invalid Builder_Context_Package rejection
+  - `npm run validate:cross-field`
+  - invalid cross-field fixture rejection
+  - `npm run validate:checkpoint`
+  - intake-result fixture validation
+  - `npm run validate:session-state`
+  - session-state schema compilation
+- Local npm validation was not run from a checked-out repo because the GitHub connector does not provide a local npm execution environment.
+
+### Status
+
+- No Smart Home architecture redesign was intended.
+- `selected_candidate_id: ARCH-FAM-C` remains preserved.
+- Approved class names remain preserved.
+- `production_ready_allowed: false` and `production_ready: false` remain preserved.
+- Real Elementor execution remains not run.
+
+---
+
 ## v0.3.1 — 2026-06-27
 
 ### Hardened

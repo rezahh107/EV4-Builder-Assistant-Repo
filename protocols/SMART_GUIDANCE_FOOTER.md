@@ -1,149 +1,92 @@
 # SMART_GUIDANCE_FOOTER
 
-Version: 0.1.0
-Status: active
-Purpose: add a compact context-aware guidance footer to Builder Assistant replies when it helps the user choose the next safe step.
+Version: 0.2.0
+Status: restricted_context_footer
+Purpose: add a compact context-aware guidance footer only when it helps the user choose the next safe step without bypassing gates, validation, checkpoints, or confirmation boundaries.
 
 ---
 
-## Core Idea
+## Core Rule
 
-The assistant may add a short guidance footer at the end of a reply when the current state has a meaningful user choice.
+The footer is optional guidance, not a builder action, not a confirmation request, and not a shortcut around any runtime gate.
 
-The footer is not a builder action.
+```yaml
+guidance_footer: auto | off
+```
 
-The footer must not override gates, input contracts, checkpoints, or approved handoff rules.
+Default session preference is `auto` unless the user asks to turn guidance off. If `guidance_footer: off`, omit the footer except when a blocking protocol requires a single missing-input request.
 
 ---
 
-## When To Use
+## Context Allowlist
 
-Use the footer only when it improves the next user decision.
+```yaml
+footer_allowed:
+  intake_with_optional_evidence: true
+  review_or_status_response: true
+  paused_state: true
+  post_correction_choice: true
+  active_builder_batch: false
+  fully_blocked_required_input: false
+  completion_report: false
+```
 
-Good cases:
+Interpretation:
 
-- the user provided a valid required input but skipped optional helpful evidence
-- the assistant can continue safely, but quality would improve with another source
-- the user has two safe routes: continue now or provide stronger evidence
-- a checkpoint can be created but screenshot evidence would reduce risk
-- responsive, overlay, SVG, or accessibility work is approaching
-- the current state is paused, blocked, or waiting for a specific missing item
-- correction mode has a choice between rollback, screenshot, or small repair
-
-Do not use the footer when:
-
-- the main reply already contains only one clear required action
-- adding it would confuse a confirmation sentence
-- the next step is fully blocked by a missing required input
-- the user explicitly asked for no extra guidance
-- the reply is a final status report with no decision needed
+```text
+- intake_with_optional_evidence: allowed only when required intake is present or being validated and optional evidence would improve quality.
+- review_or_status_response: allowed when the user asks for وضعیت, بررسی, or خلاصه and no builder batch is being emitted.
+- paused_state: allowed to show resume/review choices.
+- post_correction_choice: allowed after a correction envelope when the user has multiple safe next routes.
+- active_builder_batch: forbidden when the response emits builder actions.
+- fully_blocked_required_input: forbidden; ask only for the missing required input.
+- completion_report: forbidden; final reports must not include continue-style nudges.
+```
 
 ---
 
-## Footer Types
+## Hard Prohibitions
 
-### 1. Better Evidence Nudge
-
-Use when continuing is allowed but another input would reduce risk.
-
-Example intent:
+The footer must never:
 
 ```text
-I can continue with the current data, but a current Structure Panel screenshot would make the next steps safer.
+- bypass input contracts, validation, checkpoints, confirmation, or correction gates;
+- appear after an active builder batch when the response must end with a confirmation token request or a screenshot request;
+- imply that required gates can be skipped because optional evidence is absent;
+- encourage redesign, rescoring, architecture mutation, class mutation, or production-ready claims;
+- hide preserved flags, unknowns, conflicts, or risks;
+- include long explanations, citations, documentation quotes, or extra builder steps.
 ```
 
-### 2. Choice Router
+If required input is missing, ask only for that required input and do not add a “continue” trigger.
 
-Use when the user has multiple valid paths.
-
-Example intent:
-
-```text
-Say continue to proceed, review to inspect evidence first, or send screenshot to reduce uncertainty.
-```
-
-### 3. Blocking Clarifier
-
-Use when a required item is missing.
-
-Example intent:
-
-```text
-The next step is blocked until Builder_Context_Package is provided.
-```
-
-### 4. Risk Preview
-
-Use before high-risk visual, responsive, overlay, SVG, z-index, overflow, or numeric tuning.
-
-Example intent:
-
-```text
-The next step affects visual matching; one action at a time is safer.
-```
-
-### 5. Recovery Hint
-
-Use after user reports a wrong control, missing panel, or unexpected UI.
-
-Example intent:
-
-```text
-Send a screenshot of the selected element and active class so I can switch to correction mode safely.
-```
+If optional evidence is missing, the footer may say that evidence would improve quality, but it must not imply that blocked gates can be skipped.
 
 ---
 
 ## Output Contract
-
-The footer must be short.
-
-Recommended shape in Persian:
-
-```text
-راهنمای کوتاه:
-- پیشنهاد: ...
-- تریگرها: `ادامه` / `بررسی` / `اصلاح` / `ارسال screenshot`
-```
 
 Maximum:
 
 ```yaml
 lines: 3
 items: 2
-words_approx: 45
+content: one suggestion + allowed triggers only
 ```
 
-Do not include long explanations, citations, or documentation quotes in the footer.
-
----
-
-## Safety Rules
-
-The footer must not say that a blocked step can proceed.
-
-The footer must distinguish:
+Recommended Persian shape:
 
 ```text
-required_input_missing
-optional_evidence_missing
-safe_to_continue_with_caution
-blocked_until_correction
+راهنمای کوتاه:
+- پیشنهاد: ...
+- تریگرها: `ادامه` / `بررسی` / `ارسال screenshot`
 ```
 
-If required input is missing, only ask for the required input.
-
-If optional evidence is missing, the footer may say that continuing is possible but less safe.
-
-Never hide preserved flags, unknowns, or risks.
-
-Never use the footer to encourage redesign, rescoring, or architecture mutation.
+Do not use the footer when the main reply already ends with the required confirmation token request or the required screenshot recipe.
 
 ---
 
-## Command Triggers
-
-Allowed trigger suggestions:
+## Allowed Trigger Examples
 
 ```text
 ادامه
@@ -158,39 +101,46 @@ Allowed trigger suggestions:
 ادامه با همین داده
 ```
 
-Do not invent commands that are not supported by `commands/SESSION_COMMANDS.md` unless they are plain natural-language user actions such as sending a screenshot or file.
+Do not invent commands outside `commands/SESSION_COMMANDS.md` unless the phrase is a plain natural-language user action such as sending a file or screenshot.
 
 ---
 
 ## Examples
 
-### Start Intake With Missing Optional Screenshot
+### Intake With Optional Screenshot Missing
+
+Allowed only when `Builder_Context_Package` is present or validation can proceed without the screenshot:
 
 ```text
 راهنمای کوتاه:
-- می‌توانم بعد از package معتبر ادامه بدهم، اما screenshot مرجع ریسک برداشت بصری را کم می‌کند.
+- پیشنهاد: screenshot مرجع کیفیت برداشت بصری را بهتر می‌کند، ولی gate اصلی همان package معتبر است.
 - تریگرها: `ادامه با همین داده` / `ارسال screenshot`
 ```
 
-### Package Valid But Editor Screenshot Missing
+### Review Or Status Response
 
 ```text
 راهنمای کوتاه:
-- مرحله بعد قابل شروع است؛ screenshot از Structure Panel فقط مسیر کنترل‌های واقعی را امن‌تر می‌کند.
-- تریگرها: `ادامه` / `ارسال screenshot`
+- پیشنهاد: برای ادامه امن، unresolved evidence را قبل از batch بعدی بررسی کن.
+- تریگرها: `بررسی` / `ادامه`
 ```
 
-### Blocking Package Missing
+### Fully Blocked Required Input
+
+No footer. Main reply asks only for the blocking input:
 
 ```text
-راهنمای کوتاه:
-- فعلاً مرحله بعد blocked است؛ اول Builder_Context_Package را بفرست.
+برای ادامه، فقط `Builder_Context_Package` معتبر را ارسال کن.
 ```
 
-### Correction Needed
+### Active Builder Batch
+
+No footer. The response must end with exactly one trusted confirmation token request or one targeted screenshot request.
+
+### Post-Correction Choice
 
 ```text
 راهنمای کوتاه:
-- برای اصلاح امن، screenshot از selected element و active class بفرست.
-- تریگرها: `اصلاح` / `بررسی`
+- پیشنهاد: یا مسیر اصلاح‌شده را تأیید کن، یا screenshot تازه از selected element بفرست.
+- تریگرها: `تایید` / `ارسال screenshot`
 ```

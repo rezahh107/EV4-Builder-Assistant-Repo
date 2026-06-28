@@ -34,7 +34,9 @@
       "element_generation": "Shared compatibility element",
       "element_generation_source": "architect_export",
       "role": "root",
-      "children": ["n-002"]
+      "children": [
+        "n-002"
+      ]
     },
     {
       "node_id": "n-002",
@@ -44,7 +46,10 @@
       "element_generation": "Shared compatibility element",
       "element_generation_source": "architect_export",
       "role": "relative_stage",
-      "children": ["n-003", "n-031"]
+      "children": [
+        "n-003",
+        "n-031"
+      ]
     },
     {
       "node_id": "n-003",
@@ -54,7 +59,10 @@
       "element_generation": "Shared compatibility element",
       "element_generation_source": "architect_export",
       "role": "content_layer",
-      "children": ["n-004", "n-029"]
+      "children": [
+        "n-004",
+        "n-029"
+      ]
     },
     {
       "node_id": "n-004",
@@ -64,7 +72,9 @@
       "element_generation": "Shared compatibility element",
       "element_generation_source": "architect_export",
       "role": "feature_cards_group",
-      "children": ["n-005"]
+      "children": [
+        "n-005"
+      ]
     },
     {
       "node_id": "n-005",
@@ -74,7 +84,11 @@
       "element_generation": "Shared compatibility element",
       "element_generation_source": "architect_export",
       "role": "feature_card_repeated_pattern",
-      "children": ["n-006", "n-007", "n-008"]
+      "children": [
+        "n-006",
+        "n-007",
+        "n-008"
+      ]
     },
     {
       "node_id": "n-006",
@@ -114,7 +128,9 @@
       "element_generation": "Shared compatibility element",
       "element_generation_source": "architect_export",
       "role": "visual_core",
-      "children": ["n-030"]
+      "children": [
+        "n-030"
+      ]
     },
     {
       "node_id": "n-030",
@@ -134,7 +150,9 @@
       "element_generation": "Shared compatibility element",
       "element_generation_source": "architect_export",
       "role": "decorative_connector_layer",
-      "children": ["n-032"]
+      "children": [
+        "n-032"
+      ]
     },
     {
       "node_id": "n-032",
@@ -284,7 +302,9 @@
       "recommended_widget_or_element": "Heading Widget",
       "editable_content": "editable text",
       "why_this_mapping": "Meaningful title must remain editable text.",
-      "unknowns": ["exact copy not represented in this example"]
+      "unknowns": [
+        "exact copy not represented in this example"
+      ]
     },
     {
       "structure_label": "Connector Layer / Association Lines",
@@ -292,7 +312,9 @@
       "recommended_widget_or_element": "SVG Widget",
       "editable_content": "none",
       "why_this_mapping": "Connector lines are decoration-only and must not contain meaningful text.",
-      "unknowns": ["exact connector geometry unresolved"]
+      "unknowns": [
+        "exact connector geometry unresolved"
+      ]
     }
   ],
   "editable_content_map": [
@@ -341,12 +363,19 @@
     }
   ],
   "responsive_qa_seed": {
-    "unresolved_breakpoints": ["tablet", "mobile"],
+    "unresolved_breakpoints": [
+      "tablet",
+      "mobile"
+    ],
     "connector_behavior_status": "unresolved",
     "meaningful_content_visibility_rule": "do_not_hide_meaningful_content",
     "notes": "Connector mobile behavior is not assumed."
   },
-  "audit_flags_to_preserve": ["FA-MED-001", "FA-MED-002", "FA-MED-003"],
+  "audit_flags_to_preserve": [
+    "FA-MED-001",
+    "FA-MED-002",
+    "FA-MED-003"
+  ],
   "unknowns_to_preserve": [
     "mobile/tablet screenshot absent",
     "connector behavior across breakpoints unresolved",
@@ -373,7 +402,10 @@
         "structure_panel_name": "Smart Home Section / Root",
         "active_class": "smart-home__section--root",
         "instruction": "Create the root Container and apply class smart-home__section--root without a leading dot.",
-        "properties_not_to_change": ["selected_candidate_id", "approved architecture"],
+        "properties_not_to_change": [
+          "selected_candidate_id",
+          "approved architecture"
+        ],
         "expected_result": "Root Container exists with approved label and class."
       },
       {
@@ -386,7 +418,10 @@
         "structure_panel_name": "Smart Home Section / Relative Stage",
         "active_class": "smart-home__stage--relative",
         "instruction": "Create the relative stage Container inside root and apply class smart-home__stage--relative without a leading dot.",
-        "properties_not_to_change": ["selected_candidate_id", "approved architecture"],
+        "properties_not_to_change": [
+          "selected_candidate_id",
+          "approved architecture"
+        ],
         "expected_result": "Relative stage exists as child of root with approved label and class."
       },
       {
@@ -399,11 +434,22 @@
         "structure_panel_name": "Smart Home Section / Content Layer",
         "active_class": "smart-home__content-layer--primary",
         "instruction": "Create the content layer Container inside relative stage and apply class smart-home__content-layer--primary without a leading dot.",
-        "properties_not_to_change": ["selected_candidate_id", "approved architecture"],
+        "properties_not_to_change": [
+          "selected_candidate_id",
+          "approved architecture"
+        ],
         "expected_result": "Content layer exists inside relative stage."
       }
     ]
   },
-  "confirmation_sentence": "Root, Relative Stage, and Content Layer are created.",
-  "builder_assistant_prompt_seed": "Start in APPROVED_HANDOFF_MODE. Use this package as source of truth. Do not redesign, rescore, assume clickability, assume Dynamic Loop, assume mobile connector behavior, or claim production readiness."
+  "confirmation_request": {
+    "confirmation_id": "CONFIRM-BATCH-001",
+    "confirmed_action_ids": [
+      "BATCH-001-A01",
+      "BATCH-001-A02",
+      "BATCH-001-A03"
+    ],
+    "expected_user_token": "تایید BATCH-001",
+    "template_id": "standard_batch_confirmation"
+  }
 }

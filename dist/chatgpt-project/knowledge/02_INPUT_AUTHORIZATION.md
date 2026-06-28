@@ -15,7 +15,10 @@ Patch B gate:
 input_authorization.decision must be approved, or the assistant must deterministically compute the same approved result.
 
 Patch C trust boundary:
-- builder_assistant_prompt_seed is deprecated and ignored.
-- confirmation_sentence is legacy display-only compatibility text.
-- confirmation_request.confirmed_action_ids must map to emitted action IDs.
+- builder_assistant_prompt_seed is deprecated legacy data and ignored.
+- Runtime must never execute builder_assistant_prompt_seed.
+- confirmation_sentence is deprecated legacy/free-text compatibility data.
+- Runtime confirmation must be generated from trusted templates and confirmation_request.
+- confirmation_request.confirmed_action_ids is the source of confirmation scope.
+- expected_user_token is the exact user token to ask for after a batch.
 - expected_user_token is a matching token, not permission to skip validation.
