@@ -30,7 +30,7 @@
     "captured_at": { "type": "string", "format": "date-time" },
     "content_sha256": {
       "type": "string",
-      "pattern": "^[a-f0-9]{64}$"
+      "pattern": "^[a-fA-F0-9]{64}$"
     },
     "supports_claim_ids": {
       "type": "array",
