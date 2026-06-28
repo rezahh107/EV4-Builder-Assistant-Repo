@@ -1,8 +1,8 @@
 # protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY
 
-Version: 0.1.0
-Status: active
-Purpose: prioritize official Elementor documentation for standard Elementor capability claims
+Version: 0.1.1
+Status: ui_confidence_gate_linked
+Purpose: prioritize official Elementor documentation for standard capability claims while preserving current UI evidence as the executable-control source.
 
 ---
 
@@ -11,6 +11,8 @@ Purpose: prioritize official Elementor documentation for standard Elementor capa
 Official Elementor documentation is the primary external source for Elementor capability, terminology, and standard workflow claims.
 
 Live UI evidence remains the primary source for what the user can actually select in the current editor.
+
+Use `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md` before naming exact UI controls, panel paths, tabs, states, responsive options, Variables, Components, interactions, or version-sensitive settings.
 
 ---
 
@@ -80,6 +82,7 @@ Before instructing the user to select a control, option, tab, value, element typ
 visible in latest current Elementor screenshot
 explicitly confirmed by user
 officially documented for the current Elementor V4+/Atomic context
+installed-version evidence confirms applicability
 ```
 
 If not verified, use:
@@ -87,10 +90,12 @@ If not verified, use:
 ```yaml
 status: insufficient_evidence
 unverified_control:
-affected_action:
-required_evidence:
-can_continue_unrelated_structure_work: yes/no
+  affected_action:
+  required_evidence:
+  can_continue_unrelated_structure_work: yes/no
 ```
+
+Low-risk structure work may continue only when it does not depend on the unverified control.
 
 ---
 
