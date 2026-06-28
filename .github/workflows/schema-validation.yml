@@ -19,6 +19,10 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Validate ChatGPT project source pack
+        run: |
+          npm run build:project-pack
+
       - name: Validate valid Builder_Context_Package fixtures
         run: |
           for file in tests/valid/builder_context_package*.json examples/smart-home-connector/builder_context_package.json; do
