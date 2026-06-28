@@ -16,6 +16,33 @@
     "created_from_v0_2": {
       "enum": ["user_confirmation", "editor_screenshot", "structure_panel_screenshot", "frontend_screenshot", "diagnostic", "export_json", "manual_import", "initial"]
     },
+    "known_control_entry": {
+      "type": "object",
+      "required": ["control_name", "status"],
+      "properties": {
+        "control_name": { "type": "string", "minLength": 1 },
+        "panel_name": { "type": ["string", "null"] },
+        "element_generation": { "type": ["string", "null"] },
+        "confirmed_by": { "enum": ["user_statement", "screenshot", "documentation", "installed_version", null] },
+        "evidence_ref": { "type": ["string", "null"] },
+        "status": { "enum": ["confirmed", "missing", "version_sensitive", "insufficient_evidence"] },
+        "session_confirmed_at": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "ui_vocabulary_entry": {
+      "type": "object",
+      "required": ["vocabulary_key", "architecture_term", "status"],
+      "properties": {
+        "vocabulary_key": { "type": "string", "minLength": 1 },
+        "architecture_term": { "type": "string", "minLength": 1 },
+        "user_ui_label": { "type": ["string", "null"] },
+        "confirmed_by": { "enum": ["user_statement", "screenshot", "documentation", "installed_version", null] },
+        "confirmed_at_checkpoint": { "type": ["string", "null"] },
+        "status": { "enum": ["confirmed", "unknown", "changed", "insufficient_evidence"] }
+      },
+      "additionalProperties": false
+    },
     "assertion": {
       "type": "object",
       "required": ["assertion_id", "subject_ref", "claim", "status", "evidence_refs"],
@@ -104,6 +131,8 @@
         "batch_id": { "type": "string", "minLength": 1 },
         "confirmed_action_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
         "unconfirmed_action_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "known_control_map": { "type": "array", "items": { "$ref": "#/$defs/known_control_entry" } },
+        "ui_vocabulary_map": { "type": "array", "items": { "$ref": "#/$defs/ui_vocabulary_entry" } },
         "assertions": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/assertion" } },
         "evidence_ledger": { "type": "array", "items": { "$ref": "./evidence-record.schema.json" } },
         "retry_policy": { "$ref": "#/$defs/retry_policy" },
