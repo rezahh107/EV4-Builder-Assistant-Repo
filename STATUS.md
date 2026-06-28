@@ -109,22 +109,27 @@ integration_sync:
 
 ```yaml
 validation_state:
-  github_actions_schema_validation: pending_or_unknown_after_branch_update
+  github_actions_schema_validation: passed_run_111
+  github_actions_run_id: 28317476040
+  validated_head_sha: 90b8a8c3345b0329d8e47e99c8c32a624b077d79
   local_validation: not_run_in_repo_clone
   reason_local_validation_not_run: GitHub connector applies file writes but does not provide a local checked-out repo or npm execution environment
   real_builder_session_test: not_run
   real_elementor_execution: not_run
 ```
 
-Validation commands expected for this branch:
+Validated by GitHub Actions:
 
 ```text
 npm run build:project-pack
-npm run validate:builder-context
+validate valid Builder_Context_Package fixtures
+ensure invalid Builder_Context_Package fixtures fail
 npm run validate:cross-field
+ensure cross-field invalid fixtures fail
 npm run validate:checkpoint
-npm run validate:intake-result
+validate intake result fixtures
 npm run validate:session-state
+compile session-state schema
 ```
 
 ---
@@ -145,8 +150,7 @@ Production ready remains false.
 ## Pending Next Work
 
 ```text
-open/review PR for patch/c-f-integration-sync
-run GitHub Actions schema validation
-review CI logs if any schema or pack invariant fails
+review PR for patch/c-f-integration-sync
+merge only after final PR checks are green
 run real Elementor execution session later; still not run
 ```
