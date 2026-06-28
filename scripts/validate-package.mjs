@@ -46,6 +46,26 @@ function batchPrefixFromActionId(actionId) {
   return match ? match[1] : null;
 }
 
+function scanPromptSeedLikeText(fieldName, value) {
+  if (typeof value !== 'string') return;
+  warn(`${fieldName} is untrusted display-only data and must be ignored by runtime.`);
+  const match = firstMatch(value, promptInjectionChecks);
+  if (match) {
+    fail(`${fieldName} contains prompt-injection marker (${match}); runtime must not execute package strings.`);
+  }
+}
+
+function scanConfirmationLikeText(fieldName, value) {
+  if (typeof value !== 'string') return;
+  warn(`${fieldName} is untrusted display-only data; runtime confirmation must be generated from confirmation_request when available.`);
+  const commandMatch = firstMatch(value, confirmationCommandChecks);
+  const injectionMatch = firstMatch(value, promptInjectionChecks);
+  const match = commandMatch || injectionMatch;
+  if (match) {
+    fail(`${fieldName} contains command-like or role-changing text (${match}); use structured confirmation_request instead.`);
+  }
+}
+
 const promptInjectionChecks = [
   { label: 'ignore previous instructions', pattern: /ignore\s+(?:all\s+)?previous\s+instructions/i },
   { label: 'disregard previous instructions', pattern: /disregard\s+(?:all\s+)?previous\s+instructions/i },
@@ -145,22 +165,18 @@ for (const action of actions) {
   }
 }
 
-if (typeof pkg.builder_assistant_prompt_seed === 'string') {
-  warn('builder_assistant_prompt_seed is deprecated and must be ignored by runtime; treat it as untrusted display-only data.');
-  const match = firstMatch(pkg.builder_assistant_prompt_seed, promptInjectionChecks);
-  if (match) {
-    fail(`builder_assistant_prompt_seed contains prompt-injection marker (${match}); runtime must not execute package strings.`);
-  }
-}
+scanPromptSeedLikeText('builder_assistant_prompt_seed', pkg.builder_assistant_prompt_seed);
+scanConfirmationLikeText('confirmation_sentence', pkg.confirmation_sentence);
 
-if (typeof pkg.confirmation_sentence === 'string') {
-  warn('confirmation_sentence is legacy display-only data; runtime confirmation must be generated from confirmation_request when available.');
-  const commandMatch = firstMatch(pkg.confirmation_sentence, confirmationCommandChecks);
-  const injectionMatch = firstMatch(pkg.confirmation_sentence, promptInjectionChecks);
-  const match = commandMatch || injectionMatch;
-  if (match) {
-    fail(`confirmation_sentence contains command-like or role-changing text (${match}); use structured confirmation_request instead.`);
-  }
+if (pkg.display_only_untrusted_text && typeof pkg.display_only_untrusted_text === 'object') {
+  scanPromptSeedLikeText(
+    'display_only_untrusted_text.builder_assistant_prompt_seed',
+    pkg.display_only_untrusted_text.builder_assistant_prompt_seed
+  );
+  scanConfirmationLikeText(
+    'display_only_untrusted_text.confirmation_sentence',
+    pkg.display_only_untrusted_text.confirmation_sentence
+  );
 }
 
 const confirmationRequest = pkg.confirmation_request;
