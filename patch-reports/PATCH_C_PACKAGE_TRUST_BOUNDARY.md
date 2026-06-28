@@ -1,5 +1,26 @@
 # Patch C — Package Trust Boundary & Structured Confirmation
 
+## Branch
+
+`patch/c-package-trust-boundary`
+
+Base branch: `main`
+
+## Commits
+
+- `5553926ca23f9120fb9a2f1901ec995834ed23e2` — `Patch C: harden builder context package schema trust boundary`
+- `8dc1d44289de0484b3022494500e69c8d34d504e` — `Patch C: add package trust-boundary validator diagnostics`
+- `27e542ea0fa28b3ca7a555755f44e62d448e1fb4` — `Patch C: document package trust boundary input contract`
+- `803d151353cc311a759fa6e8e66787f043fbd5bf` — `Patch C: use structured confirmation in approved handoff mode`
+- `02c1818f207236cca9d730a4872cfe0b5d8539a9` — `Patch C: validate all builder context package fixtures`
+- `a19e3c194cae2ef13a5f27f1de80992ebf96c108` — `Patch C: validate package trust-boundary fixtures in CI`
+- `c82b58b228f08e59cfe6bc7b67805c751fd60502` — `Patch C: migrate valid fixture to confirmation_request`
+- `380cac29ce23f31e25491fb26f7664ab65833674` — `Patch C: add valid structured confirmation fixture`
+- `7f220f0353e32b2e187c657f163fe32c85d8fe8d` — `Patch C: add malicious prompt seed invalid fixture`
+- `83d629183631381d7aaa5cc7a47d520b211e15ff` — `Patch C: add command-like confirmation invalid fixture`
+- `33b686f1fb9dc7824bf11c1583010f78c8a1316f` — `Patch C: add Persian package trust-boundary report`
+- `2b36ba157c82a7fc00162e6d513f863465f6263c` — `Patch C audit: align master prompt with structured confirmation`
+
 ## خلاصه
 
 Patch C مرز اعتماد `Builder_Context_Package` را سخت‌تر کرد تا محتوای package فقط به‌عنوان data مصرف شود، نه runtime instruction. مسیر قبلی که در آن `builder_assistant_prompt_seed` و `confirmation_sentence` می‌توانستند نقش کانال instruction-smuggling داشته باشند، با `confirmation_request` ساختاریافته جایگزین شد.
@@ -11,12 +32,14 @@ Patch C مرز اعتماد `Builder_Context_Package` را سخت‌تر کرد 
   - به‌عنوان legacy/deprecated و untrusted display-only علامت‌گذاری شد.
   - validator در صورت وجود آن warning می‌دهد.
   - اگر شامل prompt-injection marker باشد، cross-field validation را fail می‌کند.
+  - `core/MASTER_PROMPT.md` نیز اکنون اجرای آن را صراحتاً forbidden می‌کند.
 
 - `confirmation_sentence`
   - از required canonical path حذف شد.
   - برای compatibility نگه داشته شد، اما فقط display-only و untrusted است.
   - runtime نباید آن را به‌عنوان exact confirmation prompt یا command اجرا کند.
   - اگر شامل command-like text مثل `ادامه`، `ریست`، `شروع`، `استارت` یا role-changing text باشد، cross-field validation fail می‌شود.
+  - `core/MASTER_PROMPT.md` اکنون structured confirmation را به‌عنوان runtime path معرفی می‌کند.
 
 ## جایگزین canonical
 
@@ -70,6 +93,11 @@ confirmation_request:
   - اضافه شدن Confirmation Trust Boundary.
   - runtime confirmation از `confirmation_request.template_id` و `expected_user_token` تولید می‌شود.
 
+- `core/MASTER_PROMPT.md`
+  - PEaC runtime frame از `confirmation sentence` به `structured confirmation_request` اصلاح شد.
+  - اجرای `builder_assistant_prompt_seed` و استفاده trusted از `confirmation_sentence` forbidden شد.
+  - Builder Batch Response Format اکنون `confirmed_action_ids` و `expected_user_token` را مبنا قرار می‌دهد.
+
 - `package.json`
   - validation scripts حالا `tests/valid/builder_context_package*.json` و example package را پوشش می‌دهند.
 
@@ -89,9 +117,18 @@ confirmation_request:
 - `tests/invalid-cross-field/confirmation_sentence_command_like.json`
   - fixture invalid برای command-like و role-changing text داخل `confirmation_sentence` اضافه شد.
 
-## Validation results
+## Validation commands run
 
-اجرای محلی انجام‌شده:
+اجرای connector/GitHub inspection:
+
+```text
+GitHub.compare_commits main...patch/c-package-trust-boundary: pass; branch ahead of main and behind_by=0
+GitHub.fetch_file for changed schema/docs/scripts/fixtures/report: pass
+GitHub.get_commit_combined_status 33b686f1fb9dc7824bf11c1583010f78c8a1316f: no statuses returned
+GitHub.fetch_commit_workflow_runs 33b686f1fb9dc7824bf11c1583010f78c8a1316f: no workflow runs returned
+```
+
+اجرای محلی انجام‌شده قبل از audit correction:
 
 ```text
 node --check scripts/validate-package.mjs: pass
@@ -104,10 +141,16 @@ node scripts/validate-package.mjs tests/invalid-cross-field/malicious_builder_as
 node scripts/validate-package.mjs tests/invalid-cross-field/confirmation_sentence_command_like.json: failed as expected
 ```
 
-محدودیت validation:
+## Failures / skips
 
-- اجرای کامل `npx --yes ajv-cli@5 ...` در محیط محلی connector انجام نشد؛ validation schema با Python `jsonschema` و cross-field validator با Node انجام شد.
-- انتظار می‌رود GitHub Actions مسیر کامل `ajv-cli` را پس از push/PR اجرا کند.
+- اجرای `git clone` از داخل container برای branch audit به دلیل محدودیت DNS/network محیط شکست خورد: `Could not resolve host: github.com`.
+- اجرای مستقیم `npm run validate:builder-context` و `npm run validate:cross-field` داخل container ممکن نبود، چون repository قابل clone نبود.
+- GitHub Actions برای commit بررسی‌شده status/workflow run قابل مشاهده برنگرداند؛ این به معنی pass یا fail نیست.
+
+## Remaining risks
+
+- `examples/smart-home-connector/builder_context_package.json` هنوز legacy `confirmation_sentence` و `builder_assistant_prompt_seed` دارد و فقط از compatibility path عبور می‌کند. این برای Patch C قابل قبول است، اما در migration بعدی بهتر است به `confirmation_request` منتقل شود.
+- branch روی فایل‌های مشترک و پرریسک merge conflict کار کرده است: `schemas/builder-context-package.schema.json`, `scripts/validate-package.mjs`, `package.json`, `.github/workflows/schema-validation.yml`, `input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md`, `modes/APPROVED_HANDOFF_MODE.md`, `core/MASTER_PROMPT.md`.
 
 ## Remaining migration work
 
