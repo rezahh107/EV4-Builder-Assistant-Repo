@@ -1,14 +1,20 @@
 # protocols/PER_ELEMENT_INSTRUCTION
 
-Version: 0.1.2
-Status: active_initial
-Purpose: define required fields for every Elementor builder action
+Version: 0.1.3
+Status: ui_confidence_gate_linked
+Purpose: define required fields for every Elementor builder action and prevent unverified UI-control paths.
 
 ---
 
 ## Purpose
 
-Every builder action must be specific enough that the user knows exactly which element to select, what class to use, which control to touch, and what not to change.
+Every builder action must be specific enough that the user knows exactly which element to select, what class to use, which verified control to touch, and what not to change.
+
+Exact UI paths are governed by:
+
+```text
+protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md
+```
 
 ---
 
@@ -31,6 +37,8 @@ Properties that must remain unchanged
 Expected position in Structure Panel
 Expected visible result
 ```
+
+If `panel_path` or `control_name` is not verified, label it `insufficient_evidence` and do not present it as an exact executable UI instruction.
 
 ---
 
@@ -78,6 +86,38 @@ action:
   do_not_change:
   expected_result:
 ```
+
+---
+
+## UI Confidence Gate
+
+Low-risk structure actions may proceed from an approved `Builder_Context_Package` when normal Elementor UI is available:
+
+```text
+create Container
+create basic Heading/Text/Image/Icon element
+rename Structure Panel item
+apply approved class name exactly
+request targeted screenshot
+```
+
+These do not authorize exact version-sensitive control paths.
+
+Require current UI evidence, direct user confirmation, installed-version evidence, or official applicable docs before naming:
+
+```text
+exact control paths
+responsive controls
+SVG settings
+overlay / z-index / overflow
+grid controls
+Variables
+Components
+interaction/state controls
+class-management UI behavior
+```
+
+If a required control is missing, stop and enter `CORRECTION`.
 
 ---
 
@@ -145,11 +185,25 @@ Stop before editing when:
 - wrong class chip is active;
 - class is missing from approved map;
 - control is not visible;
+- exact control path is unverified and required for the action;
 - element_generation is Unverified element type and affects the instruction;
 - element_generation_source is missing;
 - element_generation_source is unverified while element_generation is not Unverified element type;
 - V3/V4 element generation is unclear and affects the instruction;
 - value source is insufficient for a non-temporary value.
+```
+
+---
+
+## Screenshot Recipe
+
+```text
+Screenshot target:
+- selected element:
+- show:
+- active class:
+- panel/tab:
+- crop:
 ```
 
 ---
