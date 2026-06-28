@@ -33,7 +33,8 @@ preconditions:
 
 ```yaml
 runtime_state:
-  mode: APPROVED_HANDOFF_MODE
+  workflow_mode: APPROVED_HANDOFF_MODE
+  runtime_state: BUILD_ACTIVE
   selected_candidate_id: ARCH-FAM-C
   source_of_truth: Builder_Context_Package
   production_ready: false
@@ -72,31 +73,57 @@ element_generation: Shared compatibility element
 element_generation_source: architect_export
 ```
 
-Expected confirmation sentence:
-
-```text
-Root, Relative Stage, and Content Layer are created.
-```
+Expected structured confirmation token is package-defined through `confirmation_request.expected_user_token` when present. Legacy `confirmation_sentence` is compatibility-only and must not be executed as instruction text.
 
 ---
 
 ## Expected Checkpoint After Confirmation
 
+Preferred Patch D checkpoint shape:
+
 ```yaml
 checkpoint_id: smart-home-manual-001-cp-001
-created_from: user_confirmation
+checkpoint_sequence: 1
+parent_checkpoint_id: null
+package_id: examples/smart-home-connector/builder_context_package.json
+package_sha256: <sha256-if-known>
 selected_candidate_id: ARCH-FAM-C
-completed_elements:
-  - Smart Home Section / Root
-  - Smart Home Section / Relative Stage
-  - Smart Home Section / Content Layer
-applied_classes:
-  - smart-home__section--root
-  - smart-home__stage--relative
-  - smart-home__content-layer--primary
-last_completed_action: BATCH-001-A03
-next_pending_action: create Feature Cards Group
+workflow_mode: APPROVED_HANDOFF_MODE
+runtime_state: BUILD_ACTIVE
+batch_id: BATCH-001
+confirmed_action_ids:
+  - BATCH-001-A01
+unconfirmed_action_ids:
+  - BATCH-001-A02
+  - BATCH-001-A03
+assertions:
+  - assertion_id: ASSERT-001
+    subject_ref: BATCH-001-A01
+    claim: Root Container exists with class smart-home__section--root.
+    status: confirmed
+    evidence_refs:
+      - EV-001
+  - assertion_id: ASSERT-002
+    subject_ref: BATCH-001-A02
+    claim: Relative Stage exists with class smart-home__stage--relative.
+    status: not_checked
+    evidence_refs: []
+evidence_ledger:
+  - evidence_id: EV-001
+    evidence_type: user_confirmation
+    source_ref: expected structured confirmation token
+    supports_claim_ids:
+      - ASSERT-001
+    status: available
+retry_policy:
+  max_retry_per_action: 3
+  retry_1: clarify_instruction
+  retry_2: request_targeted_screenshot
+  retry_3: enter_CORRECTION
+created_from: user_confirmation
 ```
+
+A screenshot or user confirmation should update only the assertions it actually supports. It should not mark the whole batch confirmed unless all batch assertions are supported.
 
 ---
 
@@ -122,6 +149,7 @@ real_elementor_execution:
   frontend_screenshot_checked: no
   browser_render_checked: no
   export_json_or_edis_checked: no
+  checkpoint_assertions_confirmed: none
   production_ready: false
 ```
 
@@ -129,4 +157,4 @@ real_elementor_execution:
 
 ## Next Step
 
-Use the setup guide and Smart Home start prompt in a real Builder Assistant project/chat, then record actual execution findings in `notes.md`.
+Use the setup guide and Smart Home start prompt in a real Builder Assistant project/chat, then record actual execution findings in `notes.md` with assertion IDs and evidence_refs.
