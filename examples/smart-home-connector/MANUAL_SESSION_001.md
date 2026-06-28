@@ -86,7 +86,7 @@ checkpoint_id: smart-home-manual-001-cp-001
 checkpoint_sequence: 1
 parent_checkpoint_id: null
 package_id: examples/smart-home-connector/builder_context_package.json
-package_sha256: <sha256-if-known>
+package_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
 selected_candidate_id: ARCH-FAM-C
 workflow_mode: APPROVED_HANDOFF_MODE
 runtime_state: BUILD_ACTIVE
@@ -112,6 +112,8 @@ evidence_ledger:
   - evidence_id: EV-001
     evidence_type: user_confirmation
     source_ref: expected structured confirmation token
+    captured_at: "2026-06-28T06:00:00Z"
+    content_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
     supports_claim_ids:
       - ASSERT-001
     status: available
@@ -120,6 +122,7 @@ retry_policy:
   retry_1: clarify_instruction
   retry_2: request_targeted_screenshot
   retry_3: enter_CORRECTION
+created_at: "2026-06-28T06:00:00Z"
 created_from: user_confirmation
 ```
 
