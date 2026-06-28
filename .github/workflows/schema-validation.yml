@@ -1,40 +1,13 @@
 name: Schema validation
 
 on:
-  workflow_dispatch:
-  push:
-    paths:
-      - 'schemas/**'
-      - 'tests/**'
-      - 'examples/**'
-      - 'scripts/**'
-      - 'core/**'
-      - 'protocols/**'
-      - 'input-contracts/**'
-      - 'commands/**'
-      - 'docs/**'
-      - 'references/**'
-      - 'cases/**'
-      - 'package.json'
-      - '.github/workflows/schema-validation.yml'
   pull_request:
-    paths:
-      - 'schemas/**'
-      - 'tests/**'
-      - 'examples/**'
-      - 'scripts/**'
-      - 'core/**'
-      - 'protocols/**'
-      - 'input-contracts/**'
-      - 'commands/**'
-      - 'docs/**'
-      - 'references/**'
-      - 'cases/**'
-      - 'package.json'
-      - '.github/workflows/schema-validation.yml'
+  push:
+    branches:
+      - main
 
 jobs:
-  validate-builder-context-package:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
@@ -48,17 +21,9 @@ jobs:
 
       - name: Validate valid Builder_Context_Package fixtures
         run: |
-          npx --yes ajv-cli@5 validate \
-            --spec=draft2020 \
-            --strict=false \
-            -s schemas/builder-context-package.schema.json \
-            -d tests/valid/builder_context_package.json
-
-          npx --yes ajv-cli@5 validate \
-            --spec=draft2020 \
-            --strict=false \
-            -s schemas/builder-context-package.schema.json \
-            -d examples/smart-home-connector/builder_context_package.json
+          for file in tests/valid/builder_context_package*.json examples/smart-home-connector/builder_context_package.json; do
+            npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/builder-context-package.schema.json -d "$file"
+          done
 
       - name: Ensure invalid Builder_Context_Package fixtures fail
         run: |
@@ -68,12 +33,7 @@ jobs:
               tests/invalid/intake_result_*.json) continue ;;
               tests/invalid/session_state_*.json) continue ;;
             esac
-
-            if npx --yes ajv-cli@5 validate \
-              --spec=draft2020 \
-              --strict=false \
-              -s schemas/builder-context-package.schema.json \
-              -d "$file"; then
+            if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/builder-context-package.schema.json -d "$file"; then
               echo "Invalid fixture unexpectedly passed validation: $file"
               exit 1
             else
@@ -98,71 +58,38 @@ jobs:
 
       - name: Validate checkpoint fixtures
         run: |
-          npx --yes ajv-cli@5 validate \
-            --spec=draft2020 \
-            --strict=false \
-            -s schemas/checkpoint.schema.json \
-            -d tests/valid/checkpoint.json
-
-          if npx --yes ajv-cli@5 validate \
-            --spec=draft2020 \
-            --strict=false \
-            -s schemas/checkpoint.schema.json \
-            -d tests/invalid/checkpoint_missing_id.json; then
+          npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/checkpoint.schema.json -d tests/valid/checkpoint.json
+          if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/checkpoint.schema.json -d tests/invalid/checkpoint_missing_session_id.json; then
             echo "Invalid checkpoint fixture unexpectedly passed validation."
             exit 1
           else
-            echo "Invalid checkpoint fixture correctly failed validation."
+            echo "Invalid checkpoint fixture correctly failed."
           fi
 
       - name: Validate intake result fixtures
         run: |
           for file in tests/valid/intake_result_*.json; do
-            npx --yes ajv-cli@5 validate \
-              --spec=draft2020 \
-              --strict=false \
-              -s schemas/intake-result.schema.json \
-              -d "$file"
+            npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/intake-result.schema.json -d "$file"
           done
-
           for file in tests/invalid/intake_result_*.json; do
-            if npx --yes ajv-cli@5 validate \
-              --spec=draft2020 \
-              --strict=false \
-              -s schemas/intake-result.schema.json \
-              -d "$file"; then
+            if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/intake-result.schema.json -d "$file"; then
               echo "Invalid intake result fixture unexpectedly passed validation: $file"
               exit 1
             else
-              echo "Invalid intake result fixture correctly failed validation: $file"
+              echo "Invalid intake result correctly failed: $file"
             fi
           done
 
       - name: Validate session-state fixtures
         run: |
-          npx --yes ajv-cli@5 validate \
-            --spec=draft2020 \
-            --strict=false \
-            -s schemas/session-state.schema.json \
-            -r schemas/checkpoint.schema.json \
-            -d tests/valid/session_state_mode_state.json
-
-          if npx --yes ajv-cli@5 validate \
-            --spec=draft2020 \
-            --strict=false \
-            -s schemas/session-state.schema.json \
-            -r schemas/checkpoint.schema.json \
-            -d tests/invalid/session_state_workflow_runtime_mismatch.json; then
+          npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -d tests/valid/session_state_mode_state.json
+          if npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -d tests/invalid/session_state_workflow_runtime_mismatch.json; then
             echo "Invalid session-state fixture unexpectedly passed validation."
             exit 1
           else
-            echo "Invalid session-state fixture correctly failed validation."
+            echo "Invalid session-state fixture correctly failed."
           fi
 
       - name: Compile session-state schema
         run: |
-          npx --yes ajv-cli@5 compile \
-            --spec=draft2020 \
-            --strict=false \
-            -s schemas/session-state.schema.json \
-            -r schemas/checkpoint.schema.json
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json
