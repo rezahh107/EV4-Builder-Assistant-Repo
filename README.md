@@ -1,6 +1,6 @@
 # EV4 Builder Assistant Repo
 
-Status: user_facing_builder_ux_added_v0.3.3  
+Status: ux_precedence_and_recovery_added_v0.3.4  
 Role: interactive_elementor_execution_assistant  
 Primary input package: `Builder_Context_Package`  
 Primary workflow mode after valid intake: `APPROVED_HANDOFF_MODE`
@@ -20,7 +20,7 @@ Builder Assistant می‌گوید الان دقیقاً چه action کوچکی �
 
 ---
 
-## v0.3.3 Summary
+## v0.3.4 Summary
 
 ```text
 Patch A: workflow_mode / runtime_state / STATE_CAPSULE foundation present.
@@ -30,6 +30,7 @@ Patch D: checkpoint v0.2 assertion/evidence and retry policy present.
 Patch E: deployable ChatGPT project source pack present.
 Patch F: SMART_GUIDANCE_FOOTER v0.2 and UI_INSTRUCTION_CONFIDENCE_GATE added.
 Patch G: user-facing builder UX contract added.
+Patch H: UX precedence table and Escape Hatch recovery added.
 ```
 
 Production readiness remains false.
@@ -54,21 +55,36 @@ They show only what the user needs to act:
 
 They hide internal schema/source fields unless the user asks `جزئیات فنی`, `بررسی`, or `وضعیت`.
 
-Hidden from normal batches:
-
-```text
-element_generation
-element_generation_source
-input_authorization
-package_digest
-Control path: insufficient_evidence
-```
-
 Use:
 
 ```text
 protocols/BUILDER_BATCH_OUTPUT_FORMAT.md
 protocols/USER_FACING_RESPONSE_POLICY.md
+protocols/UX_PRECEDENCE_TABLE.md
+protocols/ESCAPE_HATCH_RECOVERY.md
+```
+
+---
+
+## UX Precedence and Recovery
+
+When output rules conflict, `UX_PRECEDENCE_TABLE` decides the response type.
+
+Key rules:
+
+```text
+valid تایید BATCH-XXX -> one short confirmation line, then next safe batch
+وضعیت -> status only, no build
+بررسی -> evidence review only, no build
+active builder batch -> fixed batch template, no footer
+repeated failure threshold -> Escape Hatch, no normal batch
+```
+
+Escape Hatch rule:
+
+```text
+After two failed or unclear attempts on the same action, do not repeat the same instruction.
+The third response offers an alternate route or rollback to the last safe checkpoint.
 ```
 
 ---
@@ -119,50 +135,7 @@ If a control is missing or unverified, use `insufficient_evidence` or enter `COR
 
 ## Smart Guidance Footer
 
-`SMART_GUIDANCE_FOOTER` is v0.2 and restricted:
-
-```yaml
-guidance_footer: auto | off
-footer_allowed:
-  intake_with_optional_evidence: true
-  review_or_status_response: true
-  paused_state: true
-  post_correction_choice: true
-  active_builder_batch: false
-  fully_blocked_required_input: false
-  completion_report: false
-```
-
-The footer must never bypass gates, validation, checkpoints, confirmation, or correction.
-
----
-
-## Runtime Repository Structure
-
-```text
-EV4-Builder-Assistant-Repo/
-├─ README.md
-├─ PROJECT_INSTRUCTIONS.md
-├─ STATUS.md
-├─ CHANGELOG.md
-├─ package.json
-├─ core/
-├─ modes/
-├─ protocols/
-├─ input-contracts/
-├─ commands/
-├─ schemas/
-├─ scripts/
-├─ examples/
-├─ tests/
-├─ docs/
-├─ references/
-│  ├─ elementor-ui/
-│  └─ tuya-workbook/
-├─ cases/
-│  └─ tuya-step-by-step/
-└─ .github/workflows/
-```
+`SMART_GUIDANCE_FOOTER` is v0.2 and restricted. It must never bypass gates, validation, checkpoints, confirmation, or correction, and it must not appear after active builder batches.
 
 ---
 
@@ -172,10 +145,11 @@ EV4-Builder-Assistant-Repo/
 core/MODE_STATE_MATRIX.md
 core/MASTER_PROMPT.md
 core/SESSION_STATE_MACHINE.md
-core/LIVE_INTERFACE_PRECEDENCE.md
 input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
 protocols/BUILDER_BATCH_OUTPUT_FORMAT.md
 protocols/USER_FACING_RESPONSE_POLICY.md
+protocols/UX_PRECEDENCE_TABLE.md
+protocols/ESCAPE_HATCH_RECOVERY.md
 protocols/SMART_GUIDANCE_FOOTER.md
 protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md
 commands/SESSION_COMMANDS.md
@@ -184,8 +158,6 @@ commands/SESSION_COMMANDS.md
 ---
 
 ## Validation
-
-The repo validates schema shape, negative fixtures, checkpoint fixtures, intake result fixtures, session-state fixtures, source pack integrity, and cross-field package integrity.
 
 Local commands:
 
@@ -210,12 +182,14 @@ GitHub Actions workflow:
 
 ```yaml
 project_status:
-  version: 0.3.3
-  status: user_facing_builder_ux_added
+  version: 0.3.4
+  status: ux_precedence_and_recovery_added
   structured_confirmation: completed
   smart_guidance_footer: v0.2.0
   ui_instruction_confidence_gate: active
   user_facing_builder_ux: active
+  ux_precedence_table: active
+  escape_hatch_recovery: active
   source_pack: synced
   real_elementor_execution: in_progress_by_user
   production_ready: false
