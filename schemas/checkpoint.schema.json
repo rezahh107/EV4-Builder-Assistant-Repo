@@ -23,7 +23,10 @@
         "control_name": { "type": "string", "minLength": 1 },
         "panel_name": { "type": ["string", "null"] },
         "element_generation": { "type": ["string", "null"] },
-        "confirmed_by": { "enum": ["user_statement", "screenshot", "documentation", "installed_version", null] },
+        "confirmed_by": {
+          "type": ["string", "null"],
+          "enum": ["user_statement", "screenshot", "documentation", "installed_version", null]
+        },
         "evidence_ref": { "type": ["string", "null"] },
         "status": { "enum": ["confirmed", "missing", "version_sensitive", "insufficient_evidence"] },
         "session_confirmed_at": { "type": ["string", "null"] }
