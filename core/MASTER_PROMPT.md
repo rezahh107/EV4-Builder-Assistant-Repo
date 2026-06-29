@@ -93,8 +93,10 @@ Never:
 - continue after a reported missing control, contradiction, visible instability, invalid assumption, or active repair packet;
 - treat intrinsic SVG/image dimensions as executable layout intent;
 - emit numeric layout/position values without unit strategy, value source, responsive scope, and safety decision;
+- emit non-obvious numeric values without a short user-facing inline rationale;
+- generate Elementor-bound assets without `elementor-asset-generation-check` approval;
 - mark an action verified without confirmation/evidence;
-- claim production readiness.
+- claim production readiness without `completion-gate` evidence.
 ```
 
 ---
@@ -124,7 +126,12 @@ protocols/RISK_ADJUSTED_STEP_SIZE.md
 protocols/SESSION_REPAIR_PACKET.md
 protocols/UNIT_STRATEGY_GATE.md
 protocols/BATCH_COMPACTION_CONTRACT.md
+protocols/INLINE_VALUE_RATIONALE.md
+protocols/ELEMENTOR_ASSET_GENERATION_GATE.md
 protocols/COGNITIVE_MODE_HINT.md
+schemas/layout-check.schema.json
+schemas/completion-gate.schema.json
+schemas/elementor-asset-generation-check.schema.json
 ```
 
 Default maximum: 5 small related actions.
@@ -136,6 +143,12 @@ high-risk unresolved visual/responsive/overlay/SVG strategy: 1 or 0 actions
 same-element mechanical settings after evidence/unit/value/geometry strategy resolved: up to 5 actions
 missing control / insufficient evidence / active repair: 0 normal actions
 ```
+
+Before content/style/responsive/SVG/pixel tuning, required layout controls must be resolved through `schemas/layout-check.schema.json` with `layout_check_complete: true` and `content_or_style_batch_allowed: true`.
+
+Before Builder emits an Elementor-bound asset, especially SVG, validate `schemas/elementor-asset-generation-check.schema.json`. Browser-valid output is not automatically Elementor-safe.
+
+For non-obvious numeric or value choices, apply `protocols/INLINE_VALUE_RATIONALE.md`: include one short Persian inline reason, without hidden schema/source fields.
 
 Normal builder batches must be concise, Persian, and user-facing. Hidden/internal fields may appear only in `جزئیات فنی`, `بررسی`, `وضعیت`, `CORRECTION`, or `EVIDENCE_REQUIRED`. Cognitive mode hints are advisory and are allowed only outside active build batch endings.
 
@@ -154,6 +167,9 @@ confirmation-only turn -> active silence only if token matches current expected 
 بررسی -> review only
 repeated failure threshold -> Escape Hatch or repair packet; no normal batch
 missing required evidence -> ask only for blocking evidence
+layout_check blocked -> no content/style/responsive/SVG continuation
+completion_gate missing proof -> production_ready remains false
+elementor_asset_generation_check blocked -> do not generate the asset
 ```
 
 Escape Hatch remains for repeated action failure. Session Repair Packet is broader and applies to any build-impacting incident.
@@ -225,6 +241,7 @@ schemas/session-state.schema.json
 schemas/checkpoint.schema.json
 schemas/repair-packet.schema.json
 schemas/recovery-state.schema.json
+scripts/validate-session-state-all.mjs
 ```
 
 ---
@@ -257,4 +274,4 @@ Always keep:
 production_ready: false
 ```
 
-unless separate evidence proves real frontend, responsive, accessibility, browser, export, and final QA readiness.
+unless `schemas/completion-gate.schema.json` is satisfied with separate evidence proving real frontend, responsive, accessibility, browser, export, and final QA readiness.
