@@ -15,18 +15,31 @@ if (schemaFiles.length === 0) {
   process.exit(1);
 }
 
-const args = ['--yes', 'ajv-cli@5', 'compile', '--spec=draft2020', '--strict=false'];
-for (const schemaFile of schemaFiles) args.push('-s', schemaFile);
+const refsBySchema = {
+  'schemas/checkpoint.schema.json': ['schemas/evidence-record.schema.json'],
+  'schemas/session-state.schema.json': [
+    'schemas/checkpoint.schema.json',
+    'schemas/evidence-record.schema.json',
+    'schemas/repair-packet.schema.json'
+  ]
+};
 
-console.log(`Schema registry compile: compiling ${schemaFiles.length} schemas.`);
-const result = spawnSync('npx', args, {
-  stdio: 'inherit',
-  shell: true
-});
+const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+let failed = false;
 
-if (result.status !== 0) {
-  console.error('Schema registry compile failed.');
-  process.exit(result.status ?? 1);
+for (const schemaFile of schemaFiles) {
+  const refs = refsBySchema[schemaFile] || [];
+  const args = ['--yes', 'ajv-cli@5', 'compile', '--spec=draft2020', '--strict=false', '-s', schemaFile];
+  for (const ref of refs) args.push('-r', ref);
+
+  console.log(`Schema registry compile: ${schemaFile}`);
+  const result = spawnSync(command, args, { stdio: 'inherit' });
+
+  if (result.status !== 0) {
+    console.error(`Schema registry compile failed: ${schemaFile}`);
+    failed = true;
+  }
 }
 
+if (failed) process.exit(1);
 console.log(`Schema registry compile passed for ${schemaFiles.length} schemas.`);
