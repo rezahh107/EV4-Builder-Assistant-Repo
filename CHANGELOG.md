@@ -10,6 +10,12 @@
 - Added valid and invalid layout-check fixtures.
 - Added `schemas/completion-gate.schema.json` and `scripts/validate-completion-gate.mjs`.
 - Added valid and invalid completion-gate fixtures.
+- Added Elementor asset generation gate and generated asset validation coverage.
+- Added `protocols/INLINE_VALUE_RATIONALE.md`.
+- Added unified session-state validation runner.
+- Added `protocols/REFERENCE_PARADIGM_GATE.md`, `schemas/reference-paradigm-gate.schema.json`, and reference paradigm regression fixtures.
+- Added `protocols/BEHAVIORAL_CONTRACT_ENFORCEMENT.md` and central validation runner `scripts/validate.mjs`.
+- Added behavioral contract schemas, validators, and fixtures for action batches, unit policy, evidence claims, completion hierarchy, visual parity, generated assets, UI confidence, and user-facing status wording.
 
 ### Changed
 
@@ -19,11 +25,15 @@
 - Added `validate:version-consistency` to `package.json` and CI.
 - Added `validate:layout-check` and `validate:completion-gate` to `package.json` and CI.
 - Added schema compilation for layout-check and completion-gate to CI.
+- Added `validate:elementor-asset-generation`, `validate:reference-paradigm`, and central `validate` entrypoint.
+- Simplified CI to run central contract validation through `npm run validate`.
+- Wired layout-check, completion-gate, Elementor asset generation, Reference Paradigm Gate, and behavioral contracts into runtime docs.
+- Synchronized deployable ChatGPT project pack after behavioral contract enforcement.
 - Synchronized `README.md`, `STATUS.md`, and package version metadata to v0.3.6.
 
 ### Status
 
-- No architecture, scoring, recommendation, or redesign was rerun.
+- No architecture, scoring, recommendation, constructability review, or redesign was rerun.
 - `selected_candidate_id: ARCH-FAM-C` remains preserved.
 - Approved class names remain preserved.
 - `production_ready` remains false.
@@ -78,7 +88,7 @@
 - Updated `core/MASTER_PROMPT.md` with UX precedence and Escape Hatch recovery rules.
 - Updated `core/SESSION_STATE_MACHINE.md` with recovery state and no-third-repeat guidance.
 - Updated `protocols/USER_FACING_RESPONSE_POLICY.md` to v0.2.0.
-- Updated deployable ChatGPT Project Instructions and source pack.
+- Updated deployable ChatGPT project source pack.
 - Reconciled retry policy:
   - attempt 1: clarify instruction
   - attempt 2: request targeted evidence
