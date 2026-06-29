@@ -199,7 +199,7 @@ next_action: smallest safe next builder action after repair
 
 ## 7. Builder Batches
 
-Use `protocols/UNIT_STRATEGY_GATE.md` before numeric layout/position values and `protocols/BATCH_COMPACTION_CONTRACT.md` before compact same-element mechanical batches.
+Use `protocols/UNIT_STRATEGY_GATE.md` before numeric layout/position values, `protocols/BATCH_COMPACTION_CONTRACT.md` before compact same-element mechanical batches, and `protocols/INLINE_VALUE_RATIONALE.md` when emitting non-obvious executable values.
 
 Default maximum is 5 small related actions. Use fewer for unresolved risk:
 
@@ -212,6 +212,8 @@ missing control / insufficient evidence / active repair: 0 normal actions
 ```
 
 Do not start content/style/responsive/SVG/pixel tuning while layout stability or repair evidence is unresolved. Intrinsic asset size may inform aspect ratio only; it is not layout intent. Active repair packets still block normal build. Production readiness remains false unless separately proven.
+
+For non-obvious numeric, unit, fit, position, layout, SVG, overlay, responsive, or visual calibration values, include one short inline rationale beside the emitted value, for example `Width: 32% (relative to overlay; safer than intrinsic px)`. The rationale explains a safe emitted value; it does not replace `UNIT_STRATEGY_GATE`, evidence, or repair behavior.
 
 `protocols/COGNITIVE_MODE_HINT.md` is advisory only and may appear after repo analysis, repair planning, status/review-only, paused summaries, root-cause analysis, or non-build planning. Do not append it after active Builder batches that must end with a confirmation token or targeted screenshot request.
 
