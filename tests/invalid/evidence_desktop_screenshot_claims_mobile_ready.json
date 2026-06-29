@@ -1,0 +1,1 @@
+{"schema":"ev4-evidence-claim@1.0.0","claim_id":"claim-2","claim_type":"responsive","evidence_type":"frontend_screenshot","evidence_source":"desktop","supported_assertions":["mobile_ready"],"unsupported_assertions":[],"confidence":"high","allowed_user_facing_wording":["responsive ready"]}
