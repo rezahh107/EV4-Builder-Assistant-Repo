@@ -144,7 +144,7 @@ Failure behavior:
 ```yaml
 runtime_state: EVIDENCE_REQUIRED or REVIEW_ONLY
 normal_builder_batch_allowed: false
-next_action: ask for Constructability Engineer output
+next_action: ask for reference_paradigm_lock and paradigm_to_structure_map from Constructability Engineer
 ```
 
 Builder must not parse screenshots, invent locks, redistribute cards, or reinterpret connector models.
