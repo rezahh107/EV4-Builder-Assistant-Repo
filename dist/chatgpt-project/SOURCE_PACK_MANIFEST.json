@@ -73,9 +73,9 @@
     },
     {
       "path": "dist/chatgpt-project/knowledge/09_REFERENCE_METHODS_BOUNDARY.md",
-      "sha256": "198f535686b228b203051d3e3f318ad97278a3fff47e49aa50dc10478195398c",
-      "bytes": 1441,
-      "chars": 1441
+      "sha256": "03ac3860d026f281738f1557cc9a651b43e9bf4fa5329d58f69cbf20b4a2b1c6",
+      "bytes": 1437,
+      "chars": 1437
     },
     {
       "path": "dist/chatgpt-project/knowledge/10_USER_FACING_UX_RECOVERY.md",
