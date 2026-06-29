@@ -16,6 +16,20 @@ function fail(code, message) {
   errors.push({ code, message });
 }
 
+function normalizeAbsent(value) {
+  return value ?? null;
+}
+
+function displayCandidate(value) {
+  return value ?? '<absent>';
+}
+
+function failIfCandidateMismatch(code, leftLabel, leftValue, rightLabel, rightValue) {
+  if (normalizeAbsent(leftValue) !== normalizeAbsent(rightValue)) {
+    fail(code, `${leftLabel} ${displayCandidate(leftValue)} must equal ${rightLabel} ${displayCandidate(rightValue)}.`);
+  }
+}
+
 const CANONICAL_RUNTIME_STATES = new Set([
   'INTAKE_WAITING',
   'INTAKE_VALIDATING',
@@ -52,16 +66,34 @@ const selectedCandidate = session.selected_candidate_id;
 const checkpoint = session.last_verified_checkpoint;
 const repairPacket = session.repair_packet;
 
-if (selectedCandidate && checkpoint?.selected_candidate_id && checkpoint.selected_candidate_id !== selectedCandidate) {
-  fail('EV4-SESSION-004', `last_verified_checkpoint.selected_candidate_id ${checkpoint.selected_candidate_id} must equal session.selected_candidate_id ${selectedCandidate}.`);
+if (checkpoint) {
+  failIfCandidateMismatch(
+    'EV4-SESSION-004',
+    'last_verified_checkpoint.selected_candidate_id',
+    checkpoint.selected_candidate_id,
+    'session.selected_candidate_id',
+    selectedCandidate
+  );
 }
 
-if (selectedCandidate && repairPacket?.selected_candidate_id && repairPacket.selected_candidate_id !== selectedCandidate) {
-  fail('EV4-SESSION-005', `repair_packet.selected_candidate_id ${repairPacket.selected_candidate_id} must equal session.selected_candidate_id ${selectedCandidate}.`);
+if (repairPacket) {
+  failIfCandidateMismatch(
+    'EV4-SESSION-005',
+    'repair_packet.selected_candidate_id',
+    repairPacket.selected_candidate_id,
+    'session.selected_candidate_id',
+    selectedCandidate
+  );
 }
 
-if (selectedCandidate && repairPacket?.last_safe_checkpoint?.selected_candidate_id && repairPacket.last_safe_checkpoint.selected_candidate_id !== selectedCandidate) {
-  fail('EV4-SESSION-006', `repair_packet.last_safe_checkpoint.selected_candidate_id ${repairPacket.last_safe_checkpoint.selected_candidate_id} must equal session.selected_candidate_id ${selectedCandidate}.`);
+if (repairPacket?.last_safe_checkpoint) {
+  failIfCandidateMismatch(
+    'EV4-SESSION-006',
+    'repair_packet.last_safe_checkpoint.selected_candidate_id',
+    repairPacket.last_safe_checkpoint.selected_candidate_id,
+    'session.selected_candidate_id',
+    selectedCandidate
+  );
 }
 
 if (checkpoint?.schema === 'ev4-builder-checkpoint@0.1.0' && ACTIVE_RUNTIME_STATES.has(session.runtime_state)) {
