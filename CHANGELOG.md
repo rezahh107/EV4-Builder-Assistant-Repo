@@ -6,6 +6,10 @@
 
 - Added `scripts/validate-version-consistency.mjs`.
 - Added invalid cross-field fixtures for first-builder batch over-cap and recursive package prose prompt-injection detection.
+- Added `schemas/layout-check.schema.json` and `scripts/validate-layout-check.mjs`.
+- Added valid and invalid layout-check fixtures.
+- Added `schemas/completion-gate.schema.json` and `scripts/validate-completion-gate.mjs`.
+- Added valid and invalid completion-gate fixtures.
 
 ### Changed
 
@@ -13,6 +17,8 @@
 - Enforced `first_builder_batch.actions.length <= first_builder_batch.max_actions` in cross-field validation.
 - Reduced `first_builder_batch.max_actions` and `first_builder_batch.actions.maxItems` from 6 to 5 in `schemas/builder-context-package.schema.json`.
 - Added `validate:version-consistency` to `package.json` and CI.
+- Added `validate:layout-check` and `validate:completion-gate` to `package.json` and CI.
+- Added schema compilation for layout-check and completion-gate to CI.
 - Synchronized `README.md`, `STATUS.md`, and package version metadata to v0.3.6.
 
 ### Status
