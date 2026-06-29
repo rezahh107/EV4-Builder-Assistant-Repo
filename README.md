@@ -1,6 +1,6 @@
 # EV4 Builder Assistant Repo
 
-Status: constructability_gate_alignment_planned  
+Status: runtime_safety_gates_added  
 Role: `interactive_elementor_execution_assistant`  
 Primary input package: `Builder Executable Package` from `EV4-Constructability-Engineer-Repo`  
 Legacy input during migration: `Builder_Context_Package` only when authorization and constructability gates pass  
@@ -205,6 +205,9 @@ protocols/UX_PRECEDENCE_TABLE.md
 protocols/ESCAPE_HATCH_RECOVERY.md
 protocols/SMART_GUIDANCE_FOOTER.md
 protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md
+protocols/UNIT_STRATEGY_GATE.md
+protocols/BATCH_COMPACTION_CONTRACT.md
+protocols/COGNITIVE_MODE_HINT.md
 commands/SESSION_COMMANDS.md
 ```
 
@@ -215,6 +218,7 @@ commands/SESSION_COMMANDS.md
 Local commands:
 
 ```text
+npm run validate:version-consistency
 npm run build:project-pack
 npm run validate:builder-context
 npm run validate:cross-field
@@ -251,7 +255,7 @@ https://github.com/rezahh107/EV4-Responsive-Architect
 
 ```yaml
 project_status:
-  version: 0.3.4
+  version: 0.3.6
   role: interactive_elementor_execution_assistant
   constructability_gate_required: true
   structured_confirmation: completed
@@ -260,7 +264,8 @@ project_status:
   user_facing_builder_ux: active
   ux_precedence_table: active
   escape_hatch_recovery: active
-  source_pack: synced
+  runtime_safety_gates: active
+  source_pack: synced_v0.3.6
   real_elementor_execution: in_progress_by_user
   production_ready: false
 ```
