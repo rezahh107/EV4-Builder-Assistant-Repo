@@ -16,7 +16,7 @@ export function finish(name, filePath, errors) {
 
 export function hasEvidence(item, allowed = []) {
   const evidence = item.evidence || item.evidence_sources || item.evidence_refs || [];
-  return Array.isArray(evidence) && evidence.some((e) => allowed.length === 0 || allowed.includes(typeof e === 'string' ? e : e.type));
+  return Array.isArray(evidence) && evidence.some((e) => allowed.length === 0 || allowed.includes(typeof e === 'string' ? e : e?.type));
 }
 
 export function textIncludesAny(text, terms) {
