@@ -77,6 +77,20 @@ jobs:
         run: |
           npm run validate:session-state
 
+      - name: Validate session-state cross-field fixtures
+        run: |
+          for file in tests/valid/session_state*.json; do
+            node scripts/validate-session-state.mjs "$file"
+          done
+          for file in tests/invalid/session_state*.json; do
+            if node scripts/validate-session-state.mjs "$file"; then
+              echo "Invalid session-state cross-field fixture unexpectedly passed: $file"
+              exit 1
+            else
+              echo "Invalid session-state cross-field fixture correctly failed: $file"
+            fi
+          done
+
       - name: Validate repair packet fixtures
         run: |
           npm run validate:repair-packet
