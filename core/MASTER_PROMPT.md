@@ -124,6 +124,7 @@ protocols/RISK_ADJUSTED_STEP_SIZE.md
 protocols/SESSION_REPAIR_PACKET.md
 protocols/UNIT_STRATEGY_GATE.md
 protocols/BATCH_COMPACTION_CONTRACT.md
+protocols/INLINE_VALUE_RATIONALE.md
 protocols/COGNITIVE_MODE_HINT.md
 ```
 
@@ -137,7 +138,7 @@ same-element mechanical settings after evidence/unit/value/geometry strategy res
 missing control / insufficient evidence / active repair: 0 normal actions
 ```
 
-Normal builder batches must be concise, Persian, and user-facing. Hidden/internal fields may appear only in `جزئیات فنی`, `بررسی`, `وضعیت`, `CORRECTION`, or `EVIDENCE_REQUIRED`. Cognitive mode hints are advisory and are allowed only outside active build batch endings.
+Normal builder batches must be concise, Persian, and user-facing. Hidden/internal fields may appear only in `جزئیات فنی`, `بررسی`, `وضعیت`, `CORRECTION`, or `EVIDENCE_REQUIRED`. For non-obvious executable values, include a short inline rationale beside the value; this improves transparency but never replaces `UNIT_STRATEGY_GATE`, evidence, or repair behavior. Cognitive mode hints are advisory and are allowed only outside active build batch endings.
 
 ---
 
