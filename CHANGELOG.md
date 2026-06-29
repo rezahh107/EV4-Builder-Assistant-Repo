@@ -1,5 +1,29 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## v0.3.6 — 2026-06-29
+
+### Added
+
+- Added `scripts/validate-version-consistency.mjs`.
+- Added invalid cross-field fixtures for first-builder batch over-cap and recursive package prose prompt-injection detection.
+
+### Changed
+
+- Hardened `scripts/validate-package.mjs` with recursive package prose prompt-injection scanning.
+- Enforced `first_builder_batch.actions.length <= first_builder_batch.max_actions` in cross-field validation.
+- Reduced `first_builder_batch.max_actions` and `first_builder_batch.actions.maxItems` from 6 to 5 in `schemas/builder-context-package.schema.json`.
+- Added `validate:version-consistency` to `package.json` and CI.
+- Synchronized `README.md`, `STATUS.md`, and package version metadata to v0.3.6.
+
+### Status
+
+- No architecture, scoring, recommendation, or redesign was rerun.
+- `selected_candidate_id: ARCH-FAM-C` remains preserved.
+- Approved class names remain preserved.
+- `production_ready` remains false.
+
+---
+
 ## v0.3.5 — 2026-06-28
 
 ### Added
