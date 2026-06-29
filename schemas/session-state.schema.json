@@ -14,7 +14,7 @@
       "maxLength": 180,
       "pattern": "^\\[STATE workflow=(START_INTAKE_MODE|APPROVED_HANDOFF_MODE|FRESH_IMAGE_MODE_LIMITED) state=(INTAKE_WAITING|INTAKE_VALIDATING|BUILD_ACTIVE|WAITING_FOR_CONFIRMATION|EVIDENCE_REQUIRED|CORRECTION|REVIEW_ONLY|PAUSED|COMPLETED)( cp=[A-Za-z0-9._:-]+)?( batch=[A-Za-z0-9._:-]+)? risk=(low|medium|high|blocked)\\]$"
     },
-    "current_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "PAUSED", "QUESTION_MODE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION_MODE", "REVIEW_MODE", "CORRECTION", "REVIEW_ONLY", "COMPLETED"] },
+    "current_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"] },
     "selected_candidate_id": { "type": ["string", "null"] },
     "last_verified_checkpoint": { "$ref": "./checkpoint.schema.json" },
     "max_actions_per_turn": { "type": "integer", "minimum": 1, "maximum": 5 },
@@ -87,15 +87,11 @@
     },
     {
       "if": { "properties": { "runtime_state": { "const": "CORRECTION" } }, "required": ["runtime_state"] },
-      "then": { "required": ["repair_packet"], "properties": { "current_state": { "enum": ["CORRECTION", "CORRECTION_MODE"] } } }
-    },
-    {
-      "if": { "properties": { "current_state": { "enum": ["CORRECTION", "CORRECTION_MODE"] } }, "required": ["current_state"] },
-      "then": { "required": ["repair_packet"] }
+      "then": { "required": ["repair_packet"], "properties": { "current_state": { "const": "CORRECTION" } } }
     },
     {
       "if": { "properties": { "runtime_state": { "const": "REVIEW_ONLY" } }, "required": ["runtime_state"] },
-      "then": { "properties": { "current_state": { "enum": ["REVIEW_ONLY", "REVIEW_MODE", "QUESTION_MODE"] } } }
+      "then": { "properties": { "current_state": { "const": "REVIEW_ONLY" } } }
     },
     {
       "if": { "properties": { "runtime_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "PAUSED", "COMPLETED", "INTAKE_WAITING", "INTAKE_VALIDATING"] } }, "required": ["runtime_state"] },
