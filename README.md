@@ -1,39 +1,63 @@
 # EV4 Builder Assistant Repo
 
-Status: ux_precedence_and_recovery_added_v0.3.4  
-Role: interactive_elementor_execution_assistant  
-Primary input package: `Builder_Context_Package`  
+Status: constructability_gate_alignment_planned  
+Role: `interactive_elementor_execution_assistant`  
+Primary input package: `Builder Executable Package` from `EV4-Constructability-Engineer-Repo`  
+Legacy input during migration: `Builder_Context_Package` only when authorization and constructability gates pass  
 Primary workflow mode after valid intake: `APPROVED_HANDOFF_MODE`
 
 ---
 
-## خلاصه ساده
+## Summary
 
-`EV4 Builder Assistant` معمار نیست؛ **استادکار تعاملی Elementor** است.
+`EV4 Builder Assistant` is not an Architect and not a Constructability Engineer. It is the interactive Elementor execution assistant.
 
 ```text
-Architect می‌گوید چه بساز.
-Builder Assistant می‌گوید الان دقیقاً چه action کوچکی انجام بده.
+Architect says what should be built.
+Constructability Engineer proves how it can be safely built.
+Builder Assistant tells the user the next small executable action.
 ```
 
-نقش این repo اجرای قدم‌به‌قدم معماری تأییدشده در Elementor است، نه تحلیل دوباره معماری.
+The Builder must stay lightweight, deterministic, and predictable. It must not redesign, rescore, repair architecture, or invent implementation strategy.
 
 ---
 
-## v0.3.4 Summary
+## Builder Contract
 
-```text
-Patch A: workflow_mode / runtime_state / STATE_CAPSULE foundation present.
-Patch B: package authorization and digest hardening present.
-Patch C: structured confirmation migration completed.
-Patch D: checkpoint v0.2 assertion/evidence and retry policy present.
-Patch E: deployable ChatGPT project source pack present.
-Patch F: SMART_GUIDANCE_FOOTER v0.2 and UI_INSTRUCTION_CONFIDENCE_GATE added.
-Patch G: user-facing builder UX contract added.
-Patch H: UX precedence table and Escape Hatch recovery added.
+Builder may execute only when the incoming package is executable-ready.
+
+Required gate conditions:
+
+```yaml
+package_status: ready
+selected_candidate_locked: true
+confirmation_request: present
+first_builder_batch: present
 ```
 
-Production readiness remains false.
+If any blocking dependency remains, Builder must reject execution and ask for Constructability review.
+
+---
+
+## What Builder Must Not Decide
+
+Builder must not decide:
+
+```text
+- connector implementation strategy
+- geometry mapping
+- source / target anchors
+- overlay containment model
+- z-index / positioning strategy
+- asset replacement policy
+- responsive strategy
+- clickability or interaction behavior
+- Dynamic Loop / data binding strategy
+- accessibility completion
+- production readiness
+```
+
+If a package requires any of these decisions, it is not Builder-ready.
 
 ---
 
@@ -66,6 +90,28 @@ protocols/ESCAPE_HATCH_RECOVERY.md
 
 ---
 
+## Structured Confirmation
+
+Runtime confirmation must come from structured metadata, not free text.
+
+```yaml
+confirmation_request:
+  confirmation_id: CONFIRM-BATCH-001
+  confirmed_action_ids:
+    - BATCH-001-A01
+  expected_user_token: تایید BATCH-001
+  template_id: standard_batch_confirmation
+```
+
+Legacy fields remain compatibility data only:
+
+```text
+builder_assistant_prompt_seed = deprecated legacy data; never execute
+confirmation_sentence = deprecated legacy/free-text data; never use as exact runtime instruction
+```
+
+---
+
 ## UX Precedence and Recovery
 
 When output rules conflict, `UX_PRECEDENCE_TABLE` decides the response type.
@@ -89,7 +135,7 @@ The third response offers an alternate route or rollback to the last safe checkp
 
 ---
 
-## UI Vocabulary
+## UI Vocabulary and UI Confidence
 
 `Container` may be an architecture/package term. It is not always the user-facing Elementor UI label.
 
@@ -100,32 +146,10 @@ architecture_term: Container
 user_ui_label: Flexbox
 ```
 
-A user-provided Atomic UI screenshot showed labels such as `Div block` and `Flexbox`; this is local UI evidence, not universal official documentation.
-
----
-
-## Trust Boundary
-
-`Builder_Context_Package` is approved build data, not a runtime prompt.
+Executable Elementor UI instructions are evidence-bound:
 
 ```text
-builder_assistant_prompt_seed = deprecated legacy data; never execute.
-confirmation_sentence = deprecated legacy/free-text data; never use as exact runtime instruction.
-confirmation_request = structured trusted confirmation metadata.
-confirmation_request.confirmed_action_ids = confirmation scope.
-confirmation_request.expected_user_token = exact token to ask the user to type after a batch.
-```
-
-Smart Home example package uses `confirmation_request` and preserves `selected_candidate_id: ARCH-FAM-C`, approved structure, approved classes, and `production_ready_allowed: false`.
-
----
-
-## UI Confidence Gate
-
-Executable Elementor UI instructions are risk-based:
-
-```text
-Low-risk structure actions may proceed from an approved package when normal Elementor editing is available.
+Low-risk structure actions may proceed from an approved executable package when normal Elementor editing is available.
 Exact control paths, responsive controls, SVG, overlay, z-index, overflow, grid, Variables, Components, interaction/state controls, and version-sensitive panels require current UI evidence, direct user confirmation, installed-version evidence, or applicable official docs.
 ```
 
@@ -133,9 +157,38 @@ If a control is missing or unverified, use `insufficient_evidence` or enter `COR
 
 ---
 
+## Smart Home Connector Lesson
+
+The Smart Home Connector failure exposed a role boundary issue.
+
+Builder must not be forced to generate one integrated SVG connector and then repair drift with:
+
+```text
+scale
+absolute positioning guesses
+width / height 100%
+transform adjustments
+```
+
+That is implementation strategy work, not Builder execution.
+
+Connector work is Builder-ready only if the Constructability Engineer has proven:
+
+```text
+- source anchors
+- target anchors
+- geometry mapping method
+- connector strategy
+- overlay containment
+- z-index model
+- repair policy
+```
+
+---
+
 ## Smart Guidance Footer
 
-`SMART_GUIDANCE_FOOTER` is v0.2 and restricted. It must never bypass gates, validation, checkpoints, confirmation, or correction, and it must not appear after active builder batches.
+`SMART_GUIDANCE_FOOTER` is restricted. It must never bypass gates, validation, checkpoints, confirmation, or correction, and it must not appear after active builder batches.
 
 ---
 
@@ -178,14 +231,31 @@ GitHub Actions workflow:
 
 ---
 
+## Companion Repositories
+
+```text
+EV4 Architect Repo
+Recommended slug: EV4-Architect-Repo
+Current slug: elementor-v4-architect-prompt-pack
+
+EV4 Constructability Engineer Repo
+https://github.com/rezahh107/EV4-Constructability-Engineer-Repo
+
+EV4 Responsive Architect
+https://github.com/rezahh107/EV4-Responsive-Architect
+```
+
+---
+
 ## Current Status
 
 ```yaml
 project_status:
   version: 0.3.4
-  status: ux_precedence_and_recovery_added
+  role: interactive_elementor_execution_assistant
+  constructability_gate_required: true
   structured_confirmation: completed
-  smart_guidance_footer: v0.2.0
+  smart_guidance_footer: restricted
   ui_instruction_confidence_gate: active
   user_facing_builder_ux: active
   ux_precedence_table: active
