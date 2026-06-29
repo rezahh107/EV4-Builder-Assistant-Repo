@@ -95,6 +95,11 @@ jobs:
         run: |
           npm run validate:repair-packet
 
+      - name: Validate layout and completion gates
+        run: |
+          npm run validate:layout-check
+          npm run validate:completion-gate
+
       - name: Validate runtime safety gate fixtures
         run: |
           npm run validate:unit-strategy
@@ -106,6 +111,8 @@ jobs:
           npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/unit-strategy-check.schema.json
           npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/batch-compaction-check.schema.json
           npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/cognitive-mode-hint.schema.json
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/layout-check.schema.json
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/completion-gate.schema.json
 
       - name: Compile session-state schema
         run: |
