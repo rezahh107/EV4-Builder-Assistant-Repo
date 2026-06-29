@@ -29,14 +29,10 @@ Builder may execute only when the incoming package is executable-ready.
 Required gate conditions:
 
 ```yaml
-builder_package_status: executable_ready
-builder_decisions_required: 0
-blocking_dependencies: []
+package_status: ready
 selected_candidate_locked: true
-selected_candidate_id_unchanged: true
-approved_class_names_unchanged: true
 confirmation_request: present
-first_safe_builder_batch: present
+first_builder_batch: present
 ```
 
 If any blocking dependency remains, Builder must reject execution and ask for Constructability review.
