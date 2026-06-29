@@ -104,6 +104,7 @@ confirmation_request:
   confirmed_action_ids:
     - BATCH-001-A01
   expected_user_token: تایید BATCH-001
+  template_id: standard_batch_confirmation
 ```
 
 Legacy fields remain compatibility data only:
