@@ -77,6 +77,18 @@ jobs:
         run: |
           npm run validate:repair-packet
 
+      - name: Validate runtime safety gate fixtures
+        run: |
+          npm run validate:unit-strategy
+          npm run validate:batch-compaction
+          npm run validate:cognitive-mode-hint
+
+      - name: Compile runtime safety gate schemas
+        run: |
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/unit-strategy-check.schema.json
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/batch-compaction-check.schema.json
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/cognitive-mode-hint.schema.json
+
       - name: Compile session-state schema
         run: |
           npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/session-state.schema.json -r schemas/checkpoint.schema.json -r schemas/evidence-record.schema.json -r schemas/repair-packet.schema.json

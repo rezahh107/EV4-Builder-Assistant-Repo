@@ -1,0 +1,15 @@
+{
+  "schema": "ev4-unit-strategy-check@0.1.0",
+  "control": "Width",
+  "proposed_value": 480,
+  "proposed_unit": "px",
+  "value_source": "user_confirmed",
+  "responsive_scope": "desktop_only",
+  "affects_layout": true,
+  "affects_position": false,
+  "risk_level": "high",
+  "reversible": true,
+  "safe_to_emit": false,
+  "reason": "Contradictory fixture: unsafe value must not request executable emission.",
+  "required_next_action": "emit_value"
+}

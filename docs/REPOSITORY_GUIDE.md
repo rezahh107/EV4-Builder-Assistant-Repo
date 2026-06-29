@@ -1,7 +1,7 @@
 # REPOSITORY_GUIDE — EV4 Builder Assistant
 
-Version: 0.3.2
-Status: package_trust_and_guidance_sync_added
+Version: 0.3.6
+Status: runtime_safety_gates_added
 Date: 2026-06-28
 
 ---
@@ -151,6 +151,9 @@ New/updated protocols:
 ```text
 protocols/SMART_GUIDANCE_FOOTER.md
 protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md
+protocols/UNIT_STRATEGY_GATE.md
+protocols/BATCH_COMPACTION_CONTRACT.md
+protocols/COGNITIVE_MODE_HINT.md
 ```
 
 `SMART_GUIDANCE_FOOTER v0.2` is restricted by context and must never appear after an active builder batch that must end with a confirmation token or screenshot request.
@@ -287,3 +290,26 @@ Required work:
 - provide confirmation token or targeted Structure Panel screenshot;
 - record observed issues in examples/smart-home-connector/notes.md.
 ```
+
+
+---
+
+## Patch G Runtime Safety Gates
+
+New protocols add fail-closed runtime checks without replacing the Session Repair Packet loop:
+
+```text
+protocols/UNIT_STRATEGY_GATE.md          = numeric layout values require unit, source, scope, and safety decision
+protocols/BATCH_COMPACTION_CONTRACT.md   = same-element mechanical batches may compact only after strategy/evidence is resolved
+protocols/COGNITIVE_MODE_HINT.md         = advisory thinking-mode hints only outside active Builder batch endings
+```
+
+Validation entry points:
+
+```text
+npm run validate:unit-strategy
+npm run validate:batch-compaction
+npm run validate:cognitive-mode-hint
+```
+
+Compatibility rule: active repair packets still freeze normal build work, `selected_candidate_id` and approved class handling are unchanged, and `production_ready` remains false unless separately proven.

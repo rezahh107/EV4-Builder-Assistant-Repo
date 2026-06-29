@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/cognitive-mode-hint.schema.json",
+  "title": "EV4 Cognitive Mode Hint",
+  "type": "object",
+  "required": ["schema", "next_turn_recommendation", "reason", "allowed_context", "footer_allowed"],
+  "properties": {
+    "schema": { "const": "ev4-cognitive-mode-hint@0.1.0" },
+    "next_turn_recommendation": { "enum": ["instant", "medium", "high"] },
+    "reason": { "type": "string", "minLength": 1 },
+    "allowed_context": { "enum": ["repo_analysis", "repair_planning", "root_cause_analysis", "status", "review_only", "paused_summary", "non_build_planning"] },
+    "footer_allowed": { "type": "boolean" }
+  },
+  "additionalProperties": false
+}
