@@ -1,0 +1,33 @@
+{
+  "schema": "ev4-builder-session-state@0.1.0",
+  "workflow_mode": "APPROVED_HANDOFF_MODE",
+  "runtime_state": "REVIEW_ONLY",
+  "state_capsule": "[STATE workflow=APPROVED_HANDOFF_MODE state=REVIEW_ONLY cp=cp-002 risk=blocked]",
+  "current_state": "QUESTION_MODE",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "last_verified_checkpoint": {
+    "schema": "ev4-builder-checkpoint@0.2.0",
+    "checkpoint_id": "cp-002",
+    "checkpoint_sequence": 2,
+    "parent_checkpoint_id": "cp-001",
+    "package_id": "examples/smart-home-connector/builder_context_package.json",
+    "package_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "selected_candidate_id": "ARCH-FAM-C",
+    "workflow_mode": "APPROVED_HANDOFF_MODE",
+    "runtime_state": "REVIEW_ONLY",
+    "batch_id": "BATCH-001",
+    "confirmed_action_ids": ["BATCH-001-A01"],
+    "unconfirmed_action_ids": [],
+    "assertions": [],
+    "evidence_ledger": [],
+    "retry_policy": {
+      "max_retry_per_action": 3,
+      "retry_1": "clarify_instruction",
+      "retry_2": "request_targeted_screenshot",
+      "retry_3": "enter_CORRECTION"
+    },
+    "created_at": "2026-06-28T06:00:00Z",
+    "created_from": "user_confirmation"
+  },
+  "max_actions_per_turn": 5
+}

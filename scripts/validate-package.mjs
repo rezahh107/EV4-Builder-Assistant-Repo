@@ -16,6 +16,7 @@ const errors = [];
 const warnings = [];
 const blockingDiagnostics = [];
 const EXECUTABLE_PACKAGE_STATUSES = new Set(['ready', 'ready_with_visible_flags']);
+const FIRST_BUILDER_BATCH_ACTION_HARD_CAP = 5;
 
 const DIAGNOSTICS = {
   BLOCKED_PACKAGE_STATUS: ['EV4-PKG-001', 'BLOCKED_PACKAGE_STATUS'],
@@ -34,6 +35,8 @@ const DIAGNOSTICS = {
   CONFIRMATION_TEXT_UNTRUSTED: ['EV4-PKG-014', 'CONFIRMATION_TEXT_UNTRUSTED'],
   CONFIRMATION_REQUEST_MISMATCH: ['EV4-PKG-015', 'CONFIRMATION_REQUEST_MISMATCH'],
   MISSING_CONFIRMATION_SOURCE: ['EV4-PKG-016', 'MISSING_CONFIRMATION_SOURCE'],
+  FIRST_BATCH_OVERCAP: ['EV4-PKG-017', 'FIRST_BATCH_OVERCAP'],
+  FIRST_BATCH_MAX_ACTIONS_OVERCAP: ['EV4-PKG-018', 'FIRST_BATCH_MAX_ACTIONS_OVERCAP'],
   DUPLICATE_ID: ['EV4-PKG-101', 'DUPLICATE_ID'],
   CHILD_NODE_UNKNOWN: ['EV4-PKG-102', 'CHILD_NODE_UNKNOWN'],
   CLASS_TARGET_UNKNOWN: ['EV4-PKG-103', 'CLASS_TARGET_UNKNOWN'],
@@ -101,6 +104,42 @@ function scanConfirmationLikeText(fieldName, value) {
   }
 }
 
+function shouldSkipRecursivePromptScan(jsonPath) {
+  return (
+    jsonPath === 'builder_assistant_prompt_seed' ||
+    jsonPath === 'confirmation_sentence' ||
+    jsonPath === 'display_only_untrusted_text.builder_assistant_prompt_seed' ||
+    jsonPath === 'display_only_untrusted_text.confirmation_sentence'
+  );
+}
+
+function scanPackageProseRecursively(value, jsonPath = '$') {
+  if (typeof value === 'string') {
+    const normalizedPath = jsonPath.startsWith('$.') ? jsonPath.slice(2) : jsonPath;
+    if (shouldSkipRecursivePromptScan(normalizedPath)) return;
+
+    const match = firstMatch(value, promptInjectionChecks);
+    if (match) {
+      fail(
+        DIAGNOSTICS.PACKAGE_TEXT_PROMPT_INJECTION,
+        `${jsonPath} contains prompt-injection marker (${match}); package strings are data and must not alter runtime behavior.`
+      );
+    }
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => scanPackageProseRecursively(item, `${jsonPath}[${index}]`));
+    return;
+  }
+
+  if (value && typeof value === 'object') {
+    for (const [key, nested] of Object.entries(value)) {
+      scanPackageProseRecursively(nested, jsonPath === '$' ? `$.${key}` : `${jsonPath}.${key}`);
+    }
+  }
+}
+
 const promptInjectionChecks = [
   { label: 'ignore previous instructions', pattern: /ignore\s+(?:all\s+)?previous\s+instructions/i },
   { label: 'disregard previous instructions', pattern: /disregard\s+(?:all\s+)?previous\s+instructions/i },
@@ -152,7 +191,7 @@ function expectedDecision(value, diagnostics) {
   if (value.package_status === 'blocked') return 'blocked_package_status';
   if (!EXECUTABLE_PACKAGE_STATUSES.has(value.package_status)) return 'blocked_invalid_package';
   if (diagnostics.some((diag) => ['EV4-PKG-004', 'EV4-PKG-006', 'EV4-PKG-007', 'EV4-PKG-008', 'EV4-PKG-016'].includes(diag.id))) return 'blocked_missing_input';
-  if (diagnostics.some((diag) => ['EV4-PKG-002', 'EV4-PKG-003', 'EV4-PKG-012'].includes(diag.id))) return 'blocked_invalid_package';
+  if (diagnostics.some((diag) => ['EV4-PKG-002', 'EV4-PKG-003', 'EV4-PKG-012', 'EV4-PKG-017', 'EV4-PKG-018'].includes(diag.id))) return 'blocked_invalid_package';
   if (diagnostics.length > 0) return 'blocked_conflict';
   return 'approved';
 }
@@ -186,6 +225,8 @@ if (pkg.package_status === 'blocked') {
 
 if (pkg.selected_candidate_locked !== true) fail(DIAGNOSTICS.SELECTED_CANDIDATE_NOT_LOCKED, 'selected_candidate_locked must be true.');
 if (pkg.production_ready_allowed !== false) fail(DIAGNOSTICS.PRODUCTION_READY_NOT_FALSE, 'production_ready_allowed must be false.');
+
+scanPackageProseRecursively(pkg);
 
 const nodes = Array.isArray(pkg.approved_structure_tree) ? pkg.approved_structure_tree : [];
 const nodeIds = nodes.map((node) => node.node_id).filter(Boolean);
@@ -224,6 +265,20 @@ for (const widget of pkg.widget_mapping_table || []) {
 const actions = Array.isArray(pkg.first_builder_batch?.actions) ? pkg.first_builder_batch.actions : [];
 const actionIds = actions.map((action) => action.action_id).filter(Boolean);
 const actionIdSet = new Set(actionIds);
+const declaredMaxActions = pkg.first_builder_batch?.max_actions;
+
+if (typeof declaredMaxActions === 'number') {
+  if (declaredMaxActions > FIRST_BUILDER_BATCH_ACTION_HARD_CAP) {
+    fail(DIAGNOSTICS.FIRST_BATCH_MAX_ACTIONS_OVERCAP, `first_builder_batch.max_actions ${declaredMaxActions} exceeds hard cap ${FIRST_BUILDER_BATCH_ACTION_HARD_CAP}.`);
+  }
+  if (actions.length > declaredMaxActions) {
+    fail(DIAGNOSTICS.FIRST_BATCH_OVERCAP, `first_builder_batch.actions.length ${actions.length} exceeds declared max_actions ${declaredMaxActions}.`);
+  }
+}
+
+if (actions.length > FIRST_BUILDER_BATCH_ACTION_HARD_CAP) {
+  fail(DIAGNOSTICS.FIRST_BATCH_OVERCAP, `first_builder_batch.actions.length ${actions.length} exceeds hard cap ${FIRST_BUILDER_BATCH_ACTION_HARD_CAP}.`);
+}
 
 if (actions.length === 0) fail(DIAGNOSTICS.MISSING_FIRST_BATCH_ACTIONS, 'first_builder_batch.actions must contain at least one action.');
 for (const duplicate of duplicates(actionIds)) fail(DIAGNOSTICS.DUPLICATE_ID, `Duplicate action_id: ${duplicate}`);

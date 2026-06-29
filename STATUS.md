@@ -1,8 +1,8 @@
 # STATUS — EV4 Builder Assistant Repo
 
-Version: 0.3.4
-Status: ux_precedence_and_recovery_added
-Date: 2026-06-28
+Version: 0.3.6
+Status: runtime_safety_gates_added
+Date: 2026-06-29
 
 ---
 
@@ -10,24 +10,28 @@ Date: 2026-06-28
 
 ```yaml
 project_status:
-  project_instructions: active_v0.3.4
-  master_prompt: active_v0.3.4
-  session_state_machine: active_v0.3.4
+  project_instructions: active_v0.3.6
+  master_prompt: active_v0.3.6
+  repository_guide: active_v0.3.6
+  session_state_machine: active_v0.3.6
   mode_state_matrix: active_v0.3.0
   start_intake_policy: active_v0.3.0
   session_commands: user_facing_ux_commands_added
   input_contract: structured_confirmation_trust_boundary
   builder_context_schema: confirmation_request_supported
-  package_validator: cross_field_confirmation_and_injection_checks
+  package_validator: recursive_prose_scan_and_batch_cap_checks
   smart_guidance_footer: v0.2.0
   ui_instruction_confidence_gate: v0.2.0
+  unit_strategy_gate: active
+  batch_compaction_contract: active
+  cognitive_mode_hint: active
   builder_batch_output_format: active
   user_facing_response_policy: active_v0.2.0
   ux_precedence_table: active
   escape_hatch_recovery: active
   recovery_state_schema: active
   atomic_ui_observation: added
-  source_pack: synced_v0.3.4
+  source_pack: synced_v0.3.6
   action_default_max: 5
   production_ready: false
 ```
@@ -56,6 +60,15 @@ patches:
       - schemas/recovery-state.schema.json added
       - recovery_state added to session-state schema
       - Project Instructions and source pack updated
+  Runtime_Safety_Gates:
+    status: active
+    notes:
+      - UNIT_STRATEGY_GATE added
+      - BATCH_COMPACTION_CONTRACT added
+      - COGNITIVE_MODE_HINT added
+      - first_builder_batch cap hardened to 5
+      - recursive package prose scanning added
+      - version consistency validation added
 ```
 
 ---
@@ -64,10 +77,10 @@ patches:
 
 ```yaml
 integration_sync:
-  status: completed_for_patch_g_h
+  status: completed_for_v0.3.6_runtime_safety_gates
   docs_status_changelog: updated
   source_pack_manifest_build_report: updated
-  package_version: 0.3.4
+  package_version: 0.3.6
   smart_home_architecture_mutation: none_intended
   selected_candidate_id: ARCH-FAM-C_preserved
   approved_class_mutation: none_intended
@@ -80,7 +93,7 @@ integration_sync:
 
 ```yaml
 validation_state:
-  github_actions_schema_validation: pending_after_patch_h
+  github_actions_schema_validation: pending_after_branch_update
   local_validation: not_run_in_repo_clone
   reason_local_validation_not_run: GitHub connector applies file writes but does not provide a local checked-out repo or npm execution environment
   real_builder_session_test: in_progress_by_user
@@ -106,7 +119,7 @@ Production ready remains false.
 ## Pending Next Work
 
 ```text
-review PR #10
 run GitHub Actions schema validation
 continue real Elementor execution and record evidence
+complete layout-check and completion-gate machine enforcement in follow-up hardening if required
 ```

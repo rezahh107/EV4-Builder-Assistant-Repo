@@ -2,28 +2,50 @@
   "schema": "ev4-builder-session-state@0.1.0",
   "workflow_mode": "APPROVED_HANDOFF_MODE",
   "runtime_state": "WAITING_FOR_CONFIRMATION",
-  "state_capsule": "[STATE workflow=APPROVED_HANDOFF_MODE state=WAITING_FOR_CONFIRMATION cp=cp-001 batch=BATCH-001 risk=low]",
+  "state_capsule": "[STATE workflow=APPROVED_HANDOFF_MODE state=WAITING_FOR_CONFIRMATION cp=cp-002 batch=BATCH-001 risk=low]",
   "current_state": "WAITING_FOR_CONFIRMATION",
   "selected_candidate_id": "ARCH-FAM-C",
   "last_verified_checkpoint": {
-    "schema": "ev4-builder-checkpoint@0.1.0",
-    "checkpoint_id": "cp-001",
-    "created_from": "user_confirmation",
-    "current_section": "Smart Home Connector",
-    "current_handoff_or_context_package": "examples/smart-home-connector/builder_context_package.json",
+    "schema": "ev4-builder-checkpoint@0.2.0",
+    "checkpoint_id": "cp-002",
+    "checkpoint_sequence": 2,
+    "parent_checkpoint_id": "cp-001",
+    "package_id": "examples/smart-home-connector/builder_context_package.json",
+    "package_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "selected_candidate_id": "ARCH-FAM-C",
-    "completed_elements": [
-      "Smart Home Section / Root"
+    "workflow_mode": "APPROVED_HANDOFF_MODE",
+    "runtime_state": "WAITING_FOR_CONFIRMATION",
+    "batch_id": "BATCH-001",
+    "confirmed_action_ids": ["BATCH-001-A01"],
+    "unconfirmed_action_ids": ["BATCH-001-A02"],
+    "assertions": [
+      {
+        "assertion_id": "ASSERT-001",
+        "subject_ref": "BATCH-001-A01",
+        "claim": "Root Container exists with approved class smart-home__section--root.",
+        "status": "confirmed",
+        "evidence_refs": ["EV-001"]
+      }
     ],
-    "applied_classes": [
-      "smart-home__section--root"
+    "evidence_ledger": [
+      {
+        "evidence_id": "EV-001",
+        "evidence_type": "user_confirmation",
+        "source_ref": "user-message: تایید BATCH-001",
+        "captured_at": "2026-06-28T06:00:00Z",
+        "content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "supports_claim_ids": ["ASSERT-001"],
+        "status": "available"
+      }
     ],
-    "verified_settings": [],
-    "unconfirmed_settings": [],
-    "active_warnings": [],
-    "unresolved_evidence": [],
-    "last_completed_action": "BATCH-001-A01",
-    "next_pending_action": "BATCH-001-A02"
+    "retry_policy": {
+      "max_retry_per_action": 3,
+      "retry_1": "clarify_instruction",
+      "retry_2": "request_targeted_screenshot",
+      "retry_3": "enter_CORRECTION"
+    },
+    "created_at": "2026-06-28T06:00:00Z",
+    "created_from": "user_confirmation"
   },
   "max_actions_per_turn": 5,
   "active_warnings": [],
