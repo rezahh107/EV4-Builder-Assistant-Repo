@@ -1,0 +1,22 @@
+{
+  "schema": "ev4-elementor-asset-generation-check@0.1.0",
+  "asset_type": "svg",
+  "target_use": "SVG widget",
+  "generated_by_builder": true,
+  "knowledge_lookup_performed": false,
+  "local_kb_checked": false,
+  "local_kb_sources": [],
+  "official_docs_checked": false,
+  "official_docs_required": true,
+  "official_docs_refs": [],
+  "compatibility_profile": null,
+  "contains_forbidden_features": false,
+  "forbidden_features_detected": [],
+  "required_features_present": true,
+  "safe_to_generate": true,
+  "reason": "Free-form target wording must not bypass the validator.",
+  "required_next_action": "generate_asset",
+  "local_kb_conflicts_with_official_docs": false,
+  "already_generated": false,
+  "repair_packet_required": false
+}
