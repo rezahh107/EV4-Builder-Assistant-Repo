@@ -243,3 +243,5 @@ Safe to continue: yes/no
 ```
 
 Do not provide new build actions unless user also says `ادامه`.
+
+Behavioral Contract Enforcement: runtime transitions must follow protocols/BEHAVIORAL_CONTRACT_ENFORCEMENT.md and pass scripts/validate.mjs-covered validators before state advancement.

@@ -1,0 +1,1 @@
+{"schema":"ev4-evidence-claim@1.0.0","claim_id":"claim-3","claim_type":"render","evidence_type":"structure_panel_screenshot","evidence_source":"structure","supported_assertions":["frontend_render"],"unsupported_assertions":[],"confidence":"medium","allowed_user_facing_wording":["rendered"]}

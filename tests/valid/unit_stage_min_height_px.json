@@ -1,0 +1,1 @@
+{"schema":"ev4-unit-policy-action@1.0.0","control_family":"size","control_name":"min_height","context":"composition-canvas","value":720,"unit":"px","responsive_scope":"desktop","unit_policy_id":"size.min_height","rationale":"desktop reference canvas height"}

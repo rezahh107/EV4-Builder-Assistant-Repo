@@ -257,3 +257,5 @@ production_ready: false
 unless `schemas/completion-gate.schema.json` is satisfied with separate evidence proving real frontend, responsive, accessibility, browser, export, and final QA readiness.
 
 Visual-reference builds must pass `protocols/REFERENCE_PARADIGM_GATE.md` before BATCH-001.
+
+Behavioral contracts are machine-enforced by protocols/BEHAVIORAL_CONTRACT_ENFORCEMENT.md and scripts/validate.mjs.

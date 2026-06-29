@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+import { readJson, finish } from './contract-lib.mjs';
+const f=process.argv[2]; if(!f){console.error('Usage: node scripts/validate-action-batch.mjs <file>');process.exit(2)}
+const b=readJson(f), e=[]; const fail=(id,message)=>e.push({id,message});
+const approved=new Set(b.approved_class_map||[]); if((b.actions||[]).length>b.max_normal_actions) fail('EV4-ACTION-001','normal batch action count exceeds max_normal_actions.');
+const high=(b.actions||[]).filter(a=>a.risk_level==='high'); if(high.length>1&&!b.allow_multiple_high_risk) fail('EV4-ACTION-002','high-risk visual/overlay/SVG batches are limited to one action unless explicitly allowed.');
+for(const a of b.actions||[]){ if(a.class_name&&a.allowed_class_source==='approved_class_map'&&!approved.has(a.class_name)) fail('EV4-ACTION-003',`unapproved class name: ${a.class_name}`); if(a.class_operation==='add'&&a.class_name&&!approved.has(a.class_name)) fail('EV4-ACTION-004','action may not add unapproved class names.'); if(a.class_operation==='remove'&&approved.has(a.class_name)) fail('EV4-ACTION-005','action may not remove approved class names.'); if((a.forbidden_changes||[]).includes('selected_candidate_id')||a.control_name==='selected_candidate_id') fail('EV4-ACTION-006','action may not change selected_candidate_id.'); if(['tablet','mobile'].includes(a.responsive_scope)&&a.claims_responsive_behavior&&!b.evidence?.responsive) fail('EV4-ACTION-007','tablet/mobile behavior claims require evidence.'); if(b.checkpointed&&String(a.confirmation_scope||'').trim()==='') fail('EV4-ACTION-008','checkpointed action requires confirmation_scope.'); }
+finish('Action Batch Contract', f, e);
