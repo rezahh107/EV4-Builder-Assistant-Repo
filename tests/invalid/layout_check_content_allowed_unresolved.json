@@ -1,0 +1,26 @@
+{
+  "schema": "ev4-layout-check@0.1.0",
+  "check_id": "LAYOUT-CHECK-BLOCKED-001",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "target_scope": "Smart Home Section / Feature Cards Group",
+  "layout_phase": "pre_content",
+  "source_evidence_refs": ["SCREENSHOT-FEATURE-GROUP-001"],
+  "required_controls": [
+    {
+      "control_name": "Display / layout mode",
+      "status": "unknown",
+      "blocks_content_or_style": true,
+      "evidence_refs": []
+    }
+  ],
+  "unit_strategy_resolved": false,
+  "geometry_strategy_resolved": false,
+  "responsive_scope_resolved": false,
+  "overlay_strategy_resolved": false,
+  "svg_strategy_resolved": false,
+  "layout_check_complete": true,
+  "content_or_style_batch_allowed": true,
+  "normal_builder_batch_allowed": true,
+  "required_next_action": "continue_builder_batch",
+  "reason": "Invalid: content/style work is allowed even though required layout controls are unresolved."
+}
