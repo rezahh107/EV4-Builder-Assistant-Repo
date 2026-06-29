@@ -2,6 +2,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { validateReferenceParadigmGate } from './validate-reference-paradigm-gate.mjs';
 
 const filePath = process.argv[2];
 
@@ -37,6 +38,7 @@ const DIAGNOSTICS = {
   MISSING_CONFIRMATION_SOURCE: ['EV4-PKG-016', 'MISSING_CONFIRMATION_SOURCE'],
   FIRST_BATCH_OVERCAP: ['EV4-PKG-017', 'FIRST_BATCH_OVERCAP'],
   FIRST_BATCH_MAX_ACTIONS_OVERCAP: ['EV4-PKG-018', 'FIRST_BATCH_MAX_ACTIONS_OVERCAP'],
+  REFERENCE_PARADIGM_GATE: ['EV4-PKG-019', 'REFERENCE_PARADIGM_GATE'],
   DUPLICATE_ID: ['EV4-PKG-101', 'DUPLICATE_ID'],
   CHILD_NODE_UNKNOWN: ['EV4-PKG-102', 'CHILD_NODE_UNKNOWN'],
   CLASS_TARGET_UNKNOWN: ['EV4-PKG-103', 'CLASS_TARGET_UNKNOWN'],
@@ -348,6 +350,10 @@ if (!confirmationRequest) {
       }
     }
   }
+}
+
+for (const diag of validateReferenceParadigmGate(pkg)) {
+  fail([diag.id, diag.name], diag.message);
 }
 
 if (pkg.input_authorization) {
