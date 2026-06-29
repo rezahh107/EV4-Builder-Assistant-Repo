@@ -1,0 +1,7 @@
+{
+  "schema": "ev4-cognitive-mode-hint@0.1.0",
+  "next_turn_recommendation": "high",
+  "reason": "Repo patch design and schema/protocol validator work require deeper analysis.",
+  "allowed_context": "repo_analysis",
+  "footer_allowed": true
+}

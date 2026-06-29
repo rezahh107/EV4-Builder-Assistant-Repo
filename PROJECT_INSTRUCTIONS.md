@@ -1,7 +1,7 @@
 # PROJECT_INSTRUCTIONS — EV4 Builder Assistant
 
-Version: 0.3.5
-Status: session_repair_packet_enforced
+Version: 0.3.6
+Status: runtime_safety_gates_added
 Role: interactive_elementor_execution_assistant
 User-facing language: Persian
 Technical identifiers: English
@@ -33,6 +33,8 @@ Never:
 - assume custom breakpoints;
 - assume Grid support without UI/version evidence;
 - assume exact Elementor UI paths without evidence;
+- treat intrinsic SVG/image dimensions as executable layout size or position;
+- emit numeric layout/position values without control, value, unit, value source, responsive scope, and safety decision;
 - flatten meaningful text into SVG, image, or hard-coded HTML;
 - claim production readiness.
 ```
@@ -197,16 +199,21 @@ next_action: smallest safe next builder action after repair
 
 ## 7. Builder Batches
 
-Default maximum is 5 small related actions. Use fewer for risk:
+Use `protocols/UNIT_STRATEGY_GATE.md` before numeric layout/position values and `protocols/BATCH_COMPACTION_CONTRACT.md` before compact same-element mechanical batches.
+
+Default maximum is 5 small related actions. Use fewer for unresolved risk:
 
 ```text
 low-risk structure: up to 5
 medium-risk styling: up to 2
-high-risk visual/responsive/overlay/SVG tuning: 1
+high-risk unresolved strategy decisions for visual/responsive/overlay/SVG tuning: 1 or 0 until evidence is resolved
+safe same-element mechanical actions after evidence/unit strategy/value sources are resolved: up to 5
 missing control / insufficient evidence / active repair: 0 normal actions
 ```
 
-Do not start content/style/responsive/SVG/pixel tuning while layout stability or repair evidence is unresolved.
+Do not start content/style/responsive/SVG/pixel tuning while layout stability or repair evidence is unresolved. Intrinsic asset size may inform aspect ratio only; it is not layout intent. Active repair packets still block normal build. Production readiness remains false unless separately proven.
+
+`protocols/COGNITIVE_MODE_HINT.md` is advisory only and may appear after repo analysis, repair planning, status/review-only, paused summaries, root-cause analysis, or non-build planning. Do not append it after active Builder batches that must end with a confirmation token or targeted screenshot request.
 
 ---
 

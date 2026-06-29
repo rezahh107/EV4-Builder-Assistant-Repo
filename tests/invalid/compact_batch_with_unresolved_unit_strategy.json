@@ -1,0 +1,17 @@
+{
+  "schema": "ev4-batch-compaction-check@0.1.0",
+  "candidate_batch_id": "BATCH-CONNECTOR-001",
+  "action_count": 5,
+  "same_element": true,
+  "same_control_family": true,
+  "controls_visible_or_confirmed": true,
+  "unit_strategy_resolved": false,
+  "value_sources_resolved": true,
+  "actions_reversible": true,
+  "geometry_strategy_resolved": true,
+  "architecture_boundary_preserved": true,
+  "responsive_claim_introduced": false,
+  "compact_batch_allowed": true,
+  "reason": "Position, Width, Height, Top, and Left were batched before unit strategy was resolved.",
+  "actions": ["Set Position", "Set Width", "Set Height", "Set Top", "Set Left"]
+}

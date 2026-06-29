@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/batch-compaction-check.schema.json",
+  "title": "EV4 Batch Compaction Check",
+  "type": "object",
+  "required": ["schema", "candidate_batch_id", "action_count", "same_element", "same_control_family", "controls_visible_or_confirmed", "unit_strategy_resolved", "value_sources_resolved", "actions_reversible", "geometry_strategy_resolved", "architecture_boundary_preserved", "responsive_claim_introduced", "compact_batch_allowed", "reason"],
+  "properties": {
+    "schema": { "const": "ev4-batch-compaction-check@0.1.0" },
+    "candidate_batch_id": { "type": "string", "minLength": 1 },
+    "action_count": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "same_element": { "type": "boolean" },
+    "same_control_family": { "type": "boolean" },
+    "controls_visible_or_confirmed": { "type": "boolean" },
+    "unit_strategy_resolved": { "type": "boolean" },
+    "value_sources_resolved": { "type": "boolean" },
+    "actions_reversible": { "type": "boolean" },
+    "geometry_strategy_resolved": { "type": "boolean" },
+    "architecture_boundary_preserved": { "type": "boolean" },
+    "responsive_claim_introduced": { "type": "boolean" },
+    "compact_batch_allowed": { "type": "boolean" },
+    "reason": { "type": "string", "minLength": 1 },
+    "actions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "maxItems": 5 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "compact_batch_allowed": { "const": true } }, "required": ["compact_batch_allowed"] },
+      "then": {
+        "properties": {
+          "same_element": { "const": true },
+          "same_control_family": { "const": true },
+          "controls_visible_or_confirmed": { "const": true },
+          "unit_strategy_resolved": { "const": true },
+          "value_sources_resolved": { "const": true },
+          "actions_reversible": { "const": true },
+          "geometry_strategy_resolved": { "const": true },
+          "architecture_boundary_preserved": { "const": true },
+          "responsive_claim_introduced": { "const": false }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

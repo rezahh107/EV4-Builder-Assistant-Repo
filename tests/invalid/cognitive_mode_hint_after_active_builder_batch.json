@@ -1,0 +1,7 @@
+{
+  "schema": "ev4-cognitive-mode-hint@0.1.0",
+  "next_turn_recommendation": "instant",
+  "reason": "This would pollute an active batch ending that must contain only confirmation or screenshot request.",
+  "allowed_context": "active_builder_batch",
+  "footer_allowed": true
+}
