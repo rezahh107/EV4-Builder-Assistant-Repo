@@ -15,10 +15,19 @@ if (schemaFiles.length === 0) {
   process.exit(1);
 }
 
+const refsBySchema = {
+  'schemas/checkpoint.schema.json': ['schemas/evidence-record.schema.json'],
+  'schemas/session-state.schema.json': [
+    'schemas/checkpoint.schema.json',
+    'schemas/evidence-record.schema.json',
+    'schemas/repair-packet.schema.json'
+  ]
+};
+
 let failed = false;
 
 for (const schemaFile of schemaFiles) {
-  const refs = schemaFiles.filter((candidate) => candidate !== schemaFile);
+  const refs = refsBySchema[schemaFile] || [];
   const args = ['--yes', 'ajv-cli@5', 'compile', '--spec=draft2020', '--strict=false', '-s', schemaFile];
   for (const ref of refs) args.push('-r', ref);
 
