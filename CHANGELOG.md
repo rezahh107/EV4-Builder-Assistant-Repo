@@ -6,6 +6,10 @@
 
 - Added `scripts/validate-version-consistency.mjs`.
 - Added invalid cross-field fixtures for first-builder batch over-cap and recursive package prose prompt-injection detection.
+- Added `schemas/layout-check.schema.json` and `scripts/validate-layout-check.mjs`.
+- Added valid and invalid layout-check fixtures.
+- Added `schemas/completion-gate.schema.json` and `scripts/validate-completion-gate.mjs`.
+- Added valid and invalid completion-gate fixtures.
 
 ### Changed
 
@@ -13,6 +17,8 @@
 - Enforced `first_builder_batch.actions.length <= first_builder_batch.max_actions` in cross-field validation.
 - Reduced `first_builder_batch.max_actions` and `first_builder_batch.actions.maxItems` from 6 to 5 in `schemas/builder-context-package.schema.json`.
 - Added `validate:version-consistency` to `package.json` and CI.
+- Added `validate:layout-check` and `validate:completion-gate` to `package.json` and CI.
+- Added schema compilation for layout-check and completion-gate to CI.
 - Synchronized `README.md`, `STATUS.md`, and package version metadata to v0.3.6.
 
 ### Status
@@ -88,83 +94,3 @@
 - No Smart Home architecture redesign was intended.
 - `selected_candidate_id: ARCH-FAM-C` remains preserved.
 - Approved class names remain preserved.
-- `production_ready_allowed: false` and `production_ready: false` remain preserved.
-
----
-
-## v0.3.3 — 2026-06-28
-
-### Added
-
-- Added `protocols/BUILDER_BATCH_OUTPUT_FORMAT.md`.
-- Added `protocols/USER_FACING_RESPONSE_POLICY.md`.
-- Added `references/elementor-ui/ATOMIC_ELEMENTS_UI_OBSERVATION_2026-06-28.md` from user-provided Atomic UI screenshots.
-- Added user-facing UI vocabulary handling:
-  - `ui_vocabulary_map`
-  - architecture term vs user-facing UI label separation
-  - UI Vocabulary Sync for layout parent labels
-- Added schema persistence for:
-  - `known_control_map`
-  - `ui_vocabulary_map`
-- Added practical UX commands:
-  - `جزئیات`
-  - `جزئیات فنی`
-  - `پیش‌نمایش`
-- Added copy-pasteable session summary behavior.
-
-### Changed
-
-- Normal builder batch output now hides internal/source fields such as:
-  - `element_generation`
-  - `element_generation_source`
-  - `input_authorization`
-  - `package_digest`
-  - `Control path: insufficient_evidence`
-- Batch headings are now Persian user-facing labels.
-- `Container` is treated as an architecture/package term, not automatically as the executable UI label.
-- Confirmation after a valid `تایید BATCH-XXX` now uses Token Echo / active silence.
-- Updated deployable ChatGPT project source pack.
-
-### Status
-
-- No Smart Home architecture redesign was intended.
-- `selected_candidate_id: ARCH-FAM-C` remains preserved.
-- Approved class names remain preserved.
-- `production_ready_allowed: false` and `production_ready: false` remain preserved.
-
----
-
-## v0.3.2 — 2026-06-28
-
-### Added
-
-- Added `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md`.
-- Added `known_control_map` concept for verified/missing/version-sensitive UI controls.
-- Added targeted UI screenshot recipe.
-- Added structured confirmation fixtures and injection fixtures.
-
-### Changed
-
-- Completed Patch C migration to structured `confirmation_request`.
-- Upgraded `protocols/SMART_GUIDANCE_FOOTER.md` to v0.2.0.
-- Wired UI-confidence rules into runtime docs.
-- Updated deployable ChatGPT project source pack.
-
-### Validation
-
-- GitHub Actions `Schema validation` passed on run `111` for head `90b8a8c3345b0329d8e47e99c8c32a624b077d79`.
-
----
-
-## v0.3.1 — 2026-06-27
-
-### Hardened
-
-- Added workflow_mode/runtime_state separation hardening.
-- Hardened intake-result and session-state schemas.
-- Expanded CI fixture coverage.
-
-### Status
-
-- No Smart Home architecture, class names, `selected_candidate_id`, or production-readiness rules were changed.
-- Production readiness remains false.
