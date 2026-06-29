@@ -1,0 +1,20 @@
+{
+  "schema": "ev4-completion-gate@0.1.0",
+  "gate_id": "COMPLETION-GATE-INVALID-001",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "source_package_ref": "examples/smart-home-connector/builder_context_package.json",
+  "layout_check_ref": "LAYOUT-CHECK-BLOCKED-001",
+  "production_ready_allowed": true,
+  "production_ready_claim": true,
+  "proofs": {
+    "layout_verified": { "status": "confirmed", "evidence_refs": [] },
+    "frontend_verified": { "status": "missing", "evidence_refs": [] },
+    "responsive_verified": { "status": "missing", "evidence_refs": [] },
+    "accessibility_verified": { "status": "missing", "evidence_refs": [] },
+    "browser_verified": { "status": "missing", "evidence_refs": [] },
+    "export_verified": { "status": "missing", "evidence_refs": [] },
+    "final_qa_verified": { "status": "missing", "evidence_refs": [] }
+  },
+  "required_next_action": "claim_production_ready",
+  "reason": "Invalid: production readiness is claimed without complete evidence."
+}

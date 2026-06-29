@@ -1,0 +1,20 @@
+{
+  "schema": "ev4-completion-gate@0.1.0",
+  "gate_id": "COMPLETION-GATE-READY-001",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "source_package_ref": "examples/smart-home-connector/builder_context_package.json",
+  "layout_check_ref": "LAYOUT-CHECK-READY-001",
+  "production_ready_allowed": true,
+  "production_ready_claim": true,
+  "proofs": {
+    "layout_verified": { "status": "confirmed", "evidence_refs": ["LAYOUT-CHECK-READY-001"] },
+    "frontend_verified": { "status": "confirmed", "evidence_refs": ["FRONTEND-SCREENSHOT-001"] },
+    "responsive_verified": { "status": "confirmed", "evidence_refs": ["RESPONSIVE-QA-001"] },
+    "accessibility_verified": { "status": "confirmed", "evidence_refs": ["A11Y-QA-001"] },
+    "browser_verified": { "status": "confirmed", "evidence_refs": ["BROWSER-QA-001"] },
+    "export_verified": { "status": "confirmed", "evidence_refs": ["EXPORT-QA-001"] },
+    "final_qa_verified": { "status": "confirmed", "evidence_refs": ["FINAL-QA-001"] }
+  },
+  "required_next_action": "claim_production_ready",
+  "reason": "All independent QA proof categories are confirmed with evidence."
+}

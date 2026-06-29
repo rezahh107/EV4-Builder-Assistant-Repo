@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/layout-check.schema.json",
+  "title": "EV4 Layout Check",
+  "type": "object",
+  "required": [
+    "schema",
+    "check_id",
+    "selected_candidate_id",
+    "target_scope",
+    "layout_phase",
+    "source_evidence_refs",
+    "required_controls",
+    "unit_strategy_resolved",
+    "geometry_strategy_resolved",
+    "responsive_scope_resolved",
+    "layout_check_complete",
+    "content_or_style_batch_allowed",
+    "normal_builder_batch_allowed",
+    "required_next_action",
+    "reason"
+  ],
+  "properties": {
+    "schema": { "const": "ev4-layout-check@0.1.0" },
+    "check_id": { "type": "string", "minLength": 1 },
+    "selected_candidate_id": { "type": "string", "minLength": 1 },
+    "target_scope": { "type": "string", "minLength": 1 },
+    "layout_phase": { "enum": ["pre_content", "pre_style", "pre_responsive", "pre_svg_overlay", "repair_resume", "review_only"] },
+    "source_evidence_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "required_controls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["control_name", "status", "blocks_content_or_style", "evidence_refs"],
+        "properties": {
+          "control_name": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["confirmed", "visible", "user_confirmed", "not_visible", "missing", "unknown", "unresolved"] },
+          "blocks_content_or_style": { "type": "boolean" },
+          "evidence_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "unit_strategy_resolved": { "type": "boolean" },
+    "geometry_strategy_resolved": { "type": "boolean" },
+    "responsive_scope_resolved": { "type": "boolean" },
+    "overlay_strategy_resolved": { "type": "boolean" },
+    "svg_strategy_resolved": { "type": "boolean" },
+    "layout_check_complete": { "type": "boolean" },
+    "content_or_style_batch_allowed": { "type": "boolean" },
+    "normal_builder_batch_allowed": { "type": "boolean" },
+    "required_next_action": { "enum": ["continue_builder_batch", "ask_targeted_evidence", "create_repair_packet", "review_only", "pause"] },
+    "reason": { "type": "string", "minLength": 1 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "layout_check_complete": { "const": true } }, "required": ["layout_check_complete"] },
+      "then": { "properties": { "unit_strategy_resolved": { "const": true }, "geometry_strategy_resolved": { "const": true }, "responsive_scope_resolved": { "const": true }, "required_next_action": { "enum": ["continue_builder_batch", "review_only"] } } }
+    },
+    {
+      "if": { "properties": { "content_or_style_batch_allowed": { "const": true } }, "required": ["content_or_style_batch_allowed"] },
+      "then": { "properties": { "layout_check_complete": { "const": true }, "normal_builder_batch_allowed": { "const": true }, "required_next_action": { "const": "continue_builder_batch" } } }
+    },
+    {
+      "if": { "properties": { "layout_check_complete": { "const": false } }, "required": ["layout_check_complete"] },
+      "then": { "properties": { "content_or_style_batch_allowed": { "const": false }, "required_next_action": { "not": { "const": "continue_builder_batch" } } } }
+    }
+  ],
+  "additionalProperties": false
+}
