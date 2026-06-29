@@ -17,6 +17,9 @@ function fail(id, message) {
 
 if (check.schema !== 'ev4-batch-compaction-check@0.1.0') fail('EV4-BATCH-COMPACT-001', 'schema must be ev4-batch-compaction-check@0.1.0.');
 if (!Number.isInteger(check.action_count) || check.action_count < 1 || check.action_count > 5) fail('EV4-BATCH-COMPACT-002', 'action_count must be 1..5.');
+if (Array.isArray(check.actions) && check.actions.length !== check.action_count) {
+  fail('EV4-BATCH-COMPACT-005', `actions array length (${check.actions.length}) must match action_count (${check.action_count}).`);
+}
 
 if (check.compact_batch_allowed === true) {
   const requiredTrue = [

@@ -37,7 +37,12 @@
           "responsive_claim_introduced": { "const": false }
         }
       }
-    }
+    },
+    { "if": { "properties": { "action_count": { "const": 1 } }, "required": ["action_count", "actions"] }, "then": { "properties": { "actions": { "minItems": 1, "maxItems": 1 } } } },
+    { "if": { "properties": { "action_count": { "const": 2 } }, "required": ["action_count", "actions"] }, "then": { "properties": { "actions": { "minItems": 2, "maxItems": 2 } } } },
+    { "if": { "properties": { "action_count": { "const": 3 } }, "required": ["action_count", "actions"] }, "then": { "properties": { "actions": { "minItems": 3, "maxItems": 3 } } } },
+    { "if": { "properties": { "action_count": { "const": 4 } }, "required": ["action_count", "actions"] }, "then": { "properties": { "actions": { "minItems": 4, "maxItems": 4 } } } },
+    { "if": { "properties": { "action_count": { "const": 5 } }, "required": ["action_count", "actions"] }, "then": { "properties": { "actions": { "minItems": 5, "maxItems": 5 } } } }
   ],
   "additionalProperties": false
 }

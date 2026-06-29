@@ -53,6 +53,10 @@
           "required_next_action": { "const": "emit_value" }
         }
       }
+    },
+    {
+      "if": { "properties": { "safe_to_emit": { "const": false } }, "required": ["safe_to_emit"] },
+      "then": { "properties": { "required_next_action": { "not": { "const": "emit_value" } } } }
     }
   ],
   "additionalProperties": false

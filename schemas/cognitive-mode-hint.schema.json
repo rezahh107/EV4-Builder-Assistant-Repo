@@ -8,14 +8,8 @@
     "schema": { "const": "ev4-cognitive-mode-hint@0.1.0" },
     "next_turn_recommendation": { "enum": ["instant", "medium", "high"] },
     "reason": { "type": "string", "minLength": 1 },
-    "allowed_context": { "enum": ["repo_analysis", "repair_planning", "root_cause_analysis", "status", "review_only", "paused_summary", "non_build_planning", "active_builder_batch"] },
+    "allowed_context": { "enum": ["repo_analysis", "repair_planning", "root_cause_analysis", "status", "review_only", "paused_summary", "non_build_planning"] },
     "footer_allowed": { "type": "boolean" }
   },
-  "allOf": [
-    {
-      "if": { "properties": { "allowed_context": { "const": "active_builder_batch" } }, "required": ["allowed_context"] },
-      "then": { "properties": { "footer_allowed": { "const": false } } }
-    }
-  ],
   "additionalProperties": false
 }

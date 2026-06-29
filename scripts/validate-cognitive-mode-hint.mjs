@@ -16,8 +16,8 @@ function fail(id, message) {
 }
 
 if (check.schema !== 'ev4-cognitive-mode-hint@0.1.0') fail('EV4-COGNITIVE-001', 'schema must be ev4-cognitive-mode-hint@0.1.0.');
-if (check.allowed_context === 'active_builder_batch' && check.footer_allowed === true) {
-  fail('EV4-COGNITIVE-002', 'cognitive mode footer must not be allowed after active Builder batches.');
+if (check.allowed_context === 'active_builder_batch') {
+  fail('EV4-COGNITIVE-002', 'cognitive mode hint is forbidden in active_builder_batch context.');
 }
 
 if (errors.length > 0) {

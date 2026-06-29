@@ -22,6 +22,8 @@ if (check.safe_to_emit === true) {
   if (check.responsive_scope === 'unknown') fail('EV4-UNIT-003', 'safe_to_emit true requires known responsive_scope.');
   if (check.reversible !== true) fail('EV4-UNIT-004', 'safe_to_emit true requires reversible true.');
   if (check.required_next_action !== 'emit_value') fail('EV4-UNIT-005', 'safe_to_emit true requires required_next_action emit_value.');
+} else if (check.safe_to_emit === false && check.required_next_action === 'emit_value') {
+  fail('EV4-UNIT-007', 'safe_to_emit false must not have required_next_action emit_value.');
 }
 
 if (
