@@ -20,7 +20,7 @@ They must not prove:
 Visual-reference parity rule:
 - If visual_reference_present=true and visual_parity_expected=true, Builder needs a structured reference_paradigm_lock and paradigm_to_structure_map before BATCH-001.
 - Builder must not parse screenshots, infer layout paradigms, invent missing locks, redistribute cards, or reinterpret connector models.
-- Image-only or screenshot-only references requiring parity block execution and require Constructability Engineer output.
+- Image-only or screenshot-only references requiring parity block execution require Constructability Engineer output.
 
 Behavioral contract rule:
 Execution-affecting behavior must be backed by the relevant protocol/schema/validator:
