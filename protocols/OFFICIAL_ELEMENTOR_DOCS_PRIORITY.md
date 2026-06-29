@@ -1,18 +1,20 @@
 # protocols/OFFICIAL_ELEMENTOR_DOCS_PRIORITY
 
-Version: 0.1.1
-Status: ui_confidence_gate_linked
-Purpose: prioritize official Elementor documentation for standard capability claims while preserving current UI evidence as the executable-control source.
+Version: 0.1.2
+Status: asset_generation_gate_linked
+Purpose: prioritize official Elementor documentation for capability, workflow, UI confidence, and Elementor-bound asset compatibility claims.
 
 ---
 
 ## Rule
 
-Official Elementor documentation is the primary external source for Elementor capability, terminology, and standard workflow claims.
+Official Elementor documentation is the primary external source for Elementor capability, terminology, standard workflow claims, upload behavior, widget support, generated asset safety, and Elementor-bound file compatibility.
 
 Live UI evidence remains the primary source for what the user can actually select in the current editor.
 
 Use `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md` before naming exact UI controls, panel paths, tabs, states, responsive options, Variables, Components, interactions, or version-sensitive settings.
+
+Use `protocols/ELEMENTOR_ASSET_GENERATION_GATE.md` before generating, editing, recommending, or emitting files intended for Elementor upload or Elementor widget use.
 
 ---
 
@@ -27,7 +29,7 @@ Official Elementor GitHub repository or official GitHub discussions for released
 
 ---
 
-## Not Authoritative For Control Existence
+## Not Authoritative For Control Existence Or Asset Compatibility
 
 ```text
 third-party tutorials
@@ -37,6 +39,7 @@ forums
 AI summaries
 search snippets
 general CSS knowledge
+browser support alone
 old memory of Elementor controls
 workbook examples
 case memory examples
@@ -72,6 +75,21 @@ case memory examples
 9. Model inference
 ```
 
+## Generated Asset Priority
+
+```text
+1. Local EV4 knowledge repositories for fast lookup
+2. Current Builder repo protocols, schemas, examples, and cases
+3. Official Elementor documentation for compatibility authority
+4. Installed Elementor version evidence if available
+5. Diagnostics or frontend evidence
+6. Model inference only as last resort
+```
+
+Official Elementor documentation wins for Elementor upload behavior, SVG safety, sanitization behavior, widget support, and generated asset compatibility.
+
+Browser-valid asset syntax is not proof of Elementor upload or widget compatibility.
+
 ---
 
 ## Before Naming A Control
@@ -103,7 +121,7 @@ Low-risk structure work may continue only when it does not depend on the unverif
 
 Do not use Elementor V3 documentation to prove V4/Atomic control existence unless official Elementor material explicitly says the behavior is shared or compatible.
 
-Do not infer UI availability from CSS support, browser support, legacy UI, workbook screenshots, case memory, or schema names.
+Do not infer UI availability from CSS support, browser support, legacy UI, workbook screenshots, case memory, schema names, or browser-valid SVG rendering.
 
 ---
 
@@ -111,4 +129,4 @@ Do not infer UI availability from CSS support, browser support, legacy UI, workb
 
 Workbook and case memory may explain concepts and suggest safe patterns.
 
-They must not prove current control existence, exact panel path, installed-version feature availability, exact numeric values, or production readiness.
+They must not prove current control existence, exact panel path, installed-version feature availability, exact numeric values, production readiness, Elementor upload compatibility, SVG safety, sanitization behavior, or widget support.

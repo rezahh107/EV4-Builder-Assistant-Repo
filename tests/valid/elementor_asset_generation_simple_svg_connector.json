@@ -1,0 +1,27 @@
+{
+  "schema": "ev4-elementor-asset-generation-check@0.1.0",
+  "asset_type": "svg",
+  "target_use": "Elementor SVG widget",
+  "generated_by_builder": true,
+  "knowledge_lookup_performed": true,
+  "local_kb_checked": true,
+  "local_kb_sources": [
+    "rezahh107/EV4-Workbook-Jinja",
+    "rezahh107/elementor-v4-knowledge-base"
+  ],
+  "official_docs_checked": true,
+  "official_docs_required": true,
+  "official_docs_refs": [
+    "https://elementor.com/help/enable-svg-support-in-elementor/"
+  ],
+  "compatibility_profile": "elementor_safe_svg",
+  "contains_forbidden_features": false,
+  "forbidden_features_detected": [],
+  "required_features_present": true,
+  "safe_to_generate": true,
+  "reason": "Official Elementor docs and elementor_safe_svg profile checked; simple viewBox path uses fill none and stroke #000000.",
+  "required_next_action": "generate_asset",
+  "local_kb_conflicts_with_official_docs": false,
+  "already_generated": false,
+  "repair_packet_required": false
+}
