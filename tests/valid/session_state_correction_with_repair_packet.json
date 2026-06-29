@@ -6,20 +6,46 @@
   "current_state": "CORRECTION",
   "selected_candidate_id": "ARCH-FAM-C",
   "last_verified_checkpoint": {
-    "schema": "ev4-builder-checkpoint@0.1.0",
+    "schema": "ev4-builder-checkpoint@0.2.0",
     "checkpoint_id": "CP-005",
-    "created_from": "user_confirmation",
-    "current_section": "Smart Home Connector",
-    "current_handoff_or_context_package": "examples/smart-home-connector/builder_context_package.json",
+    "checkpoint_sequence": 5,
+    "parent_checkpoint_id": "CP-004",
+    "package_id": "examples/smart-home-connector/builder_context_package.json",
+    "package_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "selected_candidate_id": "ARCH-FAM-C",
-    "completed_elements": ["Smart Home Section / Root", "Smart Home Section / Relative Stage", "Smart Home Section / Content Layer", "Smart Home Section / Feature Cards Group", "Smart Home Section / Visual Core", "Visual Core / House Asset"],
-    "applied_classes": ["smart-home__section--root", "smart-home__stage--relative", "smart-home__content-layer--primary", "smart-home__feature-grid--primary", "smart-home__visual-core--house", "smart-home__house-asset--core"],
-    "verified_settings": ["structure and approved classes through BATCH-005"],
-    "unconfirmed_settings": ["Feature Cards Group layout completeness before content entry"],
-    "active_warnings": ["layout_stability_incident_active"],
-    "unresolved_evidence": ["EVIDENCE-LAYOUT-001"],
-    "last_completed_action": "BATCH-005-A01",
-    "next_pending_action": "REPAIR-LAYOUT-001-A01"
+    "workflow_mode": "APPROVED_HANDOFF_MODE",
+    "runtime_state": "CORRECTION",
+    "batch_id": "BATCH-006",
+    "confirmed_action_ids": ["BATCH-005-A01"],
+    "unconfirmed_action_ids": ["BATCH-006-A01"],
+    "assertions": [
+      {
+        "assertion_id": "ASSERT-LAYOUT-001",
+        "subject_ref": "BATCH-005-A01",
+        "claim": "Structure through BATCH-005 is confirmed while layout stabilization evidence remains required.",
+        "status": "confirmed",
+        "evidence_refs": ["CONFIRM-BATCH-005"]
+      }
+    ],
+    "evidence_ledger": [
+      {
+        "evidence_id": "CONFIRM-BATCH-005",
+        "evidence_type": "user_confirmation",
+        "source_ref": "user-message: تایید BATCH-005",
+        "captured_at": "2026-06-28T06:00:00Z",
+        "content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "supports_claim_ids": ["ASSERT-LAYOUT-001"],
+        "status": "available"
+      }
+    ],
+    "retry_policy": {
+      "max_retry_per_action": 3,
+      "retry_1": "clarify_instruction",
+      "retry_2": "request_targeted_screenshot",
+      "retry_3": "enter_CORRECTION"
+    },
+    "created_at": "2026-06-28T06:00:00Z",
+    "created_from": "user_confirmation"
   },
   "max_actions_per_turn": 5,
   "repair_packet": {
