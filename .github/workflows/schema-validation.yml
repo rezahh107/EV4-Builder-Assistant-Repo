@@ -100,6 +100,10 @@ jobs:
           npm run validate:layout-check
           npm run validate:completion-gate
 
+      - name: Validate Elementor asset generation gate
+        run: |
+          npm run validate:elementor-asset-generation
+
       - name: Validate runtime safety gate fixtures
         run: |
           npm run validate:unit-strategy
@@ -113,6 +117,7 @@ jobs:
           npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/cognitive-mode-hint.schema.json
           npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/layout-check.schema.json
           npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/completion-gate.schema.json
+          npx --yes ajv-cli@5 compile --spec=draft2020 --strict=false -s schemas/elementor-asset-generation-check.schema.json
 
       - name: Compile session-state schema
         run: |
