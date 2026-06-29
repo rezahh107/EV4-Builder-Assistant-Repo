@@ -22,6 +22,28 @@ function hasAny(text, terms) {
   return terms.some((term) => text.includes(term));
 }
 
+function isObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isNonEmptyStringArray(value) {
+  return Array.isArray(value) && value.length > 0 && value.every(isNonEmptyString);
+}
+
+function hasStructuredParadigmMap(map) {
+  return (
+    isObject(map) &&
+    isNonEmptyString(map.primary_anchor) &&
+    isNonEmptyStringArray(map.regions) &&
+    isNonEmptyStringArray(map.repeated_units) &&
+    isObject(map.first_batch_requirements)
+  );
+}
+
 export function requiresReferenceParadigmGate(pkg) {
   return pkg?.visual_reference_present === true && pkg?.visual_parity_expected === true && pkg?.task_type !== 'pure_execution';
 }
@@ -31,8 +53,8 @@ export function validateReferenceParadigmGate(pkg) {
   const add = (diag, message) => diagnostics.push({ id: diag[0], name: diag[1], message });
   if (!requiresReferenceParadigmGate(pkg)) return diagnostics;
 
-  if (pkg.reference_artifact_type === 'image_only' || pkg.reference_artifact_type === 'screenshot_only') {
-    add(REFERENCE_PARADIGM_DIAGNOSTICS.UNSTRUCTURED_VISUAL_REFERENCE, 'visual reference cannot enter Builder as an image-only or screenshot-only artifact.');
+  if (pkg.reference_artifact_type !== 'structured_contract') {
+    add(REFERENCE_PARADIGM_DIAGNOSTICS.UNSTRUCTURED_VISUAL_REFERENCE, 'visual reference parity requires reference_artifact_type structured_contract.');
   }
 
   const lock = pkg.reference_paradigm_lock;
@@ -45,8 +67,10 @@ export function validateReferenceParadigmGate(pkg) {
     }
   }
 
-  if (!map) add(REFERENCE_PARADIGM_DIAGNOSTICS.MISSING_STRUCTURE_MAP, 'visual parity package requires paradigm_to_structure_map before BATCH-001.');
-  if (!lock || !map) return diagnostics;
+  if (!hasStructuredParadigmMap(map)) {
+    add(REFERENCE_PARADIGM_DIAGNOSTICS.MISSING_STRUCTURE_MAP, 'visual parity package requires structured paradigm_to_structure_map with primary_anchor, regions, repeated_units, and first_batch_requirements before BATCH-001.');
+  }
+  if (!lock || !hasStructuredParadigmMap(map)) return diagnostics;
 
   if (lock.connector_model && !map.connector_layer) {
     add(REFERENCE_PARADIGM_DIAGNOSTICS.MISSING_STRUCTURE_MAP, 'connector references require paradigm_to_structure_map.connector_layer.');
