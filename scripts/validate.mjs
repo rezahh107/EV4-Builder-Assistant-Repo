@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 
 const scripts = [
   'validate:version-consistency',
+  'validate:schema-registry',
   'build:project-pack',
   'validate:builder-context-package',
   'validate:cross-field',
@@ -21,7 +22,6 @@ const scripts = [
   'validate:session-state',
   'validate:layout-check',
   'validate:completion-gate',
-  'validate:elementor-asset-generation',
   'validate:unit-strategy',
   'validate:batch-compaction',
   'validate:cognitive-mode-hint'

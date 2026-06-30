@@ -1,0 +1,12 @@
+{
+  "schema": "ev4-user-facing-wording@1.0.0",
+  "message": "The abandoned alternate route remains paused; production_ready=false; evidence insufficient.",
+  "completion_status": {
+    "production_ready": false,
+    "claim_scope": "status_note",
+    "desktop_reference_paradigm_matched": false,
+    "desktop_visual_parity_checked": false,
+    "tablet_checked": false,
+    "mobile_checked": false
+  }
+}
