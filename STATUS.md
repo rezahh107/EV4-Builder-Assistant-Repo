@@ -1,8 +1,8 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
-Status: behavioral_contracts_active
-Date: 2026-06-29
+Status: pre_batch3_hardened
+Date: 2026-06-30
 
 ---
 
@@ -21,6 +21,9 @@ project_status:
   builder_context_schema: reference_paradigm_and_authorization_supported
   package_validator: central_contract_runner_active
   central_validation_runner: scripts/validate.mjs
+  central_validation_shell_mode: shell_disabled_cross_platform_npm
+  schema_registry_validation: active
+  schema_registry_shell_mode: shell_disabled_cross_platform_npx
   smart_guidance_footer: v0.2.0
   ui_instruction_confidence_gate: active
   reference_paradigm_gate: active
@@ -33,6 +36,7 @@ project_status:
   elementor_asset_generation_gate: active
   generated_asset_contract: active
   user_facing_status_wording: active
+  wording_false_positive_regressions: active
   layout_check_schema: active
   completion_gate_schema: active
   cognitive_mode_hint: active
@@ -79,6 +83,24 @@ patches:
       - Elementor asset generation gate added
       - Reference Paradigm Gate added
       - Behavioral Contract Enforcement layer added
+  Batch_1_Critical_Sync:
+    status: merged
+    notes:
+      - runtime docs synced
+      - deployable ChatGPT project pack synced
+      - status/changelog synchronized after behavioral contracts
+  Batch_2_Validation_Hardening:
+    status: merged
+    notes:
+      - schema registry validation added
+      - wording false-positive regressions added
+      - duplicate validation orchestration reduced
+      - schema registry runner hardened after Gemini review
+  Pre_Batch3_Hardening:
+    status: in_progress_on_pr_branch
+    notes:
+      - central validation runner shell execution removed
+      - status/changelog drift corrected before structural Batch 3
 ```
 
 ---
@@ -87,8 +109,8 @@ patches:
 
 ```yaml
 integration_sync:
-  status: completed_for_v0.3.6_behavioral_contracts
-  docs_status_changelog: synced_in_batch1_critical_sync
+  status: completed_for_v0.3.6_pre_batch3
+  docs_status_changelog: synced_after_batch2
   deployable_chatgpt_project_pack: synced_in_batch1_critical_sync
   package_version: 0.3.6
   smart_home_architecture_mutation: none_intended
@@ -103,7 +125,8 @@ integration_sync:
 
 ```yaml
 validation_state:
-  github_actions_schema_validation: pending_for_batch1_critical_sync_pr
+  last_completed_pr_ci: PR_24_Batch_2_validation_hardening_success
+  current_pre_batch3_hardening_ci: pending
   local_validation: not_run_in_repo_clone
   reason_local_validation_not_run: GitHub connector applies file writes but does not provide a local checked-out repo or npm execution environment
   central_validation_entrypoint: npm run validate
@@ -132,8 +155,7 @@ Production ready remains false unless completion-gate evidence proves otherwise.
 ## Pending Next Work
 
 ```text
-run GitHub Actions central validation for Batch 1 critical sync
-complete Batch 2 validation hardening if needed: schema registry compile, wording regression fixtures, duplicate validation cleanup
-complete Batch 3 structural hardening if needed: first_batch_structure_intent replacing free-text paradigm heuristics
+complete pre-Batch 3 hardening CI and merge if successful
+complete Batch 3 structural hardening: first_batch_structure_intent replacing free-text paradigm heuristics
 continue real Elementor execution and record evidence
 ```
