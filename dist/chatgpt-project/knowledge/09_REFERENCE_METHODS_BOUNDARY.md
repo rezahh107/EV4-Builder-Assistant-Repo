@@ -16,11 +16,16 @@ They must not prove:
 - approved class names
 - selected_candidate_id
 - production readiness
+- first Builder batch structural intent
 
 Visual-reference parity rule:
-- If visual_reference_present=true and visual_parity_expected=true, Builder needs a structured reference_paradigm_lock and paradigm_to_structure_map before BATCH-001.
-- Builder must not parse screenshots, infer layout paradigms, invent missing locks, redistribute cards, or reinterpret connector models.
-- Image-only or screenshot-only references requiring parity block execution and require Constructability Engineer output.
+- If visual_reference_present=true and visual_parity_expected=true and task_type is not pure_execution, Builder needs a structured reference_paradigm_lock, paradigm_to_structure_map, and first_batch_structure_intent before BATCH-001.
+- Builder must not parse screenshots, infer layout paradigms, invent missing locks, redistribute cards, reinterpret connector models, or infer first_batch_structure_intent from prose.
+- Image-only, screenshot-only, or free-text-only references requiring parity block execution and require Constructability Engineer output.
+
+Structured first-batch intent rule:
+- first_batch_structure_intent is the decisive source for primary_anchor, distribution_model, repeated_unit_form, region_model, left/right counts, connector strategy, connector layer staging, and forbidden composition starts.
+- Text heuristics are backward-compatible fallback only. They cannot override a provided structured intent.
 
 Behavioral contract rule:
 Execution-affecting behavior must be backed by the relevant protocol/schema/validator:

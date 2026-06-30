@@ -6,7 +6,8 @@
   "type": "object",
   "required": [
     "reference_paradigm_lock",
-    "paradigm_to_structure_map"
+    "paradigm_to_structure_map",
+    "first_batch_structure_intent"
   ],
   "properties": {
     "reference_paradigm_lock": {
@@ -131,6 +132,67 @@
             }
           },
           "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "first_batch_structure_intent": {
+      "type": "object",
+      "required": [
+        "primary_anchor_staged",
+        "primary_anchor",
+        "distribution_model",
+        "repeated_unit_form",
+        "region_model",
+        "left_region_count",
+        "right_region_count",
+        "connector_strategy",
+        "connector_layer_staged",
+        "forbidden_composition_start"
+      ],
+      "properties": {
+        "primary_anchor_staged": {
+          "type": "boolean"
+        },
+        "primary_anchor": {
+          "enum": [
+            "house-center"
+          ]
+        },
+        "distribution_model": {
+          "enum": [
+            "3-left-3-right"
+          ]
+        },
+        "repeated_unit_form": {
+          "enum": [
+            "pill-card"
+          ]
+        },
+        "region_model": {
+          "enum": [
+            "left-center-right"
+          ]
+        },
+        "left_region_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "right_region_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "connector_strategy": {
+          "enum": [
+            "card-edge-to-house-edge",
+            "none"
+          ]
+        },
+        "connector_layer_staged": {
+          "type": "boolean"
+        },
+        "forbidden_composition_start": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false

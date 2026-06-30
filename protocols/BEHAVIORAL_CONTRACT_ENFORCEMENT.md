@@ -1,6 +1,6 @@
 # Behavioral Contract Enforcement
 
-Builder behavior that can affect execution safety, layout paradigm, numeric values, evidence claims, repair state, completion status, asset compatibility, UI instruction confidence, or user-facing status wording must be contract-driven.
+Builder behavior that can affect execution safety, layout paradigm, first-batch structural intent, numeric values, evidence claims, repair state, completion status, asset compatibility, UI instruction confidence, or user-facing status wording must be contract-driven.
 
 Required enforcement path: protocol → JSON schema → validator → valid/invalid fixtures → `scripts/validate.mjs` central runner → CI → runtime state-machine gate → user-facing wording guard.
 

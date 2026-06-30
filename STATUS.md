@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
-Status: pre_batch3_hardened
+Status: batch3_structured_reference_intent_implemented
 Date: 2026-06-30
 
 ---
@@ -10,15 +10,15 @@ Date: 2026-06-30
 
 ```yaml
 project_status:
-  project_instructions: active_v0.3.6_behavioral_contracts
-  master_prompt: active_v0.3.6_behavioral_contracts
+  project_instructions: active_v0.3.6_structured_reference_intent
+  master_prompt: active_v0.3.6_structured_reference_intent
   repository_guide: active_v0.3.6
   session_state_machine: active_v0.3.6
   mode_state_matrix: active_v0.3.0
   start_intake_policy: active_v0.3.0
   session_commands: user_facing_ux_commands_added
   input_contract: structured_confirmation_trust_boundary
-  builder_context_schema: reference_paradigm_and_authorization_supported
+  builder_context_schema: first_batch_structure_intent_supported
   package_validator: central_contract_runner_active
   central_validation_runner: scripts/validate.mjs
   central_validation_shell_mode: shell_disabled_cross_platform_npm
@@ -26,7 +26,7 @@ project_status:
   schema_registry_shell_mode: shell_disabled_cross_platform_npx
   smart_guidance_footer: v0.2.0
   ui_instruction_confidence_gate: active
-  reference_paradigm_gate: active
+  reference_paradigm_gate: structured_first_batch_intent_active
   action_batch_contract: active
   unit_strategy_gate: active
   unit_policy_matrix: active
@@ -46,7 +46,7 @@ project_status:
   escape_hatch_recovery: active
   recovery_state_schema: active
   inline_value_rationale: active
-  source_pack: synced_after_behavioral_contracts
+  source_pack: synced_for_structured_reference_intent
   action_default_max: 5
   production_ready: false
 ```
@@ -97,10 +97,19 @@ patches:
       - duplicate validation orchestration reduced
       - schema registry runner hardened after Gemini review
   Pre_Batch3_Hardening:
-    status: in_progress_on_pr_branch
+    status: merged
     notes:
       - central validation runner shell execution removed
       - status/changelog drift corrected before structural Batch 3
+  Batch_3_Structured_Reference_Intent:
+    status: implemented_on_branch
+    branch: fix/batch3-structured-reference-intent
+    notes:
+      - first_batch_structure_intent added to reference and package schemas
+      - Reference Paradigm Gate now prefers structured intent over free-text heuristics
+      - EV4-RPG-006 and EV4-RPG-007 diagnostics added
+      - Smart Home valid fixtures updated
+      - structured invalid intent regressions added
 ```
 
 ---
@@ -109,9 +118,9 @@ patches:
 
 ```yaml
 integration_sync:
-  status: completed_for_v0.3.6_pre_batch3
-  docs_status_changelog: synced_after_batch2
-  deployable_chatgpt_project_pack: synced_in_batch1_critical_sync
+  status: completed_for_batch3_structured_reference_intent
+  docs_status_changelog: synced_after_batch3_changes
+  deployable_chatgpt_project_pack: synced_for_runtime_reference_boundary_changes
   package_version: 0.3.6
   smart_home_architecture_mutation: none_intended
   selected_candidate_id: ARCH-FAM-C_preserved
@@ -125,11 +134,13 @@ integration_sync:
 
 ```yaml
 validation_state:
-  last_completed_pr_ci: PR_24_Batch_2_validation_hardening_success
-  current_pre_batch3_hardening_ci: pending
-  local_validation: not_run_in_repo_clone
-  reason_local_validation_not_run: GitHub connector applies file writes but does not provide a local checked-out repo or npm execution environment
+  local_validation: partial_static_checks_only
+  reason_local_validation_not_run: GitHub connector applies file writes but this environment cannot clone GitHub via DNS and does not provide a checked-out npm workspace
+  local_static_checks:
+    - JSON files parsed with python json.tool before upload
+    - validate-reference-paradigm-gate.mjs parsed with node --check before upload
   central_validation_entrypoint: npm run validate
+  expected_ci: GitHub Actions Schema validation on PR
   real_builder_session_test: in_progress_by_user
   real_elementor_execution: in_progress_by_user
 ```
@@ -145,6 +156,7 @@ Runtime confirmation is generated from trusted confirmation_request templates.
 Current UI evidence or direct user statement is required for executable version-sensitive control paths.
 Normal builder batches are user-facing and should not expose internal schema/source fields.
 Visual-reference parity requires structured Reference Paradigm Gate data before BATCH-001.
+first_batch_structure_intent is the decisive first-batch structural source when present/required.
 Execution-affecting behavior must be contract-driven and pass the relevant behavioral contract.
 After repeated failure, Escape Hatch or repair packet replaces repeated instructions.
 Production ready remains false unless completion-gate evidence proves otherwise.
@@ -155,7 +167,9 @@ Production ready remains false unless completion-gate evidence proves otherwise.
 ## Pending Next Work
 
 ```text
-complete pre-Batch 3 hardening CI and merge if successful
-complete Batch 3 structural hardening: first_batch_structure_intent replacing free-text paradigm heuristics
+open PR for Batch 3
+wait for GitHub Actions central validation
+check Gemini review comments
+merge after CI success and no unresolved non-outdated blocker
 continue real Elementor execution and record evidence
 ```

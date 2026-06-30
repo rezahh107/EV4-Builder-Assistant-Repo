@@ -1,7 +1,7 @@
 {
   "schema": "ev4-chatgpt-project-source-pack-manifest@1.0.0",
   "pack_root": "dist/chatgpt-project",
-  "generated_at": "2026-06-29T13:30:00Z",
+  "generated_at": "2026-06-30T00:00:00Z",
   "limits": {
     "project_instructions_max_chars": 8000,
     "project_instructions_warning_chars": 7800,
@@ -13,15 +13,15 @@
   "files": [
     {
       "path": "dist/chatgpt-project/BUILD_REPORT.json",
-      "sha256": "07357e03dc06457dafc6ee99a01a8b954f1e6f76393a0215f1900d95d62e58e8",
+      "sha256": "09d2ce9402272f5ee6475fd6ad2f4a1a811a09542f45145b8fbc52ebd4cb8368",
       "bytes": 400,
       "chars": 400
     },
     {
       "path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "sha256": "2c14902afc4e43450a0900300d3d2ce5f11ead54a5721d295bcf4cc2c1a7057e",
-      "bytes": 6847,
-      "chars": 6658
+      "sha256": "1ddaf6666800379f10dffda3664eb2b515fff67d8e8f5dfa1c09a67d41b669c9",
+      "bytes": 7356,
+      "chars": 7166
     },
     {
       "path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
@@ -73,9 +73,9 @@
     },
     {
       "path": "dist/chatgpt-project/knowledge/09_REFERENCE_METHODS_BOUNDARY.md",
-      "sha256": "198f535686b228b203051d3e3f318ad97278a3fff47e49aa50dc10478195398c",
-      "bytes": 1441,
-      "chars": 1441
+      "sha256": "8646fa3dcb6298ea4d307c37971b57cac9441d72f3ac7287204dd9c081afc711",
+      "bytes": 1983,
+      "chars": 1983
     },
     {
       "path": "dist/chatgpt-project/knowledge/10_USER_FACING_UX_RECOVERY.md",

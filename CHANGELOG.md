@@ -4,39 +4,26 @@
 
 ### Added
 
-- Added `scripts/validate-version-consistency.mjs`.
-- Added invalid cross-field fixtures for first-builder batch over-cap and recursive package prose prompt-injection detection.
-- Added `schemas/layout-check.schema.json` and `scripts/validate-layout-check.mjs`.
-- Added valid and invalid layout-check fixtures.
-- Added `schemas/completion-gate.schema.json` and `scripts/validate-completion-gate.mjs`.
-- Added valid and invalid completion-gate fixtures.
-- Added Elementor asset generation gate and generated asset validation coverage.
-- Added `protocols/INLINE_VALUE_RATIONALE.md`.
-- Added unified session-state validation runner.
-- Added `protocols/REFERENCE_PARADIGM_GATE.md`, `schemas/reference-paradigm-gate.schema.json`, and reference paradigm regression fixtures.
-- Added `protocols/BEHAVIORAL_CONTRACT_ENFORCEMENT.md` and central validation runner `scripts/validate.mjs`.
-- Added behavioral contract schemas, validators, and fixtures for action batches, unit policy, evidence claims, completion hierarchy, visual parity, generated assets, UI confidence, and user-facing status wording.
-- Added `scripts/validate-schema-registry.mjs` and `validate:schema-registry` to compile every `schemas/*.schema.json` file through the central validation runner.
-- Added wording false-positive regression fixtures for safe substrings such as `already` and `abandoned`.
-- Added wording shadowing regression fixture for `desktop complete`.
+- Added central contract validation through `scripts/validate.mjs`.
+- Added schema registry validation through `scripts/validate-schema-registry.mjs`.
+- Added behavioral contract schemas, validators, and fixtures for action batches, unit policy, evidence claims, visual parity, generated assets, UI confidence, wording, layout checks, completion checks, repair packets, and cognitive mode hints.
+- Added Reference Paradigm Gate support with `schemas/reference-paradigm-gate.schema.json` and `scripts/validate-reference-paradigm-gate.mjs`.
+- Added structured `first_batch_structure_intent` support for visual-reference parity builds.
+- Added diagnostics:
+  - `EV4-RPG-006 blocked_missing_first_batch_structure_intent`
+  - `EV4-RPG-007 blocked_first_batch_structure_intent_mismatch`
+- Added structured reference intent regression fixtures, including missing intent, wrong anchor, wrong distribution, wrong repeated unit form, missing connector layer staging, forbidden composition start, plausible prose with wrong structured intent, and no-connector `none` handling.
 
 ### Changed
 
-- Hardened `scripts/validate-package.mjs` with recursive package prose prompt-injection scanning.
-- Enforced `first_builder_batch.actions.length <= first_builder_batch.max_actions` in cross-field validation.
-- Reduced `first_builder_batch.max_actions` and `first_builder_batch.actions.maxItems` from 6 to 5 in `schemas/builder-context-package.schema.json`.
-- Added `validate:version-consistency` to `package.json` and CI.
-- Added `validate:layout-check` and `validate:completion-gate` to `package.json` and CI.
-- Added schema compilation for layout-check and completion-gate to CI.
-- Added `validate:elementor-asset-generation`, `validate:reference-paradigm`, and central `validate` entrypoint.
-- Simplified CI to run central contract validation through `npm run validate`.
-- Wired layout-check, completion-gate, Elementor asset generation, Reference Paradigm Gate, and behavioral contracts into runtime docs.
-- Synchronized deployable ChatGPT project pack after behavioral contract enforcement.
-- Synchronized `README.md`, `STATUS.md`, and package version metadata to v0.3.6.
-- Reduced duplicate central validation orchestration: `validate:cross-field` no longer calls `validate:reference-paradigm`, and `scripts/validate.mjs` no longer calls `validate:elementor-asset-generation` separately after `validate:asset-generation`.
-- Hardened schema registry execution after Gemini review by keeping targeted schema reference loading and removing `shell: true` with cross-platform `npx`/`npx.cmd` selection.
-- Hardened central validation runner by removing `shell: true` with cross-platform `npm`/`npm.cmd` selection.
-- Synchronized `STATUS.md` after Batch 1 and Batch 2 merged.
+- Hardened package validation and cross-field checks for executable package status, selected candidate locking, production readiness boundary, approved structure references, and first-batch action limits.
+- Reduced `first_builder_batch.max_actions` and `first_builder_batch.actions.maxItems` to 5.
+- Simplified CI so `.github/workflows/schema-validation.yml` runs central validation through `npm run validate`.
+- Hardened central validation runner execution by avoiding shell execution and using cross-platform `npm` / `npm.cmd` handling.
+- Hardened Reference Paradigm Gate so `first_batch_structure_intent` is the decisive first-batch structural source; free-text first-batch checks remain fallback-only.
+- Updated Smart Home Connector valid fixtures and example package with structured first-batch intent.
+- Updated runtime-facing docs and deployable ChatGPT Project pack for structured reference intent.
+- Addressed Gemini review by treating connector value `none` as no connector and by normalizing connector comparison with explicit mismatch reporting.
 
 ### Status
 
@@ -54,22 +41,16 @@
 - Added `protocols/SESSION_REPAIR_PACKET.md`.
 - Added `schemas/repair-packet.schema.json`.
 - Added `scripts/validate-repair-packet.mjs`.
-- Added Smart Home Connector repair packet example:
-  - `examples/smart-home-connector/repair_packet_layout_stability_incident.json`
+- Added Smart Home Connector repair packet example.
 - Added valid and invalid repair-packet regression fixtures.
 - Added session-state regression fixtures requiring `repair_packet` in `CORRECTION`.
 - Added `patch-reports/PATCH_SESSION_REPAIR_PACKET.md`.
 
 ### Changed
 
-- Updated `PROJECT_INSTRUCTIONS.md` and `core/MASTER_PROMPT.md` so build-impacting incidents freeze normal batches and require a formal repair packet.
+- Updated runtime docs so build-impacting incidents freeze normal batches and require a formal repair packet.
 - Updated `schemas/session-state.schema.json` so `runtime_state: CORRECTION` requires `repair_packet`.
-- Updated `.github/workflows/schema-validation.yml` and `package.json` so repair packet validation runs in CI.
-
-### Validation
-
-- Local schema smoke validation was run against the new repair schema/fixtures before applying to GitHub.
-- Full GitHub Actions validation is expected to run on the PR branch.
+- Updated CI and package scripts so repair packet validation runs centrally.
 
 ### Status
 
@@ -92,19 +73,8 @@
 
 ### Changed
 
-- Updated `core/MASTER_PROMPT.md` with UX precedence and Escape Hatch recovery rules.
-- Updated `core/SESSION_STATE_MACHINE.md` with recovery state and no-third-repeat guidance.
-- Updated `protocols/USER_FACING_RESPONSE_POLICY.md` to v0.2.0.
-- Updated deployable ChatGPT project source pack.
-- Reconciled retry policy:
-  - attempt 1: clarify instruction
-  - attempt 2: request targeted evidence
-  - attempt 3: Escape Hatch, not a repeated instruction
-
-### Validation
-
-- GitHub Actions validation is pending after v0.3.4 changes.
-- Local npm validation was not run from a checked-out repo because the GitHub connector does not provide a local npm execution environment.
+- Updated `core/MASTER_PROMPT.md`, `core/SESSION_STATE_MACHINE.md`, and runtime docs with UX precedence and Escape Hatch recovery rules.
+- Updated deployable ChatGPT Project source pack.
 
 ### Status
 
@@ -119,41 +89,22 @@
 
 ### Added
 
-- Added `protocols/BUILDER_BATCH_OUTPUT_FORMAT.md`.
-- Added `protocols/USER_FACING_RESPONSE_POLICY.md`.
-- Added `references/elementor-ui/ATOMIC_ELEMENTS_UI_OBSERVATION_2026-06-28.md` from user-provided Atomic UI screenshots.
-- Added user-facing UI vocabulary handling:
-  - `ui_vocabulary_map`
-  - architecture term vs user-facing UI label separation
-  - UI Vocabulary Sync for layout parent labels
-- Added schema persistence for:
-  - `known_control_map`
-  - `ui_vocabulary_map`
-- Added practical UX commands:
-  - `جزئیات`
-  - `جزئیات فنی`
-  - `پیش‌نمایش`
+- Added Builder batch output format and user-facing response policy.
+- Added UI vocabulary handling and practical UX commands.
 - Added copy-pasteable session summary behavior.
 
 ### Changed
 
-- Normal builder batch output now hides internal/source fields such as:
-  - `element_generation`
-  - `element_generation_source`
-  - `input_authorization`
-  - `package_digest`
-  - `Control path: insufficient_evidence`
-- Batch headings are now Persian user-facing labels.
-- `Container` is treated as an architecture/package term, not automatically as the executable UI label.
-- Confirmation after a valid `تایید BATCH-XXX` now uses Token Echo / active silence.
-- Updated deployable ChatGPT project source pack.
+- Normal builder batch output hides internal/source fields unless explicitly requested or required by state.
+- Confirmation after a valid `تایید BATCH-XXX` uses Token Echo / active silence.
+- Updated deployable ChatGPT Project source pack.
 
 ### Status
 
 - No Smart Home architecture redesign was intended.
 - `selected_candidate_id: ARCH-FAM-C` remains preserved.
 - Approved class names remain preserved.
-- `production_ready_allowed: false` and `production_ready: false` remain preserved.
+- production readiness remains false.
 
 ---
 
@@ -162,16 +113,15 @@
 ### Added
 
 - Added `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md`.
-- Added `known_control_map` concept for verified/missing/version-sensitive UI controls.
-- Added targeted UI screenshot recipe.
-- Added structured confirmation fixtures and injection fixtures.
+- Added `known_control_map` concept and targeted UI screenshot recipe.
+- Added structured confirmation fixtures and untrusted prose fixtures.
 
 ### Changed
 
 - Completed Patch C migration to structured `confirmation_request`.
 - Upgraded `protocols/SMART_GUIDANCE_FOOTER.md` to v0.2.0.
 - Wired UI-confidence rules into runtime docs.
-- Updated deployable ChatGPT project source pack.
+- Updated deployable ChatGPT Project source pack.
 
 ### Validation
 
