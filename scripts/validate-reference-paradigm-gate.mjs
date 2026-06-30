@@ -32,6 +32,10 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function isNonNoneString(value) {
+  return isNonEmptyString(value) && value !== 'none';
+}
+
 function isNonEmptyStringArray(value) {
   return Array.isArray(value) && value.length > 0 && value.every(isNonEmptyString);
 }
@@ -76,7 +80,7 @@ function hasRegionModel(map, model) {
 
 function connectorRequired(lock, map) {
   const req = map?.first_batch_requirements || {};
-  return isNonEmptyString(lock?.connector_model) || isNonEmptyString(map?.connector_layer) || isNonEmptyString(req.connector_strategy);
+  return isNonNoneString(lock?.connector_model) || isNonNoneString(map?.connector_layer) || isNonNoneString(req.connector_strategy);
 }
 
 function expectedLeftCount(distributionModel) {
@@ -146,8 +150,12 @@ function addStructuredIntentDiagnostics({ add, lock, map, intent }) {
   }
 
   if (connectorRequired(lock, map)) {
-    const expectedConnector = lock.connector_model || req.connector_strategy;
-    if (intent.connector_strategy !== expectedConnector || (req.connector_strategy && intent.connector_strategy !== req.connector_strategy)) {
+    const expectedConnector = (lock.connector_model ?? null) || (req.connector_strategy ?? null);
+    const lockModel = lock.connector_model ?? null;
+    const reqStrategy = req.connector_strategy ?? null;
+    if (lockModel !== null && reqStrategy !== null && lockModel !== reqStrategy) {
+      mismatches.push(`Inconsistent connector configuration: lock connector model (${lockModel}) does not match requirements connector strategy (${reqStrategy}).`);
+    } else if ((intent.connector_strategy ?? null) !== expectedConnector) {
       mismatches.push(`connector_strategy must match the required connector model ${expectedConnector}.`);
     }
     if (intent.connector_layer_staged !== true) {
@@ -199,7 +207,7 @@ export function validateReferenceParadigmGate(pkg) {
 
   if (!lock || !hasStructuredParadigmMap(map)) return diagnostics;
 
-  if (lock.connector_model && !map.connector_layer) {
+  if (isNonNoneString(lock.connector_model) && !map.connector_layer) {
     add(REFERENCE_PARADIGM_DIAGNOSTICS.MISSING_STRUCTURE_MAP, 'connector references require paradigm_to_structure_map.connector_layer.');
   }
 
