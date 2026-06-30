@@ -32,5 +32,9 @@ const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 for (const script of scripts) {
   console.log('\n==> npm run ' + script);
   const result = spawnSync(npmCommand, ['run', script], { stdio: 'inherit' });
+  if (result.error) {
+    console.error('Failed to execute ' + npmCommand + ': ' + result.error.message);
+    process.exit(1);
+  }
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
