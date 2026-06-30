@@ -1,6 +1,6 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
-## v0.3.6 — 2026-06-29
+## v0.3.6 — 2026-06-30
 
 ### Added
 
@@ -16,6 +16,9 @@
 - Added `protocols/REFERENCE_PARADIGM_GATE.md`, `schemas/reference-paradigm-gate.schema.json`, and reference paradigm regression fixtures.
 - Added `protocols/BEHAVIORAL_CONTRACT_ENFORCEMENT.md` and central validation runner `scripts/validate.mjs`.
 - Added behavioral contract schemas, validators, and fixtures for action batches, unit policy, evidence claims, completion hierarchy, visual parity, generated assets, UI confidence, and user-facing status wording.
+- Added `scripts/validate-schema-registry.mjs` and `validate:schema-registry` to compile every `schemas/*.schema.json` file through the central validation runner.
+- Added wording false-positive regression fixtures for safe substrings such as `already` and `abandoned`.
+- Added wording shadowing regression fixture for `desktop complete`.
 
 ### Changed
 
@@ -30,6 +33,10 @@
 - Wired layout-check, completion-gate, Elementor asset generation, Reference Paradigm Gate, and behavioral contracts into runtime docs.
 - Synchronized deployable ChatGPT project pack after behavioral contract enforcement.
 - Synchronized `README.md`, `STATUS.md`, and package version metadata to v0.3.6.
+- Reduced duplicate central validation orchestration: `validate:cross-field` no longer calls `validate:reference-paradigm`, and `scripts/validate.mjs` no longer calls `validate:elementor-asset-generation` separately after `validate:asset-generation`.
+- Hardened schema registry execution after Gemini review by keeping targeted schema reference loading and removing `shell: true` with cross-platform `npx`/`npx.cmd` selection.
+- Hardened central validation runner by removing `shell: true` with cross-platform `npm`/`npm.cmd` selection.
+- Synchronized `STATUS.md` after Batch 1 and Batch 2 merged.
 
 ### Status
 
