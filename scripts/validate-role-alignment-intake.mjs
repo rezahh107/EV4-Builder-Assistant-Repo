@@ -2,6 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { normalizeCeBuilderExecutablePackage } from './normalize-ce-builder-executable-package.mjs';
+
 const ROOT = process.cwd();
 const INVALID_FIXTURES = [
   'tests/invalid/role_alignment_architect_only_stage11_export.json',
@@ -30,10 +32,20 @@ function assertCeReviewOnlyRejected(doc, relativePath) {
   }
 }
 
-function assertVisualParityMissingGoldenRejected(doc, relativePath) {
+function assertCeNormalizerRejects(doc, relativePath) {
   const pkg = doc.ce_builder_executable_package;
   if (!pkg || pkg.visual_parity_build !== true) throw new Error(`${relativePath}: expected visual parity CE package`);
   if (pkg.golden_reference_contract) throw new Error(`${relativePath}: negative fixture unexpectedly has golden_reference_contract`);
+
+  let rejected = false;
+  try {
+    normalizeCeBuilderExecutablePackage(pkg);
+  } catch (error) {
+    rejected = String(error?.message || error).includes('golden_reference_contract');
+  }
+  if (!rejected) {
+    throw new Error(`${relativePath}: CE normalizer did not reject visual parity package missing golden_reference_contract`);
+  }
 }
 
 for (const relativePath of INVALID_FIXTURES) {
@@ -42,6 +54,6 @@ for (const relativePath of INVALID_FIXTURES) {
 
 assertArchitectOnlyExportRejected(readJson(INVALID_FIXTURES[0]), INVALID_FIXTURES[0]);
 assertCeReviewOnlyRejected(readJson(INVALID_FIXTURES[1]), INVALID_FIXTURES[1]);
-assertVisualParityMissingGoldenRejected(readJson(INVALID_FIXTURES[2]), INVALID_FIXTURES[2]);
+assertCeNormalizerRejects(readJson(INVALID_FIXTURES[2]), INVALID_FIXTURES[2]);
 
 console.log('Builder role alignment intake checks passed.');
