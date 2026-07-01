@@ -106,3 +106,48 @@
 ### Changed
 
 - Normal builder batch output hides internal/source fields unless explicitly requested or required by state.
+- Confirmation after a valid `تایید BATCH-XXX` uses Token Echo / active silence.
+- Updated deployable ChatGPT Project source pack.
+
+### Status
+
+- No Smart Home architecture redesign was intended.
+- `selected_candidate_id: ARCH-FAM-C` remains preserved.
+- Approved class names remain preserved.
+- production readiness remains false.
+
+---
+
+## v0.3.2 — 2026-06-28
+
+### Added
+
+- Added `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md`.
+- Added `known_control_map` concept and targeted UI screenshot recipe.
+- Added structured confirmation fixtures and untrusted prose fixtures.
+
+### Changed
+
+- Completed Patch C migration to structured `confirmation_request`.
+- Upgraded `protocols/SMART_GUIDANCE_FOOTER.md` to v0.2.0.
+- Wired UI-confidence rules into runtime docs.
+- Updated deployable ChatGPT Project source pack.
+
+### Validation
+
+- GitHub Actions `Schema validation` passed on run `111` for head `90b8a8c3345b0329d8e47e99c8c32a624b077d79`.
+
+---
+
+## v0.3.1 — 2026-06-27
+
+### Hardened
+
+- Added workflow_mode/runtime_state separation hardening.
+- Hardened intake-result and session-state schemas.
+- Expanded CI fixture coverage.
+
+### Status
+
+- No Smart Home architecture, class names, `selected_candidate_id`, or production-readiness rules were changed.
+- Production readiness remains false.
