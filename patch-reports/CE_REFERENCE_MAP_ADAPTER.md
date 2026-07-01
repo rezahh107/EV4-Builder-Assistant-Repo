@@ -4,10 +4,10 @@
 
 Adds an explicit, CI-tested adapter for CE-style structured `paradigm_to_structure_map` data.
 
-This patch keeps the CE-to-Builder boundary strict while allowing a deterministic conversion of the reference carrier shape:
+This patch keeps the CE-to-Builder boundary strict while allowing deterministic conversion into the Builder reference carriers required after structured reference intent hardening:
 
 ```text
-CE structured reference map -> Builder reference carrier map
+CE structured reference map -> Builder paradigm_to_structure_map + first_batch_structure_intent
 ```
 
 ## Added
@@ -44,7 +44,7 @@ No Builder runtime behavior change.
 The adapter validator proves:
 
 ```text
-- valid CE-style structured map normalizes to the exact expected Builder map;
+- valid CE-style structured map normalizes to the exact expected Builder carriers;
 - normalized output passes the existing Builder Reference Paradigm Gate;
 - invalid CE-style map fails adapter validation;
 - central validation runs the adapter check in CI.
@@ -52,6 +52,6 @@ The adapter validator proves:
 
 ## Remaining scope
 
-This is not a full CE `builder_executable_package` to `Builder_Context_Package` converter. It only handles the structured reference carrier map.
+This is not a full CE `builder_executable_package` to `Builder_Context_Package` converter. It only handles the structured reference carriers.
 
 A later patch may add a full package-level adapter if needed.
