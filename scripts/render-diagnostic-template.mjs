@@ -34,6 +34,18 @@ function validateTargets(targets) {
   }
 }
 
+function readTemplateCode(template) {
+  if (typeof template.code_template === 'string') return template.code_template;
+  if (template.code_template_encoding !== 'base64' || typeof template.code_template_path !== 'string') fail('diagnostic template must provide code_template or base64 code_template_path');
+  if (!/^data\/diagnostic-templates\/[A-Za-z0-9_.-]+\.js\.b64$/.test(template.code_template_path)) fail('invalid diagnostic code_template_path');
+  try {
+    const encoded = fs.readFileSync(path.resolve(template.code_template_path), 'utf8').trim();
+    return Buffer.from(encoded, 'base64').toString('utf8');
+  } catch (error) {
+    fail(`failed to read diagnostic template file: ${error.message}`);
+  }
+}
+
 const registryPath = process.argv[2] || 'data/diagnostic-templates.v1.json';
 const requestPath = process.argv[3];
 if (!requestPath) fail('Usage: node scripts/render-diagnostic-template.mjs <registry.json> <diagnostic-request.json>');
@@ -48,7 +60,7 @@ const allowedContexts = Array.isArray(template.allowed_contexts) ? template.allo
 if (!allowedContexts.includes(request.runtime_state)) fail(`runtime_state not allowed for diagnostic template: ${request.runtime_state}`);
 if (request.source !== 'diagnostic_template_registry') fail('diagnostic request source must be diagnostic_template_registry');
 validateTargets(request.targets);
-const code = String(template.code_template || '');
+const code = readTemplateCode(template);
 const placeholderCount = (code.match(/__EV4_TARGETS_JSON__/g) || []).length;
 if (placeholderCount !== 1) fail('diagnostic template must contain exactly one target placeholder');
 const rendered = code.replace('__EV4_TARGETS_JSON__', JSON.stringify(request.targets));
