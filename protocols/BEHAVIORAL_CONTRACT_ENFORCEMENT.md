@@ -11,3 +11,5 @@ Runtime hooks:
 - WAITING_FOR_CONFIRMATION can advance only claims mapped to `confirmation_request` scope.
 - CORRECTION / EVIDENCE_REQUIRED blocks normal build and requires a repair packet or targeted evidence path.
 - COMPLETED requires completion-status validation; `production_ready` remains false unless separately proven.
+
+Additional contract hooks: `protocols/GOLDEN_REFERENCE_CONTRACT.md`, `protocols/BUILD_INTENT_BRIEF.md`, `protocols/SPATIAL_LEXICON.md`, and `protocols/EXPERIENCE_INTENT.md` extend the enforcement path for visual-reference builds, deterministic mental-model display, controlled spatial terms, and advisory experience feel.
