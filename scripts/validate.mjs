@@ -28,7 +28,8 @@ const scripts = [
 ];
 
 const nodeChecks = [
-  'scripts/validate-ce-reference-map-adapter.mjs'
+  'scripts/validate-ce-reference-map-adapter.mjs',
+  'scripts/validate-ce-builder-package-adapter.mjs'
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
