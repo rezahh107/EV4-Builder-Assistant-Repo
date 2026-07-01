@@ -132,7 +132,7 @@ function normalizeAction(action, index) {
 }
 
 function normalizeFirstBuilderBatch(firstSafeBuilderBatch) {
-  const batchId = requireString(firstSafeBuilderBatch.batch_id, 'first_safe_builder_batch.batch_id');
+  requireString(firstSafeBuilderBatch.batch_id, 'first_safe_builder_batch.batch_id');
   const actions = requireArray(firstSafeBuilderBatch.actions, 'first_safe_builder_batch.actions').map(normalizeAction);
   if (actions.length > 5) throw new Error('first_safe_builder_batch.actions must not exceed Builder hard cap of 5 actions.');
 
