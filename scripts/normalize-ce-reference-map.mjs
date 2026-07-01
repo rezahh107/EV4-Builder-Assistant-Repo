@@ -78,7 +78,7 @@ export function normalizeCeParadigmToStructureMap(map, referenceParadigmLock = {
   const primaryAnchorNode = requireString(primaryAnchor.node, 'paradigm_to_structure_map.primary_anchor.node');
   const repeatedUnitForm = requireString(repeatedUnits.form, 'paradigm_to_structure_map.repeated_units.form');
   const connectorModel = requireString(connectorLayer.model, 'paradigm_to_structure_map.connector_layer.model');
-  requireString(connectorLayer.node, 'paradigm_to_structure_map.connector_layer.node');
+  const connectorNode = requireString(connectorLayer.node, 'paradigm_to_structure_map.connector_layer.node');
 
   const requiredChildren = requireArray(repeatedUnits.required_children, 'paradigm_to_structure_map.repeated_units.required_children')
     .map((child, index) => requireString(child, `paradigm_to_structure_map.repeated_units.required_children[${index}]`));
@@ -89,7 +89,6 @@ export function normalizeCeParadigmToStructureMap(map, referenceParadigmLock = {
     `${repeatedUnitForm} with ${requiredChildren.join(', ')}`
   ]);
 
-  const sourceRequirementText = sourceRequirements.join(' ').toLowerCase();
   const distributionModel = isNonEmptyString(referenceParadigmLock.distribution_model)
     ? referenceParadigmLock.distribution_model.toLowerCase()
     : '';
@@ -98,15 +97,14 @@ export function normalizeCeParadigmToStructureMap(map, referenceParadigmLock = {
     primary_anchor: primaryAnchorNode,
     regions: regionLabels,
     repeated_units: repeatedUnitLabels,
-    connector_layer: `${connectorLayer.node}: ${connectorModel}`,
+    connector_layer: `${connectorNode}: ${connectorModel}`,
     first_batch_requirements: {
       must_establish_primary_anchor: true,
       must_create_or_stage_left_right_regions:
         derivesLeftRightRegions(regions) || distributionModel.includes('left') || distributionModel.includes('right'),
       must_use_repeated_unit_form: repeatedUnitForm,
       forbidden_composition_starts: [],
-      connector_strategy: connectorModel,
-      source_requirements_summary: sourceRequirements.join('; ')
+      connector_strategy: connectorModel
     }
   };
 }
