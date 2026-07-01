@@ -1,25 +1,14 @@
 {
   "ce_builder_executable_package": {
     "package_id": "CE-BEP-SMART-HOME-001",
-    "review_ref": "cross-repo-contract-adapter-fixture",
-    "strategy_map_ref": "ISM-SMART-HOME-001",
+    "review_ref": "cross-repo-role-alignment-fixture",
     "architect_contract": {
       "source_ref": "ARCH-HANDOFF-SMART-HOME-001",
       "selected_candidate_id": "ARCH-FAM-C",
-      "approved_class_names": [
-        "smart-home__section--root",
-        "smart-home__stage--relative",
-        "smart-home__house-core",
-        "smart-home__feature-card"
-      ]
+      "approved_class_names": ["smart-home__section--root", "smart-home__stage--relative"]
     },
     "selected_candidate_id": "ARCH-FAM-C",
-    "approved_class_names": [
-      "smart-home__section--root",
-      "smart-home__stage--relative",
-      "smart-home__house-core",
-      "smart-home__feature-card"
-    ],
+    "approved_class_names": ["smart-home__section--root", "smart-home__stage--relative"],
     "builder_package_status": "executable_ready",
     "builder_decisions_required": 0,
     "blocking_dependencies": [],
@@ -27,6 +16,19 @@
     "selected_candidate_id_unchanged": true,
     "approved_class_names_unchanged": true,
     "visual_parity_build": true,
+    "golden_reference_contract": {
+      "reference_id": "golden-smart-home-desktop",
+      "reference_version": "1.0.0",
+      "scope": "desktop",
+      "locked": true
+    },
+    "build_intent_brief": {
+      "schema": "ev4-build-intent-brief@1.0.0",
+      "source": "constructability_engineer",
+      "authority": "explanatory_only"
+    },
+    "spatial_lexicon_version_used": "v1.fa",
+    "visual_tolerance_policy": { "parity_expected": true },
     "approved_structure_tree": [
       {
         "node_id": "n-001",
@@ -46,36 +48,6 @@
         "element_generation": "Shared compatibility element",
         "element_generation_source": "architect_export",
         "role": "relative_stage",
-        "children": ["n-003", "n-004", "n-005"]
-      },
-      {
-        "node_id": "n-003",
-        "structure_label": "Smart Home Section / Left Feature Region",
-        "class_name": null,
-        "element_type": "Container",
-        "element_generation": "Shared compatibility element",
-        "element_generation_source": "architect_export",
-        "role": "left_region",
-        "children": []
-      },
-      {
-        "node_id": "n-004",
-        "structure_label": "Smart Home Section / House Core",
-        "class_name": "smart-home__house-core",
-        "element_type": "Container",
-        "element_generation": "Shared compatibility element",
-        "element_generation_source": "architect_export",
-        "role": "primary_anchor",
-        "children": []
-      },
-      {
-        "node_id": "n-005",
-        "structure_label": "Smart Home Section / Right Feature Region",
-        "class_name": null,
-        "element_type": "Container",
-        "element_generation": "Shared compatibility element",
-        "element_generation_source": "architect_export",
-        "role": "right_region",
         "children": []
       }
     ],
@@ -86,7 +58,7 @@
         "elementor_node_or_element": "n-001",
         "when_to_create": "when creating root Container",
         "reusable_or_one_off": "section_scoped",
-        "purpose": "section root scope and CSS boundary",
+        "purpose": "section root scope",
         "css_needed_now": "no"
       },
       {
@@ -97,24 +69,6 @@
         "reusable_or_one_off": "section_scoped",
         "purpose": "local stage for content and decorative connector layer",
         "css_needed_now": "later"
-      },
-      {
-        "class_name": "smart-home__house-core",
-        "related_structure_label": "Smart Home Section / House Core",
-        "elementor_node_or_element": "n-004",
-        "when_to_create": "when creating house core visual anchor",
-        "reusable_or_one_off": "section_scoped",
-        "purpose": "center visual anchor class",
-        "css_needed_now": "later"
-      },
-      {
-        "class_name": "smart-home__feature-card",
-        "related_structure_label": "Feature Card / Repeated Unit",
-        "elementor_node_or_element": "Feature Card / Repeated Unit",
-        "when_to_create": "when creating each repeated feature card",
-        "reusable_or_one_off": "section_scoped",
-        "purpose": "repeated pill-card unit class",
-        "css_needed_now": "later"
       }
     ],
     "widget_mapping_table": [
@@ -124,13 +78,6 @@
         "recommended_widget_or_element": "Container",
         "editable_content": "none",
         "why_this_mapping": "Approved root wrapper from executable package."
-      },
-      {
-        "structure_label": "Smart Home Section / House Core",
-        "class_name": "smart-home__house-core",
-        "recommended_widget_or_element": "Image Widget or Container",
-        "editable_content": "house visual asset",
-        "why_this_mapping": "Central house visual is the primary anchor."
       }
     ],
     "editable_content_map": [
@@ -175,16 +122,10 @@
       "connector_behavior_status": "unresolved",
       "meaningful_content_visibility_rule": "do_not_hide_meaningful_content"
     },
-    "forbidden_work": [
-      "do_not_redesign",
-      "do_not_rescore",
-      "do_not_change_selected_candidate",
-      "do_not_change_approved_class_names",
-      "do_not_report_production_ready"
-    ],
+    "forbidden_work": ["do_not_redesign", "do_not_change_selected_candidate", "do_not_change_approved_class_names"],
     "confirmation_request": {
       "confirmation_id": "CONFIRM-BATCH-001",
-      "confirmed_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
+      "confirmed_action_ids": ["BATCH-001-A01"],
       "expected_user_token": "تایید BATCH-001"
     },
     "first_safe_builder_batch": {
@@ -203,33 +144,16 @@
             "element_generation_source": "architect_export",
             "structure_panel_name": "Smart Home Section / Root",
             "active_class": "smart-home__section--root",
-            "instruction": "Create the root Container for the center house anchor, left feature region, and right feature region.",
+            "instruction": "Create the approved root Container only.",
             "properties_not_to_change": ["selected_candidate_id", "approved_class_names"],
-            "expected_result": "Root Container exists and preserves the center-anchored-symmetric structure."
-          }
-        },
-        {
-          "action_id": "BATCH-001-A02",
-          "action_type": "create_element",
-          "target_node": "Smart Home Section / Relative Stage",
-          "requires_decision": false,
-          "parameters": {
-            "parent": "Smart Home Section / Root",
-            "element_type": "Container",
-            "element_generation": "Shared compatibility element",
-            "element_generation_source": "architect_export",
-            "structure_panel_name": "Smart Home Section / Relative Stage",
-            "active_class": "smart-home__stage--relative",
-            "instruction": "Create the relative stage with house-center primary anchor plus left and right regions for pill-card units and card-edge-to-house-edge connectors.",
-            "properties_not_to_change": ["selected_candidate_id", "approved_class_names"],
-            "expected_result": "Relative stage establishes the house-center anchor and left/right regions."
+            "expected_result": "Root Container exists and preserves approved candidate identity."
           }
         }
       ]
     },
     "reference_paradigm_lock": {
       "schema": "ev4-reference-paradigm-lock@1.0.0",
-      "source_reference_id": "ce-full-adapter-reference-001",
+      "source_reference_id": "golden-smart-home-desktop",
       "extracted_by": "constructability_engineer",
       "paradigm_locked": true,
       "layout_paradigm": "center-anchored-symmetric",
@@ -238,45 +162,17 @@
       "repeated_unit_form": "pill-card",
       "connector_model": "card-edge-to-house-edge",
       "spatial_symmetry": "bilateral",
-      "completion_signature": [
-        "center house anchor",
-        "three left pill cards",
-        "three right pill cards",
-        "card-edge-to-house-edge connectors"
-      ]
+      "completion_signature": ["center house anchor", "three left pill cards", "three right pill cards"]
     },
     "paradigm_to_structure_map": {
-      "primary_anchor": {
-        "node": "house-center",
-        "role": "primary visual anchor"
-      },
+      "primary_anchor": { "node": "house-center", "role": "primary visual anchor" },
       "regions": [
-        {
-          "id": "left-feature-region",
-          "distribution": "left side",
-          "expected_count": 3,
-          "nodes": ["left-card-1", "left-card-2", "left-card-3"]
-        },
-        {
-          "id": "right-feature-region",
-          "distribution": "right side",
-          "expected_count": 3,
-          "nodes": ["right-card-1", "right-card-2", "right-card-3"]
-        }
+        { "id": "left-feature-region", "distribution": "left side", "expected_count": 3, "nodes": ["left-card-1", "left-card-2", "left-card-3"] },
+        { "id": "right-feature-region", "distribution": "right side", "expected_count": 3, "nodes": ["right-card-1", "right-card-2", "right-card-3"] }
       ],
-      "repeated_units": {
-        "form": "pill-card",
-        "required_children": ["icon", "title", "subtitle"]
-      },
-      "connector_layer": {
-        "node": "connector-layer",
-        "model": "card-edge-to-house-edge"
-      },
-      "first_batch_requirements": [
-        "establish primary anchor",
-        "stage left and right regions",
-        "preserve pill-card repeated unit form"
-      ]
+      "repeated_units": { "form": "pill-card", "required_children": ["icon", "title", "subtitle"] },
+      "connector_layer": { "node": "connector-layer", "model": "card-edge-to-house-edge" },
+      "first_batch_requirements": ["establish primary anchor", "stage left and right regions", "preserve pill-card repeated unit form"]
     }
   }
 }
