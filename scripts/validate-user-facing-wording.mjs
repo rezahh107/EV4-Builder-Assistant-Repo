@@ -10,7 +10,7 @@ for(const term of sortedBlocked){
   const regex = new RegExp('(?<![\\p{L}\\p{N}])' + term + '(?![\\p{L}\\p{N}])', 'ui');
   if(regex.test(scrubbed)&&!(w.allowed_terms||[]).includes(term)){
     if(term.includes('production')&&!s.production_ready) fail('EV4-WORD-001','production-ready wording requires production_ready contract.');
-    else if(term.includes('desktop')&&(!s.desktop_reference_paradigm_matched||!s.desktop_visual_parity_checked)) fail('EV4-WORD-002','desktop complete wording requires desktop parity checked.');
+    else if(term.includes('desktop')&&(!s.desktop_reference_paradigm_matched||!s.desktop_visual_parity_checked||(['pending','fail','unchecked'].includes(s.golden_reference_parity_status)))) fail('EV4-WORD-002','desktop complete wording requires desktop parity and passing Golden Reference parity.');
     else if(term.includes('section')&&(!s.tablet_checked||!s.mobile_checked)) fail('EV4-WORD-003','section complete wording requires responsive checks.');
     else if(['تمام شد','complete','completed','done','ready','قابل قبول','نهایی'].includes(term)&&!s.production_ready) fail('EV4-WORD-004','gated completion wording \'' + term + '\' requires relevant completion-status allowance.');
     scrubbed = scrubbed.replace(regex, '');

@@ -245,3 +245,9 @@ Safe to continue: yes/no
 Do not provide new build actions unless user also says `ادامه`.
 
 Behavioral Contract Enforcement: runtime transitions must follow protocols/BEHAVIORAL_CONTRACT_ENFORCEMENT.md and pass scripts/validate.mjs-covered validators before state advancement.
+
+## Golden Reference / Build Intent State Gate
+
+If a visual-reference build requires a Golden Reference Contract or Build Intent Brief and the contract is missing, invalid, hash-mismatched, unpinned, or free-text, the assistant must not fabricate intent. Set `runtime_state: EVIDENCE_REQUIRED` or `REVIEW_ONLY` according to the existing mode matrix, request a CE-generated package containing the valid contract, and keep `normal_builder_batch_allowed: false`.
+
+Golden Reference parity pending/failed keeps completion wording blocked even when structure batches are confirmed.
