@@ -1,8 +1,8 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
-Status: batch3_structured_reference_intent_merged
-Date: 2026-06-30
+Status: real_execution_evidence_pack_ready_for_ci
+Date: 2026-07-01
 
 ---
 
@@ -24,6 +24,8 @@ project_status:
   central_validation_shell_mode: shell_disabled_cross_platform_npm
   schema_registry_validation: active
   schema_registry_shell_mode: shell_disabled_cross_platform_npx
+  real_elementor_execution_evidence_schema: active_on_pr_branch
+  real_elementor_execution_evidence_validator: active_on_pr_branch
   smart_guidance_footer: v0.2.0
   ui_instruction_confidence_gate: active
   reference_paradigm_gate: structured_first_batch_intent_active
@@ -115,6 +117,14 @@ patches:
       - Smart Home valid fixtures updated
       - structured invalid intent regressions added
       - no-connector none regression covered by full package fixture and standalone gate fixture
+  Final_Real_Execution_Evidence_Pack:
+    status: ready_for_ci_on_pr_branch
+    branch: final/real-execution-evidence-pack
+    notes:
+      - real Elementor evidence schema added
+      - real execution evidence template added
+      - production-ready claim without proof regression added
+      - central validation runs evidence validator
 ```
 
 ---
@@ -139,16 +149,13 @@ integration_sync:
 
 ```yaml
 validation_state:
-  local_validation: partial_static_checks_only
-  reason_local_validation_not_run: GitHub connector applies file writes but this environment cannot clone GitHub via DNS and does not provide a checked-out npm workspace
-  local_static_checks:
-    - JSON files parsed with python json.tool before upload
-    - validate-reference-paradigm-gate.mjs parsed with node --check before upload
+  local_validation: not_run_in_repo_clone
+  reason_local_validation_not_run: GitHub connector applies file writes but this environment does not provide a checked-out npm workspace
   central_validation_entrypoint: npm run validate
   batch3_pr_ci: schema_validation_success
-  expected_followup_ci: GitHub Actions Schema validation on follow-up PR
-  real_builder_session_test: in_progress_by_user
-  real_elementor_execution: in_progress_by_user
+  real_execution_evidence_pack_ci: pending
+  real_builder_session_test: pending_user_execution
+  real_elementor_execution: pending_user_execution
 ```
 
 ---
@@ -163,6 +170,7 @@ Current UI evidence or direct user statement is required for executable version-
 Normal builder batches are user-facing and should not expose internal schema/source fields.
 Visual-reference parity requires structured Reference Paradigm Gate data before BATCH-001.
 first_batch_structure_intent is the decisive first-batch structural source when present/required.
+Real Elementor execution evidence is required before any production-readiness claim.
 Execution-affecting behavior must be contract-driven and pass the relevant behavioral contract.
 After repeated failure, Escape Hatch or repair packet replaces repeated instructions.
 Production ready remains false unless completion-gate evidence proves otherwise.
@@ -173,6 +181,7 @@ Production ready remains false unless completion-gate evidence proves otherwise.
 ## Pending Next Work
 
 ```text
-No remaining Batch 3 structural hardening work.
-Continue real Elementor execution separately and record evidence outside Batch 3 scope.
+Complete final real execution evidence pack CI and merge if successful.
+Then collect real Elementor UI evidence using examples/smart-home-connector/real_elementor_execution_evidence.template.json.
+Do not claim production readiness until real execution evidence and completion gate proofs are confirmed.
 ```

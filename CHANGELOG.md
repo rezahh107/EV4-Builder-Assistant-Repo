@@ -1,6 +1,6 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
-## v0.3.6 — 2026-06-30
+## v0.3.6 — 2026-07-01
 
 ### Added
 
@@ -13,6 +13,12 @@
   - `EV4-RPG-006 blocked_missing_first_batch_structure_intent`
   - `EV4-RPG-007 blocked_first_batch_structure_intent_mismatch`
 - Added structured reference intent regression fixtures, including missing intent, wrong anchor, wrong distribution, wrong repeated unit form, missing connector layer staging, forbidden composition start, plausible prose with wrong structured intent, and no-connector `none` handling.
+- Added Real Elementor Execution Evidence Pack:
+  - `schemas/real-elementor-execution-evidence.schema.json`
+  - `scripts/validate-real-elementor-execution-evidence.mjs`
+  - `docs/REAL_ELEMENTOR_EXECUTION_EVIDENCE.md`
+  - `examples/smart-home-connector/real_elementor_execution_evidence.template.json`
+  - invalid regression for production-ready claims without completed real evidence.
 
 ### Changed
 
@@ -26,6 +32,7 @@
 - Addressed Gemini review by treating connector value `none` as no connector and by normalizing connector comparison with explicit mismatch reporting.
 - Synced Batch 3 status after post-implementation audit so repository status no longer describes pre-merge PR work.
 - Documented the no-connector coverage split: full-package no-connector regression runs through central package validation, while the standalone gate fixture remains a focused validator smoke fixture.
+- Central validation now runs Real Elementor Execution Evidence validation as a final non-production-readiness evidence gate.
 
 ### Status
 
@@ -33,6 +40,7 @@
 - `selected_candidate_id: ARCH-FAM-C` remains preserved.
 - Approved class names remain preserved.
 - `production_ready` remains false.
+- Real Elementor execution still requires real user-provided UI evidence before any production-readiness claim.
 
 ---
 
