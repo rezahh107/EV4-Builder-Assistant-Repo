@@ -18,6 +18,7 @@ scripts/validate-ce-reference-map-adapter.mjs
 docs/CE_REFERENCE_MAP_ADAPTER_CONTRACT.md
 tests/valid/ce_reference_map_adapter_valid.json
 tests/invalid/ce_reference_map_adapter_missing_anchor.json
+tests/invalid/ce_reference_map_adapter_false_direction_terms.json
 ```
 
 ## Changed
@@ -27,6 +28,17 @@ scripts/validate.mjs
 ```
 
 `validate.mjs` now runs `scripts/validate-ce-reference-map-adapter.mjs` after the existing npm validation suite.
+
+## Gemini follow-up
+
+Gemini flagged two valid hardening issues:
+
+```text
+- use fileURLToPath(import.meta.url) instead of URL pathname comparison for Windows-safe CLI detection;
+- avoid substring-based left/right matching so words like cleft or bright do not satisfy directional proof.
+```
+
+Both were addressed, and the false-direction regression fixture was added.
 
 ## Boundary preserved
 
@@ -46,7 +58,7 @@ The adapter validator proves:
 ```text
 - valid CE-style structured map normalizes to the exact expected Builder carriers;
 - normalized output passes the existing Builder Reference Paradigm Gate;
-- invalid CE-style map fails adapter validation;
+- invalid CE-style maps fail adapter validation;
 - central validation runs the adapter check in CI.
 ```
 
