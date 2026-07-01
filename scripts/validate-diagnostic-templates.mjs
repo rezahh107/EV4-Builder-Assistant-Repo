@@ -21,6 +21,25 @@ function readJsonSafe(filePath) {
   }
 }
 
+function readTemplateCode(t, errors, templateId) {
+  if (typeof t.code_template === 'string') return t.code_template;
+  if (t.code_template_encoding !== 'base64' || typeof t.code_template_path !== 'string') {
+    errors.push({ id: 'EV4-DT-008', message: `${templateId} must provide code_template or base64 code_template_path` });
+    return '';
+  }
+  if (!/^data\/diagnostic-templates\/[A-Za-z0-9_.-]+\.js\.b64$/.test(t.code_template_path)) {
+    errors.push({ id: 'EV4-DT-008A', message: `${templateId} has invalid code_template_path` });
+    return '';
+  }
+  try {
+    const encoded = fs.readFileSync(path.resolve(t.code_template_path), 'utf8').trim();
+    return Buffer.from(encoded, 'base64').toString('utf8');
+  } catch (error) {
+    errors.push({ id: 'EV4-DT-008B', message: `${templateId} template file read/decode failed: ${error.message}` });
+    return '';
+  }
+}
+
 function validateRegistry(filePath) {
   const parsed = readJsonSafe(filePath);
   const errors = [...parsed.errors];
@@ -42,8 +61,8 @@ function validateRegistry(filePath) {
     const contexts = Array.isArray(t.allowed_contexts) ? t.allowed_contexts : [];
     if (!Array.isArray(t.allowed_contexts) || contexts.length === 0) errors.push({ id: 'EV4-DT-006', message: `${templateId} allowed_contexts must be a non-empty array` });
     for (const c of contexts) if (!allowedContexts.has(c)) errors.push({ id: 'EV4-DT-007', message: `${templateId} has invalid context ${c}` });
-    const code = typeof t.code_template === 'string' ? t.code_template : '';
-    if (!code) errors.push({ id: 'EV4-DT-008', message: `${templateId} code_template must be a string` });
+    const code = readTemplateCode(t, errors, templateId);
+    if (!code) errors.push({ id: 'EV4-DT-008C', message: `${templateId} code template must not be empty` });
     const placeholderCount = (code.match(/__EV4_TARGETS_JSON__/g) || []).length;
     if (placeholderCount !== 1) errors.push({ id: 'EV4-DT-009', message: `${templateId} must contain exactly one __EV4_TARGETS_JSON__ placeholder` });
     for (const term of unsafeTerms) {
