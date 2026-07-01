@@ -1,0 +1,31 @@
+{
+  "schema": "ev4-diagnostic-template-registry@1.0.0",
+  "version": "1.0.0",
+  "templates": [
+    {
+      "template_id": "elementor_rendered_dom_computed_v1",
+      "template_version": "1.0.0",
+      "description": "Read-only rendered DOM and computed-style diagnostic for selected Elementor targets.",
+      "mode": "read_only",
+      "allowed_contexts": [
+        "CORRECTION",
+        "EVIDENCE_REQUIRED",
+        "insufficient_evidence",
+        "repair",
+        "claim_level_verification"
+      ],
+      "token_schema": {
+        "tokens": [
+          "label",
+          "selector"
+        ],
+        "selector_pattern": "^[A-Za-z0-9_.#\\- >]+$",
+        "label_max_length": 80,
+        "max_targets": 20
+      },
+      "code_template_path": "data/diagnostic-templates/elementor_rendered_dom_computed_v1.js.b64",
+      "code_template_encoding": "base64",
+      "output_limitation": "This reads rendered DOM/computed CSS only. It does not prove hidden Elementor panel values unless reflected in DOM/CSS or shown in a screenshot."
+    }
+  ]
+}
