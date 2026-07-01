@@ -1,0 +1,41 @@
+{
+  "ce_builder_executable_package": {
+    "package_id": "CE-BEP-BLOCKED-001",
+    "review_ref": "cross-repo-contract-adapter-fixture",
+    "architect_contract": {
+      "source_ref": "ARCH-HANDOFF-SMART-HOME-001",
+      "selected_candidate_id": "ARCH-FAM-C",
+      "approved_class_names": ["smart-home__section--root"]
+    },
+    "selected_candidate_id": "ARCH-FAM-C",
+    "approved_class_names": ["smart-home__section--root"],
+    "builder_package_status": "blocked",
+    "builder_decisions_required": 1,
+    "blocking_dependencies": ["missing_ui_control_evidence"],
+    "selected_candidate_locked": true,
+    "selected_candidate_id_unchanged": true,
+    "approved_class_names_unchanged": true,
+    "confirmation_request": {
+      "confirmation_id": "CONFIRM-BATCH-001",
+      "confirmed_action_ids": ["BATCH-001-A01"],
+      "expected_user_token": "تایید BATCH-001"
+    },
+    "first_safe_builder_batch": {
+      "batch_id": "BATCH-001",
+      "actions": [
+        {
+          "action_id": "BATCH-001-A01",
+          "action_type": "create_element",
+          "target_node": "Smart Home Section / Root",
+          "requires_decision": false,
+          "parameters": {
+            "element_generation": "Shared compatibility element",
+            "element_generation_source": "architect_export",
+            "instruction": "Create root Container.",
+            "expected_result": "Root exists."
+          }
+        }
+      ]
+    }
+  }
+}
