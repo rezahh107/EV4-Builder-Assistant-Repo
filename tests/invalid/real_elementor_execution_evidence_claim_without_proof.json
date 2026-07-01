@@ -1,0 +1,28 @@
+{
+  "schema": "ev4-real-elementor-execution-evidence@1.0.0",
+  "evidence_id": "REAL-EXEC-INVALID-CLAIM-WITHOUT-PROOF",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "execution_status": "in_progress",
+  "source_package_ref": "examples/smart-home-connector/builder_context_package.json",
+  "builder_session_ref": "unfinished-session",
+  "elementor_environment": {
+    "site_ref": "pending-user-site",
+    "elementor_version_status": "not_recorded",
+    "browser": "pending",
+    "viewport_set": ["desktop"]
+  },
+  "evidence_items": [],
+  "verification_summary": {
+    "layout_verified": { "status": "missing", "evidence_refs": [] },
+    "visual_parity_verified": { "status": "missing", "evidence_refs": [] },
+    "responsive_verified": { "status": "missing", "evidence_refs": [] },
+    "content_visibility_verified": { "status": "missing", "evidence_refs": [] },
+    "connector_behavior_verified": { "status": "missing", "evidence_refs": [] },
+    "accessibility_checked": { "status": "missing", "evidence_refs": [] },
+    "export_checked": { "status": "missing", "evidence_refs": [] }
+  },
+  "repair_packet_required": false,
+  "production_ready_claim": true,
+  "required_next_action": "claim_production_ready",
+  "notes": "Invalid: cannot claim production readiness before completed execution and confirmed evidence."
+}
