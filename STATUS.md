@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
-Status: batch3_structured_reference_intent_implemented
+Status: batch3_structured_reference_intent_merged
 Date: 2026-06-30
 
 ---
@@ -102,14 +102,19 @@ patches:
       - central validation runner shell execution removed
       - status/changelog drift corrected before structural Batch 3
   Batch_3_Structured_Reference_Intent:
-    status: implemented_on_branch
+    status: merged
     branch: fix/batch3-structured-reference-intent
+    pr: 27
+    merge_commit: 267a21ea0ccb8cb22fdf558d80f34982618a1000
+    ci: schema_validation_success
+    gemini_review: valid_comments_addressed_and_threads_resolved
     notes:
       - first_batch_structure_intent added to reference and package schemas
       - Reference Paradigm Gate now prefers structured intent over free-text heuristics
       - EV4-RPG-006 and EV4-RPG-007 diagnostics added
       - Smart Home valid fixtures updated
       - structured invalid intent regressions added
+      - no-connector none regression covered by full package fixture and standalone gate fixture
 ```
 
 ---
@@ -119,7 +124,7 @@ patches:
 ```yaml
 integration_sync:
   status: completed_for_batch3_structured_reference_intent
-  docs_status_changelog: synced_after_batch3_changes
+  docs_status_changelog: synced_after_batch3_audit_followup
   deployable_chatgpt_project_pack: synced_for_runtime_reference_boundary_changes
   package_version: 0.3.6
   smart_home_architecture_mutation: none_intended
@@ -140,7 +145,8 @@ validation_state:
     - JSON files parsed with python json.tool before upload
     - validate-reference-paradigm-gate.mjs parsed with node --check before upload
   central_validation_entrypoint: npm run validate
-  expected_ci: GitHub Actions Schema validation on PR
+  batch3_pr_ci: schema_validation_success
+  expected_followup_ci: GitHub Actions Schema validation on follow-up PR
   real_builder_session_test: in_progress_by_user
   real_elementor_execution: in_progress_by_user
 ```
@@ -167,9 +173,6 @@ Production ready remains false unless completion-gate evidence proves otherwise.
 ## Pending Next Work
 
 ```text
-open PR for Batch 3
-wait for GitHub Actions central validation
-check Gemini review comments
-merge after CI success and no unresolved non-outdated blocker
-continue real Elementor execution and record evidence
+No remaining Batch 3 structural hardening work.
+Continue real Elementor execution separately and record evidence outside Batch 3 scope.
 ```
