@@ -24,6 +24,8 @@
 - Updated Smart Home Connector valid fixtures and example package with structured first-batch intent.
 - Updated runtime-facing docs and deployable ChatGPT Project pack for structured reference intent.
 - Addressed Gemini review by treating connector value `none` as no connector and by normalizing connector comparison with explicit mismatch reporting.
+- Synced Batch 3 status after post-implementation audit so repository status no longer describes pre-merge PR work.
+- Documented the no-connector coverage split: full-package no-connector regression runs through central package validation, while the standalone gate fixture remains a focused validator smoke fixture.
 
 ### Status
 
