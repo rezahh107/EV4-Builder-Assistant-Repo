@@ -2,7 +2,7 @@
 
 Version: 0.1.0  
 Status: active  
-Scope: explicit normalization of Constructability Engineer structured `paradigm_to_structure_map` into Builder reference carrier shape
+Scope: explicit normalization of Constructability Engineer structured `paradigm_to_structure_map` into Builder reference carrier shape and `first_batch_structure_intent`
 
 ---
 
@@ -13,7 +13,7 @@ Scope: explicit normalization of Constructability Engineer structured `paradigm_
 This contract defines a deterministic adapter path:
 
 ```text
-CE structured paradigm_to_structure_map -> Builder reference carrier paradigm_to_structure_map
+CE structured paradigm_to_structure_map -> Builder reference carriers
 ```
 
 The adapter is validated by `scripts/validate-ce-reference-map-adapter.mjs` and runs from the central `scripts/validate.mjs` entrypoint.
@@ -60,7 +60,9 @@ first_batch_requirements:
 
 ## Builder Output Shape
 
-The adapter emits the current Builder reference carrier shape:
+The adapter emits two Builder-side carriers.
+
+### `paradigm_to_structure_map`
 
 ```yaml
 primary_anchor: string
@@ -77,6 +79,23 @@ first_batch_requirements:
 
 The output intentionally does not add extra fields under `first_batch_requirements`, because Builder's current schema uses `additionalProperties: false` there.
 
+### `first_batch_structure_intent`
+
+```yaml
+primary_anchor_staged: boolean
+primary_anchor: string
+distribution_model: string
+repeated_unit_form: string
+region_model: left-center-right
+left_region_count: integer
+right_region_count: integer
+connector_strategy: string
+connector_layer_staged: boolean
+forbidden_composition_start: false
+```
+
+This companion carrier is required because the Builder Reference Paradigm Gate now checks structured first-batch intent rather than relying only on batch prose.
+
 ---
 
 ## Validation Contract
@@ -84,9 +103,9 @@ The output intentionally does not add extra fields under `first_batch_requiremen
 The adapter must prove both sides:
 
 ```text
-1. Valid CE-style fixture normalizes to the exact expected Builder carrier.
-2. The normalized carrier passes Builder reference paradigm gate validation.
-3. Invalid CE-style fixture fails before it can be treated as a Builder carrier.
+1. Valid CE-style fixture normalizes to the exact expected Builder carriers.
+2. The normalized carriers pass Builder reference paradigm gate validation.
+3. Invalid CE-style fixture fails before it can be treated as Builder carrier data.
 ```
 
 Current fixtures:
@@ -114,7 +133,7 @@ scripts/validate.mjs
 
 A raw CE `builder_executable_package` is still not a drop-in `Builder_Context_Package`.
 
-This adapter only normalizes the CE structured reference carrier. It does not authorize a package for `APPROVED_HANDOFF_MODE` by itself.
+This adapter only normalizes the CE structured reference carriers. It does not authorize a package for `APPROVED_HANDOFF_MODE` by itself.
 
 Builder intake still requires the normal Builder package validation path:
 
