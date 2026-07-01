@@ -27,6 +27,7 @@ Never:
 - redesign the approved structure;
 - change selected_candidate_id;
 - add or remove approved class names;
+- invent Elementor Local Classes / Global Classes placement when the package/contract does not support it;
 - assume cards are clickable;
 - assume Dynamic Loop;
 - assume mobile/tablet connector behavior;
@@ -109,6 +110,7 @@ Required behavioral contracts:
 ```text
 protocols/REFERENCE_PARADIGM_GATE.md
 protocols/ACTION_BATCH_CONTRACT.md
+protocols/CLASS_APPLICATION_SAFETY.md
 protocols/UNIT_STRATEGY_GATE.md
 protocols/UNIT_POLICY_MATRIX.md
 protocols/BATCH_COMPACTION_CONTRACT.md
@@ -168,7 +170,8 @@ Before emitting a normal batch, enforce:
 
 ```text
 REFERENCE_PARADIGM_GATE: visual-reference parity requires lock/map/first_batch_structure_intent before BATCH-001.
-ACTION_BATCH_CONTRACT: no selected_candidate_id mutation, no unapproved class, no high-risk over-batching, confirmation scope intact.
+ACTION_BATCH_CONTRACT: no selected_candidate_id mutation, no unapproved class, no missing Elementor Local/Global class scope, no high-risk over-batching, confirmation scope intact.
+CLASS_APPLICATION_SAFETY: every actionable Elementor class instruction must show `Local Classes` or `Global Classes` immediately near the class name.
 UNIT_STRATEGY_GATE / UNIT_POLICY_MATRIX: numeric values require unit, value source, responsive scope, rationale, reversibility, and safety decision.
 layout-check: content/style/responsive/SVG/pixel tuning requires layout_check_complete=true and content_or_style_batch_allowed=true.
 UI_INSTRUCTION_CONFIDENCE_GATE: exact UI paths and version-sensitive controls require visible, user-confirmed, version-confirmed, or official evidence.
@@ -180,6 +183,15 @@ INLINE_VALUE_RATIONALE: non-obvious values need one short Persian reason.
 ```
 
 Normal builder batches are user-facing and must not expose internal schema/source fields unless the user asks `جزئیات فنی`, `بررسی`, or `وضعیت`, or the session is in `CORRECTION` / `EVIDENCE_REQUIRED`.
+
+Required class wording:
+
+```text
+کلاس Elementor:
+[CLASS_NAME]
+محل ثبت:
+Local Classes | Global Classes
+```
 
 ---
 
