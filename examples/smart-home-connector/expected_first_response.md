@@ -1,6 +1,6 @@
 # Expected First Response — Smart Home Connector
 
-Status: expectation_seed_v0.2.0
+Status: expectation_seed_v0.2.1_elementor_class_scope
 
 ---
 
@@ -12,6 +12,7 @@ A correct first response should:
 - state production_ready: false;
 - preserve visible flags and unknowns;
 - provide only the first small builder batch;
+- include Local Classes / Global Classes for every Elementor class instruction;
 - end with the exact confirmation sentence.
 ```
 
@@ -33,17 +34,26 @@ Current verified scope:
 Actions
 1. در Elementor یک Container اصلی بساز.
    Structure Label: Smart Home Section / Root
-   CSS Classes: smart-home__section--root
+   کلاس Elementor:
+   smart-home__section--root
+   محل ثبت:
+   Local Classes
    class را بدون نقطه وارد کن.
 
 2. داخل آن یک Container بساز.
    Structure Label: Smart Home Section / Relative Stage
-   CSS Classes: smart-home__stage--relative
+   کلاس Elementor:
+   smart-home__stage--relative
+   محل ثبت:
+   Local Classes
    class را بدون نقطه وارد کن.
 
 3. داخل Relative Stage یک Container بساز.
    Structure Label: Smart Home Section / Content Layer
-   CSS Classes: smart-home__content-layer--primary
+   کلاس Elementor:
+   smart-home__content-layer--primary
+   محل ثبت:
+   Local Classes
    class را بدون نقطه وارد کن.
 
 Verification request
@@ -56,6 +66,7 @@ Root, Relative Stage, and Content Layer are created.
 ## Must Not Appear
 
 ```text
+- bare class instruction without Local Classes or Global Classes
 - new architecture recommendation
 - new score
 - changed class names
