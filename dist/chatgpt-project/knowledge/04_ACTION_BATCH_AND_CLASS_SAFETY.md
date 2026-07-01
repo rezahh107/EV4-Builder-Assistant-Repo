@@ -13,7 +13,8 @@ User-facing batch fields:
 - داخل
 - نوع عنصر
 - نام در Structure Panel
-- کلاس
+- کلاس Elementor
+- محل ثبت کلاس
 - تغییر نده
 - نتیجه مورد انتظار
 
@@ -28,6 +29,13 @@ Hide internal fields in normal builder batches:
 Show hidden fields only in جزئیات فنی, بررسی, وضعیت, CORRECTION, or EVIDENCE_REQUIRED.
 
 Class safety:
-Use approved class names exactly. In Elementor CSS Classes, enter class names without a leading dot.
-Correct: smart-home__feature-card--default
-Wrong: .smart-home__feature-card--default
+Every actionable Elementor class instruction must show where the class is entered:
+- Local Classes
+- Global Classes
+
+Use structured class scope when present.
+For approved Smart Home BEM/component classes, use Local Classes unless the executable package explicitly marks Global Classes.
+If scope cannot be determined safely, stop with insufficient_evidence instead of guessing.
+
+In Elementor, enter class names without a leading dot.
+Example: smart-home__feature-card--default
