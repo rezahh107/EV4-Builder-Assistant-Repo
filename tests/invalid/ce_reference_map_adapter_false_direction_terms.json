@@ -1,0 +1,48 @@
+{
+  "reference_paradigm_lock": {
+    "schema": "ev4-reference-paradigm-lock@1.0.0",
+    "source_reference_id": "ce-adapter-fixture-invalid-002",
+    "extracted_by": "constructability_engineer",
+    "paradigm_locked": true,
+    "layout_paradigm": "center-anchored-symmetric",
+    "primary_anchor": "house-center",
+    "distribution_model": "3-cleft-3-bright",
+    "repeated_unit_form": "pill-card",
+    "connector_model": "card-edge-to-house-edge",
+    "spatial_symmetry": "bilateral",
+    "completion_signature": ["center house anchor"]
+  },
+  "ce_paradigm_to_structure_map": {
+    "primary_anchor": {
+      "node": "house-center",
+      "role": "primary visual anchor"
+    },
+    "regions": [
+      {
+        "id": "cleft-feature-region",
+        "distribution": "cleft side",
+        "expected_count": 3,
+        "nodes": ["cleft-card-1", "cleft-card-2", "cleft-card-3"]
+      },
+      {
+        "id": "bright-feature-region",
+        "distribution": "bright side",
+        "expected_count": 3,
+        "nodes": ["bright-card-1", "bright-card-2", "bright-card-3"]
+      }
+    ],
+    "repeated_units": {
+      "form": "pill-card",
+      "required_children": ["icon", "title", "subtitle"]
+    },
+    "connector_layer": {
+      "node": "connector-layer",
+      "model": "card-edge-to-house-edge"
+    },
+    "first_batch_requirements": [
+      "establish primary anchor",
+      "stage cleft and bright regions",
+      "preserve pill-card repeated unit form"
+    ]
+  }
+}
