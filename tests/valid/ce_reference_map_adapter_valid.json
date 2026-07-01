@@ -1,0 +1,89 @@
+{
+  "reference_paradigm_lock": {
+    "schema": "ev4-reference-paradigm-lock@1.0.0",
+    "source_reference_id": "ce-adapter-fixture-001",
+    "extracted_by": "constructability_engineer",
+    "paradigm_locked": true,
+    "layout_paradigm": "center-anchored-symmetric",
+    "primary_anchor": "house-center",
+    "distribution_model": "3-left-3-right",
+    "repeated_unit_form": "pill-card",
+    "connector_model": "card-edge-to-house-edge",
+    "spatial_symmetry": "bilateral",
+    "completion_signature": [
+      "center house anchor",
+      "three left pill cards",
+      "three right pill cards",
+      "card-edge-to-house-edge connectors"
+    ]
+  },
+  "ce_paradigm_to_structure_map": {
+    "primary_anchor": {
+      "node": "house-center",
+      "role": "primary visual anchor"
+    },
+    "regions": [
+      {
+        "id": "left-feature-region",
+        "distribution": "left side",
+        "expected_count": 3,
+        "nodes": ["left-card-1", "left-card-2", "left-card-3"]
+      },
+      {
+        "id": "right-feature-region",
+        "distribution": "right side",
+        "expected_count": 3,
+        "nodes": ["right-card-1", "right-card-2", "right-card-3"]
+      }
+    ],
+    "repeated_units": {
+      "form": "pill-card",
+      "required_children": ["icon", "title", "subtitle"]
+    },
+    "connector_layer": {
+      "node": "connector-layer",
+      "model": "card-edge-to-house-edge"
+    },
+    "first_batch_requirements": [
+      "establish primary anchor",
+      "stage left and right regions",
+      "preserve pill-card repeated unit form"
+    ]
+  },
+  "expected": {
+    "normalized": {
+      "paradigm_to_structure_map": {
+        "primary_anchor": "house-center",
+        "regions": [
+          "left-feature-region (left side, 3)",
+          "right-feature-region (right side, 3)",
+          "house-center (center primary anchor)"
+        ],
+        "repeated_units": [
+          "pill-card",
+          "pill-card with icon, title, subtitle"
+        ],
+        "connector_layer": "connector-layer: card-edge-to-house-edge",
+        "first_batch_requirements": {
+          "must_establish_primary_anchor": true,
+          "must_create_or_stage_left_right_regions": true,
+          "must_use_repeated_unit_form": "pill-card",
+          "forbidden_composition_starts": [],
+          "connector_strategy": "card-edge-to-house-edge"
+        }
+      },
+      "first_batch_structure_intent": {
+        "primary_anchor_staged": true,
+        "primary_anchor": "house-center",
+        "distribution_model": "3-left-3-right",
+        "repeated_unit_form": "pill-card",
+        "region_model": "left-center-right",
+        "left_region_count": 3,
+        "right_region_count": 3,
+        "connector_strategy": "card-edge-to-house-edge",
+        "connector_layer_staged": true,
+        "forbidden_composition_start": false
+      }
+    }
+  }
+}
