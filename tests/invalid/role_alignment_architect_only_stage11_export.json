@@ -1,0 +1,15 @@
+{
+  "schema": "ev4-architect-builder-feed-export@1.0.0",
+  "source_stage": "/builder-feed-export",
+  "source_handoff_stage": "/handoff-export",
+  "packet_purpose": "ce_intake_source",
+  "intended_consumer": "constructability_engineer",
+  "ce_review_required": true,
+  "requires_constructability_engineer_review": true,
+  "builder_executable_allowed": false,
+  "builder_ready_status": "not_builder_ready_without_ce_proof",
+  "package_status": "ready",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "selected_candidate_locked": true,
+  "production_ready_allowed": false
+}

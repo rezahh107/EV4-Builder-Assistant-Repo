@@ -36,7 +36,8 @@ const scripts = [
 const nodeChecks = [
   'scripts/validate-ce-reference-map-adapter.mjs',
   'scripts/validate-ce-builder-package-adapter.mjs',
-  'scripts/validate-real-elementor-execution-evidence.mjs'
+  'scripts/validate-real-elementor-execution-evidence.mjs',
+  'scripts/validate-role-alignment-intake.mjs'
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
