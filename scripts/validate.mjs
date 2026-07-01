@@ -8,6 +8,11 @@ const scripts = [
   'validate:builder-context-package',
   'validate:cross-field',
   'validate:reference-paradigm',
+  'validate:golden-reference',
+  'validate:spatial-lexicon',
+  'validate:build-intent-template',
+  'validate:build-intent-brief',
+  'validate:experience-intent',
   'validate:action-batch',
   'validate:unit-policy',
   'validate:evidence-claims',
@@ -24,7 +29,8 @@ const scripts = [
   'validate:completion-gate',
   'validate:unit-strategy',
   'validate:batch-compaction',
-  'validate:cognitive-mode-hint'
+  'validate:cognitive-mode-hint',
+  'validate:runtime-behavior'
 ];
 
 const nodeChecks = [
