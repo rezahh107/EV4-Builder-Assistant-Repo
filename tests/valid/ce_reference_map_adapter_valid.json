@@ -52,22 +52,37 @@
   },
   "expected": {
     "normalized": {
-      "primary_anchor": "house-center",
-      "regions": [
-        "left-feature-region (left side, 3)",
-        "right-feature-region (right side, 3)"
-      ],
-      "repeated_units": [
-        "pill-card",
-        "pill-card with icon, title, subtitle"
-      ],
-      "connector_layer": "connector-layer: card-edge-to-house-edge",
-      "first_batch_requirements": {
-        "must_establish_primary_anchor": true,
-        "must_create_or_stage_left_right_regions": true,
-        "must_use_repeated_unit_form": "pill-card",
-        "forbidden_composition_starts": [],
-        "connector_strategy": "card-edge-to-house-edge"
+      "paradigm_to_structure_map": {
+        "primary_anchor": "house-center",
+        "regions": [
+          "left-feature-region (left side, 3)",
+          "right-feature-region (right side, 3)",
+          "house-center (center primary anchor)"
+        ],
+        "repeated_units": [
+          "pill-card",
+          "pill-card with icon, title, subtitle"
+        ],
+        "connector_layer": "connector-layer: card-edge-to-house-edge",
+        "first_batch_requirements": {
+          "must_establish_primary_anchor": true,
+          "must_create_or_stage_left_right_regions": true,
+          "must_use_repeated_unit_form": "pill-card",
+          "forbidden_composition_starts": [],
+          "connector_strategy": "card-edge-to-house-edge"
+        }
+      },
+      "first_batch_structure_intent": {
+        "primary_anchor_staged": true,
+        "primary_anchor": "house-center",
+        "distribution_model": "3-left-3-right",
+        "repeated_unit_form": "pill-card",
+        "region_model": "left-center-right",
+        "left_region_count": 3,
+        "right_region_count": 3,
+        "connector_strategy": "card-edge-to-house-edge",
+        "connector_layer_staged": true,
+        "forbidden_composition_start": false
       }
     }
   }
