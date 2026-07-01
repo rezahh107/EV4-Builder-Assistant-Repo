@@ -1,0 +1,28 @@
+{
+  "schema": "ev4-real-elementor-execution-evidence@1.0.0",
+  "evidence_id": "REAL-EXEC-SMART-HOME-001",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "execution_status": "not_started",
+  "source_package_ref": "examples/smart-home-connector/builder_context_package.json",
+  "builder_session_ref": "pending-real-elementor-session",
+  "elementor_environment": {
+    "site_ref": "pending-user-site",
+    "elementor_version_status": "not_recorded",
+    "browser": "pending",
+    "viewport_set": ["desktop"]
+  },
+  "evidence_items": [],
+  "verification_summary": {
+    "layout_verified": { "status": "missing", "evidence_refs": [], "notes": "Collect desktop layout screenshot after real execution." },
+    "visual_parity_verified": { "status": "missing", "evidence_refs": [], "notes": "Compare against structured Reference Paradigm Gate data after execution." },
+    "responsive_verified": { "status": "missing", "evidence_refs": [], "notes": "Tablet/mobile behavior remains outside production claim until observed." },
+    "content_visibility_verified": { "status": "missing", "evidence_refs": [], "notes": "Verify all meaningful feature card text remains visible." },
+    "connector_behavior_verified": { "status": "missing", "evidence_refs": [], "notes": "Verify decorative connector layer behavior on desktop." },
+    "accessibility_checked": { "status": "missing", "evidence_refs": [], "notes": "Record heading/order/alt observations when available." },
+    "export_checked": { "status": "missing", "evidence_refs": [], "notes": "Record export or frontend render evidence when available." }
+  },
+  "repair_packet_required": false,
+  "production_ready_claim": false,
+  "required_next_action": "collect_real_ui_evidence",
+  "notes": "Template only. This file is not proof of real execution and must not be used to claim production readiness."
+}

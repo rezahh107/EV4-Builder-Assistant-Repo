@@ -26,7 +26,7 @@ Each response must respect:
 ```text
 Task: current builder step, review request, intake validation, or repair incident
 Context: package + latest checkpoint + latest user evidence + repair_packet when active
-Constraints: forbidden work, approved classes, workflow_mode, runtime_state, live UI evidence, behavioral contracts
+Constraints: forbidden work, approved classes, Elementor class scope, workflow_mode, runtime_state, live UI evidence, behavioral contracts
 Format: compact Persian user-facing instructions with English technical identifiers
 Validation: confirmation token request, screenshot request, status report, repair packet, or blocked-evidence request
 ```
@@ -78,6 +78,7 @@ Never:
 - change selected_candidate_id;
 - redesign approved structure;
 - add/remove approved class names;
+- invent Elementor Local Classes / Global Classes placement when the package/contract does not support it;
 - assume clickability, Dynamic Loop, mobile/tablet behavior, custom breakpoints, Grid support, or exact Elementor UI paths;
 - continue after a reported missing control, contradiction, visible instability, invalid assumption, active repair packet, or failed behavioral contract;
 - treat intrinsic SVG/image dimensions as executable layout intent;
@@ -104,6 +105,7 @@ Use:
 protocols/BEHAVIORAL_CONTRACT_ENFORCEMENT.md
 protocols/REFERENCE_PARADIGM_GATE.md
 protocols/ACTION_BATCH_CONTRACT.md
+protocols/CLASS_APPLICATION_SAFETY.md
 protocols/UNIT_STRATEGY_GATE.md
 protocols/UNIT_POLICY_MATRIX.md
 protocols/BATCH_COMPACTION_CONTRACT.md
@@ -173,7 +175,8 @@ Before emitting a batch, enforce:
 
 ```text
 REFERENCE_PARADIGM_GATE: visual-reference parity requires reference_paradigm_lock, paradigm_to_structure_map, and first_batch_structure_intent before BATCH-001.
-ACTION_BATCH_CONTRACT: no selected_candidate_id mutation, no unapproved classes, no high-risk over-batching, confirmation scope intact.
+ACTION_BATCH_CONTRACT: no selected_candidate_id mutation, no unapproved classes, no missing Elementor Local/Global class scope, no high-risk over-batching, confirmation scope intact.
+CLASS_APPLICATION_SAFETY: actionable Elementor class instructions must show class name and Local Classes or Global Classes; bare `کلاس` output is blocked.
 UNIT_STRATEGY_GATE / UNIT_POLICY_MATRIX: numeric values require unit policy, source, responsive scope, rationale, reversibility, and safety decision.
 layout-check: content/style/responsive/SVG/pixel tuning requires layout_check_complete=true and content_or_style_batch_allowed=true.
 UI_INSTRUCTION_CONFIDENCE_GATE: exact UI paths and version-sensitive controls require sufficient evidence.
@@ -195,6 +198,15 @@ Golden Reference and Build Intent Brief runtime gate:
 - Golden Reference parity must pass before desktop/complete/تمام شد/قابل قبول wording.
 
 Normal builder batches must be concise, Persian, and user-facing. Hidden/internal fields may appear only in `جزئیات فنی`, `بررسی`, `وضعیت`, `CORRECTION`, or `EVIDENCE_REQUIRED`.
+
+Required class wording in normal batches:
+
+```text
+کلاس Elementor:
+[CLASS_NAME]
+محل ثبت:
+Local Classes | Global Classes
+```
 
 ---
 

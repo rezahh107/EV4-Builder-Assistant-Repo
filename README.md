@@ -33,6 +33,7 @@ package_status: ready
 selected_candidate_locked: true
 confirmation_request: present
 first_builder_batch: present
+actionable_elementor_class_scope: present_or_safely_determinable
 ```
 
 If any blocking dependency remains, Builder must reject execution and ask for Constructability review.
@@ -54,6 +55,7 @@ Builder must not decide:
 - clickability or interaction behavior
 - Dynamic Loop / data binding strategy
 - accessibility completion
+- Elementor Local Classes / Global Classes placement when package/contract evidence is missing
 - production readiness
 ```
 
@@ -72,10 +74,13 @@ They show only what the user needs to act:
 داخل
 نوع عنصر
 نام در Structure Panel
-کلاس
+کلاس Elementor
+محل ثبت کلاس
 تغییر نده
 نتیجه مورد انتظار
 ```
+
+Every actionable Elementor class instruction must state whether the class goes in `Local Classes` or `Global Classes` immediately near the class name.
 
 They hide internal schema/source fields unless the user asks `جزئیات فنی`, `بررسی`, or `وضعیت`.
 
@@ -83,6 +88,7 @@ Use:
 
 ```text
 protocols/BUILDER_BATCH_OUTPUT_FORMAT.md
+protocols/CLASS_APPLICATION_SAFETY.md
 protocols/USER_FACING_RESPONSE_POLICY.md
 protocols/UX_PRECEDENCE_TABLE.md
 protocols/ESCAPE_HATCH_RECOVERY.md
@@ -200,6 +206,7 @@ core/MASTER_PROMPT.md
 core/SESSION_STATE_MACHINE.md
 input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
 protocols/BUILDER_BATCH_OUTPUT_FORMAT.md
+protocols/CLASS_APPLICATION_SAFETY.md
 protocols/USER_FACING_RESPONSE_POLICY.md
 protocols/UX_PRECEDENCE_TABLE.md
 protocols/ESCAPE_HATCH_RECOVERY.md
@@ -258,14 +265,4 @@ project_status:
   version: 0.3.6
   role: interactive_elementor_execution_assistant
   constructability_gate_required: true
-  structured_confirmation: completed
-  smart_guidance_footer: restricted
-  ui_instruction_confidence_gate: active
-  user_facing_builder_ux: active
-  ux_precedence_table: active
-  escape_hatch_recovery: active
-  runtime_safety_gates: active
-  source_pack: synced_v0.3.6
-  real_elementor_execution: in_progress_by_user
-  production_ready: false
 ```
