@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -29,6 +30,12 @@ function unique(values) {
   return [...new Set(values)];
 }
 
+function hasDirectionTerm(text, direction) {
+  const normalized = String(text || '').toLowerCase();
+  const pattern = direction === 'left' ? /(^|[^a-z])left([^a-z]|$)/ : /(^|[^a-z])right([^a-z]|$)/;
+  return pattern.test(normalized);
+}
+
 function regionLabel(region) {
   const id = requireString(region.id, 'paradigm_to_structure_map.regions[].id');
   const distribution = isNonEmptyString(region.distribution) ? region.distribution.trim() : null;
@@ -39,14 +46,14 @@ function regionLabel(region) {
 }
 
 function derivesLeftRightRegions(regions) {
-  const text = regions.map((region) => `${region.id || ''} ${region.distribution || ''}`).join(' ').toLowerCase();
-  return text.includes('left') && text.includes('right');
+  const text = regions.map((region) => `${region.id || ''} ${region.distribution || ''}`).join(' ');
+  return hasDirectionTerm(text, 'left') && hasDirectionTerm(text, 'right');
 }
 
 function findRegionCount(regions, side) {
   const region = regions.find((entry) => {
-    const text = `${entry.id || ''} ${entry.distribution || ''}`.toLowerCase();
-    return text.includes(side);
+    const text = `${entry.id || ''} ${entry.distribution || ''}`;
+    return hasDirectionTerm(text, side);
   });
   return Number.isInteger(region?.expected_count) ? region.expected_count : 0;
 }
@@ -101,12 +108,18 @@ function readCeCarrier(map, referenceParadigmLock = {}) {
   const requiredChildren = requireArray(repeatedUnits.required_children, 'paradigm_to_structure_map.repeated_units.required_children')
     .map((child, index) => requireString(child, `paradigm_to_structure_map.repeated_units.required_children[${index}]`));
 
+  const leftRightProven = derivesLeftRightRegions(regions) || hasDirectionTerm(distributionModel, 'left') || hasDirectionTerm(distributionModel, 'right');
+  if (!leftRightProven) {
+    throw new Error('CE reference map adapter requires explicit left/right region evidence.');
+  }
+
   return {
     primaryAnchorNode,
     repeatedUnitForm,
     connectorModel,
     connectorNode,
     distributionModel,
+    leftRightProven,
     regions,
     requiredChildren
   };
@@ -130,8 +143,7 @@ export function normalizeCeParadigmToStructureMap(map, referenceParadigmLock = {
     connector_layer: `${carrier.connectorNode}: ${carrier.connectorModel}`,
     first_batch_requirements: {
       must_establish_primary_anchor: true,
-      must_create_or_stage_left_right_regions:
-        derivesLeftRightRegions(carrier.regions) || carrier.distributionModel.includes('left') || carrier.distributionModel.includes('right'),
+      must_create_or_stage_left_right_regions: carrier.leftRightProven,
       must_use_repeated_unit_form: carrier.repeatedUnitForm,
       forbidden_composition_starts: [],
       connector_strategy: carrier.connectorModel
@@ -165,7 +177,7 @@ export function normalizeCeReferenceCarrier(map, referenceParadigmLock = {}) {
   };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
   const filePath = process.argv[2];
   if (!filePath) {
     console.error('Usage: node scripts/normalize-ce-reference-map.mjs <fixture.json>');
