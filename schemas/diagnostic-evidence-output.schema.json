@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EV4 Diagnostic Evidence Output",
+  "type": "object",
+  "required": ["diagnosticType", "templateId", "templateVersion", "timestamp", "url", "executionContext", "viewport", "limitation", "targets"],
+  "properties": {
+    "diagnosticType": { "const": "read-only rendered DOM/computed-style evidence" },
+    "templateId": { "type": "string", "minLength": 1 },
+    "templateVersion": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "minLength": 1 },
+    "url": { "type": "string", "minLength": 1 },
+    "executionContext": { "enum": ["frontend", "editor_iframe", "editor_parent_shell", "unknown"] },
+    "viewport": {
+      "type": "object",
+      "required": ["width", "height", "devicePixelRatio"],
+      "properties": {
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "devicePixelRatio": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "limitation": { "type": "string", "minLength": 1 },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["label", "selector", "matchCount", "matches", "truncated"],
+        "properties": {
+          "label": { "type": "string", "minLength": 1 },
+          "selector": { "type": "string", "minLength": 1 },
+          "matchCount": { "type": "integer", "minimum": 1 },
+          "truncated": { "type": "boolean" },
+          "matches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["index", "tag", "id", "classes", "attributes", "box", "computed"],
+              "properties": {
+                "index": { "type": "integer", "minimum": 0 },
+                "tag": { "type": "string" },
+                "id": { "type": ["string", "null"] },
+                "classes": { "type": "array", "items": { "type": "string" } },
+                "attributes": { "type": "object", "additionalProperties": { "type": ["string", "null"] } },
+                "box": { "type": "object", "additionalProperties": { "type": "number" } },
+                "computed": { "type": "object", "additionalProperties": { "type": ["string", "null"] } }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
