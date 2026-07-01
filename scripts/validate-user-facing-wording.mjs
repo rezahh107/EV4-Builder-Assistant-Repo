@@ -12,12 +12,12 @@ for(const term of sortedBlocked){
     if(term.includes('production')&&!s.production_ready) fail('EV4-WORD-001','production-ready wording requires production_ready contract.');
     else if(term.includes('desktop')&&(!s.desktop_reference_paradigm_matched||!s.desktop_visual_parity_checked)) fail('EV4-WORD-002','desktop complete wording requires desktop parity checked.');
     else if(term.includes('section')&&(!s.tablet_checked||!s.mobile_checked)) fail('EV4-WORD-003','section complete wording requires responsive checks.');
-    else if(['تمام شد','complete','completed','done','ready','قابل قبول','نهایی'].includes(term)&&!s.production_ready) fail('EV4-WORD-004','gated completion wording \' + term + '\' requires relevant completion-status allowance.');
+    else if(['تمام شد','complete','completed','done','ready','قابل قبول','نهایی'].includes(term)&&!s.production_ready) fail('EV4-WORD-004',`gated completion wording '${term}' requires relevant completion-status allowance.`);
     scrubbed = scrubbed.replace(regex, '');
   }
 }
 const classLabelPattern=/(کلاس|css\s+classes?|class\s+(?:to\s+apply|name)|elementor\s+class)/iu;
-const classTokenPattern=/\b[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?\b/u;
+const classTokenPattern=/(\b[a-z][a-z0-9]*(?:-[a-z0-9]+)+(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?\b|\b[a-z][a-z0-9-]*__[a-z0-9-]+(?:--[a-z0-9-]+)?\b)/u;
 const scopePattern=/(local\s+classes|global\s+classes|محل\s+ثبت\s*:?\s*(?:local|global)|نوع\s+کلاس\s*(?:در\s+elementor)?\s*:?\s*(?:local|global)|elementor\s*>\s*(?:local|global)\s+classes)/iu;
 if(classLabelPattern.test(originalMessage)&&classTokenPattern.test(originalMessage)&&!scopePattern.test(originalMessage)) fail('EV4-WORD-005','Elementor class instruction must include Local Classes or Global Classes near the class name.');
 finish('User-Facing Status Wording', f, e);
