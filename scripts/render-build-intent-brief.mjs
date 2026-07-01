@@ -18,7 +18,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const [registryFile, briefFile] = process.argv.slice(2);
   if(!registryFile || !briefFile){console.error('Usage: node scripts/render-build-intent-brief.mjs <template-registry> <brief>');process.exit(2)}
   const registry = readJson(registryFile);
-  const brief = readJson(briefFile).build_intent_brief;
+  const brief = readJson(briefFile)?.build_intent_brief;
+  if(!registry || !Array.isArray(registry.templates) || !brief){console.error('Invalid registry or brief format');process.exit(1)}
   const template = registry.templates.find((t)=>t.template_id===brief.template_id && t.template_version===brief.template_version_used);
   if(!template){console.error('Template not found');process.exit(1)}
   console.log(JSON.stringify(renderTemplate(template.template, brief.tokens, template.output_max_chars), null, 2));
