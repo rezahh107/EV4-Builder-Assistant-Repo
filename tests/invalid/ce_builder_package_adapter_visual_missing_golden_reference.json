@@ -1,0 +1,36 @@
+{
+  "ce_builder_executable_package": {
+    "package_id": "CE-BEP-MISSING-GOLDEN-001",
+    "review_ref": "role-alignment-negative-fixture",
+    "architect_contract": {
+      "source_ref": "ARCH-HANDOFF-001",
+      "selected_candidate_id": "ARCH-FAM-C",
+      "approved_class_names": ["smart-home__section--root"]
+    },
+    "selected_candidate_id": "ARCH-FAM-C",
+    "approved_class_names": ["smart-home__section--root"],
+    "builder_package_status": "executable_ready",
+    "builder_decisions_required": 0,
+    "blocking_dependencies": [],
+    "selected_candidate_locked": true,
+    "selected_candidate_id_unchanged": true,
+    "approved_class_names_unchanged": true,
+    "visual_parity_build": true,
+    "approved_structure_tree": [{ "node_id": "n-001", "structure_label": "Root", "element_type": "Container", "element_generation": "Shared compatibility element", "element_generation_source": "architect_export", "role": "root" }],
+    "class_creation_application_map": [{ "class_name": "smart-home__section--root", "related_structure_label": "Root", "elementor_node_or_element": "n-001", "when_to_create": "when creating root", "reusable_or_one_off": "section_scoped", "purpose": "root", "css_needed_now": "no" }],
+    "widget_mapping_table": [{ "structure_label": "Root", "recommended_widget_or_element": "Container", "editable_content": "none", "why_this_mapping": "root" }],
+    "editable_content_map": [{ "content_role": "title", "structure_label": "Title", "widget_or_element": "Heading Widget", "editability_status": "editable_text", "must_not_flatten": true }],
+    "decoration_only_map": [{ "decoration_role": "connector", "structure_label": "Connector", "class_name": "smart-home__section--root", "may_hide_or_simplify_on_responsive": true, "must_not_contain_meaningful_content": true }],
+    "asset_replacement_map": [{ "asset_role": "house", "structure_label": "House", "source_status": "unknown", "replacement_needed": "yes", "alt_decision": "unresolved" }],
+    "scoped_css_need_map": [{ "class_or_scope": "smart-home__section--root", "css_need": "none", "reason": "fixture", "native_elementor_alternative": "controls", "css_allowed_now": "no", "risk": "low" }],
+    "responsive_qa_seed": { "unresolved_breakpoints": ["tablet"], "connector_behavior_status": "unresolved", "meaningful_content_visibility_rule": "do_not_hide_meaningful_content" },
+    "forbidden_work": ["do_not_redesign"],
+    "confirmation_request": { "confirmation_id": "CONFIRM-BATCH-001", "confirmed_action_ids": ["BATCH-001-A01"], "expected_user_token": "تایید BATCH-001" },
+    "first_safe_builder_batch": { "batch_id": "BATCH-001", "actions": [{ "action_id": "BATCH-001-A01", "action_type": "create_element", "target_node": "Root", "requires_decision": false, "parameters": { "target_element": "Root", "element_generation": "Shared compatibility element", "element_generation_source": "architect_export", "instruction": "Create root.", "expected_result": "Root exists." } }] },
+    "reference_paradigm_lock": {},
+    "paradigm_to_structure_map": {},
+    "build_intent_brief": {},
+    "spatial_lexicon_version_used": "v1.fa",
+    "visual_tolerance_policy": {}
+  }
+}
