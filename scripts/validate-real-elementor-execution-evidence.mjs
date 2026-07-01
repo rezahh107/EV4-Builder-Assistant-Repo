@@ -8,7 +8,9 @@ const validFiles = [
   'examples/smart-home-connector/real_elementor_execution_evidence.template.json'
 ];
 const invalidFiles = [
-  'tests/invalid/real_elementor_execution_evidence_claim_without_proof.json'
+  'tests/invalid/real_elementor_execution_evidence_claim_without_proof.json',
+  'tests/invalid/real_elementor_execution_evidence_duplicate_ref.json',
+  'tests/invalid/real_elementor_execution_evidence_conflicting_next_action.json'
 ];
 
 function run(command, args, label) {
@@ -35,7 +37,11 @@ function readJson(file) {
 
 function validateSemantics(doc) {
   const diagnostics = [];
-  const evidenceByRef = new Map((doc.evidence_items || []).map((item) => [item.evidence_ref, item]));
+  const evidenceByRef = new Map();
+  for (const item of doc.evidence_items || []) {
+    if (evidenceByRef.has(item.evidence_ref)) diagnostics.push('Duplicate evidence_ref found: ' + item.evidence_ref + '.');
+    evidenceByRef.set(item.evidence_ref, item);
+  }
   const proofs = doc.verification_summary || {};
 
   if (doc.execution_status !== 'completed' && doc.production_ready_claim === true) {
@@ -60,11 +66,15 @@ function validateSemantics(doc) {
         if (!item || item.status !== 'confirmed') diagnostics.push(`${name} references missing or unconfirmed evidence item: ${ref}.`);
       }
     }
+  } else if (doc.required_next_action === 'claim_production_ready') {
+    diagnostics.push('required_next_action=claim_production_ready requires production_ready_claim=true.');
   }
 
   if (doc.repair_packet_required === true) {
     if (!doc.repair_packet_ref) diagnostics.push('repair_packet_required=true requires repair_packet_ref.');
     if (doc.required_next_action !== 'create_repair_packet') diagnostics.push('repair_packet_required=true requires required_next_action=create_repair_packet.');
+  } else if (doc.required_next_action === 'create_repair_packet') {
+    diagnostics.push('required_next_action=create_repair_packet requires repair_packet_required=true.');
   }
 
   if (doc.execution_status === 'not_started' && doc.required_next_action !== 'collect_real_ui_evidence') {
