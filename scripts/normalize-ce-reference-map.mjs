@@ -43,6 +43,23 @@ function derivesLeftRightRegions(regions) {
   return text.includes('left') && text.includes('right');
 }
 
+function findRegionCount(regions, side) {
+  const region = regions.find((entry) => {
+    const text = `${entry.id || ''} ${entry.distribution || ''}`.toLowerCase();
+    return text.includes(side);
+  });
+  return Number.isInteger(region?.expected_count) ? region.expected_count : 0;
+}
+
+function expectedCountFromDistribution(distributionModel, side) {
+  if (side === 'left') {
+    const left = typeof distributionModel === 'string' ? distributionModel.match(/^(\d+)-left/) : null;
+    return left ? Number(left[1]) : null;
+  }
+  const right = typeof distributionModel === 'string' ? distributionModel.match(/-(\d+)-right$/) : null;
+  return right ? Number(right[1]) : null;
+}
+
 export function isCeStructuredParadigmToStructureMap(map) {
   return (
     isObject(map) &&
@@ -54,7 +71,7 @@ export function isCeStructuredParadigmToStructureMap(map) {
   );
 }
 
-export function normalizeCeParadigmToStructureMap(map, referenceParadigmLock = {}) {
+function readCeCarrier(map, referenceParadigmLock = {}) {
   if (!isCeStructuredParadigmToStructureMap(map)) {
     throw new Error('Expected CE structured paradigm_to_structure_map shape.');
   }
@@ -79,33 +96,72 @@ export function normalizeCeParadigmToStructureMap(map, referenceParadigmLock = {
   const repeatedUnitForm = requireString(repeatedUnits.form, 'paradigm_to_structure_map.repeated_units.form');
   const connectorModel = requireString(connectorLayer.model, 'paradigm_to_structure_map.connector_layer.model');
   const connectorNode = requireString(connectorLayer.node, 'paradigm_to_structure_map.connector_layer.node');
+  const distributionModel = requireString(referenceParadigmLock.distribution_model, 'reference_paradigm_lock.distribution_model');
 
   const requiredChildren = requireArray(repeatedUnits.required_children, 'paradigm_to_structure_map.repeated_units.required_children')
     .map((child, index) => requireString(child, `paradigm_to_structure_map.repeated_units.required_children[${index}]`));
 
-  const regionLabels = regions.map(regionLabel);
-  const repeatedUnitLabels = unique([
+  return {
+    primaryAnchorNode,
     repeatedUnitForm,
-    `${repeatedUnitForm} with ${requiredChildren.join(', ')}`
+    connectorModel,
+    connectorNode,
+    distributionModel,
+    regions,
+    requiredChildren
+  };
+}
+
+export function normalizeCeParadigmToStructureMap(map, referenceParadigmLock = {}) {
+  const carrier = readCeCarrier(map, referenceParadigmLock);
+  const regionLabels = carrier.regions.map(regionLabel);
+  const repeatedUnitLabels = unique([
+    carrier.repeatedUnitForm,
+    `${carrier.repeatedUnitForm} with ${carrier.requiredChildren.join(', ')}`
   ]);
 
-  const distributionModel = isNonEmptyString(referenceParadigmLock.distribution_model)
-    ? referenceParadigmLock.distribution_model.toLowerCase()
-    : '';
-
   return {
-    primary_anchor: primaryAnchorNode,
-    regions: regionLabels,
+    primary_anchor: carrier.primaryAnchorNode,
+    regions: unique([
+      ...regionLabels,
+      `${carrier.primaryAnchorNode} (center primary anchor)`
+    ]),
     repeated_units: repeatedUnitLabels,
-    connector_layer: `${connectorNode}: ${connectorModel}`,
+    connector_layer: `${carrier.connectorNode}: ${carrier.connectorModel}`,
     first_batch_requirements: {
       must_establish_primary_anchor: true,
       must_create_or_stage_left_right_regions:
-        derivesLeftRightRegions(regions) || distributionModel.includes('left') || distributionModel.includes('right'),
-      must_use_repeated_unit_form: repeatedUnitForm,
+        derivesLeftRightRegions(carrier.regions) || carrier.distributionModel.includes('left') || carrier.distributionModel.includes('right'),
+      must_use_repeated_unit_form: carrier.repeatedUnitForm,
       forbidden_composition_starts: [],
-      connector_strategy: connectorModel
+      connector_strategy: carrier.connectorModel
     }
+  };
+}
+
+export function normalizeCeFirstBatchStructureIntent(map, referenceParadigmLock = {}) {
+  const carrier = readCeCarrier(map, referenceParadigmLock);
+  const expectedLeft = expectedCountFromDistribution(carrier.distributionModel, 'left');
+  const expectedRight = expectedCountFromDistribution(carrier.distributionModel, 'right');
+
+  return {
+    primary_anchor_staged: true,
+    primary_anchor: carrier.primaryAnchorNode,
+    distribution_model: carrier.distributionModel,
+    repeated_unit_form: carrier.repeatedUnitForm,
+    region_model: 'left-center-right',
+    left_region_count: expectedLeft ?? findRegionCount(carrier.regions, 'left'),
+    right_region_count: expectedRight ?? findRegionCount(carrier.regions, 'right'),
+    connector_strategy: carrier.connectorModel,
+    connector_layer_staged: true,
+    forbidden_composition_start: false
+  };
+}
+
+export function normalizeCeReferenceCarrier(map, referenceParadigmLock = {}) {
+  return {
+    paradigm_to_structure_map: normalizeCeParadigmToStructureMap(map, referenceParadigmLock),
+    first_batch_structure_intent: normalizeCeFirstBatchStructureIntent(map, referenceParadigmLock)
   };
 }
 
@@ -119,6 +175,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
   const fixture = JSON.parse(fs.readFileSync(path.resolve(filePath), 'utf8'));
   const map = fixture.ce_paradigm_to_structure_map || fixture.paradigm_to_structure_map;
   const lock = fixture.reference_paradigm_lock || {};
-  const normalized = normalizeCeParadigmToStructureMap(map, lock);
+  const normalized = normalizeCeReferenceCarrier(map, lock);
   console.log(JSON.stringify(normalized, null, 2));
 }
