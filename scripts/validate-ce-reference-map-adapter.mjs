@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { normalizeCeParadigmToStructureMap } from './normalize-ce-reference-map.mjs';
+import { normalizeCeReferenceCarrier } from './normalize-ce-reference-map.mjs';
 import { validateReferenceParadigmGate } from './validate-reference-paradigm-gate.mjs';
 
 const ROOT = process.cwd();
@@ -29,7 +29,8 @@ function assertBuilderReferenceGateAccepts(fixture, normalized, filePath) {
     task_type: 'visual_build',
     reference_artifact_type: 'structured_contract',
     reference_paradigm_lock: fixture.reference_paradigm_lock,
-    paradigm_to_structure_map: normalized,
+    paradigm_to_structure_map: normalized.paradigm_to_structure_map,
+    first_batch_structure_intent: normalized.first_batch_structure_intent,
     first_builder_batch: {
       actions: [
         {
@@ -56,7 +57,7 @@ if (invalidFixtures.length === 0) throw new Error(`No invalid ${PREFIX} fixtures
 
 for (const filePath of validFixtures) {
   const fixture = readJson(filePath);
-  const normalized = normalizeCeParadigmToStructureMap(
+  const normalized = normalizeCeReferenceCarrier(
     fixture.ce_paradigm_to_structure_map,
     fixture.reference_paradigm_lock
   );
@@ -70,7 +71,7 @@ for (const filePath of invalidFixtures) {
   const fixture = readJson(filePath);
   let failed = false;
   try {
-    normalizeCeParadigmToStructureMap(fixture.ce_paradigm_to_structure_map, fixture.reference_paradigm_lock);
+    normalizeCeReferenceCarrier(fixture.ce_paradigm_to_structure_map, fixture.reference_paradigm_lock);
   } catch {
     failed = true;
   }
