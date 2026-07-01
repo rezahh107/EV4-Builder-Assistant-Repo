@@ -27,14 +27,26 @@ const scripts = [
   'validate:cognitive-mode-hint'
 ];
 
+const nodeChecks = [
+  'scripts/validate-ce-reference-map-adapter.mjs'
+];
+
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
-for (const script of scripts) {
-  console.log('\n==> npm run ' + script);
-  const result = spawnSync(npmCommand, ['run', script], { stdio: 'inherit' });
+function run(command, args, label) {
+  console.log('\n==> ' + label);
+  const result = spawnSync(command, args, { stdio: 'inherit' });
   if (result.error) {
-    console.error('Failed to execute ' + npmCommand + ': ' + result.error.message);
+    console.error('Failed to execute ' + command + ': ' + result.error.message);
     process.exit(1);
   }
   if (result.status !== 0) process.exit(result.status ?? 1);
+}
+
+for (const script of scripts) {
+  run(npmCommand, ['run', script], 'npm run ' + script);
+}
+
+for (const check of nodeChecks) {
+  run(process.execPath, [check], 'node ' + check);
 }
