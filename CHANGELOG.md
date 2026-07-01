@@ -1,6 +1,6 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
-## v0.3.6 — 2026-06-30
+## v0.3.6 — 2026-07-01
 
 ### Added
 
@@ -13,6 +13,12 @@
   - `EV4-RPG-006 blocked_missing_first_batch_structure_intent`
   - `EV4-RPG-007 blocked_first_batch_structure_intent_mismatch`
 - Added structured reference intent regression fixtures, including missing intent, wrong anchor, wrong distribution, wrong repeated unit form, missing connector layer staging, forbidden composition start, plausible prose with wrong structured intent, and no-connector `none` handling.
+- Added Real Elementor Execution Evidence Pack:
+  - `schemas/real-elementor-execution-evidence.schema.json`
+  - `scripts/validate-real-elementor-execution-evidence.mjs`
+  - `docs/REAL_ELEMENTOR_EXECUTION_EVIDENCE.md`
+  - `examples/smart-home-connector/real_elementor_execution_evidence.template.json`
+  - invalid regression for production-ready claims without completed real evidence.
 
 ### Changed
 
@@ -26,6 +32,7 @@
 - Addressed Gemini review by treating connector value `none` as no connector and by normalizing connector comparison with explicit mismatch reporting.
 - Synced Batch 3 status after post-implementation audit so repository status no longer describes pre-merge PR work.
 - Documented the no-connector coverage split: full-package no-connector regression runs through central package validation, while the standalone gate fixture remains a focused validator smoke fixture.
+- Central validation now runs Real Elementor Execution Evidence validation as a final non-production-readiness evidence gate.
 
 ### Status
 
@@ -33,6 +40,7 @@
 - `selected_candidate_id: ARCH-FAM-C` remains preserved.
 - Approved class names remain preserved.
 - `production_ready` remains false.
+- Real Elementor execution still requires real user-provided UI evidence before any production-readiness claim.
 
 ---
 
@@ -98,48 +106,3 @@
 ### Changed
 
 - Normal builder batch output hides internal/source fields unless explicitly requested or required by state.
-- Confirmation after a valid `تایید BATCH-XXX` uses Token Echo / active silence.
-- Updated deployable ChatGPT Project source pack.
-
-### Status
-
-- No Smart Home architecture redesign was intended.
-- `selected_candidate_id: ARCH-FAM-C` remains preserved.
-- Approved class names remain preserved.
-- production readiness remains false.
-
----
-
-## v0.3.2 — 2026-06-28
-
-### Added
-
-- Added `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md`.
-- Added `known_control_map` concept and targeted UI screenshot recipe.
-- Added structured confirmation fixtures and untrusted prose fixtures.
-
-### Changed
-
-- Completed Patch C migration to structured `confirmation_request`.
-- Upgraded `protocols/SMART_GUIDANCE_FOOTER.md` to v0.2.0.
-- Wired UI-confidence rules into runtime docs.
-- Updated deployable ChatGPT Project source pack.
-
-### Validation
-
-- GitHub Actions `Schema validation` passed on run `111` for head `90b8a8c3345b0329d8e47e99c8c32a624b077d79`.
-
----
-
-## v0.3.1 — 2026-06-27
-
-### Hardened
-
-- Added workflow_mode/runtime_state separation hardening.
-- Hardened intake-result and session-state schemas.
-- Expanded CI fixture coverage.
-
-### Status
-
-- No Smart Home architecture, class names, `selected_candidate_id`, or production-readiness rules were changed.
-- Production readiness remains false.
