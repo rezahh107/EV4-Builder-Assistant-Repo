@@ -1,0 +1,1 @@
+{"schema":"ev4-diagnostic-request@1.0.0","template_id":"elementor_rendered_dom_computed_v1","runtime_state":"CORRECTION","claim_type":"rendered_dom_computed_style","source":"diagnostic_template_registry","targets":[{"label":"bad selector","selector":"کلاس"}]}
