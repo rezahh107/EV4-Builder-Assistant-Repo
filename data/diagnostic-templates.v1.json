@@ -1,0 +1,30 @@
+{
+  "schema": "ev4-diagnostic-template-registry@1.0.0",
+  "version": "1.0.0",
+  "templates": [
+    {
+      "template_id": "elementor_rendered_dom_computed_v1",
+      "template_version": "1.0.0",
+      "description": "Read-only rendered DOM and computed-style diagnostic for selected Elementor targets.",
+      "mode": "read_only",
+      "allowed_contexts": [
+        "CORRECTION",
+        "EVIDENCE_REQUIRED",
+        "insufficient_evidence",
+        "repair",
+        "claim_level_verification"
+      ],
+      "token_schema": {
+        "tokens": [
+          "label",
+          "selector"
+        ],
+        "selector_pattern": "^[A-Za-z0-9_.#\\- >]+$",
+        "label_max_length": 80,
+        "max_targets": 20
+      },
+      "code_template": "(() => {\n  const TARGETS = __EV4_TARGETS_JSON__;\n  const TEMPLATE_ID = 'elementor_rendered_dom_computed_v1';\n  const TEMPLATE_VERSION = '1.0.0';\n  const LIMITATION = 'This reads rendered DOM/computed CSS only. It does not prove hidden Elementor panel values unless reflected in DOM/CSS or shown in a screenshot.';\n  const computedNames = ['display','position','width','height','min-width','min-height','max-width','max-height','padding-top','padding-right','padding-bottom','padding-left','margin-top','margin-right','margin-bottom','margin-left','gap','row-gap','column-gap','transform','z-index','overflow','overflow-x','overflow-y','flex-direction','align-items','justify-content','grid-template-columns','grid-template-rows'];\n  function executionContext() {\n    const topWindow = window.parent === window;\n    const hasFrontend = typeof window.elementorFrontend !== 'undefined';\n    const bodyClass = document.body ? String(document.body.className || '') : '';\n    const htmlClass = document.documentElement ? String(document.documentElement.className || '') : '';\n    const looksEditor = bodyClass.includes('elementor-editor') || htmlClass.includes('elementor-editor') || location.href.includes('elementor');\n    if (!topWindow && hasFrontend) return 'editor_iframe';\n    if (!topWindow) return 'editor_iframe';\n    if (topWindow && looksEditor && !hasFrontend) return 'editor_parent_shell';\n    if (hasFrontend) return 'frontend';\n    return 'unknown';\n  }\n  function attrs(el) {\n    const out = {};\n    for (const name of ['id','class','data-id','data-element_type','data-widget_type']) {\n      if (el.hasAttribute && el.hasAttribute(name)) out[name] = el.getAttribute(name);\n    }\n    return out;\n  }\n  function boxOf(el) {\n    const b = el.getBoundingClientRect();\n    return { x: b.x, y: b.y, width: b.width, height: b.height, top: b.top, right: b.right, bottom: b.bottom, left: b.left };\n  }\n  function computedOf(el) {\n    const cs = getComputedStyle(el);\n    const out = {};\n    for (const name of computedNames) out[name] = cs.getPropertyValue(name) || null;\n    return out;\n  }\n  const output = {\n    diagnosticType: 'read-only rendered DOM/computed-style evidence',\n    templateId: TEMPLATE_ID,\n    templateVersion: TEMPLATE_VERSION,\n    timestamp: new Date().toISOString(),\n    url: String(location.href),\n    executionContext: executionContext(),\n    viewport: { width: window.innerWidth, height: window.innerHeight, devicePixelRatio: window.devicePixelRatio || 1 },\n    limitation: LIMITATION,\n    targets: TARGETS.map((target) => {\n      const nodes = Array.from(document.querySelectorAll(target.selector));\n      const sampled = nodes.slice(0, 10).map((el, index) => ({\n        index,\n        tag: el.tagName ? el.tagName.toLowerCase() : '',\n        id: el.id || null,\n        classes: Array.from(el.classList || []),\n        attributes: attrs(el),\n        box: boxOf(el),\n        computed: computedOf(el)\n      }));\n      return { label: target.label, selector: target.selector, matchCount: nodes.length, matches: sampled, truncated: nodes.length > sampled.length };\n    })\n  };\n  console.log(JSON.stringify(output, null, 2));\n  return output;\n})()",
+      "output_limitation": "This reads rendered DOM/computed CSS only. It does not prove hidden Elementor panel values unless reflected in DOM/CSS or shown in a screenshot."
+    }
+  ]
+}
