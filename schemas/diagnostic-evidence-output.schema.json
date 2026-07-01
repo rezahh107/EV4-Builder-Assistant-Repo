@@ -30,7 +30,7 @@
         "properties": {
           "label": { "type": "string", "minLength": 1 },
           "selector": { "type": "string", "minLength": 1 },
-          "matchCount": { "type": "integer", "minimum": 1 },
+          "matchCount": { "type": "integer", "minimum": 0 },
           "truncated": { "type": "boolean" },
           "matches": {
             "type": "array",
