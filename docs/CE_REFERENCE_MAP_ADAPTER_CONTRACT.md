@@ -56,6 +56,8 @@ first_batch_requirements:
   - string
 ```
 
+Directional region proof must use explicit `left` and `right` terms. Substrings inside other words, such as `cleft` or `bright`, must not be accepted as directional proof.
+
 ---
 
 ## Builder Output Shape
@@ -105,7 +107,7 @@ The adapter must prove both sides:
 ```text
 1. Valid CE-style fixture normalizes to the exact expected Builder carriers.
 2. The normalized carriers pass Builder reference paradigm gate validation.
-3. Invalid CE-style fixture fails before it can be treated as Builder carrier data.
+3. Invalid CE-style fixtures fail before they can be treated as Builder carrier data.
 ```
 
 Current fixtures:
@@ -113,6 +115,7 @@ Current fixtures:
 ```text
 tests/valid/ce_reference_map_adapter_valid.json
 tests/invalid/ce_reference_map_adapter_missing_anchor.json
+tests/invalid/ce_reference_map_adapter_false_direction_terms.json
 ```
 
 Validator:
