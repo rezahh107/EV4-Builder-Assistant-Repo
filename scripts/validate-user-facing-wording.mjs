@@ -20,4 +20,15 @@ const classLabelPattern=/(کلاس|css\s+classes?|class\s+(?:to\s+apply|name)|el
 const classTokenPattern=/(\b[a-z][a-z0-9_-]{1,63}\b)/u;
 const scopePattern=/(local\s+classes|global\s+classes|محل\s+ثبت\s*:?\s*(?:local|global)|نوع\s+کلاس\s*(?:در\s+elementor)?\s*:?\s*(?:local|global)|elementor\s*>\s*(?:local|global)\s+classes)/iu;
 if(classLabelPattern.test(originalMessage)&&classTokenPattern.test(originalMessage)&&!scopePattern.test(originalMessage)) fail('EV4-WORD-005','Elementor class instruction must include Local Classes or Global Classes near the class name.');
+const diagnosticCodePattern=/(querySelectorAll|getComputedStyle|diagnosticType|executionContext|__EV4_TARGETS_JSON__|console\.log)/i;
+const unsafeDiagnosticTerms=['fetch(','XMLHttpRequest','sendBeacon','WebSocket','eval(','new Function','localStorage.setItem','sessionStorage.setItem','document.cookie =','classList.add','classList.remove','classList.toggle','.style =','insertAdjacentHTML','innerHTML =','outerHTML =','appendChild','remove()','click()','submit()','wp.data.dispatch','setTimeout(','setInterval('];
+for (const term of unsafeDiagnosticTerms) if (originalMessage.includes(term)) fail('EV4-WORD-006',`unsafe diagnostic code term is not allowed: ${term}`);
+if(diagnosticCodePattern.test(originalMessage)){
+  const p=w.diagnostic_policy||{};
+  const allowedStates=new Set(['CORRECTION','EVIDENCE_REQUIRED','insufficient_evidence','repair','claim_level_verification']);
+  if(p.source!=='diagnostic_template_registry'||p.template_id!=='elementor_rendered_dom_computed_v1') fail('EV4-WORD-007','diagnostic code must come from approved template registry.');
+  if(!allowedStates.has(p.runtime_state)) fail('EV4-WORD-008','diagnostic code is only allowed in evidence/correction contexts.');
+  if(p.normal_builder_batch_allowed===true) fail('EV4-WORD-009','diagnostic code is not allowed in normal active builder batches.');
+  if(!/hidden Elementor panel values|rendered DOM\/computed/i.test(originalMessage)) fail('EV4-WORD-010','diagnostic wording must include limitation text.');
+}
 finish('User-Facing Status Wording', f, e);
