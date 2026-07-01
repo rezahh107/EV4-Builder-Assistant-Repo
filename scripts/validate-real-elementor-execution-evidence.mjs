@@ -10,7 +10,8 @@ const validFiles = [
 const invalidFiles = [
   'tests/invalid/real_elementor_execution_evidence_claim_without_proof.json',
   'tests/invalid/real_elementor_execution_evidence_duplicate_ref.json',
-  'tests/invalid/real_elementor_execution_evidence_conflicting_next_action.json'
+  'tests/invalid/real_elementor_execution_evidence_conflicting_next_action.json',
+  'tests/invalid/real_elementor_execution_evidence_repair_next_action_conflict.json'
 ];
 
 function run(command, args, label) {
