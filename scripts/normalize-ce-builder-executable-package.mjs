@@ -106,6 +106,16 @@ function requireBuilderPayloadCarriers(cePackage) {
   requireObject(cePackage.responsive_qa_seed, 'responsive_qa_seed');
 }
 
+function assertVisualReferencePrerequisites(cePackage) {
+  if (cePackage.visual_parity_build !== true) return;
+  requireObject(cePackage.golden_reference_contract, 'golden_reference_contract');
+  requireObject(cePackage.build_intent_brief, 'build_intent_brief');
+  requireString(cePackage.spatial_lexicon_version_used, 'spatial_lexicon_version_used');
+  requireObject(cePackage.visual_tolerance_policy, 'visual_tolerance_policy');
+  requireObject(cePackage.reference_paradigm_lock, 'reference_paradigm_lock');
+  requireObject(cePackage.paradigm_to_structure_map, 'paradigm_to_structure_map');
+}
+
 function normalizeAction(action, index) {
   requireObject(action, `first_safe_builder_batch.actions[${index}]`);
   const parameters = requireObject(action.parameters, `first_safe_builder_batch.actions[${index}].parameters`);
@@ -204,6 +214,7 @@ function attachInputAuthorization(builderPackage) {
 export function normalizeCeBuilderExecutablePackage(cePackage) {
   assertCeExecutablePackage(cePackage);
   requireBuilderPayloadCarriers(cePackage);
+  assertVisualReferencePrerequisites(cePackage);
 
   const firstBuilderBatch = normalizeFirstBuilderBatch(cePackage.first_safe_builder_batch);
   const confirmationRequest = normalizeConfirmationRequest(cePackage.confirmation_request, firstBuilderBatch.actions);
