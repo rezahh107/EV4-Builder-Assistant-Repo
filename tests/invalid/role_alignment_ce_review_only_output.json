@@ -1,0 +1,8 @@
+{
+  "constructability_review": {
+    "constructability_status": "needs_user_evidence",
+    "allowed_output_now": "Constructability Review",
+    "blocked_output_now": "Builder Executable Package"
+  },
+  "builder_executable_package": null
+}
