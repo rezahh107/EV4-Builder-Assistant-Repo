@@ -63,5 +63,5 @@ validateTargets(request.targets);
 const code = readTemplateCode(template);
 const placeholderCount = (code.match(/__EV4_TARGETS_JSON__/g) || []).length;
 if (placeholderCount !== 1) fail('diagnostic template must contain exactly one target placeholder');
-const rendered = code.replace('__EV4_TARGETS_JSON__', JSON.stringify(request.targets));
+const rendered = code.replace('__EV4_TARGETS_JSON__', () => JSON.stringify(request.targets));
 console.log(rendered);
