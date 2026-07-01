@@ -1,14 +1,14 @@
 # BUILDER_BATCH_OUTPUT_FORMAT
 
-Version: 0.1.0
-Status: user_facing_builder_ux_added
+Version: 0.1.1
+Status: elementor_class_scope_added
 Purpose: define concise Persian, user-facing Builder Assistant batch output.
 
 ---
 
 ## Core Filtering Rule
 
-Show a field only when it tells the user what to build, where to build it, what to name it, what class to enter, what not to change, or what result to expect.
+Show a field only when it tells the user what to build, where to build it, what to name it, what Elementor class to enter, where to enter that class, what not to change, or what result to expect.
 
 Hide fields that only explain why the model made a decision or which internal source justified the decision.
 
@@ -18,7 +18,8 @@ show_in_normal_batch:
   - داخل
   - نوع عنصر
   - نام در Structure Panel
-  - کلاس
+  - کلاس Elementor
+  - محل ثبت کلاس
   - تغییر نده
   - نتیجه مورد انتظار
   - تایید مورد نیاز
@@ -46,12 +47,72 @@ Target: هدف
 Parent: داخل
 Elementor element type: نوع عنصر
 Structure Panel name: نام در Structure Panel
-Active class: کلاس
+Active class: کلاس Elementor
+Elementor class name: نام کلاس
+Elementor class scope: محل ثبت کلاس
 Do not change: تغییر نده
 Expected result: نتیجه مورد انتظار
 ```
 
 Do not show `Elementor element type: Container` as an executable UI instruction when the user's Atomic UI uses labels such as `Flexbox`, `Div block`, `Flex`, or `Div`.
+
+---
+
+## Elementor Class Scope Rule
+
+Every actionable Elementor class instruction must show both the class name and the Elementor class placement scope.
+
+Allowed scopes:
+
+```yaml
+elementor_class_scope:
+  - Local Classes
+  - Global Classes
+```
+
+The Builder must not invent class scope at runtime.
+
+Scope source priority:
+
+```text
+1. Use action/package structured class scope when present.
+2. If an existing contract defines placement, use that placement.
+3. For approved section/component/BEM-style Smart Home classes, use Local Classes only when the package/contract supports that default.
+4. If scope is missing or unsafe to determine, do not emit a normal class instruction; route to insufficient_evidence / EVIDENCE_REQUIRED / CORRECTION.
+```
+
+Default Elementor UX policy when no stronger package policy exists:
+
+```text
+Local Classes: element-specific, section-specific, component-specific, BEM-style, or one-off classes applied directly to a selected Elementor element.
+Global Classes: reusable design-system, theme-level, shared utility, or explicitly cross-page reusable classes.
+```
+
+This is an Elementor UI placement rule, not a general CSS architecture rule.
+
+Required user-facing wording shape:
+
+```text
+کلاس Elementor:
+[CLASS_NAME]
+محل ثبت:
+Local Classes
+```
+
+or:
+
+```text
+کلاس Elementor:
+[CLASS_NAME]
+محل ثبت:
+Global Classes
+```
+
+A bare class field is invalid in normal builder output:
+
+```text
+کلاس: smart-home__feature-card--default
+```
 
 ---
 
@@ -125,7 +186,10 @@ Use this compact shape for normal build actions:
 داخل: Smart Home Section / Content Layer
 نوع عنصر: Flexbox یا Div block — طبق UI فعلی تو
 نام در Structure Panel: Smart Home Section / Feature Cards Group
-کلاس: smart-home__feature-grid--primary
+کلاس Elementor:
+smart-home__feature-grid--primary
+محل ثبت:
+Local Classes
 تغییر نده: selected_candidate_id، معماری تاییدشده
 نتیجه مورد انتظار: گروه کارت‌ها داخل Content Layer ساخته شود.
 
@@ -137,6 +201,7 @@ Rules:
 - Keep batches concise.
 - Use no long explanation.
 - Avoid decorative separators unless they improve readability.
+- Every actionable class instruction must include `Local Classes` or `Global Classes` immediately near the class name.
 - End active builder batches with exactly one confirmation token request or one targeted screenshot request.
 - Do not append `SMART_GUIDANCE_FOOTER` after an active builder batch.
 
@@ -150,13 +215,13 @@ Do not show:
 Control path: CSS Classes field — exact panel path: insufficient_evidence
 ```
 
-Use an actionable sentence instead:
+Use an actionable sentence only when the class scope is known:
 
 ```text
-کلاس را در فیلد CSS Classes وارد کن. اگر این فیلد را نمی‌بینی، screenshot از پنل همان element بفرست.
+کلاس Elementor را در Local Classes وارد کن. اگر این فیلد را نمی‌بینی، screenshot از پنل همان element بفرست.
 ```
 
-If the control is version-sensitive or missing, stop and request evidence or enter `CORRECTION`.
+If the class scope, control, or placement is version-sensitive or missing, stop and request evidence or enter `CORRECTION`.
 
 ---
 

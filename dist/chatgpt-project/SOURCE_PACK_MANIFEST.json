@@ -13,15 +13,15 @@
   "files": [
     {
       "path": "dist/chatgpt-project/BUILD_REPORT.json",
-      "sha256": "09d2ce9402272f5ee6475fd6ad2f4a1a811a09542f45145b8fbc52ebd4cb8368",
+      "sha256": "ed4c302ec0260fc20dc752576614fac6dba528b273ffeb5ffad9dec3678fe2e2",
       "bytes": 400,
       "chars": 400
     },
     {
       "path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "sha256": "1ddaf6666800379f10dffda3664eb2b515fff67d8e8f5dfa1c09a67d41b669c9",
-      "bytes": 7356,
-      "chars": 7166
+      "sha256": "1f1b58ba9a60e9ffc01ebd3d456a41f34070884c7f6eb8592599f8c4eac1ebff",
+      "bytes": 8174,
+      "chars": 7964
     },
     {
       "path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
@@ -43,9 +43,9 @@
     },
     {
       "path": "dist/chatgpt-project/knowledge/04_ACTION_BATCH_AND_CLASS_SAFETY.md",
-      "sha256": "13307599f825de7b724ea79d7003dbc1839640761ca4dc0b183b730ea09bd458",
-      "bytes": 939,
-      "chars": 874
+      "sha256": "1b272f3fe60573db7b83207d0f9a1153d2cceba205400315bcdeeb28f8e383f9",
+      "bytes": 1264,
+      "chars": 1189
     },
     {
       "path": "dist/chatgpt-project/knowledge/05_UI_EVIDENCE_AND_CORRECTION.md",

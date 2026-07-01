@@ -1,7 +1,7 @@
 # USER_FACING_RESPONSE_POLICY
 
-Version: 0.2.0
-Status: ux_precedence_and_recovery_added
+Version: 0.2.1
+Status: elementor_class_scope_wording_added
 Purpose: define concise behavior, tone, active-silence, and recovery rules for practical Elementor build sessions.
 
 ---
@@ -111,6 +111,46 @@ Use a short warning only when an action is high-risk, version-sensitive, or lack
 ```
 
 Do not warn on every low-risk structure action.
+
+---
+
+## Elementor Class Wording
+
+Whenever a user-facing Builder instruction tells the user to apply, add, preserve, or activate an Elementor class, it must include the Elementor placement scope immediately near the class name.
+
+Allowed scope wording:
+
+```text
+Local Classes
+Global Classes
+```
+
+Preferred Persian shape:
+
+```text
+کلاس Elementor:
+[CLASS_NAME]
+محل ثبت:
+Local Classes
+```
+
+or:
+
+```text
+کلاس Elementor:
+[CLASS_NAME]
+محل ثبت:
+Global Classes
+```
+
+Do not output a bare class instruction such as:
+
+```text
+کلاس:
+[CLASS_NAME]
+```
+
+If the class scope is missing from package/contract data and no repository-level default applies, ask for the blocking evidence instead of guessing.
 
 ---
 
