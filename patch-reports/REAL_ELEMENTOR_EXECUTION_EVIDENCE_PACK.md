@@ -21,6 +21,9 @@ It does not perform real Elementor UI execution. That requires user-side access 
 - `docs/REAL_ELEMENTOR_EXECUTION_EVIDENCE.md`
 - `examples/smart-home-connector/real_elementor_execution_evidence.template.json`
 - `tests/invalid/real_elementor_execution_evidence_claim_without_proof.json`
+- `tests/invalid/real_elementor_execution_evidence_duplicate_ref.json`
+- `tests/invalid/real_elementor_execution_evidence_conflicting_next_action.json`
+- `tests/invalid/real_elementor_execution_evidence_repair_next_action_conflict.json`
 
 ---
 
@@ -36,8 +39,24 @@ The validator checks:
 
 - valid evidence template shape;
 - invalid production-ready claim without completed real execution;
+- duplicate `evidence_ref` values;
 - semantic proof requirements for production-ready claims;
-- repair packet requirement consistency.
+- consistency between `production_ready_claim` and `required_next_action=claim_production_ready`;
+- consistency between `repair_packet_required` and `required_next_action=create_repair_packet`.
+
+---
+
+## Gemini Follow-Up
+
+Gemini review flagged three valid semantic hardening points:
+
+```text
+- duplicate evidence_ref values must not silently overwrite evidence items;
+- required_next_action=claim_production_ready must require production_ready_claim=true;
+- required_next_action=create_repair_packet must require repair_packet_required=true.
+```
+
+All three were addressed with validator checks and regression fixtures.
 
 ---
 
