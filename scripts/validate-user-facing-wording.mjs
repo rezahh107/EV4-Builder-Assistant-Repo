@@ -17,7 +17,7 @@ for(const term of sortedBlocked){
   }
 }
 const classLabelPattern=/(کلاس|css\s+classes?|class\s+(?:to\s+apply|name)|elementor\s+class)/iu;
-const classTokenPattern=/(\b[a-z][a-z0-9]*(?:-[a-z0-9]+)+(?:__[a-z0-9-]+)?(?:--[a-z0-9-]+)?\b|\b[a-z][a-z0-9-]*__[a-z0-9-]+(?:--[a-z0-9-]+)?\b)/u;
+const classTokenPattern=/(\b[a-z][a-z0-9_-]{1,63}\b)/u;
 const scopePattern=/(local\s+classes|global\s+classes|محل\s+ثبت\s*:?\s*(?:local|global)|نوع\s+کلاس\s*(?:در\s+elementor)?\s*:?\s*(?:local|global)|elementor\s*>\s*(?:local|global)\s+classes)/iu;
 if(classLabelPattern.test(originalMessage)&&classTokenPattern.test(originalMessage)&&!scopePattern.test(originalMessage)) fail('EV4-WORD-005','Elementor class instruction must include Local Classes or Global Classes near the class name.');
 finish('User-Facing Status Wording', f, e);
