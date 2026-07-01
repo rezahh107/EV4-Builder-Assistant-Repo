@@ -32,22 +32,26 @@ function run(command, args, label) {
 
 function validateBuilderPackage(builderPackage, filePath) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ev4-ce-builder-adapter-'));
-  const outputPath = path.join(tmpDir, 'builder_context_package.json');
-  fs.writeFileSync(outputPath, JSON.stringify(builderPackage, null, 2));
+  try {
+    const outputPath = path.join(tmpDir, 'builder_context_package.json');
+    fs.writeFileSync(outputPath, JSON.stringify(builderPackage, null, 2));
 
-  const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  run(npxCommand, [
-    '--yes',
-    'ajv-cli@5',
-    'validate',
-    '--spec=draft2020',
-    '--strict=false',
-    '-s',
-    'schemas/builder-context-package.schema.json',
-    '-d',
-    outputPath
-  ], `schema validation for ${filePath}`);
-  run(process.execPath, ['scripts/validate-package.mjs', outputPath], `cross-field validation for ${filePath}`);
+    const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    run(npxCommand, [
+      '--yes',
+      'ajv-cli@5',
+      'validate',
+      '--spec=draft2020',
+      '--strict=false',
+      '-s',
+      'schemas/builder-context-package.schema.json',
+      '-d',
+      outputPath
+    ], `schema validation for ${filePath}`);
+    run(process.execPath, ['scripts/validate-package.mjs', outputPath], `cross-field validation for ${filePath}`);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 }
 
 const validFixtures = fixturePaths(VALID_DIR);
