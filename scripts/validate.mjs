@@ -55,3 +55,5 @@ for (const script of scripts) {
 for (const check of nodeChecks) {
   run(process.execPath, [check], 'node ' + check);
 }
+
+run(process.execPath, ['scripts/render-diagnostic-template.mjs', 'data/diagnostic-templates.v1.json', 'tests/valid/diagnostic_request_selectors.json'], 'node scripts/render-diagnostic-template.mjs data/diagnostic-templates.v1.json tests/valid/diagnostic_request_selectors.json');
