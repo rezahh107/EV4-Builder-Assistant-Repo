@@ -9,22 +9,29 @@
 - Added canonical CE→Builder reference IR support through `buildCeReferenceCarrierIr`.
 - Added strict transformation registry validator in `scripts/validate-ce-builder-transformation-registry.mjs`.
 - Wired the transformation registry validator into central validation through `scripts/validate.mjs`.
+- Added the deterministic CE→Builder Contract Gate in `scripts/validate-ce-to-builder-contract-gate.mjs`.
+- Added the CE→Builder Contract Gate report schema in `schemas/ce-to-builder-contract-gate-report.schema.json`.
+- Added valid and invalid CE→Builder Contract Gate regression fixtures, including Gemini-driven malformed-item, missing batch/action ID, and missing architect class coverage.
 
 ### Changed
 
 - Hardened CE reference map normalization so CE `connector_layer: { node, model }` projects to Builder `connector_layer: "node:model"` without inserted whitespace.
 - Updated CE reference map adapter contract and CE Builder package adapter contract to require declared transformation mappings and explicit data-loss policy.
 - Updated CE reference map fixture expectations for the exact `node:model` connector projection.
-- Updated `STATUS.md` with CE→Builder transformation IR, registry, and validator state.
+- Updated `STATUS.md` with CE→Builder transformation IR, registry, validator, and contract gate state.
 - Addressed Gemini review feedback by removing redundant region node validation and caching transformation mappings by ID.
+- Hardened Builder normalization so CE packages must pass the CE→Builder Contract Gate before Builder-side projection or runtime intake.
+- Hardened gate error reporting so failing CE gate paths remain visible to downstream validation checks.
+- Synced downstream CE producer expectations through `rezahh107/EV4-Constructability-Engineer-Repo#24` so CE emits `schema: ev4-builder-executable-package@1.0.0`.
 - Preserved prior changelog history while adding this unreleased section.
 
 ### Status
 
 - No architecture, scoring, recommendation, constructability review, or redesign was rerun.
-- `selected_candidate_id` preservation remains enforced by the adapter.
+- `selected_candidate_id` preservation remains enforced by the adapter and gate.
 - `production_ready_allowed` remains false.
-- Full repository validation still requires `npm run validate` in a checked-out repo or CI.
+- PR #42 passed `Schema validation` before merge.
+- Downstream CE producer schema alignment was completed in `EV4-Constructability-Engineer-Repo` PR #24.
 
 ---
 
@@ -64,7 +71,7 @@
 
 ### Status
 
-- No architecture, scoring, recommendation, constructability review, or redesign was rerun.
+- No architecture, scoring, recommendation, or redesign was rerun.
 - `selected_candidate_id: ARCH-FAM-C` remains preserved.
 - Approved class names remain preserved.
 - `production_ready` remains false.
@@ -98,84 +105,3 @@
 - `production_ready` remains false.
 
 ---
-
-## v0.3.4 — 2026-06-28
-
-### Added
-
-- Added `protocols/UX_PRECEDENCE_TABLE.md`.
-- Added `protocols/ESCAPE_HATCH_RECOVERY.md`.
-- Added `schemas/recovery-state.schema.json`.
-- Added `recovery_state` to `schemas/session-state.schema.json`.
-- Added compact project source `dist/chatgpt-project/knowledge/10_USER_FACING_UX_RECOVERY.md`.
-
-### Changed
-
-- Updated `core/MASTER_PROMPT.md`, `core/SESSION_STATE_MACHINE.md`, and runtime docs with UX precedence and Escape Hatch recovery rules.
-- Updated deployable ChatGPT Project source pack.
-
-### Status
-
-- No Smart Home architecture redesign was intended.
-- `selected_candidate_id: ARCH-FAM-C` remains preserved.
-- Approved class names remain preserved.
-- `production_ready_allowed: false` and `production_ready: false` remain preserved.
-
----
-
-## v0.3.3 — 2026-06-28
-
-### Added
-
-- Added Builder batch output format and user-facing response policy.
-- Added UI vocabulary handling and practical UX commands.
-- Added copy-pasteable session summary behavior.
-
-### Changed
-
-- Normal builder batch output hides internal/source fields unless explicitly requested or required by state.
-- Confirmation after a valid `تایید BATCH-XXX` uses Token Echo / active silence.
-- Updated deployable ChatGPT Project source pack.
-
-### Status
-
-- No Smart Home architecture redesign was intended.
-- `selected_candidate_id: ARCH-FAM-C` remains preserved.
-- Approved class names remain preserved.
-- production readiness remains false.
-
----
-
-## v0.3.2 — 2026-06-28
-
-### Added
-
-- Added `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md`.
-- Added `known_control_map` concept and targeted UI screenshot recipe.
-- Added structured confirmation fixtures and untrusted prose fixtures.
-
-### Changed
-
-- Completed Patch C migration to structured `confirmation_request`.
-- Upgraded `protocols/SMART_GUIDANCE_FOOTER.md` to v0.2.0.
-- Wired UI-confidence rules into runtime docs.
-- Updated deployable ChatGPT Project source pack.
-
-### Validation
-
-- GitHub Actions `Schema validation` passed on run `111` for head `90b8a8c3345b0329d8e47e99c8c32a624b077d79`.
-
----
-
-## v0.3.1 — 2026-06-27
-
-### Hardened
-
-- Added workflow_mode/runtime_state separation hardening.
-- Hardened intake-result and session-state schemas.
-- Expanded CI fixture coverage.
-
-### Status
-
-- No Smart Home architecture, class names, `selected_candidate_id`, or production-readiness rules were changed.
-- Production readiness remains false.
