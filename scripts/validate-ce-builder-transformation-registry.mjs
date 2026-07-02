@@ -35,6 +35,7 @@ const ALLOWED_OPERATIONS = new Set([
   'flatten_declared_action_parameters',
   'copy_confirmation_ids_attach_trusted_template',
   'attach_visual_reference_carriers_after_reference_map_normalization',
+  'preserve_exact_with_sha256_manifest',
   'compute_sha256_authorization_digest'
 ]);
 
@@ -79,6 +80,32 @@ function requireMappingShape(mapping, index) {
     assert.deepEqual(mapping.builder_paths, ['builder.paradigm_to_structure_map.connector_layer']);
   }
 
+  if (mapping.operation === 'preserve_exact_with_sha256_manifest') {
+    assert.deepEqual(
+      mapping.source_paths,
+      [
+        'ce.golden_reference_contract',
+        'ce.build_intent_brief',
+        'ce.spatial_lexicon_version_used',
+        'ce.visual_tolerance_policy'
+      ],
+      `${mapping.id} must declare all protected CE source paths.`
+    );
+    assert.deepEqual(
+      mapping.builder_paths,
+      [
+        'builder.golden_reference_contract',
+        'builder.build_intent_brief',
+        'builder.spatial_lexicon_version_used',
+        'builder.visual_tolerance_policy',
+        'builder.ce_to_builder_field_preservation_manifest'
+      ],
+      `${mapping.id} must declare all protected Builder target paths and manifest.`
+    );
+    assert.ok(mapping.validation.includes('canonical_sha256_match'), `${mapping.id} must validate canonical_sha256_match.`);
+    assert.ok(mapping.validation.includes('no_silent_omission'), `${mapping.id} must validate no_silent_omission.`);
+  }
+
   if (mapping.builder_paths.length === 0) {
     assert.ok(
       mapping.loss_policy === 'declared_ir_retention' || mapping.data_loss.includes('retained in IR') || mapping.data_loss.includes('retained in canonical IR'),
@@ -99,7 +126,7 @@ function validateRegistryShape(registry) {
   assert.equal(new Set(ids).size, ids.length, 'mapping ids must be unique.');
   registry.mappings.forEach(requireMappingShape);
 
-  const requiredRules = ['NO_SILENT_TRANSFORMS', 'NO_UNDECLARED_DATA_LOSS', 'NODE_MODEL_COMPACT_ID'];
+  const requiredRules = ['NO_SILENT_TRANSFORMS', 'NO_UNDECLARED_DATA_LOSS', 'NODE_MODEL_COMPACT_ID', 'NO_SILENT_PROTECTED_FIELD_LOSS'];
   const declaredRules = registry.rules.map((rule) => rule.id);
   for (const ruleId of requiredRules) assert.ok(declaredRules.includes(ruleId), `Missing rule ${ruleId}.`);
 }
