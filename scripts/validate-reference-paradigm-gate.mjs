@@ -9,8 +9,13 @@ export const REFERENCE_PARADIGM_DIAGNOSTICS = {
   UNSTRUCTURED_VISUAL_REFERENCE: ['EV4-RPG-004', 'blocked_reference_visual_expected_but_unstructured'],
   FIRST_BATCH_PARADIGM_MISMATCH: ['EV4-RPG-005', 'blocked_first_batch_paradigm_mismatch'],
   MISSING_FIRST_BATCH_STRUCTURE_INTENT: ['EV4-RPG-006', 'blocked_missing_first_batch_structure_intent'],
-  FIRST_BATCH_STRUCTURE_INTENT_MISMATCH: ['EV4-RPG-007', 'blocked_first_batch_structure_intent_mismatch']
+  FIRST_BATCH_STRUCTURE_INTENT_MISMATCH: ['EV4-RPG-007', 'blocked_first_batch_structure_intent_mismatch'],
+  LAYOUT_PARADIGM_REQUIRES_DECOMPOSITION: ['LAYOUT_PARADIGM_REQUIRES_DECOMPOSITION', 'blocked_layout_paradigm_requires_decomposition'],
+  LAYOUT_PARADIGM_UNSUPPORTED: ['LAYOUT_PARADIGM_UNSUPPORTED', 'blocked_layout_paradigm_unsupported']
 };
+
+const LAYOUT_COMPATIBILITY_CONTRACT = 'CE_TO_BUILDER_LAYOUT_COMPATIBILITY';
+const BUILDER_SUPPORTED_LAYOUTS = new Set(['center-anchored-symmetric', 'grid']);
 
 function textOfBatch(firstBuilderBatch = {}) {
   return (firstBuilderBatch.actions || [])
@@ -72,10 +77,36 @@ function normalizedTerms(values = []) {
     .map((value) => value.toLowerCase());
 }
 
+function hasDirectionTerm(value, direction) {
+  if (typeof value !== 'string') return false;
+  const pattern = direction === 'left' ? /(^|[^a-z])left([^a-z]|$)/i : /(^|[^a-z])right([^a-z]|$)/i;
+  return pattern.test(value);
+}
+
 function hasRegionModel(map, model) {
   if (model !== 'left-center-right') return false;
   const regions = normalizedTerms(map?.regions);
   return regions.some((region) => region.includes('left')) && regions.some((region) => region.includes('center')) && regions.some((region) => region.includes('right'));
+}
+
+function hasBuilderGridDecomposition({ lock, map, intent }) {
+  const regions = Array.isArray(map?.regions) ? normalizedTerms(map.regions) : [];
+  const hasLeftRegion = regions.some((region) => hasDirectionTerm(region, 'left'));
+  const hasRightRegion = regions.some((region) => hasDirectionTerm(region, 'right'));
+  const distributionModel = lock?.distribution_model || intent?.distribution_model;
+
+  return (
+    hasLeftRegion &&
+    hasRightRegion &&
+    hasStructuredFirstBatchIntent(intent) &&
+    intent.region_model === 'left-center-right' &&
+    Number.isInteger(intent.left_region_count) &&
+    intent.left_region_count > 0 &&
+    Number.isInteger(intent.right_region_count) &&
+    intent.right_region_count > 0 &&
+    hasDirectionTerm(distributionModel, 'left') &&
+    hasDirectionTerm(distributionModel, 'right')
+  );
 }
 
 function connectorRequired(lock, map) {
@@ -91,6 +122,46 @@ function expectedLeftCount(distributionModel) {
 function expectedRightCount(distributionModel) {
   const match = typeof distributionModel === 'string' ? distributionModel.match(/-(\d+)-right$/) : null;
   return match ? Number(match[1]) : null;
+}
+
+function addLayoutCompatibilityDiagnostics({ add, lock, map, intent }) {
+  const layout = lock?.layout_paradigm;
+  if (!isNonEmptyString(layout)) return;
+
+  if (!BUILDER_SUPPORTED_LAYOUTS.has(layout)) {
+    add(
+      REFERENCE_PARADIGM_DIAGNOSTICS.LAYOUT_PARADIGM_UNSUPPORTED,
+      `layout_paradigm=${layout} is not supported by the current Builder rendering model.`,
+      {
+        code: 'LAYOUT_PARADIGM_UNSUPPORTED',
+        severity: 'error',
+        blocking: true,
+        path: '$.reference_paradigm_lock.layout_paradigm',
+        expected: 'center-anchored-symmetric or grid with valid decomposition metadata',
+        actual: layout,
+        contract: LAYOUT_COMPATIBILITY_CONTRACT,
+        remediation_hint: 'Emit a supported layout paradigm or add a declared Builder rendering model before handoff.'
+      }
+    );
+    return;
+  }
+
+  if (layout === 'grid' && !hasBuilderGridDecomposition({ lock, map, intent })) {
+    add(
+      REFERENCE_PARADIGM_DIAGNOSTICS.LAYOUT_PARADIGM_REQUIRES_DECOMPOSITION,
+      'layout_paradigm=grid requires explicit left/right decomposition for Builder rendering.',
+      {
+        code: 'LAYOUT_PARADIGM_REQUIRES_DECOMPOSITION',
+        severity: 'error',
+        blocking: true,
+        path: '$.reference_paradigm_lock.layout_paradigm',
+        expected: 'grid with left/right regions, positive left/right counts, and left-center-right first_batch_structure_intent',
+        actual: 'grid without valid Builder-compatible decomposition',
+        contract: LAYOUT_COMPATIBILITY_CONTRACT,
+        remediation_hint: 'Add explicit left/right decomposition or emit a supported layout paradigm.'
+      }
+    );
+  }
 }
 
 function addTextFallbackDiagnostics({ add, lock, map, pkg }) {
@@ -178,7 +249,7 @@ export function requiresReferenceParadigmGate(pkg) {
 
 export function validateReferenceParadigmGate(pkg) {
   const diagnostics = [];
-  const add = (diag, message) => diagnostics.push({ id: diag[0], name: diag[1], message });
+  const add = (diag, message, details = {}) => diagnostics.push({ id: diag[0], name: diag[1], message, ...details });
   if (!requiresReferenceParadigmGate(pkg)) return diagnostics;
 
   if (pkg.reference_artifact_type !== 'structured_contract') {
@@ -194,6 +265,7 @@ export function validateReferenceParadigmGate(pkg) {
     if (lock.paradigm_locked !== true || lock.extracted_by !== 'constructability_engineer' || !Array.isArray(lock.completion_signature) || lock.completion_signature.length === 0) {
       add(REFERENCE_PARADIGM_DIAGNOSTICS.UNLOCKED_PARADIGM, 'reference_paradigm_lock must be locked by constructability_engineer with a non-empty completion_signature.');
     }
+    addLayoutCompatibilityDiagnostics({ add, lock, map, intent });
   }
 
   if (!hasStructuredParadigmMap(map)) {
