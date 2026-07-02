@@ -11,6 +11,7 @@ export const CE_BUILDER_TRANSFORMATION_REGISTRY_PATH = path.resolve(
 );
 
 let cachedRegistry = null;
+let cachedMappingsById = null;
 
 export function readCeBuilderTransformationRegistry() {
   if (!cachedRegistry) {
@@ -20,8 +21,11 @@ export function readCeBuilderTransformationRegistry() {
 }
 
 export function ceBuilderTransformationMappingsById() {
-  const registry = readCeBuilderTransformationRegistry();
-  return new Map((registry.mappings || []).map((mapping) => [mapping.id, mapping]));
+  if (!cachedMappingsById) {
+    const registry = readCeBuilderTransformationRegistry();
+    cachedMappingsById = new Map((registry.mappings || []).map((mapping) => [mapping.id, mapping]));
+  }
+  return cachedMappingsById;
 }
 
 export function assertDeclaredTransform(mappingId, implementedBy) {
