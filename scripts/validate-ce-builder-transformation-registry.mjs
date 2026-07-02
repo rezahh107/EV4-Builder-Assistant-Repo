@@ -35,6 +35,7 @@ const ALLOWED_OPERATIONS = new Set([
   'flatten_declared_action_parameters',
   'copy_confirmation_ids_attach_trusted_template',
   'attach_visual_reference_carriers_after_reference_map_normalization',
+  'preserve_exact_with_sha256_manifest',
   'compute_sha256_authorization_digest'
 ]);
 
@@ -68,22 +69,21 @@ function requireMappingShape(mapping, index) {
   if (mapping.operation === 'compact_node_model_string') {
     assert.equal(mapping.delimiter, ':', `${mapping.id} must use ':' delimiter.`);
     assert.equal(mapping.format, 'node:model', `${mapping.id} must declare node:model format.`);
-    assert.deepEqual(
-      mapping.source_paths,
-      [
-        'ce.paradigm_to_structure_map.connector_layer.node',
-        'ce.paradigm_to_structure_map.connector_layer.model'
-      ],
-      `${mapping.id} must declare node and model source paths.`
-    );
+    assert.deepEqual(mapping.source_paths, ['ce.paradigm_to_structure_map.connector_layer.node', 'ce.paradigm_to_structure_map.connector_layer.model'], `${mapping.id} must declare node and model source paths.`);
     assert.deepEqual(mapping.builder_paths, ['builder.paradigm_to_structure_map.connector_layer']);
   }
 
+  if (mapping.operation === 'preserve_exact_with_sha256_manifest') {
+    assert.ok(mapping.id.includes('FIELD_PRESERVATION'), `${mapping.id} must be the field preservation mapping.`);
+    assert.ok(mapping.builder_paths.includes('builder.ce_to_builder_field_preservation_manifest'), `${mapping.id} must emit the preservation manifest.`);
+    for (const field of ['golden_reference_contract', 'build_intent_brief', 'spatial_lexicon_version_used', 'visual_tolerance_policy']) {
+      assert.ok(mapping.source_paths.includes(`ce.${field}`), `${mapping.id} must declare ce.${field}.`);
+      assert.ok(mapping.builder_paths.includes(`builder.${field}`), `${mapping.id} must declare builder.${field}.`);
+    }
+  }
+
   if (mapping.builder_paths.length === 0) {
-    assert.ok(
-      mapping.loss_policy === 'declared_ir_retention' || mapping.data_loss.includes('retained in IR') || mapping.data_loss.includes('retained in canonical IR'),
-      `${mapping.id} has no Builder output path and must explicitly declare IR retention.`
-    );
+    assert.ok(mapping.loss_policy === 'declared_ir_retention' || mapping.data_loss.includes('retained in IR') || mapping.data_loss.includes('retained in canonical IR'), `${mapping.id} has no Builder output path and must explicitly declare IR retention.`);
   }
 }
 
@@ -99,20 +99,15 @@ function validateRegistryShape(registry) {
   assert.equal(new Set(ids).size, ids.length, 'mapping ids must be unique.');
   registry.mappings.forEach(requireMappingShape);
 
-  const requiredRules = ['NO_SILENT_TRANSFORMS', 'NO_UNDECLARED_DATA_LOSS', 'NODE_MODEL_COMPACT_ID'];
+  const requiredRules = ['NO_SILENT_TRANSFORMS', 'NO_UNDECLARED_DATA_LOSS', 'NODE_MODEL_COMPACT_ID', 'NO_SILENT_PROTECTED_FIELD_LOSS'];
   const declaredRules = registry.rules.map((rule) => rule.id);
   for (const ruleId of requiredRules) assert.ok(declaredRules.includes(ruleId), `Missing rule ${ruleId}.`);
 }
 
 function validateCodeRegistryAlignment(registry) {
   const mappings = registry.mappings;
-  const referenceMappings = mappings
-    .filter((mapping) => mapping.implemented_by === 'scripts/normalize-ce-reference-map.mjs')
-    .map((mapping) => mapping.id);
-  const packageMappings = mappings
-    .filter((mapping) => mapping.implemented_by === 'scripts/normalize-ce-builder-executable-package.mjs')
-    .map((mapping) => mapping.id);
-
+  const referenceMappings = mappings.filter((mapping) => mapping.implemented_by === 'scripts/normalize-ce-reference-map.mjs').map((mapping) => mapping.id);
+  const packageMappings = mappings.filter((mapping) => mapping.implemented_by === 'scripts/normalize-ce-builder-executable-package.mjs').map((mapping) => mapping.id);
   assert.ok(sameMembers(CE_REFERENCE_MAP_TRANSFORM_IDS, referenceMappings), 'Reference map transform IDs must exactly match the registry.');
   assert.ok(sameMembers(CE_BUILDER_PACKAGE_TRANSFORM_IDS, packageMappings), 'Builder package transform IDs must exactly match the registry.');
 }
@@ -133,10 +128,7 @@ function validateReferenceIrAndConnectorProjection() {
   assert.deepEqual(normalized, fixture.expected.normalized, 'Fixture expected normalization must match adapter output.');
 }
 
-if (!fs.existsSync(CE_BUILDER_TRANSFORMATION_REGISTRY_PATH)) {
-  throw new Error(`Missing transformation registry: ${CE_BUILDER_TRANSFORMATION_REGISTRY_PATH}`);
-}
-
+if (!fs.existsSync(CE_BUILDER_TRANSFORMATION_REGISTRY_PATH)) throw new Error(`Missing transformation registry: ${CE_BUILDER_TRANSFORMATION_REGISTRY_PATH}`);
 const registry = readCeBuilderTransformationRegistry();
 validateRegistryShape(registry);
 validateCodeRegistryAlignment(registry);
