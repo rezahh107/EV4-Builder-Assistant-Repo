@@ -1,0 +1,20 @@
+{
+  "ce_builder_executable_package": {
+    "schema": "ev4-builder-executable-package@1.0.0",
+    "package_id": "CE-BEP-SEMANTIC-FAIL",
+    "review_ref": "CRR-SEMANTIC-FAIL",
+    "architect_contract": {
+      "source_ref": "ARCH-HANDOFF-001",
+      "selected_candidate_id": "ARCH-FAM-C",
+      "approved_class_names": ["smart-home__section--root"]
+    },
+    "selected_candidate_id": "ARCH-FAM-X",
+    "approved_class_names": ["smart-home__section--root"],
+    "builder_package_status": "executable_ready",
+    "builder_decisions_required": 0,
+    "blocking_dependencies": [],
+    "selected_candidate_locked": true,
+    "selected_candidate_id_unchanged": true,
+    "approved_class_names_unchanged": true
+  }
+}
