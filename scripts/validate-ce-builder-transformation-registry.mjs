@@ -37,6 +37,7 @@ const ALLOWED_OPERATIONS = new Set([
   'attach_visual_reference_carriers_after_reference_map_normalization',
   'compute_sha256_authorization_digest'
 ]);
+const ALLOWED_LAYOUT_SUPPORT_STATUSES = new Set(['supported', 'conditionally_supported', 'unsupported', 'deprecated', 'reserved']);
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
@@ -68,23 +69,45 @@ function requireMappingShape(mapping, index) {
   if (mapping.operation === 'compact_node_model_string') {
     assert.equal(mapping.delimiter, ':', `${mapping.id} must use ':' delimiter.`);
     assert.equal(mapping.format, 'node:model', `${mapping.id} must declare node:model format.`);
-    assert.deepEqual(
-      mapping.source_paths,
-      [
-        'ce.paradigm_to_structure_map.connector_layer.node',
-        'ce.paradigm_to_structure_map.connector_layer.model'
-      ],
-      `${mapping.id} must declare node and model source paths.`
-    );
+    assert.deepEqual(mapping.source_paths, ['ce.paradigm_to_structure_map.connector_layer.node', 'ce.paradigm_to_structure_map.connector_layer.model'], `${mapping.id} must declare node and model source paths.`);
     assert.deepEqual(mapping.builder_paths, ['builder.paradigm_to_structure_map.connector_layer']);
   }
 
   if (mapping.builder_paths.length === 0) {
-    assert.ok(
-      mapping.loss_policy === 'declared_ir_retention' || mapping.data_loss.includes('retained in IR') || mapping.data_loss.includes('retained in canonical IR'),
-      `${mapping.id} has no Builder output path and must explicitly declare IR retention.`
-    );
+    assert.ok(mapping.loss_policy === 'declared_ir_retention' || mapping.data_loss.includes('retained in IR') || mapping.data_loss.includes('retained in canonical IR'), `${mapping.id} has no Builder output path and must explicitly declare IR retention.`);
   }
+}
+
+function requireLayoutCompatibility(registry) {
+  const layout = registry.layout_compatibility;
+  assert.ok(layout && typeof layout === 'object' && !Array.isArray(layout), 'registry.layout_compatibility must be present.');
+  assert.equal(layout.contract_name, 'CE_TO_BUILDER_LAYOUT_COMPATIBILITY');
+  assert.equal(layout.contract_version, '1.0.0');
+  assert.equal(layout.status, 'active');
+  assert.equal(layout.producer, 'EV4-Constructability-Engineer-Repo');
+  assert.equal(layout.consumer, 'EV4-Builder-Assistant-Repo');
+  assert.equal(layout.field, 'reference_paradigm_lock.layout_paradigm');
+  requireStringArray(layout.allowed_values, 'layout_compatibility.allowed_values');
+  assert.ok(Array.isArray(layout.matrix) && layout.matrix.length > 0, 'layout_compatibility.matrix must be non-empty.');
+
+  for (const row of layout.matrix) {
+    assert.ok(isNonEmptyString(row.ce_layout_paradigm), 'layout matrix rows require ce_layout_paradigm.');
+    assert.ok(isNonEmptyString(row.builder_rendering_model), `${row.ce_layout_paradigm} requires builder_rendering_model.`);
+    assert.ok(ALLOWED_LAYOUT_SUPPORT_STATUSES.has(row.support_status), `${row.ce_layout_paradigm} has invalid support_status.`);
+    assert.ok(Array.isArray(row.required_metadata), `${row.ce_layout_paradigm} requires required_metadata array.`);
+    assert.ok(isNonEmptyString(row.validation_rule), `${row.ce_layout_paradigm} requires validation_rule.`);
+    assert.ok(isNonEmptyString(row.builder_behavior), `${row.ce_layout_paradigm} requires builder_behavior.`);
+    assert.ok(isNonEmptyString(row.ce_behavior), `${row.ce_layout_paradigm} requires ce_behavior.`);
+    assert.ok(isNonEmptyString(row.failure_code), `${row.ce_layout_paradigm} requires failure_code.`);
+  }
+
+  const grid = layout.matrix.find((row) => row.ce_layout_paradigm === 'grid');
+  assert.ok(grid, 'layout compatibility matrix must declare grid.');
+  assert.equal(grid.support_status, 'conditionally_supported');
+  assert.equal(grid.builder_rendering_model, 'left-center-right');
+  assert.equal(grid.failure_code, 'LAYOUT_PARADIGM_REQUIRES_DECOMPOSITION');
+  assert.ok(grid.required_metadata.some((entry) => entry.includes('left')));
+  assert.ok(grid.required_metadata.some((entry) => entry.includes('right')));
 }
 
 function validateRegistryShape(registry) {
@@ -99,19 +122,16 @@ function validateRegistryShape(registry) {
   assert.equal(new Set(ids).size, ids.length, 'mapping ids must be unique.');
   registry.mappings.forEach(requireMappingShape);
 
-  const requiredRules = ['NO_SILENT_TRANSFORMS', 'NO_UNDECLARED_DATA_LOSS', 'NODE_MODEL_COMPACT_ID'];
+  const requiredRules = ['NO_SILENT_TRANSFORMS', 'NO_UNDECLARED_DATA_LOSS', 'NODE_MODEL_COMPACT_ID', 'LAYOUT_COMPATIBILITY_EXPLICIT'];
   const declaredRules = registry.rules.map((rule) => rule.id);
   for (const ruleId of requiredRules) assert.ok(declaredRules.includes(ruleId), `Missing rule ${ruleId}.`);
+  requireLayoutCompatibility(registry);
 }
 
 function validateCodeRegistryAlignment(registry) {
   const mappings = registry.mappings;
-  const referenceMappings = mappings
-    .filter((mapping) => mapping.implemented_by === 'scripts/normalize-ce-reference-map.mjs')
-    .map((mapping) => mapping.id);
-  const packageMappings = mappings
-    .filter((mapping) => mapping.implemented_by === 'scripts/normalize-ce-builder-executable-package.mjs')
-    .map((mapping) => mapping.id);
+  const referenceMappings = mappings.filter((mapping) => mapping.implemented_by === 'scripts/normalize-ce-reference-map.mjs').map((mapping) => mapping.id);
+  const packageMappings = mappings.filter((mapping) => mapping.implemented_by === 'scripts/normalize-ce-builder-executable-package.mjs').map((mapping) => mapping.id);
 
   assert.ok(sameMembers(CE_REFERENCE_MAP_TRANSFORM_IDS, referenceMappings), 'Reference map transform IDs must exactly match the registry.');
   assert.ok(sameMembers(CE_BUILDER_PACKAGE_TRANSFORM_IDS, packageMappings), 'Builder package transform IDs must exactly match the registry.');
