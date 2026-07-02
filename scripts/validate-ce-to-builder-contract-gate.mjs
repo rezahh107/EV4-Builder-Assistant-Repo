@@ -118,7 +118,8 @@ export function validateCeToBuilderContractGate(input) {
       if (ac[field] === undefined) fail(report, 'REQUIRED_FIELD_MISSING', jp(base, 'architect_contract', field), `architect_contract.${field} is required.`, { expected: 'present', actual: 'missing', evidence: 'contract' });
       else if (typeof ac[field] !== 'string') fail(report, 'FIELD_TYPE_INVALID', jp(base, 'architect_contract', field), `architect_contract.${field} must be string.`, { expected: 'string', actual: typ(ac[field]), evidence: 'schema' });
     }
-    if (!Array.isArray(ac.approved_class_names)) fail(report, 'FIELD_TYPE_INVALID', jp(base, 'architect_contract', 'approved_class_names'), 'architect_contract.approved_class_names must be array.', { expected: 'array', actual: typ(ac.approved_class_names), evidence: 'schema' });
+    if (ac.approved_class_names === undefined) fail(report, 'REQUIRED_FIELD_MISSING', jp(base, 'architect_contract', 'approved_class_names'), 'architect_contract.approved_class_names is required.', { expected: 'present', actual: 'missing', evidence: 'contract' });
+    else if (!Array.isArray(ac.approved_class_names)) fail(report, 'FIELD_TYPE_INVALID', jp(base, 'architect_contract', 'approved_class_names'), 'architect_contract.approved_class_names must be array.', { expected: 'array', actual: typ(ac.approved_class_names), evidence: 'schema' });
 
     if (pkg.builder_package_status !== undefined && pkg.builder_package_status !== 'executable_ready') fail(report, 'UNSUPPORTED_BUILDER_MODE', jp(base, 'builder_package_status'), 'Only executable_ready CE packages may enter the Builder gate.', { expected: 'executable_ready', actual: actual(pkg.builder_package_status), evidence: 'contract' });
     if (pkg.builder_decisions_required !== undefined && pkg.builder_decisions_required !== 0) fail(report, 'UNSUPPORTED_BUILDER_MODE', jp(base, 'builder_decisions_required'), 'Builder decisions must be zero before Builder execution.', { expected: '0', actual: actual(pkg.builder_decisions_required), evidence: 'contract' });
@@ -141,11 +142,14 @@ export function validateCeToBuilderContractGate(input) {
     const classNames = new Set(classMap.map((e) => isObj(e) ? e.class_name : undefined).filter(Boolean));
     if (Array.isArray(pkg.class_creation_application_map) && classMap.length === 0) fail(report, 'BUILDER_REQUIRED_CONTEXT_MISSING', jp(base, 'class_creation_application_map'), 'class_creation_application_map must contain at least one class mapping.', { expected: 'non-empty array', actual: 'empty array', evidence: 'contract' });
     classMap.forEach((e, i) => {
-      if (!isObj(e)) return;
+      if (!isObj(e)) return fail(report, 'FIELD_TYPE_INVALID', jp(base, 'class_creation_application_map', i), 'class_creation_application_map item must be object.', { expected: 'object', actual: typ(e), evidence: 'schema' });
       if (typeof e.class_name !== 'string' || e.class_name.length === 0) fail(report, 'REQUIRED_FIELD_MISSING', jp(base, 'class_creation_application_map', i, 'class_name'), 'class_name is required for class map entries.', { expected: 'non-empty string', actual: actual(e.class_name), evidence: 'contract' });
       if (typeof e.elementor_node_or_element === 'string' && e.elementor_node_or_element.startsWith('n-') && !nodeIds.has(e.elementor_node_or_element)) fail(report, 'REFERENCE_UNRESOLVED', jp(base, 'class_creation_application_map', i, 'elementor_node_or_element'), `Class map target is unresolved: ${e.elementor_node_or_element}.`, { expected: 'known node_id', actual: e.elementor_node_or_element, evidence: 'code' });
     });
 
+    if (isObj(pkg.first_safe_builder_batch) && (typeof pkg.first_safe_builder_batch.batch_id !== 'string' || pkg.first_safe_builder_batch.batch_id.trim().length === 0)) {
+      fail(report, 'REQUIRED_FIELD_MISSING', jp(base, 'first_safe_builder_batch', 'batch_id'), 'first_safe_builder_batch.batch_id is required as a non-empty string.', { expected: 'non-empty string', actual: actual(pkg.first_safe_builder_batch.batch_id), evidence: 'contract' });
+    }
     const actions = Array.isArray(pkg.first_safe_builder_batch?.actions) ? pkg.first_safe_builder_batch.actions : [];
     const actionIds = actions.map((a) => isObj(a) ? a.action_id : undefined).filter(Boolean);
     const actionIdSet = new Set(actionIds);
@@ -154,6 +158,7 @@ export function validateCeToBuilderContractGate(input) {
     else if (actions.length > FIRST_BUILDER_BATCH_ACTION_HARD_CAP) fail(report, 'FIELD_VALUE_INVALID', jp(base, 'first_safe_builder_batch', 'actions'), `first_safe_builder_batch.actions exceeds hard cap ${FIRST_BUILDER_BATCH_ACTION_HARD_CAP}.`, { expected: `<= ${FIRST_BUILDER_BATCH_ACTION_HARD_CAP}`, actual: String(actions.length), evidence: 'contract' });
     actions.forEach((action, i) => {
       if (!isObj(action)) return fail(report, 'FIELD_TYPE_INVALID', jp(base, 'first_safe_builder_batch', 'actions', i), 'first_safe_builder_batch action must be object.', { expected: 'object', actual: typ(action), evidence: 'schema' });
+      if (typeof action.action_id !== 'string' || action.action_id.trim().length === 0) fail(report, 'REQUIRED_FIELD_MISSING', jp(base, 'first_safe_builder_batch', 'actions', i, 'action_id'), 'action_id is required as a non-empty string.', { expected: 'non-empty string', actual: actual(action.action_id), evidence: 'contract' });
       if (action.requires_decision !== false) fail(report, 'UNSUPPORTED_BUILDER_MODE', jp(base, 'first_safe_builder_batch', 'actions', i, 'requires_decision'), 'Builder action requires_decision must be false.', { expected: 'false', actual: actual(action.requires_decision), evidence: 'contract' });
       const p = isObj(action.parameters) ? action.parameters : {};
       if (!isObj(action.parameters)) fail(report, 'FIELD_TYPE_INVALID', jp(base, 'first_safe_builder_batch', 'actions', i, 'parameters'), 'action.parameters must be object.', { expected: 'object', actual: typ(action.parameters), evidence: 'schema' });
@@ -199,7 +204,12 @@ export function validateCeToBuilderContractGate(input) {
 }
 
 export class CeToBuilderContractGateError extends Error {
-  constructor(report) { super('CE→Builder Contract Gate failed. Builder execution must not start.'); this.name = 'CeToBuilderContractGateError'; this.report = report; }
+  constructor(report) {
+    const summary = Array.isArray(report?.errors) ? report.errors.slice(0, 8).map((e) => `${e.code}@${e.path}`).join('; ') : 'no structured error summary';
+    super(`CE→Builder Contract Gate failed. Builder execution must not start. ${summary}`);
+    this.name = 'CeToBuilderContractGateError';
+    this.report = report;
+  }
 }
 export function assertCeToBuilderContractGatePass(input) {
   const report = validateCeToBuilderContractGate(input);
@@ -210,6 +220,14 @@ export function assertCeToBuilderContractGatePass(input) {
 const readJson = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
 function fixturePaths(dir, prefix) {
   return fs.existsSync(dir) ? fs.readdirSync(dir).filter((n) => n.startsWith(prefix) && n.endsWith('.json')).map((n) => path.join(dir, n)).sort() : [];
+}
+const EXPECTED_INVALID_ERROR_CODES = Object.freeze({
+  ce_to_builder_contract_gate_class_map_item_not_object: 'FIELD_TYPE_INVALID',
+  ce_to_builder_contract_gate_missing_batch_action_ids: 'REQUIRED_FIELD_MISSING',
+  ce_to_builder_contract_gate_missing_architect_approved_classes: 'REQUIRED_FIELD_MISSING'
+});
+function expectedInvalidCodeFor(filePath) {
+  return EXPECTED_INVALID_ERROR_CODES[path.basename(filePath, '.json')] || null;
 }
 function runSelfTest() {
   const root = process.cwd();
@@ -230,6 +248,8 @@ function runSelfTest() {
     assert.equal(JSON.stringify(input), before, `Gate must not mutate ${f}`);
     assert.equal(first.result, 'fail', `Invalid gate fixture unexpectedly passed: ${f}`);
     assert.ok(first.errors.length > 0, `Invalid gate fixture must emit structured errors: ${f}`);
+    const expectedCode = expectedInvalidCodeFor(f);
+    if (expectedCode) assert.ok(first.errors.some((e) => e.code === expectedCode), `Invalid gate fixture ${f} must include ${expectedCode}: ${JSON.stringify(first, null, 2)}`);
     console.log(`CE→Builder gate invalid fixture correctly failed: ${f}`);
   }
 }
