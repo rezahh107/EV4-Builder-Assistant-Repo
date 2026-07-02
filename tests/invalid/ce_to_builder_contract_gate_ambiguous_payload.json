@@ -1,0 +1,56 @@
+{
+  "ce_builder_executable_package": {
+    "schema": "ev4-builder-executable-package@1.0.0",
+    "package_id": "CE-BEP-AMBIGUOUS",
+    "review_ref": "CRR-AMBIGUOUS",
+    "architect_contract": {
+      "source_ref": "ARCH-HANDOFF-001",
+      "selected_candidate_id": "ARCH-FAM-C",
+      "approved_class_names": ["custom-card"]
+    },
+    "selected_candidate_id": "ARCH-FAM-C",
+    "approved_class_names": ["custom-card"],
+    "builder_package_status": "executable_ready",
+    "builder_decisions_required": 0,
+    "blocking_dependencies": [],
+    "selected_candidate_locked": true,
+    "selected_candidate_id_unchanged": true,
+    "approved_class_names_unchanged": true,
+    "approved_structure_tree": [
+      {
+        "node_id": "n-001",
+        "structure_label": "Known Node",
+        "element_generation": "Shared compatibility element",
+        "element_generation_source": "architect_export",
+        "children": []
+      }
+    ],
+    "class_creation_application_map": [
+      {
+        "class_name": "custom-card",
+        "elementor_node_or_element": "n-001"
+      }
+    ],
+    "first_safe_builder_batch": {
+      "actions": [
+        {
+          "action_id": "BATCH-001-A01",
+          "target_node": "Known Node",
+          "requires_decision": false,
+          "parameters": {
+            "active_class": "custom-card",
+            "element_generation": "Shared compatibility element",
+            "element_generation_source": "architect_export",
+            "instruction": "Apply the approved class.",
+            "expected_result": "Class applied."
+          }
+        }
+      ]
+    },
+    "confirmation_request": {
+      "confirmation_id": "CONFIRM-BATCH-001",
+      "confirmed_action_ids": ["BATCH-001-A01"],
+      "expected_user_token": "تایید BATCH-001"
+    }
+  }
+}
