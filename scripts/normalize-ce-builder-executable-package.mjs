@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertAllTransformsDeclared } from './ce-builder-transformation-registry.mjs';
+import { assertCeToBuilderContractGatePass } from './validate-ce-to-builder-contract-gate.mjs';
 import { normalizeCeReferenceCarrier } from './normalize-ce-reference-map.mjs';
 
 const IMPLEMENTED_BY = 'scripts/normalize-ce-builder-executable-package.mjs';
@@ -235,6 +236,7 @@ function attachInputAuthorization(builderPackage) {
 }
 
 export function normalizeCeBuilderExecutablePackage(cePackage) {
+  assertCeToBuilderContractGatePass(cePackage);
   assertDeclaredBuilderPackageTransforms();
   assertCeExecutablePackage(cePackage);
   requireBuilderPayloadCarriers(cePackage);
