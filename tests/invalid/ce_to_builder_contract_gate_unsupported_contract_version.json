@@ -1,0 +1,6 @@
+{
+  "ce_builder_executable_package": {
+    "schema": "ev4-builder-executable-package@9.9.9",
+    "package_id": "CE-BEP-UNSUPPORTED-SCHEMA"
+  }
+}

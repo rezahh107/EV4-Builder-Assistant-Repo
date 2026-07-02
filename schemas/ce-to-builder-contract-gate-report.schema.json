@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/ce-to-builder-contract-gate-report.schema.json",
+  "title": "CE to Builder Contract Gate Report",
+  "type": "object",
+  "required": ["gate", "gate_version", "result", "blocking", "contract_version", "errors"],
+  "properties": {
+    "gate": { "const": "ce_to_builder_contract_gate" },
+    "gate_version": { "type": "string", "minLength": 1 },
+    "result": { "enum": ["pass", "fail"] },
+    "blocking": { "type": "boolean" },
+    "contract_version": { "type": ["string", "null"] },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "severity", "path", "message", "expected", "actual", "blocking", "remediation_hint", "evidence"],
+        "properties": {
+          "code": {
+            "enum": [
+              "CONTRACT_VERSION_MISSING",
+              "CONTRACT_VERSION_UNSUPPORTED",
+              "SCHEMA_INVALID",
+              "REQUIRED_FIELD_MISSING",
+              "FIELD_TYPE_INVALID",
+              "FIELD_VALUE_INVALID",
+              "FORBIDDEN_FIELD_PRESENT",
+              "UNKNOWN_FIELD_PRESENT",
+              "SEMANTIC_INVARIANT_FAILED",
+              "REFERENCE_MISSING",
+              "REFERENCE_UNRESOLVED",
+              "BUILDER_REQUIRED_CONTEXT_MISSING",
+              "UNSUPPORTED_BUILDER_MODE",
+              "AMBIGUOUS_CE_OUTPUT",
+              "PROMPT_INJECTION_RISK_IN_DATA",
+              "INTERNAL_CONTRACT_DRIFT",
+              "VALIDATOR_INTERNAL_ERROR"
+            ]
+          },
+          "severity": { "enum": ["blocker", "error", "warning", "info"] },
+          "path": { "type": "string", "minLength": 1 },
+          "message": { "type": "string", "minLength": 1 },
+          "expected": { "type": "string" },
+          "actual": { "type": "string" },
+          "blocking": { "type": "boolean" },
+          "remediation_hint": { "type": "string", "minLength": 1 },
+          "evidence": { "enum": ["schema", "fixture", "code", "docs", "contract", "security"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

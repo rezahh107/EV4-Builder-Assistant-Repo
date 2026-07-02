@@ -1,0 +1,7 @@
+{
+  "ce_builder_executable_package": {
+    "schema": "ev4-builder-executable-package@1.0.0",
+    "package_id": "CE-BEP-WRONG-TYPE",
+    "blocking_dependencies": "none"
+  }
+}
