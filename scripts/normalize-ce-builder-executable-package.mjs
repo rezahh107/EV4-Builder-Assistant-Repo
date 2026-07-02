@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertAllTransformsDeclared } from './ce-builder-transformation-registry.mjs';
+import { attachAndAssertCeToBuilderFieldPreservation } from './ce-builder-field-preservation-contract.mjs';
 import { normalizeCeReferenceCarrier } from './normalize-ce-reference-map.mjs';
 
 const IMPLEMENTED_BY = 'scripts/normalize-ce-builder-executable-package.mjs';
@@ -21,6 +22,7 @@ export const CE_BUILDER_PACKAGE_TRANSFORM_IDS = [
   'CE_PKG_ACTION_PARAMETERS_FLATTEN',
   'CE_PKG_CONFIRMATION_TEMPLATE_ATTACH',
   'CE_PKG_VISUAL_REFERENCE_CARRIERS_ATTACH',
+  'CE_PKG_FIELD_PRESERVATION_EXACT_COPY',
   'CE_PKG_INPUT_AUTHORIZATION_DIGEST'
 ];
 
@@ -286,6 +288,7 @@ export function normalizeCeBuilderExecutablePackage(cePackage) {
     } : {})
   };
 
+  attachAndAssertCeToBuilderFieldPreservation(cePackage, builderPackage);
   attachInputAuthorization(builderPackage);
   return builderPackage;
 }
