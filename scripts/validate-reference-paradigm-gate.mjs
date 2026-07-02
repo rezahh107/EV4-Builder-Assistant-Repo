@@ -90,7 +90,7 @@ function hasRegionModel(map, model) {
 }
 
 function hasBuilderGridDecomposition({ lock, map, intent }) {
-  const regions = normalizedTerms(map?.regions);
+  const regions = Array.isArray(map?.regions) ? normalizedTerms(map.regions) : [];
   const hasLeftRegion = regions.some((region) => hasDirectionTerm(region, 'left'));
   const hasRightRegion = regions.some((region) => hasDirectionTerm(region, 'right'));
   const distributionModel = lock?.distribution_model || intent?.distribution_model;
