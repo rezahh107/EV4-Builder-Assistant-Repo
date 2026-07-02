@@ -1,5 +1,6 @@
 {
   "ce_builder_executable_package": {
+    "schema": "ev4-builder-executable-package@1.0.0",
     "package_id": "CE-BEP-SMART-HOME-001",
     "review_ref": "cross-repo-role-alignment-fixture",
     "architect_contract": {
