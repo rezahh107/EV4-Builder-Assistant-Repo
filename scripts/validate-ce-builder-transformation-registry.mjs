@@ -94,7 +94,7 @@ function requireLayoutCompatibility(registry) {
     assert.ok(isNonEmptyString(row.ce_layout_paradigm), 'layout matrix rows require ce_layout_paradigm.');
     assert.ok(isNonEmptyString(row.builder_rendering_model), `${row.ce_layout_paradigm} requires builder_rendering_model.`);
     assert.ok(ALLOWED_LAYOUT_SUPPORT_STATUSES.has(row.support_status), `${row.ce_layout_paradigm} has invalid support_status.`);
-    assert.ok(Array.isArray(row.required_metadata), `${row.ce_layout_paradigm} requires required_metadata array.`);
+    requireStringArray(row.required_metadata, row.ce_layout_paradigm + '.required_metadata');
     assert.ok(isNonEmptyString(row.validation_rule), `${row.ce_layout_paradigm} requires validation_rule.`);
     assert.ok(isNonEmptyString(row.builder_behavior), `${row.ce_layout_paradigm} requires builder_behavior.`);
     assert.ok(isNonEmptyString(row.ce_behavior), `${row.ce_layout_paradigm} requires ce_behavior.`);
