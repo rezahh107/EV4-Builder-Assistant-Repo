@@ -1,0 +1,8 @@
+{
+  "schema": "ev4-ce-builder-field-preservation-exceptions@1.0.0",
+  "contract": "CE_TO_BUILDER_FIELD_PRESERVATION_CONTRACT",
+  "version": "1.0.0",
+  "status": "active",
+  "scope": "Explicit transformation exceptions for CE to Builder protected field preservation. Empty by default because all protected fields use preserve_exact.",
+  "exceptions": []
+}
