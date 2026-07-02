@@ -1,6 +1,6 @@
 # CE Reference Map Adapter Contract
 
-Version: 0.1.0  
+Version: 0.2.0  
 Status: active  
 Scope: explicit normalization of Constructability Engineer structured `paradigm_to_structure_map` into Builder reference carrier shape and `first_batch_structure_intent`
 
@@ -13,10 +13,22 @@ Scope: explicit normalization of Constructability Engineer structured `paradigm_
 This contract defines a deterministic adapter path:
 
 ```text
-CE structured paradigm_to_structure_map -> Builder reference carriers
+CE structured paradigm_to_structure_map -> CE→Builder reference IR -> Builder reference carriers
 ```
 
 The adapter is validated by `scripts/validate-ce-reference-map-adapter.mjs` and runs from the central `scripts/validate.mjs` entrypoint.
+
+The formal transformation registry is:
+
+```text
+data/ce-builder-transformation-registry.v1.json
+```
+
+The registry is validated by:
+
+```text
+scripts/validate-ce-builder-transformation-registry.mjs
+```
 
 ---
 
@@ -60,6 +72,39 @@ Directional region proof must use explicit `left` and `right` terms. Substrings 
 
 ---
 
+## Canonical Intermediate Representation
+
+Before Builder projection, the adapter builds this IR:
+
+```yaml
+schema: ev4-ce-builder-reference-ir@1.0.0
+primary_anchor:
+  node: string
+  role: string
+regions:
+  - id: string
+    distribution: string
+    expected_count: integer
+    nodes: [string]
+repeated_units:
+  form: string
+  required_children: [string]
+connector_layer:
+  node: string
+  model: string
+  compact_id: string # node:model
+first_batch_requirements: [string]
+derived:
+  distribution_model: string
+  left_right_regions_proven: boolean
+  left_region_count: integer
+  right_region_count: integer
+```
+
+The IR preserves CE fields that Builder's current compact schema cannot carry as separate fields, including `primary_anchor.role`, `regions[].nodes[]`, and the separate connector `node` and `model` values.
+
+---
+
 ## Builder Output Shape
 
 The adapter emits two Builder-side carriers.
@@ -70,7 +115,7 @@ The adapter emits two Builder-side carriers.
 primary_anchor: string
 regions: [string]
 repeated_units: [string]
-connector_layer: string
+connector_layer: string # node:model
 first_batch_requirements:
   must_establish_primary_anchor: boolean
   must_create_or_stage_left_right_regions: boolean
@@ -78,6 +123,14 @@ first_batch_requirements:
   forbidden_composition_starts: [string]
   connector_strategy: string
 ```
+
+The connector layer projection is exact:
+
+```text
+CE connector_layer { node, model } -> Builder connector_layer "node:model"
+```
+
+No whitespace is inserted around the colon.
 
 The output intentionally does not add extra fields under `first_batch_requirements`, because Builder's current schema uses `additionalProperties: false` there.
 
@@ -96,7 +149,7 @@ connector_layer_staged: boolean
 forbidden_composition_start: false
 ```
 
-This companion carrier is required because the Builder Reference Paradigm Gate now checks structured first-batch intent rather than relying only on batch prose.
+This companion carrier is required because the Builder Reference Paradigm Gate checks structured first-batch intent rather than relying only on batch prose.
 
 ---
 
@@ -108,6 +161,9 @@ The adapter must prove both sides:
 1. Valid CE-style fixture normalizes to the exact expected Builder carriers.
 2. The normalized carriers pass Builder reference paradigm gate validation.
 3. Invalid CE-style fixtures fail before they can be treated as Builder carrier data.
+4. Every transform used by adapter code is declared in the mapping registry.
+5. Source-only CE fields are retained in IR or covered by an explicit projection rule.
+6. connector_layer projection is exactly node:model.
 ```
 
 Current fixtures:
@@ -118,10 +174,11 @@ tests/invalid/ce_reference_map_adapter_missing_anchor.json
 tests/invalid/ce_reference_map_adapter_false_direction_terms.json
 ```
 
-Validator:
+Validators:
 
 ```text
 scripts/validate-ce-reference-map-adapter.mjs
+scripts/validate-ce-builder-transformation-registry.mjs
 ```
 
 Central CI entrypoint:
