@@ -116,16 +116,16 @@ function readCeCarrier(map, referenceParadigmLock = {}) {
   const primaryAnchor = requireObject(map.primary_anchor, 'paradigm_to_structure_map.primary_anchor');
   const regions = requireArray(map.regions, 'paradigm_to_structure_map.regions').map((region, index) => {
     requireObject(region, `paradigm_to_structure_map.regions[${index}]`);
-    requireArray(region.nodes, `paradigm_to_structure_map.regions[${index}].nodes`).forEach((node, nodeIndex) => {
-      requireString(node, `paradigm_to_structure_map.regions[${index}].nodes[${nodeIndex}]`);
-    });
+    if (!Number.isInteger(region.expected_count)) {
+      throw new Error(`paradigm_to_structure_map.regions[${index}].expected_count must be an integer.`);
+    }
+    const validatedNodes = requireArray(region.nodes, `paradigm_to_structure_map.regions[${index}].nodes`)
+      .map((node, nodeIndex) => requireString(node, `paradigm_to_structure_map.regions[${index}].nodes[${nodeIndex}]`));
     return {
       id: requireString(region.id, `paradigm_to_structure_map.regions[${index}].id`),
       distribution: requireString(region.distribution, `paradigm_to_structure_map.regions[${index}].distribution`),
-      expected_count: Number.isInteger(region.expected_count) ? region.expected_count : (() => {
-        throw new Error(`paradigm_to_structure_map.regions[${index}].expected_count must be an integer.`);
-      })(),
-      nodes: region.nodes.map((node, nodeIndex) => requireString(node, `paradigm_to_structure_map.regions[${index}].nodes[${nodeIndex}]`))
+      expected_count: region.expected_count,
+      nodes: validatedNodes
     };
   });
   const repeatedUnits = requireObject(map.repeated_units, 'paradigm_to_structure_map.repeated_units');
