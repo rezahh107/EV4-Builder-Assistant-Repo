@@ -36,6 +36,7 @@ const scripts = [
 const nodeChecks = [
   'scripts/validate-ce-builder-transformation-registry.mjs',
   'scripts/validate-ce-reference-map-adapter.mjs',
+  'scripts/validate-ce-to-builder-contract-gate.mjs',
   'scripts/validate-ce-builder-package-adapter.mjs',
   'scripts/validate-real-elementor-execution-evidence.mjs',
   'scripts/validate-role-alignment-intake.mjs'
