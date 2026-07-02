@@ -4,7 +4,29 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { assertAllTransformsDeclared } from './ce-builder-transformation-registry.mjs';
 import { normalizeCeReferenceCarrier } from './normalize-ce-reference-map.mjs';
+
+const IMPLEMENTED_BY = 'scripts/normalize-ce-builder-executable-package.mjs';
+
+export const CE_BUILDER_PACKAGE_TRANSFORM_IDS = [
+  'CE_PKG_SCHEMA_CONSTANT',
+  'CE_PKG_STAGE_CONSTANTS',
+  'CE_PKG_EXECUTABLE_STATUS_TO_READY',
+  'CE_PKG_IDENTITY_LOCK_COPY',
+  'CE_PKG_PRODUCTION_READY_FALSE',
+  'CE_PKG_SOURCE_PAYLOAD_LEDGER_DERIVE',
+  'CE_PKG_BUILDER_CARRIERS_COPY',
+  'CE_PKG_FIRST_BATCH_NORMALIZE',
+  'CE_PKG_ACTION_PARAMETERS_FLATTEN',
+  'CE_PKG_CONFIRMATION_TEMPLATE_ATTACH',
+  'CE_PKG_VISUAL_REFERENCE_CARRIERS_ATTACH',
+  'CE_PKG_INPUT_AUTHORIZATION_DIGEST'
+];
+
+function assertDeclaredBuilderPackageTransforms() {
+  assertAllTransformsDeclared(CE_BUILDER_PACKAGE_TRANSFORM_IDS, IMPLEMENTED_BY);
+}
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -135,6 +157,7 @@ function normalizeAction(action, index) {
     element_generation_source: requireString(parameters.element_generation_source || action.element_generation_source, `first_safe_builder_batch.actions[${index}].parameters.element_generation_source`),
     ...(parameters.structure_panel_name ? { structure_panel_name: requireString(parameters.structure_panel_name, `first_safe_builder_batch.actions[${index}].parameters.structure_panel_name`) } : {}),
     ...(parameters.active_class ? { active_class: requireString(parameters.active_class, `first_safe_builder_batch.actions[${index}].parameters.active_class`) } : {}),
+    ...(parameters.active_class_scope ? { active_class_scope: requireString(parameters.active_class_scope, `first_safe_builder_batch.actions[${index}].parameters.active_class_scope`) } : {}),
     instruction: requireString(parameters.instruction, `first_safe_builder_batch.actions[${index}].parameters.instruction`),
     ...(Array.isArray(parameters.properties_not_to_change) ? { properties_not_to_change: parameters.properties_not_to_change.map((item, itemIndex) => requireString(item, `first_safe_builder_batch.actions[${index}].parameters.properties_not_to_change[${itemIndex}]`)) } : {}),
     expected_result: requireString(parameters.expected_result, `first_safe_builder_batch.actions[${index}].parameters.expected_result`)
@@ -212,6 +235,7 @@ function attachInputAuthorization(builderPackage) {
 }
 
 export function normalizeCeBuilderExecutablePackage(cePackage) {
+  assertDeclaredBuilderPackageTransforms();
   assertCeExecutablePackage(cePackage);
   requireBuilderPayloadCarriers(cePackage);
   assertVisualReferencePrerequisites(cePackage);
