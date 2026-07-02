@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { validateReferenceParadigmGate } from './validate-reference-paradigm-gate.mjs';
+import { validateBuilderFieldPreservationManifest } from './ce-builder-field-preservation-contract.mjs';
 
 const filePath = process.argv[2];
 
@@ -39,6 +40,7 @@ const DIAGNOSTICS = {
   FIRST_BATCH_OVERCAP: ['EV4-PKG-017', 'FIRST_BATCH_OVERCAP'],
   FIRST_BATCH_MAX_ACTIONS_OVERCAP: ['EV4-PKG-018', 'FIRST_BATCH_MAX_ACTIONS_OVERCAP'],
   REFERENCE_PARADIGM_GATE: ['EV4-PKG-019', 'REFERENCE_PARADIGM_GATE'],
+  FIELD_PRESERVATION_GATE: ['EV4-PKG-020', 'FIELD_PRESERVATION_GATE'],
   DUPLICATE_ID: ['EV4-PKG-101', 'DUPLICATE_ID'],
   CHILD_NODE_UNKNOWN: ['EV4-PKG-102', 'CHILD_NODE_UNKNOWN'],
   CLASS_TARGET_UNKNOWN: ['EV4-PKG-103', 'CLASS_TARGET_UNKNOWN'],
@@ -187,6 +189,11 @@ function visibleAuthorizationFlags(value) {
     ...(Array.isArray(value.audit_flags_to_preserve) ? value.audit_flags_to_preserve : []),
     ...(Array.isArray(value.unknowns_to_preserve) ? value.unknowns_to_preserve : [])
   ];
+}
+
+function hasCeBuilderExecutableSource(value) {
+  return Array.isArray(value.source_payload_ledger)
+    && value.source_payload_ledger.some((entry) => entry?.schema === 'ev4-builder-executable-package@1.0.0');
 }
 
 function expectedDecision(value, diagnostics) {
@@ -354,6 +361,12 @@ if (!confirmationRequest) {
 
 for (const diag of validateReferenceParadigmGate(pkg)) {
   fail([diag.id, diag.name], diag.message);
+}
+
+if (hasCeBuilderExecutableSource(pkg) && pkg.visual_reference_present === true) {
+  for (const diag of validateBuilderFieldPreservationManifest(pkg)) {
+    fail(DIAGNOSTICS.FIELD_PRESERVATION_GATE, `${diag.code}: ${diag.message}`, { blocking: diag.blocking !== false });
+  }
 }
 
 if (pkg.input_authorization) {
