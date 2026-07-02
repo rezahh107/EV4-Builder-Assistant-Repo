@@ -1,6 +1,6 @@
 # STATUS — EV4 Builder Assistant Repo
 
-Version: 0.3.7
+Version: 0.3.6
 Status: ce_builder_contract_gate_merged
 Date: 2026-07-02
 
@@ -160,7 +160,7 @@ patches:
 integration_sync:
   status: completed_for_ce_builder_contract_gate
   docs_status_changelog: synced_for_ce_builder_gate
-  package_version: 0.3.7
+  package_version: 0.3.6
   smart_home_architecture_mutation: none_intended
   selected_candidate_id: ARCH-FAM-C_preserved
   approved_class_mutation: none_intended
