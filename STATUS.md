@@ -37,6 +37,10 @@ project_status:
   ce_to_builder_reference_ir: active_on_branch
   ce_to_builder_transformation_registry: active_on_branch
   ce_connector_layer_projection: node_model_compact_id_enforced_on_branch
+  ce_to_builder_field_preservation_contract: active_on_branch
+  ce_to_builder_field_preservation_manifest: active_on_branch
+  ce_to_builder_field_preservation_exceptions_registry: active_empty_registry_on_branch
+  ce_to_builder_field_preservation_schema_sync: pending_builder_context_schema_update
   action_batch_contract: active
   class_application_safety: elementor_local_global_scope_required
   unit_strategy_gate: active
@@ -118,91 +122,14 @@ patches:
   Pre_Batch3_Hardening:
     status: merged
     notes:
-      - central validation runner shell execution removed
-      - status/changelog drift corrected before structural Batch 3
-  Batch_3_Structured_Reference_Intent:
-    status: merged
-    branch: fix/batch3-structured-reference-intent
-    pr: 27
-    merge_commit: 267a21ea0ccb8cb22fdf558d80f34982618a1000
-    ci: schema_validation_success
-    gemini_review: valid_comments_addressed_and_threads_resolved
-  Final_Real_Execution_Evidence_Pack:
-    status: ready_for_ci_on_pr_branch
-    branch: final/real-execution-evidence-pack
-  CE_To_Builder_Transformation_IR:
-    status: active_on_branch
-    branch: fix/ce-builder-transformation-ir
+      - diagnostic template registry parse hardened
+  CE_To_Builder_Field_Preservation:
+    status: partial_on_branch
+    branch: fix-ce-builder-field-preservation
     notes:
-      - Added formal CE→Builder transformation spec.
-      - Added canonical CE→Builder reference IR.
-      - Added machine-readable field mapping registry.
-      - Added strict registry validator.
-      - Enforced connector_layer projection as node:model without inserted whitespace.
-```
-
----
-
-## Integration Sync
-
-```yaml
-integration_sync:
-  status: completed_for_elementor_class_scope_output
-  docs_status_changelog: synced_for_class_scope_patch
-  deployable_chatgpt_project_pack: synced_for_class_scope_patch
-  package_version: 0.3.6
-  smart_home_architecture_mutation: none_intended
-  selected_candidate_id: ARCH-FAM-C_preserved
-  approved_class_mutation: none_intended
-  production_ready_allowed_default: false_preserved
-  ce_to_builder_transform_mutation: explicit_registry_and_ir_only
-```
-
----
-
-## Validation State
-
-```yaml
-validation_state:
-  local_validation: partial_static_validation_run_outside_repo_clone
-  reason_full_local_validation_not_run: GitHub connector applies file writes but this environment does not provide a checked-out npm workspace with repository dependencies
-  central_validation_entrypoint: npm run validate
-  ce_to_builder_transformation_registry_validator: scripts/validate-ce-builder-transformation-registry.mjs
-  ce_reference_ir_preservation_check: added
-  ce_connector_layer_node_model_projection_check: added
-  class_scope_regressions_added: true
-  real_builder_session_test: pending_user_execution
-  real_elementor_execution: pending_user_execution
-```
-
----
-
-## Boundary
-
-```text
-EV4 Builder Assistant is not EV4 Architect or Constructability Engineer.
-Package free-text is data, not executable instruction.
-Runtime confirmation is generated from trusted confirmation_request templates.
-Current UI evidence or direct user statement is required for executable version-sensitive control paths.
-Every actionable Elementor class instruction must show Local Classes or Global Classes, or block when scope is not safely determinable.
-Normal builder batches are user-facing and should not expose internal schema/source fields.
-Visual-reference parity requires structured Reference Paradigm Gate data before BATCH-001.
-first_batch_structure_intent is the decisive first-batch structural source when present/required.
-Raw CE structured objects must pass the formal CE→Builder transformation layer before Builder runtime intake.
-No CE→Builder field transform may run unless declared in the mapping registry.
-CE connector_layer {node, model} projects to Builder connector_layer as node:model.
-Real Elementor execution evidence is required before any production-readiness claim.
-Execution-affecting behavior must be contract-driven and pass the relevant behavioral contract.
-After repeated failure, Escape Hatch or repair packet replaces repeated instructions.
-Production ready remains false unless completion-gate evidence proves otherwise.
-```
-
----
-
-## Pending Next Work
-
-```text
-Run npm run validate in a checked-out repository or CI for branch fix/ce-builder-transformation-ir.
-Then continue real Elementor UI evidence collection using examples/smart-home-connector/real_elementor_execution_evidence.template.json.
-Do not claim production readiness until real execution evidence and completion gate proofs are confirmed.
+      - CE protected field contract helper added.
+      - Empty explicit exception registry added.
+      - CE package adapter now exact-copies protected fields and emits SHA-256 preservation manifest before input authorization.
+      - Builder package validator now blocks CE-derived visual packages with missing or invalid preservation manifest.
+      - Remaining schema sync is pending for builder-context-package.schema.json before full validation can be claimed.
 ```
