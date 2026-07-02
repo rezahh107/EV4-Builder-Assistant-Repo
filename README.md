@@ -22,6 +22,7 @@ Builder does not choose geometry, anchors, connector strategy, overlay policy, r
 This repository remains authoritative for Builder schemas, validators, runtime protocols, fixtures, and execution behavior. EV4 Project Gate verifies the handoff and does not replace Builder contracts or invent build evidence.
 
 ```yaml
+version: 0.3.6
 project_gate_handoff: documented
 project_gate_runtime: not_implemented
 production_ready: false
