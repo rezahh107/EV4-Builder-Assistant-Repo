@@ -63,7 +63,7 @@
           "pill-card",
           "pill-card with icon, title, subtitle"
         ],
-        "connector_layer": "connector-layer: card-edge-to-house-edge",
+        "connector_layer": "connector-layer:card-edge-to-house-edge",
         "first_batch_requirements": {
           "must_establish_primary_anchor": true,
           "must_create_or_stage_left_right_regions": true,

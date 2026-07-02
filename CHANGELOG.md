@@ -1,5 +1,33 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## Unreleased — 2026-07-02
+
+### Added
+
+- Added formal CE→Builder transformation specification in `docs/CE_TO_BUILDER_TRANSFORMATION_SPEC.md`.
+- Added machine-readable transformation mapping registry in `data/ce-builder-transformation-registry.v1.json`.
+- Added canonical CE→Builder reference IR support through `buildCeReferenceCarrierIr`.
+- Added strict transformation registry validator in `scripts/validate-ce-builder-transformation-registry.mjs`.
+- Wired the transformation registry validator into central validation through `scripts/validate.mjs`.
+
+### Changed
+
+- Hardened CE reference map normalization so CE `connector_layer: { node, model }` projects to Builder `connector_layer: "node:model"` without inserted whitespace.
+- Updated CE reference map adapter contract and CE Builder package adapter contract to require declared transformation mappings and explicit data-loss policy.
+- Updated CE reference map fixture expectations for the exact `node:model` connector projection.
+- Updated `STATUS.md` with CE→Builder transformation IR, registry, and validator state.
+- Addressed Gemini review feedback by removing redundant region node validation and caching transformation mappings by ID.
+- Preserved prior changelog history while adding this unreleased section.
+
+### Status
+
+- No architecture, scoring, recommendation, constructability review, or redesign was rerun.
+- `selected_candidate_id` preservation remains enforced by the adapter.
+- `production_ready_allowed` remains false.
+- Full repository validation still requires `npm run validate` in a checked-out repo or CI.
+
+---
+
 ## v0.3.6 — 2026-07-01
 
 ### Added
