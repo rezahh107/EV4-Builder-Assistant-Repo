@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import cp from 'node:child_process';
 
 import { normalizeCeBuilderExecutablePackage } from './normalize-ce-builder-executable-package.mjs';
 import { PROTECTED_FIELD_DEFINITIONS, canonicalSha256, validateBuilderFieldPreservationManifest } from './ce-builder-field-preservation-contract.mjs';
@@ -25,7 +25,7 @@ function readJson(filePath) {
 }
 
 function run(command, args, label) {
-  const result = spawnSync(command, args, { stdio: 'pipe', encoding: 'utf8' });
+  const result = cp.spawnSync(command, args, { stdio: 'pipe', encoding: 'utf8' });
   if (result.status !== 0) {
     throw new Error(`${label} failed.\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
   }
@@ -38,17 +38,7 @@ function validateBuilderPackage(builderPackage, filePath) {
     fs.writeFileSync(outputPath, JSON.stringify(builderPackage, null, 2));
 
     const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-    run(npxCommand, [
-      '--yes',
-      'ajv-cli@5',
-      'validate',
-      '--spec=draft2020',
-      '--strict=false',
-      '-s',
-      'schemas/builder-context-package.schema.json',
-      '-d',
-      outputPath
-    ], `schema validation for ${filePath}`);
+    run(npxCommand, ['--yes', 'ajv-cli@5', 'validate', '--spec=draft2020', '--strict=false', '-s', 'schemas/builder-context-package.schema.json', '-d', outputPath], `schema validation for ${filePath}`);
     run(process.execPath, ['scripts/validate-package.mjs', outputPath], `cross-field validation for ${filePath}`);
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -80,20 +70,17 @@ if (invalidFixtures.length === 0) throw new Error(`No invalid ${PREFIX} fixtures
 
 for (const filePath of validFixtures) {
   const fixture = readJson(filePath);
-  const ceBefore = JSON.stringify(fixture.ce_builder_executable_package);
+  const sourceBefore = JSON.stringify(fixture.ce_builder_executable_package);
   const builderPackage = normalizeCeBuilderExecutablePackage(fixture.ce_builder_executable_package);
 
-  assert.equal(JSON.stringify(fixture.ce_builder_executable_package), ceBefore, 'adapter must not mutate CE input payload.');
+  assert.equal(JSON.stringify(fixture.ce_builder_executable_package), sourceBefore, `CE gate and adapter must not mutate source CE payload for ${filePath}`);
   assert.equal(builderPackage.schema, 'ev4-builder-context-package@1.0.0');
   assert.equal(builderPackage.package_status, 'ready');
   assert.equal(builderPackage.production_ready_allowed, false);
   assert.equal(builderPackage.selected_candidate_id, fixture.ce_builder_executable_package.selected_candidate_id);
   assert.equal(builderPackage.confirmation_request.template_id, 'standard_batch_confirmation');
   assert.equal(builderPackage.first_builder_batch.actions.length, fixture.ce_builder_executable_package.first_safe_builder_batch.actions.length);
-  assert.deepEqual(
-    builderPackage.confirmation_request.confirmed_action_ids,
-    fixture.ce_builder_executable_package.confirmation_request.confirmed_action_ids
-  );
+  assert.deepEqual(builderPackage.confirmation_request.confirmed_action_ids, fixture.ce_builder_executable_package.confirmation_request.confirmed_action_ids);
   assertProtectedFieldsPreserved(fixture.ce_builder_executable_package, builderPackage, filePath);
   assert.ok(builderPackage.input_authorization?.package_digest?.value, 'normalized package must include computed input_authorization.package_digest.value');
 
