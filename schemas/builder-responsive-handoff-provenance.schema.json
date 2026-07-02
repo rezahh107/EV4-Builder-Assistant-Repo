@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/builder-responsive-handoff-provenance.schema.json",
+  "title": "EV4 Builder to Responsive Handoff Provenance",
+  "description": "Builder-owned provenance carrier for production handoff into EV4 Responsive Architect. This is not the Builder runtime intake package; it records the CE and Builder evidence Responsive needs before responsive adaptation starts.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "contentHash": { "type": "string", "pattern": "^sha256:[a-fA-F0-9]{64}$" },
+    "nonEmptyStringArray": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+  },
+  "required": [
+    "schema",
+    "handoff_source",
+    "selected_candidate_id",
+    "builder_provenance",
+    "ce_provenance",
+    "visual_governance_provenance",
+    "builder_validation_claims"
+  ],
+  "properties": {
+    "schema": { "const": "ev4-builder-responsive-handoff-provenance@1.0.0" },
+    "handoff_source": { "const": "builder_output_and_build_evidence" },
+    "selected_candidate_id": { "$ref": "#/$defs/nonEmptyString" },
+    "builder_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["builder_package_schema", "builder_output_ref", "builder_input_authorization_digest", "build_evidence_refs"],
+      "properties": {
+        "builder_package_schema": { "const": "ev4-builder-context-package@1.0.0" },
+        "builder_output_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "builder_input_authorization_digest": { "$ref": "#/$defs/contentHash" },
+        "build_evidence_refs": { "$ref": "#/$defs/nonEmptyStringArray" }
+      }
+    },
+    "ce_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ce_package_schema", "ce_package_ref", "constructability_status", "builder_decisions_required", "blocking_dependencies_count"],
+      "properties": {
+        "ce_package_schema": { "const": "ev4-builder-executable-package@1.0.0" },
+        "ce_package_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "constructability_status": { "const": "executable_ready" },
+        "builder_decisions_required": { "const": 0 },
+        "blocking_dependencies_count": { "const": 0 }
+      }
+    },
+    "visual_governance_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["golden_reference_contract_id", "golden_reference_contract_hash", "spatial_lexicon_version_used", "visual_tolerance_policy_ref", "build_intent_brief_ref", "reference_paradigm_lock_ref", "paradigm_to_structure_map_ref"],
+      "properties": {
+        "golden_reference_contract_id": { "$ref": "#/$defs/nonEmptyString" },
+        "golden_reference_contract_hash": { "$ref": "#/$defs/contentHash" },
+        "spatial_lexicon_version_used": { "$ref": "#/$defs/nonEmptyString" },
+        "visual_tolerance_policy_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "build_intent_brief_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "reference_paradigm_lock_ref": { "$ref": "#/$defs/nonEmptyString" },
+        "paradigm_to_structure_map_ref": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "builder_validation_claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["builder_runtime_intake_authorized", "visual_reference_prerequisites_present", "build_completed", "live_render_validated", "export_validated", "production_ready_allowed"],
+      "properties": {
+        "builder_runtime_intake_authorized": { "const": true },
+        "visual_reference_prerequisites_present": { "const": true },
+        "build_completed": { "type": "boolean" },
+        "live_render_validated": { "type": "boolean" },
+        "export_validated": { "type": "boolean" },
+        "production_ready_allowed": { "const": false }
+      }
+    }
+  }
+}
