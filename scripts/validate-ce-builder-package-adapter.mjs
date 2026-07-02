@@ -6,6 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import { normalizeCeBuilderExecutablePackage } from './normalize-ce-builder-executable-package.mjs';
+import { PROTECTED_FIELD_DEFINITIONS, canonicalSha256, validateBuilderFieldPreservationManifest } from './ce-builder-field-preservation-contract.mjs';
 
 const ROOT = process.cwd();
 const VALID_DIR = path.join(ROOT, 'tests', 'valid');
@@ -54,6 +55,23 @@ function validateBuilderPackage(builderPackage, filePath) {
   }
 }
 
+function assertProtectedFieldsPreserved(cePackage, builderPackage, filePath) {
+  const manifestViolations = validateBuilderFieldPreservationManifest(builderPackage);
+  assert.deepEqual(manifestViolations, [], `field preservation manifest must be valid for ${filePath}`);
+  assert.equal(builderPackage.ce_to_builder_field_preservation_manifest?.result, 'pass', `field preservation manifest must pass for ${filePath}`);
+
+  for (const fieldDef of PROTECTED_FIELD_DEFINITIONS) {
+    assert.deepEqual(builderPackage[fieldDef.field], cePackage[fieldDef.field], `${fieldDef.field} must reach Builder input unchanged.`);
+    const digest = canonicalSha256(cePackage[fieldDef.field]);
+    const manifestField = builderPackage.ce_to_builder_field_preservation_manifest.fields.find((entry) => entry.field === fieldDef.field);
+    assert.ok(manifestField, `${fieldDef.field} must be present in preservation manifest.`);
+    assert.equal(manifestField.source_path, fieldDef.source_path);
+    assert.equal(manifestField.target_path, fieldDef.target_path);
+    assert.equal(manifestField.source_sha256, digest);
+    assert.equal(manifestField.target_sha256, digest);
+  }
+}
+
 const validFixtures = fixturePaths(VALID_DIR);
 const invalidFixtures = fixturePaths(INVALID_DIR);
 
@@ -62,8 +80,10 @@ if (invalidFixtures.length === 0) throw new Error(`No invalid ${PREFIX} fixtures
 
 for (const filePath of validFixtures) {
   const fixture = readJson(filePath);
+  const ceBefore = JSON.stringify(fixture.ce_builder_executable_package);
   const builderPackage = normalizeCeBuilderExecutablePackage(fixture.ce_builder_executable_package);
 
+  assert.equal(JSON.stringify(fixture.ce_builder_executable_package), ceBefore, 'adapter must not mutate CE input payload.');
   assert.equal(builderPackage.schema, 'ev4-builder-context-package@1.0.0');
   assert.equal(builderPackage.package_status, 'ready');
   assert.equal(builderPackage.production_ready_allowed, false);
@@ -74,6 +94,7 @@ for (const filePath of validFixtures) {
     builderPackage.confirmation_request.confirmed_action_ids,
     fixture.ce_builder_executable_package.confirmation_request.confirmed_action_ids
   );
+  assertProtectedFieldsPreserved(fixture.ce_builder_executable_package, builderPackage, filePath);
   assert.ok(builderPackage.input_authorization?.package_digest?.value, 'normalized package must include computed input_authorization.package_digest.value');
 
   validateBuilderPackage(builderPackage, filePath);
