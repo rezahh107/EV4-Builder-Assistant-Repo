@@ -62,8 +62,14 @@ if (invalidFixtures.length === 0) throw new Error(`No invalid ${PREFIX} fixtures
 
 for (const filePath of validFixtures) {
   const fixture = readJson(filePath);
+  const sourceBefore = JSON.stringify(fixture.ce_builder_executable_package);
   const builderPackage = normalizeCeBuilderExecutablePackage(fixture.ce_builder_executable_package);
 
+  assert.equal(
+    JSON.stringify(fixture.ce_builder_executable_package),
+    sourceBefore,
+    `CE→Builder gate and adapter must not mutate source CE payload for ${filePath}`
+  );
   assert.equal(builderPackage.schema, 'ev4-builder-context-package@1.0.0');
   assert.equal(builderPackage.package_status, 'ready');
   assert.equal(builderPackage.production_ready_allowed, false);
