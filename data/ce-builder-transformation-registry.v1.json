@@ -3,29 +3,35 @@
   "version": "1.0.0",
   "status": "active",
   "scope": "Formal CE to Builder transformation registry for Builder-side adapter validation.",
-  "ir": {
-    "schema": "ev4-ce-builder-reference-ir@1.0.0",
-    "purpose": "Canonical intermediate representation that preserves CE structured reference data before Builder projection.",
-    "required_paths": [
-      "ir.primary_anchor.node",
-      "ir.primary_anchor.role",
-      "ir.regions[].id",
-      "ir.regions[].distribution",
-      "ir.regions[].expected_count",
-      "ir.regions[].nodes[]",
-      "ir.repeated_units.form",
-      "ir.repeated_units.required_children[]",
-      "ir.connector_layer.node",
-      "ir.connector_layer.model",
-      "ir.connector_layer.compact_id",
-      "ir.first_batch_requirements[]"
-    ]
-  },
+  "ir": {"schema":"ev4-ce-builder-reference-ir@1.0.0","purpose":"Canonical intermediate representation that preserves CE structured reference data before Builder projection.","required_paths":["ir.primary_anchor.node","ir.primary_anchor.role","ir.regions[].id","ir.regions[].distribution","ir.regions[].expected_count","ir.regions[].nodes[]","ir.repeated_units.form","ir.repeated_units.required_children[]","ir.connector_layer.node","ir.connector_layer.model","ir.connector_layer.compact_id","ir.first_batch_requirements[]"]},
   "rules": [
     {"id":"NO_SILENT_TRANSFORMS","severity":"blocker","text":"Every CE to Builder transform used by adapter code must have a mapping entry in this registry."},
     {"id":"NO_UNDECLARED_DATA_LOSS","severity":"blocker","text":"A source field may be omitted from Builder output only when this registry explicitly marks it retained_in_ir_only or covered_by_projection."},
-    {"id":"NODE_MODEL_COMPACT_ID","severity":"blocker","text":"CE connector_layer {node, model} must project to Builder connector_layer as exactly node:model with no inserted whitespace."}
+    {"id":"NODE_MODEL_COMPACT_ID","severity":"blocker","text":"CE connector_layer {node, model} must project to Builder connector_layer as exactly node:model with no inserted whitespace."},
+    {"id":"LAYOUT_COMPATIBILITY_EXPLICIT","severity":"blocker","text":"CE layout_paradigm values must be declared in the layout compatibility matrix before Builder rendering."}
   ],
+  "layout_compatibility": {
+    "contract_name": "CE_TO_BUILDER_LAYOUT_COMPATIBILITY",
+    "contract_version": "1.0.0",
+    "status": "active",
+    "decision_status": "accepted",
+    "decision_date": "2026-07-02",
+    "producer": "EV4-Constructability-Engineer-Repo",
+    "consumer": "EV4-Builder-Assistant-Repo",
+    "field": "reference_paradigm_lock.layout_paradigm",
+    "decision": "Option A: Builder conditionally supports layout_paradigm=grid only when explicit left/right decomposition metadata exists.",
+    "rationale": "CE already allows grid and the CE source map can carry regions, expected_count, and nodes. Builder's current rendering gate supports left-center-right decomposition, not a generic grid renderer.",
+    "migration_notes": "Bare grid output must be repaired by adding explicit left/right decomposition metadata before Builder handoff.",
+    "allowed_values": ["center-anchored-symmetric", "grid", "vertical-list", "split-hero", "radial-diagram", "unknown"],
+    "matrix": [
+      {"ce_layout_paradigm":"center-anchored-symmetric","builder_rendering_model":"left-center-right","support_status":"supported","required_metadata":["reference_paradigm_lock","paradigm_to_structure_map","first_batch_structure_intent"],"validation_rule":"standard_reference_paradigm_gate","builder_behavior":"accept after schema and cross-field validation","ce_behavior":"may emit when constructability evidence proves the locked paradigm","failure_code":"EV4-RPG-007","notes":"Existing supported visual reference model."},
+      {"ce_layout_paradigm":"grid","builder_rendering_model":"left-center-right","support_status":"conditionally_supported","required_metadata":["paradigm_to_structure_map.regions[] with explicit left distribution","paradigm_to_structure_map.regions[] with explicit right distribution","regions[].expected_count > 0","regions[].nodes[] non-empty","first_batch_structure_intent.region_model == left-center-right","first_batch_structure_intent.left_region_count > 0","first_batch_structure_intent.right_region_count > 0"],"validation_rule":"grid_requires_explicit_left_right_decomposition","builder_behavior":"accept only after decomposition is proven; otherwise fail before rendering","ce_behavior":"may mark Builder-ready only when decomposition metadata is present","failure_code":"LAYOUT_PARADIGM_REQUIRES_DECOMPOSITION","notes":"This is not generic grid rendering; it is a declared grid-to-left/right compatibility projection."},
+      {"ce_layout_paradigm":"vertical-list","builder_rendering_model":"none_declared","support_status":"reserved","required_metadata":[],"validation_rule":"layout_paradigm_not_supported_by_builder_model","builder_behavior":"reject visual-reference handoff until a Builder rendering model is declared","ce_behavior":"must not mark Builder-ready for current visual-reference Builder flow","failure_code":"LAYOUT_PARADIGM_UNSUPPORTED","notes":"Reserved for a future declared model."},
+      {"ce_layout_paradigm":"split-hero","builder_rendering_model":"none_declared","support_status":"reserved","required_metadata":[],"validation_rule":"layout_paradigm_not_supported_by_builder_model","builder_behavior":"reject visual-reference handoff until a Builder rendering model is declared","ce_behavior":"must not mark Builder-ready for current visual-reference Builder flow","failure_code":"LAYOUT_PARADIGM_UNSUPPORTED","notes":"Reserved for a future declared model."},
+      {"ce_layout_paradigm":"radial-diagram","builder_rendering_model":"none_declared","support_status":"reserved","required_metadata":[],"validation_rule":"layout_paradigm_not_supported_by_builder_model","builder_behavior":"reject visual-reference handoff until a Builder rendering model is declared","ce_behavior":"must not mark Builder-ready for current visual-reference Builder flow","failure_code":"LAYOUT_PARADIGM_UNSUPPORTED","notes":"Reserved for a future declared model."},
+      {"ce_layout_paradigm":"unknown","builder_rendering_model":"none","support_status":"unsupported","required_metadata":[],"validation_rule":"unknown_layout_blocks_builder_ready","builder_behavior":"reject","ce_behavior":"must not mark Builder-ready","failure_code":"LAYOUT_PARADIGM_UNSUPPORTED","notes":"No Builder rendering is allowed for unknown layout."}
+    ]
+  },
   "mappings": [
     {"id":"CE_REF_PRIMARY_ANCHOR_NODE_COPY","category":"reference_map","source_paths":["ce.paradigm_to_structure_map.primary_anchor.node"],"ir_paths":["ir.primary_anchor.node"],"builder_paths":["builder.paradigm_to_structure_map.primary_anchor","builder.first_batch_structure_intent.primary_anchor"],"operation":"copy_trimmed_string","loss_policy":"lossless","data_loss":"none","implemented_by":"scripts/normalize-ce-reference-map.mjs","validation":["non_empty_string","builder_gate_match"]},
     {"id":"CE_REF_PRIMARY_ANCHOR_ROLE_IR_ONLY","category":"reference_map","source_paths":["ce.paradigm_to_structure_map.primary_anchor.role"],"ir_paths":["ir.primary_anchor.role"],"builder_paths":[],"operation":"preserve_in_ir_only","loss_policy":"declared_ir_retention","data_loss":"not_emitted_to_builder_schema; retained in canonical IR because Builder carrier has no role field","implemented_by":"scripts/normalize-ce-reference-map.mjs","validation":["non_empty_string","ir_preserves_value"]},
