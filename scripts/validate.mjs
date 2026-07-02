@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { spawnSync } from 'node:child_process';
+import cp from 'node:child_process';
 
-const scripts = [
+const npmScripts = [
   'validate:version-consistency',
   'validate:schema-registry',
   'build:project-pack',
@@ -36,6 +36,7 @@ const scripts = [
 const nodeChecks = [
   'scripts/validate-ce-builder-transformation-registry.mjs',
   'scripts/validate-ce-reference-map-adapter.mjs',
+  'scripts/validate-ce-to-builder-contract-gate.mjs',
   'scripts/validate-ce-builder-field-preservation-contract.mjs',
   'scripts/validate-ce-builder-package-adapter.mjs',
   'scripts/validate-real-elementor-execution-evidence.mjs',
@@ -44,9 +45,9 @@ const nodeChecks = [
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
-function run(command, args, label) {
+function checked(command, args, label) {
   console.log('\n==> ' + label);
-  const result = spawnSync(command, args, { stdio: 'inherit' });
+  const result = cp.spawnSync(command, args, { stdio: 'inherit' });
   if (result.error) {
     console.error('Failed to execute ' + command + ': ' + result.error.message);
     process.exit(1);
@@ -54,10 +55,5 @@ function run(command, args, label) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-for (const script of scripts) {
-  run(npmCommand, ['run', script], 'npm run ' + script);
-}
-
-for (const check of nodeChecks) {
-  run(process.execPath, [check], 'node ' + check);
-}
+for (const script of npmScripts) checked(npmCommand, ['run', script], 'npm run ' + script);
+for (const check of nodeChecks) checked(process.execPath, [check], 'node ' + check);
