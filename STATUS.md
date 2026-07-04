@@ -130,8 +130,17 @@ patches:
     ci: schema_validation_success
     gemini_review: valid_comments_addressed_and_threads_resolved
   Final_Real_Execution_Evidence_Pack:
-    status: ready_for_ci_on_pr_branch
+    status: merged
     branch: final/real-execution-evidence-pack
+    pr: 31
+    merge_commit: 16e1c479ef077541a71f247f988cf9db84c93bee
+    ci: schema_validation_success
+    notes:
+      - Real Elementor execution evidence schema is present.
+      - Real Elementor execution evidence validator is present and wired into central validation.
+      - Template, docs, and invalid regression coverage are present.
+      - Real Elementor execution remains pending user-provided UI evidence.
+      - Production readiness remains false.
   CE_To_Builder_Transformation_IR:
     status: merged
     notes:
@@ -182,6 +191,7 @@ validation_state:
   ce_reference_ir_preservation_check: added
   ce_connector_layer_node_model_projection_check: added
   class_scope_regressions_added: true
+  pr_31_ci: schema_validation_success
   pr_42_ci: schema_validation_success
   ce_pr_24_ci: validate_fixtures_success
   real_builder_session_test: pending_user_execution
