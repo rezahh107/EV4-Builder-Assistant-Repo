@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
-Status: real_execution_evidence_pack_ready_for_ci
+Status: ce_builder_contract_gate_merged
 Date: 2026-07-02
 
 ---
@@ -27,16 +27,18 @@ project_status:
   central_validation_shell_mode: shell_disabled_cross_platform_npm
   schema_registry_validation: active
   schema_registry_shell_mode: shell_disabled_cross_platform_npx
-  real_elementor_execution_evidence_schema: active_on_pr_branch
-  real_elementor_execution_evidence_validator: active_on_pr_branch
+  real_elementor_execution_evidence_schema: active
+  real_elementor_execution_evidence_validator: active
   smart_guidance_footer: v0.2.0
   ui_instruction_confidence_gate: active
   reference_paradigm_gate: structured_first_batch_intent_active
   ce_to_builder_reference_map_adapter: active
   ce_to_builder_package_adapter: active
-  ce_to_builder_reference_ir: active_on_branch
-  ce_to_builder_transformation_registry: active_on_branch
-  ce_connector_layer_projection: node_model_compact_id_enforced_on_branch
+  ce_to_builder_reference_ir: active
+  ce_to_builder_transformation_registry: active
+  ce_to_builder_contract_gate: active
+  ce_builder_executable_schema_alignment: completed_in_ce_pr_24
+  ce_connector_layer_projection: node_model_compact_id_enforced
   action_batch_contract: active
   class_application_safety: elementor_local_global_scope_required
   unit_strategy_gate: active
@@ -128,17 +130,35 @@ patches:
     ci: schema_validation_success
     gemini_review: valid_comments_addressed_and_threads_resolved
   Final_Real_Execution_Evidence_Pack:
-    status: ready_for_ci_on_pr_branch
+    status: merged
     branch: final/real-execution-evidence-pack
-  CE_To_Builder_Transformation_IR:
-    status: active_on_branch
-    branch: fix/ce-builder-transformation-ir
+    pr: 31
+    merge_commit: 16e1c479ef077541a71f247f988cf9db84c93bee
+    ci: schema_validation_success
     notes:
-      - Added formal CE→Builder transformation spec.
-      - Added canonical CE→Builder reference IR.
-      - Added machine-readable field mapping registry.
-      - Added strict registry validator.
-      - Enforced connector_layer projection as node:model without inserted whitespace.
+      - Real Elementor execution evidence schema is present.
+      - Real Elementor execution evidence validator is present and wired into central validation.
+      - Template, docs, and invalid regression coverage are present.
+      - Real Elementor execution remains pending user-provided UI evidence.
+      - Production readiness remains false.
+  CE_To_Builder_Transformation_IR:
+    status: merged
+    notes:
+      - Formal CE→Builder transformation spec is present.
+      - Canonical CE→Builder reference IR is present.
+      - Machine-readable field mapping registry is present.
+      - Strict registry validator is wired into central validation.
+      - connector_layer projection is enforced as node:model without inserted whitespace.
+  CE_To_Builder_Contract_Gate:
+    status: merged
+    pr: 42
+    ci: schema_validation_success
+    downstream_ce_alignment: completed_in_pr_24
+    notes:
+      - Gate validates CE builder executable packages before normalization.
+      - Gate is deterministic and fail-closed.
+      - Gate does not repair, normalize, coerce, delete, or reinterpret CE output.
+      - Gemini review suggestions were applied and regression-covered before merge.
 ```
 
 ---
@@ -147,15 +167,15 @@ patches:
 
 ```yaml
 integration_sync:
-  status: completed_for_elementor_class_scope_output
-  docs_status_changelog: synced_for_class_scope_patch
-  deployable_chatgpt_project_pack: synced_for_class_scope_patch
+  status: completed_for_ce_builder_contract_gate
+  docs_status_changelog: synced_for_ce_builder_gate
   package_version: 0.3.6
   smart_home_architecture_mutation: none_intended
   selected_candidate_id: ARCH-FAM-C_preserved
   approved_class_mutation: none_intended
   production_ready_allowed_default: false_preserved
-  ce_to_builder_transform_mutation: explicit_registry_and_ir_only
+  ce_to_builder_transform_mutation: explicit_registry_ir_and_gate_only
+  ce_producer_schema_alignment: completed_in_constructability_engineer_pr_24
 ```
 
 ---
@@ -164,13 +184,16 @@ integration_sync:
 
 ```yaml
 validation_state:
-  local_validation: partial_static_validation_run_outside_repo_clone
-  reason_full_local_validation_not_run: GitHub connector applies file writes but this environment does not provide a checked-out npm workspace with repository dependencies
+  local_validation: not_claimed_from_connector_environment
   central_validation_entrypoint: npm run validate
   ce_to_builder_transformation_registry_validator: scripts/validate-ce-builder-transformation-registry.mjs
+  ce_to_builder_contract_gate_validator: scripts/validate-ce-to-builder-contract-gate.mjs
   ce_reference_ir_preservation_check: added
   ce_connector_layer_node_model_projection_check: added
   class_scope_regressions_added: true
+  pr_31_ci: schema_validation_success
+  pr_42_ci: schema_validation_success
+  ce_pr_24_ci: validate_fixtures_success
   real_builder_session_test: pending_user_execution
   real_elementor_execution: pending_user_execution
 ```
@@ -188,7 +211,7 @@ Every actionable Elementor class instruction must show Local Classes or Global C
 Normal builder batches are user-facing and should not expose internal schema/source fields.
 Visual-reference parity requires structured Reference Paradigm Gate data before BATCH-001.
 first_batch_structure_intent is the decisive first-batch structural source when present/required.
-Raw CE structured objects must pass the formal CE→Builder transformation layer before Builder runtime intake.
+Raw CE structured objects must pass the formal CE→Builder transformation layer and CE→Builder Contract Gate before Builder runtime intake.
 No CE→Builder field transform may run unless declared in the mapping registry.
 CE connector_layer {node, model} projects to Builder connector_layer as node:model.
 Real Elementor execution evidence is required before any production-readiness claim.
@@ -202,7 +225,7 @@ Production ready remains false unless completion-gate evidence proves otherwise.
 ## Pending Next Work
 
 ```text
-Run npm run validate in a checked-out repository or CI for branch fix/ce-builder-transformation-ir.
-Then continue real Elementor UI evidence collection using examples/smart-home-connector/real_elementor_execution_evidence.template.json.
+Continue real Elementor UI evidence collection using examples/smart-home-connector/real_elementor_execution_evidence.template.json.
 Do not claim production readiness until real execution evidence and completion gate proofs are confirmed.
+Project Gate verifier/runtime remains a separate future integration, not implemented here.
 ```

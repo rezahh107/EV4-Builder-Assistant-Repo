@@ -9,22 +9,29 @@
 - Added canonical CE→Builder reference IR support through `buildCeReferenceCarrierIr`.
 - Added strict transformation registry validator in `scripts/validate-ce-builder-transformation-registry.mjs`.
 - Wired the transformation registry validator into central validation through `scripts/validate.mjs`.
+- Added the deterministic CE→Builder Contract Gate in `scripts/validate-ce-to-builder-contract-gate.mjs`.
+- Added the CE→Builder Contract Gate report schema in `schemas/ce-to-builder-contract-gate-report.schema.json`.
+- Added valid and invalid CE→Builder Contract Gate regression fixtures, including Gemini-driven malformed-item, missing batch/action ID, and missing architect class coverage.
 
 ### Changed
 
 - Hardened CE reference map normalization so CE `connector_layer: { node, model }` projects to Builder `connector_layer: "node:model"` without inserted whitespace.
 - Updated CE reference map adapter contract and CE Builder package adapter contract to require declared transformation mappings and explicit data-loss policy.
 - Updated CE reference map fixture expectations for the exact `node:model` connector projection.
-- Updated `STATUS.md` with CE→Builder transformation IR, registry, and validator state.
+- Updated `STATUS.md` with CE→Builder transformation IR, registry, validator, and contract gate state.
 - Addressed Gemini review feedback by removing redundant region node validation and caching transformation mappings by ID.
+- Hardened Builder normalization so CE packages must pass the CE→Builder Contract Gate before Builder-side projection or runtime intake.
+- Hardened gate error reporting so failing CE gate paths remain visible to downstream validation checks.
+- Synced downstream CE producer expectations through `rezahh107/EV4-Constructability-Engineer-Repo#24` so CE emits `schema: ev4-builder-executable-package@1.0.0`.
 - Preserved prior changelog history while adding this unreleased section.
 
 ### Status
 
 - No architecture, scoring, recommendation, constructability review, or redesign was rerun.
-- `selected_candidate_id` preservation remains enforced by the adapter.
+- `selected_candidate_id` preservation remains enforced by the adapter and gate.
 - `production_ready_allowed` remains false.
-- Full repository validation still requires `npm run validate` in a checked-out repo or CI.
+- PR #42 passed `Schema validation` before merge.
+- Downstream CE producer schema alignment was completed in `EV4-Constructability-Engineer-Repo` PR #24.
 
 ---
 
