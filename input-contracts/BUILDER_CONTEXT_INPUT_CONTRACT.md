@@ -85,7 +85,6 @@ required_fields:
   - first_builder_batch.actions[].action_id
   - first_builder_batch.actions[].element_generation
   - first_builder_batch.actions[].element_generation_source
-  - confirmation_request.preferred
   - confirmation_request.confirmation_id
   - confirmation_request.confirmed_action_ids
   - confirmation_request.expected_user_token
@@ -99,6 +98,7 @@ Compatibility notes:
 - input_authorization is the deterministic authorization result for the package when supplied by the exporter or fixture. Older compatible packages may omit it, but runtime authorization must still be computed before execution.
 - Older Builder_Context_Package fixtures may omit Elementor class scope. Runtime may use a repository-level default only when the contract explicitly defines it; otherwise class-scope ambiguity blocks the class instruction.
 - Architect-only compatibility exports with packet_purpose: ce_intake_source or intended_consumer: constructability_engineer are not Builder runtime intake packages.
+- `confirmation_request.preferred` is not part of the active Builder runtime schema, adapter output, or validator contract. Do not require, emit, or infer it for CE→Builder readiness.
 ```
 
 ---
@@ -190,7 +190,7 @@ eligible_for_approved_execution:
   class_creation_application_map: present
   required_generation_evidence: present
   actionable_class_scope: present_or_safely_determinable
-  confirmation_request: preferred
+  confirmation_request: structured_template_bound
 
 blocked_from_approved_execution:
   package_status:
