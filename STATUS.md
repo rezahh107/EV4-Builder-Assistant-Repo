@@ -39,6 +39,7 @@ project_status:
   ce_to_builder_contract_gate: active
   ce_builder_executable_schema_alignment: completed_in_ce_pr_24
   ce_connector_layer_projection: node_model_compact_id_enforced
+  builder_to_responsive_handoff_boundary: documented_not_implemented
   action_batch_contract: active
   class_application_safety: elementor_local_global_scope_required
   unit_strategy_gate: active
@@ -159,6 +160,9 @@ patches:
       - Gate is deterministic and fail-closed.
       - Gate does not repair, normalize, coerce, delete, or reinterpret CE output.
       - Gemini review suggestions were applied and regression-covered before merge.
+  Builder_To_Responsive_Handoff_Boundary:
+    status: documented_not_implemented
+    boundary_doc: docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md
 ```
 
 ---
@@ -188,6 +192,7 @@ validation_state:
   central_validation_entrypoint: npm run validate
   ce_to_builder_transformation_registry_validator: scripts/validate-ce-builder-transformation-registry.mjs
   ce_to_builder_contract_gate_validator: scripts/validate-ce-to-builder-contract-gate.mjs
+  builder_to_responsive_boundary_doc: docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md
   ce_reference_ir_preservation_check: added
   ce_connector_layer_node_model_projection_check: added
   class_scope_regressions_added: true
@@ -227,5 +232,6 @@ Production ready remains false unless completion-gate evidence proves otherwise.
 ```text
 Continue real Elementor UI evidence collection using examples/smart-home-connector/real_elementor_execution_evidence.template.json.
 Do not claim production readiness until real execution evidence and completion gate proofs are confirmed.
+Formal Builder→Responsive export schema remains not implemented.
 Project Gate verifier/runtime remains a separate future integration, not implemented here.
 ```
