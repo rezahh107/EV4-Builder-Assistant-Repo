@@ -71,7 +71,7 @@
 
 ### Status
 
-- No architecture, scoring, recommendation, or redesign was rerun.
+- No architecture, scoring, recommendation, constructability review, or redesign was rerun.
 - `selected_candidate_id: ARCH-FAM-C` remains preserved.
 - Approved class names remain preserved.
 - `production_ready` remains false.
