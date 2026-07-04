@@ -12,6 +12,7 @@
 - Added the deterministic CE→Builder Contract Gate in `scripts/validate-ce-to-builder-contract-gate.mjs`.
 - Added the CE→Builder Contract Gate report schema in `schemas/ce-to-builder-contract-gate-report.schema.json`.
 - Added valid and invalid CE→Builder Contract Gate regression fixtures, including Gemini-driven malformed-item, missing batch/action ID, and missing architect class coverage.
+- Added `docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md` to document the current Builder evidence boundary for the future Builder→Responsive Project Gate route without adding runtime behavior.
 
 ### Changed
 
@@ -23,6 +24,7 @@
 - Hardened Builder normalization so CE packages must pass the CE→Builder Contract Gate before Builder-side projection or runtime intake.
 - Hardened gate error reporting so failing CE gate paths remain visible to downstream validation checks.
 - Synced downstream CE producer expectations through `rezahh107/EV4-Constructability-Engineer-Repo#24` so CE emits `schema: ev4-builder-executable-package@1.0.0`.
+- Documented that a single formal Builder→Responsive export schema is not implemented yet.
 - Preserved prior changelog history while adding this unreleased section.
 
 ### Status
@@ -32,6 +34,7 @@
 - `production_ready_allowed` remains false.
 - PR #42 passed `Schema validation` before merge.
 - Downstream CE producer schema alignment was completed in `EV4-Constructability-Engineer-Repo` PR #24.
+- Builder→Responsive Project Gate transition remains not implemented.
 
 ---
 
