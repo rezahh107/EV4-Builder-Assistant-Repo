@@ -1,0 +1,64 @@
+{
+  "schema_id": "ev4-elementor-execution-capability-registry",
+  "schema_version": "1.0.0",
+  "owner_repository": "rezahh107/EV4-Builder-Assistant-Repo",
+  "evidence_policy": "Official documentation can establish capability existence, but current UI evidence is required before Builder claims an exact executable control path.",
+  "capabilities": [
+    {
+      "feature_id": "elementor-v4-classes",
+      "official_capability_status": "confirmed_official",
+      "official_source": "https://elementor.com/help/classes-in-elementor-2/",
+      "control_path_status": "insufficient_evidence",
+      "allowed_builder_use": "may mention only when source package or current UI evidence provides class scope",
+      "builder_must_not_assume": ["Local Classes path", "Global Classes path", "class scope without package evidence"]
+    },
+    {
+      "feature_id": "flexbox-container",
+      "official_capability_status": "confirmed_official",
+      "official_source": "https://elementor.com/help/container-element/",
+      "control_path_status": "version_sensitive",
+      "allowed_builder_use": "may execute only from proven CE strategy and current Builder package",
+      "builder_must_not_assume": ["responsive behavior", "clickability", "exact panel path"]
+    },
+    {
+      "feature_id": "grid-container",
+      "official_capability_status": "confirmed_official",
+      "official_source": "https://elementor.com/help/container-element/",
+      "control_path_status": "version_sensitive",
+      "allowed_builder_use": "blocked unless the approved package explicitly requires Grid and current UI evidence supports it",
+      "builder_must_not_assume": ["Grid availability in installed editor", "grid column values", "breakpoint behavior"]
+    },
+    {
+      "feature_id": "div-block-element",
+      "official_capability_status": "confirmed_official",
+      "official_source": "https://elementor.com/help/div-block-element/",
+      "control_path_status": "confirmed_official",
+      "allowed_builder_use": "may be referenced as an official Elementor V4 element; executable use still requires approved strategy",
+      "builder_must_not_assume": ["automatic replacement for approved structure"]
+    },
+    {
+      "feature_id": "dynamic-tags-v4",
+      "official_capability_status": "confirmed_official",
+      "official_source": "https://elementor.com/help/dynamic-tags-in-v4/",
+      "control_path_status": "version_sensitive",
+      "allowed_builder_use": "do not execute unless Dynamic Tags are explicitly in the approved Builder package",
+      "builder_must_not_assume": ["Dynamic Loop", "data source", "query behavior"]
+    },
+    {
+      "feature_id": "loop-grid",
+      "official_capability_status": "confirmed_official",
+      "official_source": "https://elementor.com/help/loop-grid/",
+      "control_path_status": "version_sensitive",
+      "allowed_builder_use": "blocked unless package evidence proves loop strategy",
+      "builder_must_not_assume": ["template type", "query", "pagination", "responsive behavior"]
+    },
+    {
+      "feature_id": "responsive-controls",
+      "official_capability_status": "confirmed_official",
+      "official_source": "https://elementor.com/help/container-element/",
+      "control_path_status": "version_sensitive",
+      "allowed_builder_use": "Builder may request viewport-specific evidence; Builder must not generalize desktop evidence",
+      "builder_must_not_assume": ["tablet/mobile correctness", "custom breakpoints"]
+    }
+  ]
+}
