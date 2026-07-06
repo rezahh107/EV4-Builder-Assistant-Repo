@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/builder-stage-payload.schema.json",
+  "title": "EV4 Builder Stage Payload",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "owner_repository",
+    "payload_status",
+    "source_intake",
+    "architecture_identity",
+    "session",
+    "execution_ledger",
+    "repair_state",
+    "layout_assessment",
+    "completion_assessment",
+    "real_execution_evidence",
+    "responsive_handoff_candidate",
+    "evidence_register",
+    "missing_evidence",
+    "boundary_assertions",
+    "validation_contract"
+  ],
+  "properties": {
+    "schema_id": { "const": "ev4-builder-stage-payload" },
+    "schema_version": { "const": "1.0.0" },
+    "owner_repository": { "const": "rezahh107/EV4-Builder-Assistant-Repo" },
+    "payload_status": { "enum": ["complete", "insufficient_evidence"] },
+    "source_intake": { "type": "object" },
+    "architecture_identity": { "type": "object", "required": ["selected_candidate_id"] },
+    "session": { "type": "object", "required": ["workflow_mode", "runtime_state"] },
+    "execution_ledger": { "type": "object", "required": ["batch_ledger", "checkpoint_ledger"] },
+    "repair_state": { "type": "object", "required": ["active"] },
+    "layout_assessment": { "type": "object" },
+    "completion_assessment": { "type": "object", "required": ["production_ready_claim"] },
+    "real_execution_evidence": { "type": "object", "required": ["records", "overall_status"] },
+    "responsive_handoff_candidate": { "type": "object", "required": ["candidate_status", "responsive_correctness_claimed_by_builder"] },
+    "evidence_register": { "type": "array" },
+    "missing_evidence": { "type": "array" },
+    "boundary_assertions": {
+      "type": "object",
+      "required": [
+        "responsive_correctness_claimed_by_builder",
+        "production_ready_claimed_by_builder",
+        "project_gate_runtime_integration_claimed",
+        "responsive_input_package_created_by_builder"
+      ],
+      "properties": {
+        "responsive_correctness_claimed_by_builder": { "const": false },
+        "production_ready_claimed_by_builder": { "const": false },
+        "project_gate_runtime_integration_claimed": { "const": false },
+        "responsive_input_package_created_by_builder": { "const": false }
+      }
+    },
+    "validation_contract": { "type": "object" }
+  }
+}
