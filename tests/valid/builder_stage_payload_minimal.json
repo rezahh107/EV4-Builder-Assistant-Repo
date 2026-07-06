@@ -1,0 +1,98 @@
+{
+  "schema_id": "ev4-builder-stage-payload",
+  "schema_version": "1.0.0",
+  "owner_repository": "rezahh107/EV4-Builder-Assistant-Repo",
+  "payload_status": "complete",
+  "source_intake": {
+    "ce_package_ref": "synthetic/ce-package.json",
+    "ce_package_schema": "ev4-builder-executable-package@1.0.0",
+    "ce_package_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "ce_gate_report_ref": "synthetic/ce-gate-report.json",
+    "ce_gate_result": "passed",
+    "adapter_result_ref": "synthetic/adapter-result.json",
+    "builder_context_package_ref": "examples/smart-home-connector/builder_context_package.json",
+    "builder_context_package_schema": "ev4-builder-context-package@1.0.0",
+    "builder_context_package_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "input_authorization_ref": "synthetic/input-authorization.json",
+    "input_authorization_decision": "authorized"
+  },
+  "architecture_identity": {
+    "selected_candidate_id": "ARCH-FAM-C",
+    "approved_classes_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+    "class_scope_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+    "structure_hash": "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+  },
+  "session": {
+    "session_ref": "synthetic-session-001",
+    "workflow_mode": "APPROVED_HANDOFF_MODE",
+    "runtime_state": "COMPLETED",
+    "latest_checkpoint_ref": "synthetic/checkpoint-final.json",
+    "latest_checkpoint_hash": "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+  },
+  "execution_ledger": {
+    "batch_ledger": [
+      {
+        "batch_id": "BATCH-001",
+        "action_ids": ["ACT-001"],
+        "confirmation": {
+          "received_token_status": "matched",
+          "confirmed_action_ids": ["ACT-001"]
+        },
+        "result": {
+          "status": "confirmed",
+          "evidence_refs": ["synthetic-real-execution-evidence"],
+          "checkpoint_ref": "synthetic/checkpoint-final.json"
+        }
+      }
+    ],
+    "checkpoint_ledger": [
+      {
+        "checkpoint_ref": "synthetic/checkpoint-final.json",
+        "sequence": 1,
+        "parent_checkpoint_ref": null
+      }
+    ],
+    "superseded_records": []
+  },
+  "repair_state": {
+    "active": false,
+    "repair_packet_ref": null,
+    "last_safe_checkpoint_ref": "synthetic/checkpoint-final.json",
+    "resume_condition": null
+  },
+  "layout_assessment": {
+    "layout_check_ref": "synthetic/layout-check.json",
+    "status": "present"
+  },
+  "completion_assessment": {
+    "completion_gate_ref": "synthetic/completion-gate.json",
+    "completion_status_ref": "synthetic/completion-status.json",
+    "production_ready_allowed": false,
+    "production_ready_claim": false
+  },
+  "real_execution_evidence": {
+    "records": ["synthetic-real-execution-evidence"],
+    "overall_status": "present"
+  },
+  "responsive_handoff_candidate": {
+    "candidate_status": "eligible",
+    "required_artifact_refs": ["synthetic/layout-check.json", "synthetic/completion-gate.json", "synthetic-real-execution-evidence"],
+    "blocking_reasons": [],
+    "responsive_correctness_claimed_by_builder": false
+  },
+  "evidence_register": [],
+  "unresolved_evidence": [],
+  "missing_evidence": [],
+  "boundary_assertions": {
+    "responsive_correctness_claimed_by_builder": false,
+    "production_ready_claimed_by_builder": false,
+    "project_gate_runtime_integration_claimed": false,
+    "responsive_input_package_created_by_builder": false
+  },
+  "validation_contract": {
+    "validator_id": "ev4-builder-stage-payload-validator",
+    "validator_version": "1.0.0",
+    "deterministic_serialization": "stable-json-v1"
+  },
+  "extension_records": []
+}
