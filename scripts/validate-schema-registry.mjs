@@ -3,9 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const schemaDir = path.resolve('schemas');
-const schemaFiles = fs
-  .readdirSync(schemaDir)
+const schemaFiles = fs.readdirSync(path.resolve('schemas'))
   .filter((name) => name.endsWith('.schema.json'))
   .sort()
   .map((name) => path.join('schemas', name));
@@ -16,25 +14,19 @@ if (schemaFiles.length === 0) {
 }
 
 const refsBySchema = {
+  'schemas/builder-stage-payload.schema.json': ['schemas/responsive-handoff-candidate.schema.json'],
   'schemas/checkpoint.schema.json': ['schemas/evidence-record.schema.json'],
-  'schemas/session-state.schema.json': [
-    'schemas/checkpoint.schema.json',
-    'schemas/evidence-record.schema.json',
-    'schemas/repair-packet.schema.json'
-  ]
+  'schemas/session-state.schema.json': ['schemas/checkpoint.schema.json', 'schemas/evidence-record.schema.json', 'schemas/repair-packet.schema.json']
 };
 
 const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 let failed = false;
 
 for (const schemaFile of schemaFiles) {
-  const refs = refsBySchema[schemaFile] || [];
   const args = ['--yes', 'ajv-cli@5', 'compile', '--spec=draft2020', '--strict=false', '-s', schemaFile];
-  for (const ref of refs) args.push('-r', ref);
-
+  for (const ref of refsBySchema[schemaFile] || []) args.push('-r', ref);
   console.log(`Schema registry compile: ${schemaFile}`);
   const result = spawnSync(command, args, { stdio: 'inherit' });
-
   if (result.status !== 0) {
     console.error(`Schema registry compile failed: ${schemaFile}`);
     failed = true;
