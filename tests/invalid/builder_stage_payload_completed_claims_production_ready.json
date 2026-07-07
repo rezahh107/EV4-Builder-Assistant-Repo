@@ -11,7 +11,10 @@
   "layout_assessment": { "status": "present" },
   "completion_assessment": { "production_ready_claim": true },
   "real_execution_evidence": { "records": [], "overall_status": "present" },
-  "responsive_handoff_candidate": { "candidate_status": "eligible", "responsive_correctness_claimed_by_builder": false },
+  "responsive_handoff_candidate": {
+    "candidate_status": "eligible",
+    "responsive_correctness_claimed_by_builder": false
+  },
   "evidence_register": [],
   "missing_evidence": [],
   "boundary_assertions": {
