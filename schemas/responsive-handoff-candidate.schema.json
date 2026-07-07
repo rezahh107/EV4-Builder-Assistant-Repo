@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/responsive-handoff-candidate.schema.json",
+  "title": "EV4 Builder Responsive Handoff Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "candidate_status",
+    "valid_builder_stage_payload",
+    "valid_final_stage_bundle",
+    "valid_producer_gate_export",
+    "authorized_builder_input",
+    "selected_candidate_identity_preserved",
+    "active_repair_packet",
+    "blocking_builder_diagnostics",
+    "real_elementor_execution_evidence_ref",
+    "layout_check_ref",
+    "completion_gate_ref",
+    "latest_checkpoint_ref",
+    "unconfirmed_execution_affecting_actions",
+    "responsive_correctness_claimed_by_builder"
+  ],
+  "properties": {
+    "schema": { "const": "ev4-responsive-handoff-candidate@1.0.0" },
+    "candidate_status": { "enum": ["eligible", "blocked", "insufficient_evidence"] },
+    "valid_builder_stage_payload": { "type": "boolean" },
+    "valid_final_stage_bundle": { "type": "boolean" },
+    "valid_producer_gate_export": { "type": "boolean" },
+    "authorized_builder_input": { "type": "boolean" },
+    "selected_candidate_identity_preserved": { "type": "boolean" },
+    "active_repair_packet": { "type": "boolean" },
+    "blocking_builder_diagnostics": { "type": "array" },
+    "real_elementor_execution_evidence_ref": { "type": ["string", "null"] },
+    "layout_check_ref": { "type": ["string", "null"] },
+    "completion_gate_ref": { "type": ["string", "null"] },
+    "latest_checkpoint_ref": { "type": ["string", "null"] },
+    "unconfirmed_execution_affecting_actions": { "type": "array" },
+    "responsive_correctness_claimed_by_builder": { "const": false },
+    "failure_reasons": { "type": "array", "items": { "type": "string" } }
+  }
+}

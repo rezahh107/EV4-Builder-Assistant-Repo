@@ -39,7 +39,8 @@ const nodeChecks = [
   'scripts/validate-ce-to-builder-contract-gate.mjs',
   'scripts/validate-ce-builder-package-adapter.mjs',
   'scripts/validate-real-elementor-execution-evidence.mjs',
-  'scripts/validate-role-alignment-intake.mjs'
+  'scripts/validate-role-alignment-intake.mjs',
+  'scripts/validate-builder-producer-adoption.mjs'
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';

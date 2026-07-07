@@ -1,0 +1,144 @@
+{
+  "schema_id": "ev4-builder-pipeline-manifest",
+  "schema_version": "1.0.0",
+  "owner_repository": "rezahh107/EV4-Builder-Assistant-Repo",
+  "pipeline_id": "ev4-builder-producer-adoption-pipeline",
+  "version": "1.0.0",
+  "runtime_model": {
+    "iterative_execution": true,
+    "runtime_states_are_pipeline_phases": false,
+    "maximum_normal_actions_per_turn": 5,
+    "project_gate_export_final_phase": true
+  },
+  "pipeline_phases": [
+    {
+      "phase_id": "builder-intake-validation",
+      "ordinal": 1,
+      "mandatory": true,
+      "applicability": "all_builder_runs",
+      "required_inputs": [
+        "ev4-builder-executable-package@1.0.0"
+      ],
+      "required_outputs": [
+        "ce-to-builder-contract-gate-report",
+        "ev4-builder-context-package@1.0.0"
+      ],
+      "completion_rule": "CE package must pass fail-closed gate and Builder context authorization before execution."
+    },
+    {
+      "phase_id": "builder-prebuild-authorization",
+      "ordinal": 2,
+      "mandatory": true,
+      "applicability": "authorized_builder_runs",
+      "required_inputs": [
+        "ev4-builder-context-package@1.0.0"
+      ],
+      "required_outputs": [
+        "builder-input-authorization-decision"
+      ],
+      "completion_rule": "selected_candidate_id, approved classes, class scope, and package hash must be preserved."
+    },
+    {
+      "phase_id": "builder-execution-loop",
+      "ordinal": 3,
+      "mandatory": true,
+      "applicability": "runs_with_executable_actions",
+      "required_inputs": [
+        "action batches",
+        "confirmation tokens",
+        "repair packets when active"
+      ],
+      "required_outputs": [
+        "action_batch_ledger",
+        "confirmation_ledger",
+        "checkpoint_ledger"
+      ],
+      "completion_rule": "Execution may be active, paused, blocked, or complete; repeatable batches are ledger entries, not new pipeline phases."
+    },
+    {
+      "phase_id": "builder-evidence-consolidation",
+      "ordinal": 4,
+      "mandatory": true,
+      "applicability": "all_exportable_builder_runs",
+      "required_inputs": [
+        "checkpoints",
+        "evidence records",
+        "layout checks",
+        "real Elementor execution evidence when present"
+      ],
+      "required_outputs": [
+        "evidence_register",
+        "missing_evidence"
+      ],
+      "completion_rule": "Every factual execution claim must resolve to retained evidence."
+    },
+    {
+      "phase_id": "builder-completion-assessment",
+      "ordinal": 5,
+      "mandatory": true,
+      "applicability": "all_exportable_builder_runs",
+      "required_inputs": [
+        "completion gate",
+        "completion status",
+        "evidence register"
+      ],
+      "required_outputs": [
+        "responsive_handoff_candidate"
+      ],
+      "completion_rule": "Builder completion never implies responsive correctness, Responsive acceptance, or production readiness."
+    },
+    {
+      "phase_id": "builder-project-gate-export",
+      "ordinal": 6,
+      "mandatory": true,
+      "applicability": "all_exportable_builder_runs",
+      "required_inputs": [
+        "ev4-builder-stage-payload@1.0.0",
+        "stage-evidence-bundle.v1",
+        "producer-gate-export.v1"
+      ],
+      "required_outputs": [
+        "Builder Producer Gate Export"
+      ],
+      "completion_rule": "Producer Gate Export is the mandatory final phase; silent fallback is forbidden."
+    }
+  ],
+  "runtime_state_machine": {
+    "workflow_modes": [
+      "START_INTAKE_MODE",
+      "APPROVED_HANDOFF_MODE",
+      "FRESH_IMAGE_MODE_LIMITED"
+    ],
+    "runtime_states": [
+      "INTAKE_WAITING",
+      "INTAKE_VALIDATING",
+      "BUILD_ACTIVE",
+      "WAITING_FOR_CONFIRMATION",
+      "EVIDENCE_REQUIRED",
+      "CORRECTION",
+      "REVIEW_ONLY",
+      "PAUSED",
+      "COMPLETED"
+    ],
+    "repeatable_execution_artifacts": [
+      "action_batch",
+      "confirmation",
+      "checkpoint",
+      "evidence_record",
+      "repair_packet"
+    ],
+    "blocked_states_export_actual_state": true
+  },
+  "validation_tracks": [
+    "schema checks",
+    "behavioral contracts",
+    "project-pack validation",
+    "runtime tests",
+    "Project Gate contract byte verification"
+  ],
+  "legacy_compatibility_outputs": [
+    "existing Persian summaries",
+    "existing project-pack artifacts",
+    "existing action batch and checkpoint contracts"
+  ]
+}
