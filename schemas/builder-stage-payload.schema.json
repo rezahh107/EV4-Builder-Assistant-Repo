@@ -36,7 +36,7 @@
     "layout_assessment": { "type": "object" },
     "completion_assessment": { "type": "object", "required": ["production_ready_claim"] },
     "real_execution_evidence": { "type": "object", "required": ["records", "overall_status"] },
-    "responsive_handoff_candidate": { "type": "object", "required": ["candidate_status", "responsive_correctness_claimed_by_builder"] },
+    "responsive_handoff_candidate": { "$ref": "responsive-handoff-candidate.schema.json" },
     "evidence_register": { "type": "array" },
     "missing_evidence": { "type": "array" },
     "boundary_assertions": {
