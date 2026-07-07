@@ -1,70 +1,122 @@
-# PROMPT-03 HANDOFF — Builder Producer Adoption
+# PROMPT-03 HANDOFF — Builder Producer Gate Adoption
 
 ```yaml
 producer: builder
 repository: rezahh107/EV4-Builder-Assistant-Repo
-status: pending_merge
-branch: feature/builder-producer-gate-export
-base_main_sha: 69a2c61edf6d06b4418ad770fcefbfdffcf275d6
-project_gate_pin: ea19c22c32458068e167b267da8b819e9263cdf7
-pr_head_source_of_truth: GitHub PR #47 head_sha
+prompt: Prompt 3
+normalization_status: complete
+producer_adoption_status: merged
+producer_pr: 47
+producer_pr_head_sha: 5606f561f8a28555c4f8ee7afa37446daae7e8bb
+producer_merge_commit_sha: 45459d0246f5d14486867224d26c2d2ba8a563b6
+project_gate_prompt_0_commit: ea19c22c32458068e167b267da8b819e9263cdf7
+exact_head_ci_status: passed
+project_gate_runtime_integration: not_implemented
+producer_repositories_modified_by_prompt_5: false
+prompt_5_ready_input: true
 human_review_required: true
 ```
 
-## Scope completed
+## Normalization note
 
-- Added exact Project Gate Producer Gate Export v1 vendored schema.
-- Added exact Project Gate Stage Bundle v1 vendored schema for separate dependency verification.
-- Added Project Gate common-contract lock for Producer Gate Export v1.
-- Added immutable reusable workflow caller pinned to Project Gate merge commit.
-- Added canonical Builder pipeline manifest.
-- Added Builder Stage Payload schema carrier.
-- Added Responsive Handoff Candidate schema carrier owned by Builder as a candidate representation only.
-- Linked Builder Stage Payload to Responsive Handoff Candidate schema through `$ref`.
-- Added Elementor execution capability registry.
-- Added minimal valid and invalid Builder Stage Payload fixtures.
-- Added Builder producer adoption validator and wired it into central validation.
-- Hardened Builder producer adoption validator with guarded file reads, guarded JSON parsing, explicit `BUILDER_P03_*` diagnostics, and scoped workflow `uses:` ref checks.
+This handoff was normalized after Producer PR #47 was merged. It updates stale handoff prose only and does not redo Producer adoption.
 
-## Review finding fixes
+## Canonical Producer evidence
 
 ```yaml
-PRF-001:
-  status: addressed_in_branch
-  fix: guarded required-file reads/parses/hashes plus deterministic diagnostics
-  raw_stack_trace_policy: fail_closed_diagnostic
-PRF-002:
-  status: addressed_in_branch
-  fix: builder-stage-payload now references responsive-handoff-candidate schema; valid fixture aligned; invalid fixture remains intentionally incomplete and production-overclaiming
+producer_pr: 47
+producer_pr_state: merged
+base_branch: main
+head_sha: 5606f561f8a28555c4f8ee7afa37446daae7e8bb
+merge_commit_sha: 45459d0246f5d14486867224d26c2d2ba8a563b6
+exact_head_ci:
+  - workflow_name: Verify Project Gate Contract Pin
+    conclusion: success
+  - workflow_name: Schema validation
+    conclusion: success
+```
+
+## Project Gate Prompt 0 pin
+
+```yaml
+project_gate_prompt_0:
+  repository: rezahh107/EV4-Project-Gate
+  pr_number: 40
+  merged_commit_sha: ea19c22c32458068e167b267da8b819e9263cdf7
+  producer_gate_export_schema_path: contracts/common/producer-gate-export.v1.schema.json
+  producer_gate_export_schema_sha256: c556bb9deeccdcafeb885a1c8b3dbd660e4e06f452b8ac3c7040d21377465fcc
+  stage_bundle_schema_path: schemas/stage-bundle/stage-bundle.v1.schema.json
+  stage_bundle_schema_sha256: fc1ec6d3f7aecbabaeb0a3455d9eb42788779d2fa1531e8c7b2cb3bde706a886
+  acquisition_mode: producer_emitted_gate_artifact
+  silent_fallback_allowed: false
+```
+
+## Canonical artifact paths
+
+```yaml
+artifact_paths:
+  adoption_report: {path: docs/BUILDER_PRODUCER_GATE_EXPORT.md, status: verified}
+  pipeline_manifest: {path: data/builder-pipeline-manifest.v1.json, status: verified}
+  stage_payload_schema: {path: schemas/builder-stage-payload.schema.json, status: verified}
+  responsive_handoff_candidate_schema: {path: schemas/responsive-handoff-candidate.schema.json, status: verified}
+  producer_gate_export_schema: {path: contracts/project-gate/producer-gate-export.v1.schema.json, status: verified}
+  producer_gate_export_lock: {path: contracts/project-gate/producer-gate-export.v1.lock.json, status: verified}
+  stage_bundle_schema: {path: contracts/project-gate/stage-bundle.v1.schema.json, status: verified}
+  validator: {path: scripts/validate-builder-producer-adoption.mjs, status: verified}
+  workflow_project_gate_contract: {path: .github/workflows/verify-project-gate-contract.yml, status: verified}
+```
+
+## Validation evidence
+
+```yaml
+original_local_tests_recorded:
+  node scripts/validate-builder-producer-adoption.mjs: not_run_by_assistant
+  npm run validate: not_run_by_assistant
+remote_exact_head_ci_observed:
+  Verify Project Gate Contract Pin: success
+  Schema validation: success
+normalization_local_tests_run: []
+normalization_tests_not_run:
+  - node scripts/validate-builder-producer-adoption.mjs
+  - npm run validate
+ci_scope: repository_validation_evidence_only
 ```
 
 ## Boundaries preserved
 
-- CE to Builder Contract Gate remains fail-closed and non-mutating.
+- Project Gate runtime integration is not implemented by this Producer handoff.
+- Prompt 5 routing is not implemented by this Producer handoff.
 - Builder does not create a Responsive Input Package.
 - Builder does not claim Responsive acceptance.
-- Builder does not claim Project Gate runtime integration.
-- Builder does not claim production readiness.
+- Builder does not claim responsive correctness.
+- No downstream acceptance is claimed.
+- No production readiness is claimed.
 - Synthetic fixtures remain synthetic.
+- No evidence is invented or silently normalized.
 
-## Tests run
+## Remaining insufficient_evidence
+
+- Local full `npm run validate` output remains not claimed by this normalization.
+- Project Gate Prompt 4.5 must verify or accept remaining cross-repository evidence requirements.
+- Responsive Input Package generation remains not implemented and not owned by Builder.
+- Cross-repository E2E remains `insufficient_evidence`.
+
+## Prompt 5 consumption rule
+
+`Project Gate may consume this handoff as normalized Producer evidence only after this normalization PR is merged and Project Gate Prompt 4.5 evidence repair verifies or accepts the remaining cross-repository evidence requirements.`
+
+## Files changed by this normalization
 
 ```yaml
-node scripts/validate-builder-producer-adoption.mjs: not_run_by_assistant
-npm run validate: not_run_by_assistant
-npm run validate:version-consistency: not_run_by_assistant
-npm run build:project-pack: not_run_by_assistant
-remote_ci_after_fix: pending_or_unknown
+files_changed:
+  - docs/handoffs/PROMPT-03_HANDOFF.md
 ```
 
-## Tests not run reason
+## No-false-execution notes
 
-Repository test execution was not available in this connector-only edit session. The branch and PR require CI and human review before merge.
-
-## Remaining gaps
-
-- Full local `npm run validate` output remains insufficient_evidence until CI or local runner executes it on the new head.
-- Producer Gate Export fixture creation was partially blocked by tool safety limits during this session.
-- Project Gate Prompt 5 routing remains not implemented.
-- Responsive Input Package generation remains not implemented and not owned by Builder.
-- Cross-repository end-to-end evidence remains insufficient_evidence.
+- Producer adoption was not rerun.
+- Runtime code was not modified.
+- Validators were not modified.
+- Schemas were not modified.
+- Fixtures were not modified.
+- Workflows were not modified.
