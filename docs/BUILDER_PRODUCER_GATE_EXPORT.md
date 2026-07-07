@@ -33,4 +33,8 @@ node scripts/validate-builder-producer-adoption.mjs
 npm run validate
 ```
 
+The validator is fail-closed for required governance files. Missing, unreadable, or malformed artifacts emit `BUILDER_P03_*` diagnostics rather than raw filesystem or JSON exceptions.
+
 The canonical Builder pipeline manifest is `data/builder-pipeline-manifest.v1.json`. It keeps fixed phases separate from runtime states and repeatable action/checkpoint/evidence ledgers.
+
+`schemas/builder-stage-payload.schema.json` references `schemas/responsive-handoff-candidate.schema.json` for the embedded `responsive_handoff_candidate` object.
