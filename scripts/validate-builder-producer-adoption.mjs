@@ -29,8 +29,10 @@ parsed('scripts/validate-builder-producer-adoption.mjs', 'BUILDER_P03_GUARD_SELF
 if (!guardProbe.some((e) => e.code === 'BUILDER_P03_GUARD_SELFTEST_MISSING')) fail('BUILDER_P03_GUARD_SELFTEST_FAILED', 'validator.guards');
 if (!guardProbe.some((e) => e.code === 'BUILDER_P03_GUARD_SELFTEST_JSON')) fail('BUILDER_P03_GUARD_SELFTEST_FAILED', 'validator.guards');
 
-if (hash('contracts/project-gate/producer-gate-export.v1.schema.json', 'BUILDER_P03_PRODUCER_SCHEMA_UNREADABLE') !== PRODUCER_SHA) fail('BUILDER_P03_PRODUCER_SCHEMA_HASH_MISMATCH', 'contracts/project-gate/producer-gate-export.v1.schema.json');
-if (hash('contracts/project-gate/stage-bundle.v1.schema.json', 'BUILDER_P03_STAGE_BUNDLE_UNREADABLE') !== STAGE_SHA) fail('BUILDER_P03_STAGE_BUNDLE_HASH_MISMATCH', 'contracts/project-gate/stage-bundle.v1.schema.json');
+const producerHash = hash('contracts/project-gate/producer-gate-export.v1.schema.json', 'BUILDER_P03_PRODUCER_SCHEMA_UNREADABLE');
+if (producerHash !== null && producerHash !== PRODUCER_SHA) fail('BUILDER_P03_PRODUCER_SCHEMA_HASH_MISMATCH', 'contracts/project-gate/producer-gate-export.v1.schema.json');
+const stageHash = hash('contracts/project-gate/stage-bundle.v1.schema.json', 'BUILDER_P03_STAGE_BUNDLE_UNREADABLE');
+if (stageHash !== null && stageHash !== STAGE_SHA) fail('BUILDER_P03_STAGE_BUNDLE_HASH_MISMATCH', 'contracts/project-gate/stage-bundle.v1.schema.json');
 
 const lock = parsed('contracts/project-gate/producer-gate-export.v1.lock.json', 'BUILDER_P03_LOCK_UNREADABLE_OR_MALFORMED');
 if (lock) {
