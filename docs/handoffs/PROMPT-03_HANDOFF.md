@@ -6,6 +6,7 @@ repository: rezahh107/EV4-Builder-Assistant-Repo
 status: pending_merge
 branch: feature/builder-producer-gate-export
 base_main_sha: 69a2c61edf6d06b4418ad770fcefbfdffcf275d6
+latest_head_sha: cbcce0a81bb9d0b8fe2b5683f0ed4b51e85abb73
 project_gate_pin: ea19c22c32458068e167b267da8b819e9263cdf7
 human_review_required: true
 ```
