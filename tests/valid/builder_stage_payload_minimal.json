@@ -75,10 +75,22 @@
     "overall_status": "present"
   },
   "responsive_handoff_candidate": {
+    "schema": "ev4-responsive-handoff-candidate@1.0.0",
     "candidate_status": "eligible",
-    "required_artifact_refs": ["synthetic/layout-check.json", "synthetic/completion-gate.json", "synthetic-real-execution-evidence"],
-    "blocking_reasons": [],
-    "responsive_correctness_claimed_by_builder": false
+    "valid_builder_stage_payload": true,
+    "valid_final_stage_bundle": true,
+    "valid_producer_gate_export": true,
+    "authorized_builder_input": true,
+    "selected_candidate_identity_preserved": true,
+    "active_repair_packet": false,
+    "blocking_builder_diagnostics": [],
+    "real_elementor_execution_evidence_ref": "synthetic-real-execution-evidence",
+    "layout_check_ref": "synthetic/layout-check.json",
+    "completion_gate_ref": "synthetic/completion-gate.json",
+    "latest_checkpoint_ref": "synthetic/checkpoint-final.json",
+    "unconfirmed_execution_affecting_actions": [],
+    "responsive_correctness_claimed_by_builder": false,
+    "failure_reasons": []
   },
   "evidence_register": [],
   "unresolved_evidence": [],
