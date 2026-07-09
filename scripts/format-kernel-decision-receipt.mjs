@@ -12,6 +12,17 @@ export const REQUIRED_TRACE_FIELDS = [
   'consumer_stage'
 ];
 
+const REQUIRED_STRING_FIELDS = [
+  'decision_family',
+  'decision_card_ref',
+  'selected_option'
+];
+
+const REQUIRED_STRING_ARRAY_FIELDS = [
+  'rejected_options',
+  'evidence_refs'
+];
+
 const EMPTY_NON_CLAIMS = Object.freeze({
   builder_design_authority_claimed: false,
   builder_execution_proof_claimed: false,
@@ -20,21 +31,39 @@ const EMPTY_NON_CLAIMS = Object.freeze({
   enforcement_status_upgrade_claimed: false
 });
 
-function hasValue(value) {
-  if (Array.isArray(value)) return value.length > 0 && value.every(hasValue);
-  return value !== undefined && value !== null && String(value).trim().length > 0;
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isNonEmptyStringArray(value) {
+  return Array.isArray(value) && value.length > 0 && value.every(isNonEmptyString);
+}
+
+function fallbackReceiptSurface(surface) {
+  return surface === 'repair_packet' ? 'repair_packet' : 'fallback';
 }
 
 export function missingKernelTraceFields(trace) {
   if (!trace || typeof trace !== 'object' || Array.isArray(trace)) return [...REQUIRED_TRACE_FIELDS];
-  const missing = REQUIRED_TRACE_FIELDS.filter((field) => !hasValue(trace[field]));
-  if (trace.consumer_stage !== undefined && trace.consumer_stage !== 'builder') missing.push('consumer_stage:builder');
-  if (trace.evidence_state !== undefined && trace.evidence_state !== 'validated') missing.push('evidence_state:validated');
+
+  const missing = [];
+
+  for (const field of REQUIRED_STRING_FIELDS) {
+    if (!isNonEmptyString(trace[field])) missing.push(field);
+  }
+
+  for (const field of REQUIRED_STRING_ARRAY_FIELDS) {
+    if (!isNonEmptyStringArray(trace[field])) missing.push(field);
+  }
+
+  if (trace.evidence_state !== 'validated') missing.push('evidence_state');
+  if (trace.consumer_stage !== 'builder') missing.push('consumer_stage');
+
   return [...new Set(missing)];
 }
 
 export function isCompleteBuilderKernelTrace(trace) {
-  return missingKernelTraceFields(trace).length === 0 && trace.consumer_stage === 'builder' && trace.evidence_state === 'validated';
+  return missingKernelTraceFields(trace).length === 0;
 }
 
 export function formatKernelDecisionReceipt({ surface = 'action_batch', decision_trace = null, fallback = false } = {}) {
@@ -47,7 +76,7 @@ export function formatKernelDecisionReceipt({ surface = 'action_batch', decision
   return {
     schema: 'ev4-builder-kernel-decision-receipt@0.1.0',
     wave: 5,
-    surface: fallback ? 'fallback' : surface,
+    surface: fallback ? fallbackReceiptSurface(surface) : surface,
     receipt_status,
     source_of_truth: 'machine_readable_decision_trace',
     source_trace_state,
