@@ -122,15 +122,15 @@ Do not add authored `resolved` or `production_ready` fields to `DECISION_ESCAPE_
 
 ```yaml
 minimum_thresholds:
-  Critical_per_artifact:
+  critical_per_artifact:
     minimum: ci_enforced
     target: downstream_contract_enforced
-  Critical_cross_turn:
+  critical_cross_turn:
     minimum:
       - sequence_ci_enforced
       - runtime_monitor_enforced
     target: downstream_contract_enforced
-  High:
+  high:
     minimum: validator_backed
     preferred:
       - fixture_tested
