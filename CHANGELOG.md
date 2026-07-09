@@ -1,5 +1,31 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## Unreleased — 2026-07-09
+
+### Added
+
+- Added Wave 5 UX-safe Kernel decision receipts for Builder output surfaces.
+- Added `schemas/kernel-decision-receipt.schema.json` as a presentation-layer receipt contract.
+- Added `scripts/format-kernel-decision-receipt.mjs` and `scripts/validate-kernel-decision-receipts.mjs`.
+- Added valid success, warning, and fallback-warning receipt fixtures.
+- Added invalid regressions preventing green success receipts without complete machine-readable trace evidence.
+- Added `docs/KERNEL_DECISION_RECEIPTS_WAVE_5.md` and `patch-reports/WAVE_5_KERNEL_DECISION_RECEIPTS.md`.
+
+### Changed
+
+- Wired Kernel decision receipt validation into `scripts/validate.mjs`.
+- Updated `STATUS.md` to record Wave 5 as presentation-layer only.
+
+### Status
+
+- No architecture, scoring, recommendation, constructability review, or redesign was rerun.
+- No Builder design authority was added.
+- No CI, sequence, downstream, runtime, or production readiness status was upgraded.
+- No authored `resolved` or `production_ready` fields were added.
+- `production_ready` remains false.
+
+---
+
 ## Unreleased — 2026-07-02
 
 ### Added
@@ -153,39 +179,3 @@
 - `selected_candidate_id: ARCH-FAM-C` remains preserved.
 - Approved class names remain preserved.
 - production readiness remains false.
-
----
-
-## v0.3.2 — 2026-06-28
-
-### Added
-
-- Added `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md`.
-- Added `known_control_map` concept and targeted UI screenshot recipe.
-- Added structured confirmation fixtures and untrusted prose fixtures.
-
-### Changed
-
-- Completed Patch C migration to structured `confirmation_request`.
-- Upgraded `protocols/SMART_GUIDANCE_FOOTER.md` to v0.2.0.
-- Wired UI-confidence rules into runtime docs.
-- Updated deployable ChatGPT Project source pack.
-
-### Validation
-
-- GitHub Actions `Schema validation` passed on run `111` for head `90b8a8c3345b0329d8e47e99c8c32a624b077d79`.
-
----
-
-## v0.3.1 — 2026-06-27
-
-### Hardened
-
-- Added workflow_mode/runtime_state separation hardening.
-- Hardened intake-result and session-state schemas.
-- Expanded CI fixture coverage.
-
-### Status
-
-- No Smart Home architecture, class names, `selected_candidate_id`, or production-readiness rules were changed.
-- Production readiness remains false.
