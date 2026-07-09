@@ -49,7 +49,7 @@
       ]
     },
     "decision_trace": {
-      "oneOf": [
+      "anyOf": [
         { "$ref": "#/$defs/decision_trace" },
         {
           "type": "object",
