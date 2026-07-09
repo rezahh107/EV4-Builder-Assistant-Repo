@@ -7,13 +7,18 @@
 - Added Wave 5 UX-safe Kernel decision receipts for Builder output surfaces.
 - Added `schemas/kernel-decision-receipt.schema.json` as a presentation-layer receipt contract.
 - Added `scripts/format-kernel-decision-receipt.mjs` and `scripts/validate-kernel-decision-receipts.mjs`.
-- Added valid success, warning, and fallback-warning receipt fixtures.
+- Added valid success, warning, fallback-warning, repair-packet fallback-warning, and unordered missing-field receipt fixtures.
 - Added invalid regressions preventing green success receipts without complete machine-readable trace evidence.
+- Added malformed trace type regressions for string-instead-of-array, object-instead-of-string, empty-array, and non-string-array-item cases.
 - Added `docs/KERNEL_DECISION_RECEIPTS_WAVE_5.md` and `patch-reports/WAVE_5_KERNEL_DECISION_RECEIPTS.md`.
 
 ### Changed
 
 - Wired Kernel decision receipt validation into `scripts/validate.mjs`.
+- Updated the receipt validator to validate fixtures against `schemas/kernel-decision-receipt.schema.json` with AJV before custom no-overclaim checks.
+- Hardened receipt formatting so required trace fields use explicit string and non-empty string-array validation.
+- Preserved `repair_packet` surface for fallback-warning receipts when explicitly requested.
+- Made `missing_trace_fields` custom comparison order-insensitive.
 - Updated `STATUS.md` to record Wave 5 as presentation-layer only.
 
 ### Status
@@ -92,7 +97,7 @@
 - Hardened central validation runner execution by avoiding shell execution and using cross-platform `npm` / `npm.cmd` handling.
 - Hardened Reference Paradigm Gate so `first_batch_structure_intent` is the decisive first-batch structural source; free-text first-batch checks remain fallback-only.
 - Updated Smart Home Connector valid fixtures and example package with structured first-batch intent.
-- Updated runtime-facing docs and deployable ChatGPT Project pack for structured reference intent.
+- Updated runtime-facing docs and deployable ChatGPT Project source pack for structured reference intent.
 - Addressed Gemini review by treating connector value `none` as no connector and by normalizing connector comparison with explicit mismatch reporting.
 - Synced Batch 3 status after post-implementation audit so repository status no longer describes pre-merge PR work.
 - Documented the no-connector coverage split: full-package no-connector regression runs through central package validation, while the standalone gate fixture remains a focused validator smoke fixture.
