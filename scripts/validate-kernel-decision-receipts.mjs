@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import {
   SUCCESS_RECEIPT_TEXT,
   WARNING_RECEIPT_TEXT,
@@ -10,10 +11,14 @@ import {
   missingKernelTraceFields
 } from './format-kernel-decision-receipt.mjs';
 
+const RECEIPT_SCHEMA = 'schemas/kernel-decision-receipt.schema.json';
+
 const VALID_FIXTURES = [
   'tests/valid/kernel_decision_receipt_builder_action_success.json',
   'tests/valid/kernel_decision_receipt_intake_warning_missing_card.json',
-  'tests/valid/kernel_decision_receipt_fallback_warning_untraced.json'
+  'tests/valid/kernel_decision_receipt_fallback_warning_untraced.json',
+  'tests/valid/kernel_decision_receipt_repair_packet_fallback_warning.json',
+  'tests/valid/kernel_decision_receipt_warning_missing_fields_unordered.json'
 ];
 
 const INVALID_FIXTURES = [
@@ -21,7 +26,12 @@ const INVALID_FIXTURES = [
   'tests/invalid/kernel-receipts/success_missing_evidence_refs.json',
   'tests/invalid/kernel-receipts/action_success_without_trace.json',
   'tests/invalid/kernel-receipts/fallback_success_without_trace.json',
-  'tests/invalid/kernel-receipts/receipt_claims_builder_design_authority.json'
+  'tests/invalid/kernel-receipts/receipt_claims_builder_design_authority.json',
+  'tests/invalid/kernel-receipts/malformed_trace_rejected_options_string.json',
+  'tests/invalid/kernel-receipts/malformed_trace_evidence_refs_string.json',
+  'tests/invalid/kernel-receipts/malformed_trace_decision_family_object.json',
+  'tests/invalid/kernel-receipts/malformed_trace_empty_arrays.json',
+  'tests/invalid/kernel-receipts/malformed_trace_array_contains_empty_or_non_string.json'
 ];
 
 const EXPECTED_NON_CLAIMS = [
@@ -42,6 +52,14 @@ function add(errors, id, message) {
 
 function hasOwn(object, key) {
   return Object.prototype.hasOwnProperty.call(object, key);
+}
+
+function sortedUnique(values) {
+  return [...new Set(values || [])].sort();
+}
+
+function sameStringSet(a, b) {
+  return JSON.stringify(sortedUnique(a)) === JSON.stringify(sortedUnique(b));
 }
 
 function assertBaseReceipt(receipt, errors) {
@@ -102,10 +120,11 @@ function assertFormatterAgreement(receipt, errors) {
     decision_trace: receipt.decision_trace ?? null,
     fallback: receipt.receipt_status === 'fallback_warning'
   });
+  if (expected.surface !== receipt.surface) add(errors, 'EV4-RECEIPT-039', 'fixture surface disagrees with formatter output.');
   if (expected.receipt_status !== receipt.receipt_status) add(errors, 'EV4-RECEIPT-040', 'fixture receipt_status disagrees with formatter output.');
   if (expected.receipt_text !== receipt.receipt_text) add(errors, 'EV4-RECEIPT-041', 'fixture receipt_text disagrees with formatter output.');
   const expectedMissing = missingKernelTraceFields(receipt.decision_trace ?? null);
-  if (JSON.stringify(expectedMissing) !== JSON.stringify(receipt.missing_trace_fields || [])) {
+  if (!sameStringSet(expectedMissing, receipt.missing_trace_fields || [])) {
     add(errors, 'EV4-RECEIPT-042', 'missing_trace_fields must be derived from decision_trace, not authored independently.');
   }
 }
@@ -124,9 +143,41 @@ export function validateReceipt(receipt) {
   return errors;
 }
 
+function runAjv(filePath, expectedValid) {
+  const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+  const result = spawnSync(command, [
+    '--yes',
+    'ajv-cli@5',
+    'validate',
+    '--spec=draft2020',
+    '--strict=false',
+    '-s',
+    RECEIPT_SCHEMA,
+    '-d',
+    filePath
+  ], { encoding: 'utf8' });
+
+  const passed = result.status === 0;
+  if (result.error) {
+    console.error(`Failed to execute ${command}: ${result.error.message}`);
+    return false;
+  }
+
+  if (passed === expectedValid) {
+    console.log(`AJV receipt schema ${expectedValid ? 'accepted' : 'rejected'} fixture as expected: ${filePath}`);
+    return true;
+  }
+
+  console.error(`AJV receipt schema ${expectedValid ? 'rejected valid' : 'accepted invalid'} fixture unexpectedly: ${filePath}`);
+  if (result.stdout) console.error(result.stdout.trim());
+  if (result.stderr) console.error(result.stderr.trim());
+  return false;
+}
+
 function runExpectedValid(files) {
   let ok = true;
   for (const filePath of files) {
+    ok = runAjv(filePath, true) && ok;
     const errors = validateReceipt(readJson(filePath));
     if (errors.length > 0) {
       console.error(`Kernel decision receipt validation failed for valid fixture ${filePath}:`);
@@ -142,12 +193,13 @@ function runExpectedValid(files) {
 function runExpectedInvalid(files) {
   let ok = true;
   for (const filePath of files) {
+    ok = runAjv(filePath, false) && ok;
     const errors = validateReceipt(readJson(filePath));
     if (errors.length === 0) {
-      console.error(`Invalid Kernel decision receipt unexpectedly passed: ${filePath}`);
+      console.error(`Invalid Kernel decision receipt unexpectedly passed custom validation: ${filePath}`);
       ok = false;
     } else {
-      console.log(`Invalid Kernel decision receipt correctly failed: ${filePath}`);
+      console.log(`Invalid Kernel decision receipt correctly failed custom validation: ${filePath}`);
     }
   }
   return ok;
