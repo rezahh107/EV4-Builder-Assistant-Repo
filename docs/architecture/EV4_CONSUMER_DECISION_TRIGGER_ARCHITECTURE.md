@@ -34,7 +34,7 @@ claim_forbidden:
 Repository-specific status must come from inspected evidence and, once initialized, from:
 
 ```text
-planning/DECISION_ESCAPE_ROUTES.yml
+planning/decision-escape-routes.yml
 planning/decision-escape-routes.schema.json
 ```
 
