@@ -16,4 +16,54 @@ kernel_reference:
   decision_taxonomy_version: null
   decision_cards_version: null
 
-records: []
+records:
+  - escape_route_id: BUILDER-W4-LINEAGE-INTAKE-ACTION-FALLBACK-001
+    added_by_wave: 4
+    added_reason: "Wave 4 inspection found real Builder intake, action-output, and fallback surfaces but no recorded cross-turn escape route for preserving Kernel-governed decision lineage across those surfaces."
+    consumer_repo: EV4-Builder-Assistant-Repo
+    risk: Critical
+    session_scope: cross_turn
+    mapping_status: mapped
+    surface:
+      intake_contract: schemas/builder-context-package.schema.json
+      intake_validator: scripts/validate-package.mjs
+      action_output_contract: schemas/action-batch.schema.json
+      action_output_validator: scripts/validate-action-batch.mjs
+      fallback_contract: schemas/repair-packet.schema.json
+      fallback_validator: scripts/validate-repair-packet.mjs
+      downstream_boundary_doc: docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md
+    rule:
+      summary: "Builder must not accept, emit, or fallback from Kernel-governed decisions unless required decision lineage is preserved from intake through Builder action output and fallback attempts."
+      required_lineage_fields:
+        - decision_family
+        - decision_card_ref
+        - selected_option
+        - rejected_options
+        - evidence_refs
+        - evidence_state
+        - consumer_stage
+      forbidden_behavior:
+        - execute_missing_lineage_as_if_valid
+        - drop_decision_family
+        - drop_decision_card_ref
+        - drop_selected_option
+        - drop_rejected_options
+        - drop_evidence_refs
+        - convert_fallback_attempt_into_new_design_decision
+    carriers:
+      sequence_CI_step: ".github/workflows/schema-validation.yml / validate / Run Builder decision lineage sequence validation"
+      test_command: "npm run validate:builder-lineage-sequence"
+      positive_fixture: "tests/valid/lineage-sequence/builder_intake_action_fallback_preserves_lineage.json"
+      negative_fixture: "tests/invalid/lineage-sequence/builder_action_drops_decision_lineage.json"
+      negative_intake_fixture: "tests/invalid/lineage-sequence/builder_intake_missing_decision_lineage.json"
+      negative_action_replacement_fixture: "tests/invalid/lineage-sequence/builder_action_replaces_decision_lineage.json"
+      negative_fallback_fixture: "tests/invalid/lineage-sequence/builder_fallback_without_decision_lineage.json"
+      validator_rule: "scripts/validate-builder-lineage-sequence.mjs"
+      validator_diagnostic: "EV4-LINEAGE-001..EV4-LINEAGE-006"
+      downstream_contract: null
+    status:
+      enforcement_status: sequence_ci_enforced
+      evidence_state: validated
+      downstream_contract:
+        evidence_state: insufficient_evidence
+    notes: "Sequence CI now runs npm run validate:builder-lineage-sequence, which passes the valid intake/action/fallback preservation fixture and fails missing intake lineage, dropped action lineage, replaced action lineage, and unrecorded fallback lineage fixtures. Formal Builder-to-Responsive handoff export remains documented_not_implemented, so downstream_contract_enforced is not claimed."

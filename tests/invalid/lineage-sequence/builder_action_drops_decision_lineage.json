@@ -1,0 +1,29 @@
+{
+  "schema": "ev4-builder-lineage-sequence@1.0.0",
+  "builder_intake": {
+    "source_contract": "schemas/builder-context-package.schema.json",
+    "decision_lineage": [
+      {
+        "decision_family": "widget_mapping",
+        "decision_card_ref": "KERNEL-CARD-WIDGET-MAPPING-001",
+        "selected_option": "container",
+        "rejected_options": ["section", "custom_html"],
+        "evidence_refs": ["ce-builder-package:widget_mapping_table[0]"],
+        "evidence_state": "validated",
+        "consumer_stage": "builder"
+      }
+    ]
+  },
+  "builder_action_output": {
+    "source_contract": "schemas/action-batch.schema.json",
+    "actions": [
+      {
+        "action_id": "BATCH-001-A01",
+        "target_node": "n-root",
+        "element_type": "Container",
+        "control_family": "structure",
+        "control_name": "create_element"
+      }
+    ]
+  }
+}

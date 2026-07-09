@@ -1,0 +1,11 @@
+{
+  "schema": "ev4-builder-lineage-sequence@1.0.0",
+  "builder_intake": {
+    "source_contract": "schemas/builder-context-package.schema.json",
+    "decision_lineage": []
+  },
+  "builder_action_output": {
+    "source_contract": "schemas/action-batch.schema.json",
+    "actions": []
+  }
+}
