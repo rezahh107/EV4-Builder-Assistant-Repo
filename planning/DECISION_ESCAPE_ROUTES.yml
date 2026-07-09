@@ -4,7 +4,7 @@ consumer_repo_evidence_state: expected_unverified
 
 last_updated:
   date: "2026-07-09"
-  pr: null
+  pr: 51
   commit: null
 
 brc_reference:
@@ -26,7 +26,7 @@ records:
     mapping_status: mapped
     surface:
       intake_contract: schemas/builder-context-package.schema.json
-      intake_validator: scripts/validate-package.mjs
+      intake_validator: scripts/validate-builder-context-decision-lineage.mjs
       action_output_contract: schemas/action-batch.schema.json
       action_output_validator: scripts/validate-action-batch.mjs
       fallback_contract: schemas/repair-packet.schema.json
@@ -51,6 +51,12 @@ records:
         - drop_evidence_refs
         - convert_fallback_attempt_into_new_design_decision
     carriers:
+      real_intake_contract: "schemas/builder-context-package.schema.json / decision_lineage"
+      real_intake_contract_doc: "input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md / Kernel Decision Lineage Input Rule"
+      real_intake_validator: "scripts/validate-builder-context-decision-lineage.mjs"
+      real_intake_positive_fixture: "tests/valid/builder_context_package_with_decision_lineage.json"
+      real_intake_negative_fixture: "tests/invalid/lineage-intake/builder_context_package_kernel_lineage_missing.json"
+      central_validation_entrypoint: "scripts/validate.mjs / scripts/validate-builder-context-decision-lineage.mjs"
       sequence_CI_step: ".github/workflows/schema-validation.yml / validate / Run Builder decision lineage sequence validation"
       test_command: "npm run validate:builder-lineage-sequence"
       positive_fixture: "tests/valid/lineage-sequence/builder_intake_action_fallback_preserves_lineage.json"
@@ -66,8 +72,8 @@ records:
       validator_diagnostic: "EV4-LINEAGE-001..EV4-LINEAGE-006"
       downstream_contract: null
     status:
-      enforcement_status: sequence_ci_enforced
+      enforcement_status: real_intake_and_sequence_ci_enforced
       evidence_state: validated
       downstream_contract:
         evidence_state: insufficient_evidence
-    notes: "Sequence CI now runs npm run validate:builder-lineage-sequence, which passes real action-batch and repair-packet lineage carriers, validates standalone action/repair contract fixtures, and fails missing intake lineage, dropped action lineage, replaced action lineage, and unrecorded fallback lineage fixtures. Formal Builder-to-Responsive handoff export remains documented_not_implemented, so downstream_contract_enforced is not claimed."
+    notes: "Real Builder_Context_Package intake now has a schema-level decision_lineage carrier and a central validation check with valid/missing-lineage real package fixtures. Sequence CI still validates action/fallback preservation. Formal Builder-to-Responsive handoff export remains documented_not_implemented, so downstream_contract_enforced is not claimed."
