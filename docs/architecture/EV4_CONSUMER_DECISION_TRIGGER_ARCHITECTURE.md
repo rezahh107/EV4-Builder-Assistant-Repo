@@ -234,7 +234,7 @@ forbidden_wave_0_claims:
 The next implementation step for this repository is not to claim enforcement. The next step is to initialize local operational state, then run a repo-specific audit:
 
 ```text
-planning/DECISION_ESCAPE_ROUTES.yml
+planning/decision-escape-routes.yml
 planning/decision-escape-routes.schema.json
 ```
 
