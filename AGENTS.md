@@ -75,3 +75,14 @@ Normal Builder instructions are concise Persian. Keep hashes, schema details, an
 ## Pull Requests
 
 State the behavior or contract changed, affected files and fixtures, version impact, validation executed, and remaining evidence gaps.
+
+## Decision Escape Routes
+
+Before opening or completing any PR that changes schemas, validators, prompts, fixtures, pipeline docs, handoff artifacts, fallback behavior, Builder action outputs, or decision-bearing outputs, review `planning/DECISION_ESCAPE_ROUTES.yml`.
+
+Do not mark an escape route as resolved unless its `enforcement_status` meets the required threshold for its risk and `session_scope`. Do not mark a Critical cross-turn rule as resolved with single-artifact `ci_enforced`.
+
+Do not add authored `resolved` or `production_ready` fields; those are derived audit conclusions.
+
+Builder executes locked decisions; it must not claim new design-decision authority or Kernel enforcement unless inspected evidence proves the required carriers exist.
+
