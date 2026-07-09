@@ -123,10 +123,11 @@ function validateSequence(sequence, filePath) {
   for (const [index, attempt] of fallbackAttempts.entries()) {
     const location = `builder_fallback_attempts[${index}]`;
     const lineage = getLineage(attempt);
-    if (!validateLineageObject(lineage, errors, location)) {
+    if (!lineage) {
       errors.push({ diag: DIAGNOSTICS.FALLBACK_WITHOUT_LINEAGE, message: `${location} cannot be used as an unrecorded Builder design decision.` });
       continue;
     }
+    if (!validateLineageObject(lineage, errors, location)) continue;
 
     const upstream = intakeLineage.get(lineage.decision_card_ref);
     if (!upstream || lineageKey(lineage) !== lineageKey(upstream)) {
