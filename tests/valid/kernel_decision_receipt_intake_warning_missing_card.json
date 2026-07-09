@@ -1,0 +1,32 @@
+{
+  "schema": "ev4-builder-kernel-decision-receipt@0.1.0",
+  "wave": 5,
+  "surface": "intake",
+  "receipt_status": "warning",
+  "source_of_truth": "machine_readable_decision_trace",
+  "source_trace_state": "incomplete",
+  "decision_trace": {
+    "decision_family": "layout_strategy",
+    "selected_option": "execute_locked_ce_builder_plan",
+    "rejected_options": [
+      "redesign_in_builder"
+    ],
+    "evidence_refs": [
+      "TRACE-EVIDENCE-BUILDER-002"
+    ],
+    "evidence_state": "validated",
+    "consumer_stage": "builder"
+  },
+  "missing_trace_fields": [
+    "decision_card_ref"
+  ],
+  "receipt_text": "⚠️ این Builder action هنوز رسید معتبر کرنل ندارد؛ بدون machine-readable trace کامل نباید به‌عنوان تصمیم اجرایی معتبر عبور کند.",
+  "wave_boundary": "presentation_layer_only",
+  "non_claims": {
+    "builder_design_authority_claimed": false,
+    "builder_execution_proof_claimed": false,
+    "downstream_enforcement_claimed": false,
+    "production_readiness_claimed": false,
+    "enforcement_status_upgrade_claimed": false
+  }
+}
