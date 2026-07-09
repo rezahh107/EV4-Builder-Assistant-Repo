@@ -94,6 +94,7 @@ function validateSequence(sequence, filePath) {
   for (const [index, action] of (sequence.builder_action_output?.actions || []).entries()) {
     const location = `builder_action_output.actions[${index}]`;
     const lineage = getLineage(action);
+    if (!lineage) continue;
     if (!validateLineageObject(lineage, errors, location)) continue;
 
     const upstream = intakeLineage.get(lineage.decision_card_ref);
@@ -114,7 +115,12 @@ function validateSequence(sequence, filePath) {
     }
   }
 
-  for (const [index, attempt] of (sequence.builder_fallback_attempts || []).entries()) {
+  const fallbackAttempts = [
+    ...(sequence.builder_fallback_attempts || []),
+    ...(sequence.builder_repair_packet?.smallest_verified_repair_path || [])
+  ];
+
+  for (const [index, attempt] of fallbackAttempts.entries()) {
     const location = `builder_fallback_attempts[${index}]`;
     const lineage = getLineage(attempt);
     if (!validateLineageObject(lineage, errors, location)) {

@@ -58,6 +58,10 @@ records:
       negative_intake_fixture: "tests/invalid/lineage-sequence/builder_intake_missing_decision_lineage.json"
       negative_action_replacement_fixture: "tests/invalid/lineage-sequence/builder_action_replaces_decision_lineage.json"
       negative_fallback_fixture: "tests/invalid/lineage-sequence/builder_fallback_without_decision_lineage.json"
+      positive_action_contract_fixture: "tests/valid/action_lineage_kernel_decision.json"
+      negative_action_contract_fixture: "tests/invalid/action_lineage_incomplete.json"
+      positive_fallback_contract_fixture: "tests/valid/repair_packet_lineage_fallback.json"
+      negative_fallback_contract_fixture: "tests/invalid/repair_packet_lineage_incomplete.json"
       validator_rule: "scripts/validate-builder-lineage-sequence.mjs"
       validator_diagnostic: "EV4-LINEAGE-001..EV4-LINEAGE-006"
       downstream_contract: null
@@ -66,4 +70,4 @@ records:
       evidence_state: validated
       downstream_contract:
         evidence_state: insufficient_evidence
-    notes: "Sequence CI now runs npm run validate:builder-lineage-sequence, which passes the valid intake/action/fallback preservation fixture and fails missing intake lineage, dropped action lineage, replaced action lineage, and unrecorded fallback lineage fixtures. Formal Builder-to-Responsive handoff export remains documented_not_implemented, so downstream_contract_enforced is not claimed."
+    notes: "Sequence CI now runs npm run validate:builder-lineage-sequence, which passes real action-batch and repair-packet lineage carriers, validates standalone action/repair contract fixtures, and fails missing intake lineage, dropped action lineage, replaced action lineage, and unrecorded fallback lineage fixtures. Formal Builder-to-Responsive handoff export remains documented_not_implemented, so downstream_contract_enforced is not claimed."
