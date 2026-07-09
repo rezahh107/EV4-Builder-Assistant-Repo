@@ -432,6 +432,10 @@
             "minLength": 1
           },
           "uniqueItems": true
+        },
+        "decision_lineage_ref": {
+          "$ref": "#/$defs/decision_lineage_ref",
+          "description": "Optional Kernel-governed decision lineage for repair or fallback steps that preserve an upstream decision rather than making a new Builder design choice."
         }
       },
       "additionalProperties": false
@@ -591,6 +595,59 @@
           }
         }
       ],
+      "additionalProperties": false
+    },
+    "decision_lineage_ref": {
+      "type": "object",
+      "required": [
+        "decision_family",
+        "decision_card_ref",
+        "selected_option",
+        "rejected_options",
+        "evidence_refs",
+        "evidence_state",
+        "consumer_stage"
+      ],
+      "properties": {
+        "decision_family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision_card_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "selected_option": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rejected_options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence_state": {
+          "enum": [
+            "validated",
+            "insufficient_evidence",
+            "pending_correction"
+          ]
+        },
+        "consumer_stage": {
+          "const": "builder"
+        }
+      },
       "additionalProperties": false
     }
   },

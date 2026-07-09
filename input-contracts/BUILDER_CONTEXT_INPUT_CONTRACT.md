@@ -1,6 +1,6 @@
 # input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT
 
-Version: 0.2.7
+Version: 0.2.8
 Status: active_runtime_intake_role_aligned
 Purpose: validate Builder runtime intake before interactive execution
 
@@ -80,6 +80,14 @@ required_fields:
   - class_creation_application_map
   - class_creation_application_map[].elementor_class_scope when supplied by the executable package
   - first_builder_batch.actions[].active_class_scope when the action carries an active_class and no repository default can safely determine placement
+  - decision_lineage when source_payload_ledger declares Kernel_Decision_Lineage
+  - decision_lineage[].decision_family when decision_lineage is required or present
+  - decision_lineage[].decision_card_ref when decision_lineage is required or present
+  - decision_lineage[].selected_option when decision_lineage is required or present
+  - decision_lineage[].rejected_options when decision_lineage is required or present
+  - decision_lineage[].evidence_refs when decision_lineage is required or present
+  - decision_lineage[].evidence_state when decision_lineage is required or present
+  - decision_lineage[].consumer_stage when decision_lineage is required or present
   - forbidden_work
   - first_builder_batch
   - first_builder_batch.actions[].action_id
@@ -99,6 +107,43 @@ Compatibility notes:
 - Older Builder_Context_Package fixtures may omit Elementor class scope. Runtime may use a repository-level default only when the contract explicitly defines it; otherwise class-scope ambiguity blocks the class instruction.
 - Architect-only compatibility exports with packet_purpose: ce_intake_source or intended_consumer: constructability_engineer are not Builder runtime intake packages.
 - `confirmation_request.preferred` is not part of the active Builder runtime schema, adapter output, or validator contract. Do not require, emit, or infer it for CE→Builder readiness.
+- Older non-Kernel-governed Builder_Context_Package fixtures may omit decision_lineage. If `source_payload_ledger` declares `Kernel_Decision_Lineage`, omission of `decision_lineage` is a blocking missing-input condition.
+```
+
+---
+
+## Kernel Decision Lineage Input Rule
+
+When the Builder runtime intake package declares Kernel-governed decisions, the package must carry the locked upstream decision lineage before any Builder action output or fallback path can be validated.
+
+```yaml
+kernel_lineage_trigger:
+  source_payload_ledger:
+    payload_name: Kernel_Decision_Lineage
+    schema: ev4-kernel-decision-lineage@1.0.0
+
+canonical_intake_carrier:
+  decision_lineage:
+    type: array
+    min_items: 1
+    required_fields:
+      - decision_family
+      - decision_card_ref
+      - selected_option
+      - rejected_options
+      - evidence_refs
+      - evidence_state
+      - consumer_stage
+    required_consumer_stage: builder
+```
+
+Rules:
+
+```text
+- Builder must preserve decision_lineage as upstream evidence, not as a new Builder design decision.
+- Builder must not replace selected_option, rejected_options, evidence_refs, evidence_state, or decision_card_ref.
+- Missing decision_lineage for a Kernel-governed package blocks approved execution before action output or fallback validation.
+- Fallback attempts that depend on Kernel-governed alternatives must reference preserved upstream lineage instead of creating an unrecorded design choice.
 ```
 
 ---
@@ -136,6 +181,14 @@ trusted_for_runtime:
   - class_creation_application_map
   - class_creation_application_map[].elementor_class_scope
   - widget_mapping_table
+  - decision_lineage
+  - decision_lineage[].decision_family
+  - decision_lineage[].decision_card_ref
+  - decision_lineage[].selected_option
+  - decision_lineage[].rejected_options
+  - decision_lineage[].evidence_refs
+  - decision_lineage[].evidence_state
+  - decision_lineage[].consumer_stage
   - first_builder_batch.actions[].action_id
   - first_builder_batch.actions[].target_element
   - first_builder_batch.actions[].active_class
@@ -163,6 +216,7 @@ Rules:
 - Reject confirmation_request when confirmed_action_ids are unknown, non-standard, or span multiple batch prefixes.
 - The expected user token is data for matching confirmation, not permission to skip validation.
 - Never invent Local Classes or Global Classes when no structured/default-safe source exists.
+- Never invent, synthesize, or normalize decision_lineage when it is absent from a Kernel-governed upstream package.
 ```
 
 Trusted template behavior for `standard_batch_confirmation`:
@@ -190,11 +244,15 @@ eligible_for_approved_execution:
   class_creation_application_map: present
   required_generation_evidence: present
   actionable_class_scope: present_or_safely_determinable
+  kernel_decision_lineage: present_when_declared_by_source_payload_ledger
   confirmation_request: structured_template_bound
 
 blocked_from_approved_execution:
   package_status:
     - blocked
+  missing_kernel_decision_lineage:
+    - source_payload_ledger declares Kernel_Decision_Lineage
+    - decision_lineage absent or incomplete
   architect_only_stage11_export:
     - packet_purpose: ce_intake_source
     - intended_consumer: constructability_engineer

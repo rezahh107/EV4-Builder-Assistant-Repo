@@ -1,0 +1,108 @@
+{
+  "schema": "ev4-builder-session-repair-packet@1.0.0",
+  "incident_id": "INCIDENT-LINEAGE-002",
+  "workflow_mode": "APPROVED_HANDOFF_MODE",
+  "runtime_state": "CORRECTION",
+  "selected_candidate_id": "cand-a",
+  "trigger": {
+    "type": "missing_ui_control",
+    "reported_by": "validator",
+    "description": "Incomplete lineage is invalid.",
+    "evidence_refs": [
+      "VALIDATOR-LINEAGE-002"
+    ]
+  },
+  "last_safe_checkpoint": {
+    "checkpoint_id": "CP-001",
+    "batch_id": "BATCH-001",
+    "status": "confirmed",
+    "selected_candidate_id": "cand-a",
+    "evidence_refs": [
+      "CONFIRM-BATCH-001"
+    ]
+  },
+  "active_batch": {
+    "batch_id": "BATCH-002",
+    "status": "interrupted"
+  },
+  "affected_actions": [
+    {
+      "action_id": "BATCH-002-A01",
+      "batch_id": "BATCH-002",
+      "status": "blocked",
+      "reason": "Incomplete lineage."
+    }
+  ],
+  "confirmed_work": [],
+  "still_valid_work": [
+    {
+      "work_id": "WORK-BATCH-001",
+      "description": "Initial structure remains valid.",
+      "status": "still_valid",
+      "related_action_ids": [
+        "BATCH-001-A01"
+      ],
+      "evidence_refs": [
+        "CONFIRM-BATCH-001"
+      ]
+    }
+  ],
+  "invalid_or_unverified_work": [
+    {
+      "work_id": "WORK-FALLBACK-BLOCKED",
+      "description": "Fallback choice is blocked.",
+      "status": "blocked",
+      "reason": "Incomplete lineage.",
+      "related_action_ids": [
+        "BATCH-002-A01"
+      ],
+      "evidence_refs": [
+        "VALIDATOR-LINEAGE-002"
+      ]
+    }
+  ],
+  "rollback_required": {
+    "value": false,
+    "reason": "No unverified replacement was executed."
+  },
+  "smallest_verified_repair_path": [
+    {
+      "repair_action_id": "REPAIR-LINEAGE-002-A01",
+      "instruction": "Request corrected Builder input preserving lineage.",
+      "allowed_scope": "Decision lineage correction only.",
+      "status": "evidence_required",
+      "decision_lineage_ref": {
+        "decision_family": "widget_mapping",
+        "decision_card_ref": "KERNEL-CARD-WIDGET-MAPPING-001",
+        "selected_option": "container",
+        "rejected_options": [],
+        "evidence_refs": [],
+        "evidence_state": "validated",
+        "consumer_stage": "builder"
+      }
+    }
+  ],
+  "evidence_required": [
+    {
+      "evidence_id": "EVIDENCE-LINEAGE-002",
+      "evidence_type": "diagnostic",
+      "request": "Provide corrected lineage.",
+      "blocks_resume": true
+    }
+  ],
+  "resume_condition": {
+    "expected_user_token": "تایید REPAIR-LINEAGE",
+    "required_screenshot": {
+      "required": false,
+      "screenshot_type": "editor",
+      "target": "not required"
+    },
+    "resume_runtime_state": "BUILD_ACTIVE"
+  },
+  "root_fix_required": {
+    "value": false,
+    "reason": "Lineage carrier is enforced by this repository contract.",
+    "repo_scope": []
+  },
+  "production_ready": false
+}

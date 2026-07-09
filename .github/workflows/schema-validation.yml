@@ -22,3 +22,7 @@ jobs:
       - name: Run central contract validation
         run: |
           npm run validate
+
+      - name: Run Builder decision lineage sequence validation
+        run: |
+          npm run validate:builder-lineage-sequence
