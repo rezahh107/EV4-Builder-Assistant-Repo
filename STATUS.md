@@ -2,7 +2,7 @@
 
 Version: 0.3.6
 Status: ce_builder_contract_gate_merged
-Date: 2026-07-02
+Date: 2026-07-09
 
 ---
 
@@ -40,6 +40,7 @@ project_status:
   ce_builder_executable_schema_alignment: completed_in_ce_pr_24
   ce_connector_layer_projection: node_model_compact_id_enforced
   builder_to_responsive_handoff_boundary: documented_not_implemented
+  kernel_decision_receipts_wave_5: presentation_layer_added_on_branch
   action_batch_contract: active
   class_application_safety: elementor_local_global_scope_required
   unit_strategy_gate: active
@@ -163,6 +164,16 @@ patches:
   Builder_To_Responsive_Handoff_Boundary:
     status: documented_not_implemented
     boundary_doc: docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md
+  Wave_5_Kernel_Decision_Receipts:
+    status: completed_on_branch
+    branch: ux/builder-kernel-decision-receipts-wave-5
+    boundary: presentation_layer_only
+    notes:
+      - Added UX-safe human-readable Kernel decision receipts for Builder output surfaces.
+      - Success receipt requires complete validated machine-readable decision trace.
+      - Warning receipt is used for incomplete or missing trace.
+      - Fallback warning does not create a new Builder design decision.
+      - No enforcement status or production readiness status was upgraded.
 ```
 
 ---
@@ -180,6 +191,7 @@ integration_sync:
   production_ready_allowed_default: false_preserved
   ce_to_builder_transform_mutation: explicit_registry_ir_and_gate_only
   ce_producer_schema_alignment: completed_in_constructability_engineer_pr_24
+  wave_5_mutation: receipt_presentation_layer_only
 ```
 
 ---
@@ -192,6 +204,8 @@ validation_state:
   central_validation_entrypoint: npm run validate
   ce_to_builder_transformation_registry_validator: scripts/validate-ce-builder-transformation-registry.mjs
   ce_to_builder_contract_gate_validator: scripts/validate-ce-to-builder-contract-gate.mjs
+  kernel_decision_receipt_validator: scripts/validate-kernel-decision-receipts.mjs
+  kernel_decision_receipt_schema: schemas/kernel-decision-receipt.schema.json
   builder_to_responsive_boundary_doc: docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md
   ce_reference_ir_preservation_check: added
   ce_connector_layer_node_model_projection_check: added
@@ -219,6 +233,9 @@ first_batch_structure_intent is the decisive first-batch structural source when 
 Raw CE structured objects must pass the formal CE→Builder transformation layer and CE→Builder Contract Gate before Builder runtime intake.
 No CE→Builder field transform may run unless declared in the mapping registry.
 CE connector_layer {node, model} projects to Builder connector_layer as node:model.
+Kernel decision receipts are presentation-layer text only and must not replace machine-readable decision trace.
+Green Builder receipt wording requires complete validated decision trace with decision_family, decision_card_ref, selected_option, rejected_options, evidence_refs, evidence_state, and consumer_stage.
+Fallback receipt wording must not create a new Builder design decision.
 Real Elementor execution evidence is required before any production-readiness claim.
 Execution-affecting behavior must be contract-driven and pass the relevant behavioral contract.
 After repeated failure, Escape Hatch or repair packet replaces repeated instructions.
@@ -234,4 +251,5 @@ Continue real Elementor UI evidence collection using examples/smart-home-connect
 Do not claim production readiness until real execution evidence and completion gate proofs are confirmed.
 Formal Builder→Responsive export schema remains not implemented.
 Project Gate verifier/runtime remains a separate future integration, not implemented here.
+Recommended next Wave 5 repository: rezahh107/EV4-Responsive-Architect.
 ```
