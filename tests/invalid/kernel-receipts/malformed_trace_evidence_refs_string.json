@@ -1,0 +1,27 @@
+{
+  "schema": "ev4-builder-kernel-decision-receipt@0.1.0",
+  "wave": 5,
+  "surface": "action_batch",
+  "receipt_status": "success",
+  "source_of_truth": "machine_readable_decision_trace",
+  "source_trace_state": "complete",
+  "decision_trace": {
+    "decision_family": "layout_strategy",
+    "decision_card_ref": "KERNEL-DECISION-CARD-MALFORMED-002",
+    "selected_option": "execute_locked_ce_builder_plan",
+    "rejected_options": ["redesign_in_builder"],
+    "evidence_refs": "TRACE-EVIDENCE-MALFORMED-002",
+    "evidence_state": "validated",
+    "consumer_stage": "builder"
+  },
+  "missing_trace_fields": [],
+  "receipt_text": "✅ این Builder action به decision card کرنل وصل است؛ Builder فقط تصمیم قفل‌شده را به گام اجرایی تبدیل کرده و lineage حفظ شده است.",
+  "wave_boundary": "presentation_layer_only",
+  "non_claims": {
+    "builder_design_authority_claimed": false,
+    "builder_execution_proof_claimed": false,
+    "downstream_enforcement_claimed": false,
+    "production_readiness_claimed": false,
+    "enforcement_status_upgrade_claimed": false
+  }
+}
