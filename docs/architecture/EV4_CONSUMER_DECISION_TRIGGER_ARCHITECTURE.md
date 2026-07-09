@@ -160,8 +160,8 @@ decision_enforcement_carriers:
   - positive_fixture
   - negative_fixture
   - test_command
-  - CI_job
-  - sequence_CI
+  - ci_job
+  - sequence_ci
   - runtime_monitor
   - os_harness_policy
   - downstream_consumer_rejection
