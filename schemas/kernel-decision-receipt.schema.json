@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/kernel-decision-receipt.schema.json",
+  "title": "EV4 Builder Kernel Decision Receipt",
+  "description": "Wave 5 presentation-layer receipt for Builder outputs. A success receipt is allowed only when a complete machine-readable Kernel decision trace is present and validated. Receipt text never replaces the machine trace and never proves execution, downstream enforcement, or production readiness.",
+  "type": "object",
+  "required": [
+    "schema",
+    "wave",
+    "surface",
+    "receipt_status",
+    "source_of_truth",
+    "source_trace_state",
+    "receipt_text",
+    "wave_boundary",
+    "non_claims"
+  ],
+  "properties": {
+    "schema": {
+      "const": "ev4-builder-kernel-decision-receipt@0.1.0"
+    },
+    "wave": {
+      "const": 5
+    },
+    "surface": {
+      "enum": [
+        "intake",
+        "action_batch",
+        "fallback",
+        "repair_packet",
+        "handoff"
+      ]
+    },
+    "receipt_status": {
+      "enum": [
+        "success",
+        "warning",
+        "fallback_warning"
+      ]
+    },
+    "source_of_truth": {
+      "const": "machine_readable_decision_trace"
+    },
+    "source_trace_state": {
+      "enum": [
+        "complete",
+        "incomplete",
+        "missing"
+      ]
+    },
+    "decision_trace": {
+      "oneOf": [
+        { "$ref": "#/$defs/decision_trace" },
+        {
+          "type": "object",
+          "description": "Incomplete trace retained only for warning receipts; it must not enable success wording.",
+          "additionalProperties": true
+        },
+        { "type": "null" }
+      ]
+    },
+    "missing_trace_fields": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "receipt_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "wave_boundary": {
+      "const": "presentation_layer_only"
+    },
+    "non_claims": {
+      "$ref": "#/$defs/non_claims"
+    }
+  },
+  "$defs": {
+    "decision_trace": {
+      "type": "object",
+      "required": [
+        "decision_family",
+        "decision_card_ref",
+        "selected_option",
+        "rejected_options",
+        "evidence_refs",
+        "evidence_state",
+        "consumer_stage"
+      ],
+      "properties": {
+        "decision_family": { "type": "string", "minLength": 1 },
+        "decision_card_ref": { "type": "string", "minLength": 1 },
+        "selected_option": { "type": "string", "minLength": 1 },
+        "rejected_options": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evidence_state": { "const": "validated" },
+        "consumer_stage": { "const": "builder" }
+      },
+      "additionalProperties": false
+    },
+    "non_claims": {
+      "type": "object",
+      "required": [
+        "builder_design_authority_claimed",
+        "builder_execution_proof_claimed",
+        "downstream_enforcement_claimed",
+        "production_readiness_claimed",
+        "enforcement_status_upgrade_claimed"
+      ],
+      "properties": {
+        "builder_design_authority_claimed": { "const": false },
+        "builder_execution_proof_claimed": { "const": false },
+        "downstream_enforcement_claimed": { "const": false },
+        "production_readiness_claimed": { "const": false },
+        "enforcement_status_upgrade_claimed": { "const": false }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "receipt_status": { "const": "success" } }, "required": ["receipt_status"] },
+      "then": {
+        "required": ["decision_trace", "missing_trace_fields"],
+        "properties": {
+          "source_trace_state": { "const": "complete" },
+          "decision_trace": { "$ref": "#/$defs/decision_trace" },
+          "missing_trace_fields": { "maxItems": 0 },
+          "receipt_text": { "const": "✅ این Builder action به decision card کرنل وصل است؛ Builder فقط تصمیم قفل‌شده را به گام اجرایی تبدیل کرده و lineage حفظ شده است." }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "receipt_status": { "const": "warning" } }, "required": ["receipt_status"] },
+      "then": {
+        "required": ["missing_trace_fields"],
+        "properties": {
+          "source_trace_state": { "enum": ["incomplete", "missing"] },
+          "missing_trace_fields": { "minItems": 1 },
+          "receipt_text": { "const": "⚠️ این Builder action هنوز رسید معتبر کرنل ندارد؛ بدون machine-readable trace کامل نباید به‌عنوان تصمیم اجرایی معتبر عبور کند." }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "receipt_status": { "const": "fallback_warning" } }, "required": ["receipt_status"] },
+      "then": {
+        "required": ["missing_trace_fields"],
+        "properties": {
+          "surface": { "enum": ["fallback", "repair_packet"] },
+          "source_trace_state": { "enum": ["incomplete", "missing"] },
+          "missing_trace_fields": { "minItems": 1 },
+          "receipt_text": { "const": "⚠️ fallback اجرا شد، اما تصمیم جدید محسوب نمی‌شود؛ برای انتخاب جایگزین، decision trace معتبر لازم است." }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
