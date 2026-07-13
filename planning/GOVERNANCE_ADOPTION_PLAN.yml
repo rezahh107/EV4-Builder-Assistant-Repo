@@ -19,22 +19,25 @@ repository_state:
   exact_head_ci_mechanism:
     workflow: .github/workflows/schema-validation.yml
     checkout_identity_assertion: active
+    live_review_receipt_validation: github_api_read_only_operator_invoked
 
 current_increment:
   increment_id: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
   classification: REQUIRED_GOVERNANCE_ADOPTION
-  scope_revision: GOV-004-v1
+  scope_revision: GOV-004-v2
+  implementation_context_id: repo-maintainer-gov-003-004
   implementation_status: implemented_on_branch_pending_exact_head_validation_and_independent_review
   objective: complete deterministic governance enforcement exact-head independent review lifecycle and post-merge verification mechanism without product or runtime expansion
 
 previous_scope_snapshot:
-  scope_revision: GOV-002-v1
+  scope_revision: GOV-004-v1
+  source_commit: 75df0c93851d89d281fd4796f37efa9df4cea87c
   lifecycle_by_id:
-    GOV-CAP-001: committed_now
-    GOV-CAP-002: committed_now
-    GOV-CAP-003: deferred_not_deleted
-    GOV-CAP-004: deferred_not_deleted
-    GOV-CAP-005: deferred_not_deleted
+    GOV-CAP-001: implemented
+    GOV-CAP-002: implemented
+    GOV-CAP-003: committed_now
+    GOV-CAP-004: committed_now
+    GOV-CAP-005: committed_now
     PROD-CAP-001: deferred_not_deleted
     PROD-CAP-002: deferred_not_deleted
     PROD-CAP-003: deferred_not_deleted
@@ -43,9 +46,8 @@ previous_scope_snapshot:
 scope_projection:
   project: rezahh107/EV4-Builder-Assistant-Repo
   phase: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
-  scope_revision: GOV-004-v1
+  scope_revision: GOV-004-v2
   source_commit: 8931c608d759ea121727f3903e21976a37e27f45
-
   long_term_target_ids:
     - GOV-CAP-001
     - GOV-CAP-002
@@ -56,34 +58,27 @@ scope_projection:
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
-
   implemented_ids:
     - GOV-CAP-001
     - GOV-CAP-002
-
   committed_now_ids:
     - GOV-CAP-003
     - GOV-CAP-004
     - GOV-CAP-005
-
   excluded_now_ids:
     - PROD-CAP-001
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
-
   deferred_not_deleted_ids:
     - PROD-CAP-001
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
-
   rejected_ids: []
   superseded_ids: []
-
   dependencies:
     - GOV-002_merge_commit_8931c608d759ea121727f3903e21976a37e27f45
-
   authority_files:
     - path: governance/AI_AUTHORITY_POLICY.yml
       responsibility: AI authority evidence authority security profile and rule enforcement levels
@@ -92,29 +87,15 @@ scope_projection:
     - path: planning/GOVERNANCE_ADOPTION_PLAN.yml
       responsibility: current committed scope dependencies computed disclosure and progress evidence
     - path: governance/REVIEW_LIFECYCLE.yml
-      responsibility: independent exact-head review stale-on-change merge predicates and post-merge verification
+      responsibility: independent exact-head review stale-on-change merge predicates and live receipt validation
     - path: STATUS.md
       responsibility: concise mutable repository status without duplicating detailed scope lifecycle
 
 scope_change_disclosure:
-  from_scope_revision: GOV-002-v1
-  to_scope_revision: GOV-004-v1
-  lifecycle_changes:
-    - capability_id: GOV-CAP-001
-      from: committed_now
-      to: implemented
-    - capability_id: GOV-CAP-002
-      from: committed_now
-      to: implemented
-    - capability_id: GOV-CAP-003
-      from: deferred_not_deleted
-      to: committed_now
-    - capability_id: GOV-CAP-004
-      from: deferred_not_deleted
-      to: committed_now
-    - capability_id: GOV-CAP-005
-      from: deferred_not_deleted
-      to: committed_now
+  from_scope_revision: GOV-004-v1
+  to_scope_revision: GOV-004-v2
+  revision_reason: live_review_receipt_validation_and_versioned_required_check_contract
+  lifecycle_changes: []
   deleted_target_ids: []
   newly_introduced_target_ids: []
   disclosure_computed_from_capability_ids: true
@@ -122,7 +103,7 @@ scope_change_disclosure:
   exact_head_binding_carrier: governance/schemas/review-receipt.schema.json
   source_object_identities:
     previous_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
-    previous_scope_source_commit: 8931c608d759ea121727f3903e21976a37e27f45
+    previous_scope_source_commit: 75df0c93851d89d281fd4796f37efa9df4cea87c
     current_capability_authority: planning/CAPABILITY_MEMORY.yml
     current_scope_source_identity: github_pull_request_head_sha
   set_counts:
@@ -158,7 +139,9 @@ completion_evidence:
   validation_commands:
     - npm run validate
     - node scripts/validate-governance-authorities.mjs
-    - node scripts/validate-governance-sequence.mjs
+    - node scripts/validate-governance-sequence.mjs --mode=fixtures
+    - node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json
+    - node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/invalid/live_receipt_evidence.json
   exact_head_ci_required: true
   independent_review_required: true
   user_merge_required: true
@@ -186,6 +169,7 @@ prohibited_claims:
   - builder_to_responsive_export_implemented
   - repository_settings_enforced
   - branch_protection_enforced
+  - automatic_premerge_live_receipt_ci_enforced
 
 next_increment:
   increment_id: NONE_FOR_GOVERNANCE_ADOPTION
@@ -203,4 +187,4 @@ scope_change_rule:
     - completion_evidence
   prior_review_becomes_stale_on_revision_change: true
 
-current_enforcement_status: sequence_ci_enforced
+current_enforcement_status: mixed_sequence_ci_and_live_validator_backed
