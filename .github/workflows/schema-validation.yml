@@ -36,8 +36,15 @@ jobs:
           node-version: '20'
 
       - name: Run central contract validation
+        id: central_validation
+        continue-on-error: true
         run: |
           npm run validate
+
+      - name: Central validation failed at ${{ steps.central_validation.outputs.failed_check }}
+        if: steps.central_validation.outcome == 'failure'
+        shell: bash
+        run: exit 1
 
       - name: Run governance authority validation
         run: |
