@@ -13,7 +13,7 @@
       "scenario_id": "self_authored_review",
       "overrides": {
         "review_receipt": {
-          "reviewer_context_id": "repo-maintainer-55"
+          "reviewer_context_id": "repo-maintainer-gov-003-004"
         }
       },
       "expected_diagnostics": [
