@@ -64,4 +64,4 @@ enforcement_carriers:
   exact_head_workflow: .github/workflows/schema-validation.yml
   pr_template: .github/pull_request_template.md
 
-current_enforcement_status: sequence_ci
+current_enforcement_status: sequence_ci_enforced

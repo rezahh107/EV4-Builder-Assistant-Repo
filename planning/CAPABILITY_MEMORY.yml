@@ -104,4 +104,4 @@ integrity_rules:
   - capability_removal_requires_decision_provenance
   - granularity_changes_require_explicit_mapping
 
-current_enforcement_status: implementation_on_branch_pending_exact_head_review
+current_enforcement_status: sequence_ci_enforced

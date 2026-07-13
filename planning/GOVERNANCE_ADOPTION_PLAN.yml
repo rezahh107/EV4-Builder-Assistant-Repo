@@ -118,6 +118,23 @@ scope_change_disclosure:
   deleted_target_ids: []
   newly_introduced_target_ids: []
   disclosure_computed_from_capability_ids: true
+  reviewed_head_binding_required: true
+  exact_head_binding_carrier: governance/schemas/review-receipt.schema.json
+  source_object_identities:
+    previous_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
+    previous_scope_source_commit: 8931c608d759ea121727f3903e21976a37e27f45
+    current_capability_authority: planning/CAPABILITY_MEMORY.yml
+    current_scope_source_identity: github_pull_request_head_sha
+  set_counts:
+    target: 9
+    implemented: 2
+    committed: 3
+    deferred: 4
+    excluded: 4
+    rejected: 0
+    superseded: 0
+  owner_facing_disclosure_carrier: pull_request_55_body_scope_gate
+  owner_facing_disclosure_rendered: true
 
 completion_evidence:
   required_artifacts:
@@ -186,4 +203,4 @@ scope_change_rule:
     - completion_evidence
   prior_review_becomes_stale_on_revision_change: true
 
-current_enforcement_status: implementation_on_branch_pending_exact_head_review
+current_enforcement_status: sequence_ci_enforced

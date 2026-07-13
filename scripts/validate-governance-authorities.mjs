@@ -86,7 +86,7 @@ const derivedCommitted = capabilityIds.filter((id) => lifecycleById[id] === 'com
 const derivedDeferred = capabilityIds.filter((id) => lifecycleById[id] === 'deferred_not_deleted').sort();
 
 if (!setEquals(derivedImplemented, plan.scope_projection?.implemented_ids || [])) {
-  errors.push('implemented_ids must match capability memory lifecycle=implemented.');
+  errors.push('implemented_ids must match capability memory lifecycle=implemed.');
 }
 if (!setEquals(derivedCommitted, plan.scope_projection?.committed_now_ids || [])) {
   errors.push('committed_now_ids must match capability memory lifecycle=committed_now.');
@@ -188,13 +188,13 @@ for (const requiredControl of [
 
 const expectedEnforcement = {
   'AIGOV-START-001': 'validator_backed',
-  'AIGOV-SCOPE-001': 'sequence_ci',
-  'AIGOV-SCOPE-DISCLOSURE-001': 'sequence_ci',
-  'AIGOV-PROGRESS-001': 'sequence_ci',
+  'AIGOV-SCOPE-001': 'sequence_ci_enforced',
+  'AIGOV-SCOPE-DISCLOSURE-001': 'sequence_ci_enforced',
+  'AIGOV-PROGRESS-001': 'sequence_ci_enforced',
   'AIGOV-EVIDENCE-001': 'ci_enforced',
-  'AIGOV-INDEPENDENCE-001': 'sequence_ci',
-  'AIGOV-STALE-001': 'sequence_ci',
-  'AIGOV-MERGE-001': 'sequence_ci',
+  'AIGOV-INDEPENDENCE-001': 'sequence_ci_enforced',
+  'AIGOV-STALE-001': 'sequence_ci_enforced',
+  'AIGOV-MERGE-001': 'sequence_ci_enforced',
   'AIGOV-SECURITY-PROFILE-001': 'validator_backed',
   'AIGOV-HUMAN-001': 'validator_backed',
   'AIGOV-COACH-001': 'validator_backed'
@@ -203,6 +203,55 @@ for (const [ruleId, expected] of Object.entries(expectedEnforcement)) {
   if (policy.current_enforcement?.[ruleId] !== expected) {
     errors.push(`${ruleId}: expected enforcement ${expected}, received ${policy.current_enforcement?.[ruleId]}.`);
   }
+}
+
+
+const requiredGateFields = ['risk', 'session_scope', 'trigger', 'predicate', 'enforcement', 'recovery_action'];
+for (const ruleId of Object.keys(expectedEnforcement)) {
+  const definition = policy.rules?.[ruleId];
+  if (!definition) {
+    errors.push(`${ruleId}: gate definition is missing.`);
+    continue;
+  }
+  for (const field of requiredGateFields) {
+    if (definition[field] === undefined || definition[field] === null) {
+      errors.push(`${ruleId}: gate definition is missing ${field}.`);
+    }
+  }
+  if (!Array.isArray(definition.predicate) || definition.predicate.length < 2) {
+    errors.push(`${ruleId}: gate predicate must contain at least two checks.`);
+  }
+}
+
+const disclosureCounts = plan.scope_change_disclosure?.set_counts || {};
+const computedCounts = {
+  target: capabilityIds.length,
+  implemented: derivedImplemented.length,
+  committed: derivedCommitted.length,
+  deferred: derivedDeferred.length,
+  excluded: (plan.scope_projection?.excluded_now_ids || []).length,
+  rejected: (plan.scope_projection?.rejected_ids || []).length,
+  superseded: (plan.scope_projection?.superseded_ids || []).length
+};
+for (const [name, expected] of Object.entries(computedCounts)) {
+  if (disclosureCounts[name] !== expected) {
+    errors.push(`scope disclosure set_counts.${name}: expected ${expected}, received ${disclosureCounts[name]}.`);
+  }
+}
+if (plan.scope_change_disclosure?.reviewed_head_binding_required !== true) {
+  errors.push('scope disclosure must require exact reviewed-head binding.');
+}
+if (plan.scope_change_disclosure?.exact_head_binding_carrier !== 'governance/schemas/review-receipt.schema.json') {
+  errors.push('scope disclosure exact-head binding carrier must be the canonical review receipt schema.');
+}
+if (plan.scope_change_disclosure?.source_object_identities?.previous_scope_source_commit !== '8931c608d759ea121727f3903e21976a37e27f45') {
+  errors.push('scope disclosure previous source commit identity is missing or mismatched.');
+}
+if (plan.scope_change_disclosure?.source_object_identities?.current_scope_source_identity !== 'github_pull_request_head_sha') {
+  errors.push('scope disclosure current source identity must be github_pull_request_head_sha.');
+}
+if (plan.scope_change_disclosure?.owner_facing_disclosure_rendered !== true) {
+  errors.push('owner-facing scope disclosure must be rendered.');
 }
 
 for (const predicate of [

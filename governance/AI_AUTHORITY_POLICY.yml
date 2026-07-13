@@ -93,6 +93,141 @@ scope_progress_separation:
   required: true
   rule: scope_commitment_and_implementation_completion_must_not_share_one_status_predicate
 
+rules:
+  AIGOV-START-001:
+    risk: Critical
+    session_scope: per_session
+    trigger: before_repository_analysis_or_modification
+    predicate:
+      - live_repository_identified
+      - default_branch_identified
+      - authority_files_inspected
+      - current_authorized_work_identified
+      - dependencies_checked
+    enforcement: block_execution
+    recovery_action: repair_request
+
+  AIGOV-SCOPE-001:
+    risk: Critical
+    session_scope: cross_turn
+    trigger: before_phase_authorization_execution_start_or_scope_change
+    predicate:
+      - current_scope_projection_exists
+      - projection_matches_canonical_authorities
+      - excluded_capabilities_are_explicit
+      - deferred_capabilities_are_preserved
+      - scope_revision_matches_current_authority_content
+    enforcement: block_execution_or_mark_STATUS_DRIFT
+    recovery_action: rollback_or_reconcile
+
+  AIGOV-SCOPE-DISCLOSURE-001:
+    risk: Critical
+    session_scope: cross_turn
+    trigger: before_independent_inspector_emits_GREEN
+    predicate:
+      - scope_chane_disclosure_exists
+      - disclosure_is_bound_to_exact_reviewed_head_sha
+      - capability_lists_use_canonical_unique_ids
+      - counts_are_derived_from_set_cardinality
+      - source_object_identities_are_recorded
+      - target_committed_deferred_rejected_superseded_and_implemented_sets_reconcile
+      - owner_facing_disclosure_is_rendered
+    enforcement: missing_or_mismatched_disclosure_YELLOW_silent_material_deletion_RED
+    recovery_action: repair_and_rerun_review
+
+  AIGOV-PROGRESS-001:
+    risk: Critical
+    session_scope: cross_turn
+    trigger: before_status_becomes_implemented_or_complete
+    predicate:
+      - required_artifacts_exist_on_live_default_branch
+      - acceptance_evidence_exists
+      - exact_commit_is_recorded
+      - required_validators_tests_and_ci_passed
+      - no_blocking_gate_remains
+    enforcement: reject_completion_status
+    recovery_action: repair_request
+
+  AIGOV-EVIDENCE-001:
+    risk: Critical
+    session_scope: per_artifact
+    trigger: when_material_claim_or_readiness_conclusion_is_emitted
+    predicate:
+      - claim_has_evidence_state
+      - source_supports_exact_claim_scope
+      - AI_signal_is_not_represented_as_factual_proof
+      - unknown_remains_unknown
+    enforcement: reject_or_downgrade_claim
+    recovery_action: repair_request
+
+  AIGOV-INDEPENDENCE-001:
+    risk: Critical
+    session_scope: cross_turn
+    trigger: before_technical_acceptance_or_merge_recommendation
+    predicate:
+      - review_session_is_separate
+      - exact_head_is_inspected
+      - immutable_protocol_identity_is_recorded
+      - reviewer_did_not_rely_on_implementer_self_assertion
+    enforcement: block_GREEN
+    recovery_action: rerun_independent_review
+
+  AIGOV-STALE-001:
+    risk: Critical
+    session_scope: cross_turn
+    trigger: when_PR_head_or_governing_scope_revision_changes
+    predicate:
+      - reviewed_head_sha_equals_current_head_sha
+      - reviewed_scope_revision_equals_current_scope_revision
+    enforcement: invalidate_prior_review
+    recovery_action: rerun_review
+
+  AIGOV-MERGE-001:
+    risk: Critical
+    session_scope: cross_turn
+    trigger: before_GREEN_merge_recommendation
+    predicate:
+      - current_exact_head_independent_AI_review_is_GREEN
+      - required_exact_head_CI_passed
+      - scope_and_progress_gates_passed
+      - no_blocking_evidence_gap_remains
+    enforcement: YELLOW_or_RED
+    recovery_action: repair_or_verify
+
+  AIGOV-SECURITY-PROFILE-001:
+    risk: High
+    session_scope: cross_turn
+    trigger: repository_bootstrap_governance_adoption_or_security_activation_trigger
+    predicate:
+      - active_security_profile_is_explicit
+      - intentionally_omitted_enterprise_and_industrial_controls_are_recorded
+      - minimum_security_controls_remain_active
+      - activation_triggers_are_evaluated
+      - out_of_scope_controls_do_not_create_false_blocking_gap
+    enforcement: missing_profile_repair_minimum_control_violation_block_enterprise_not_activated_do_not_block
+    recovery_action: repair_or_activate_bounded_security_increment
+
+  AIGOV-HUMAN-001:
+    risk: High
+    session_scope: per_artifact
+    trigger: when_governance_contracts_or_status_transitions_are_defined
+    predicate:
+      - no_human_technical_approval_is_required
+      - user_action_is_not_labeled_technical_evidence
+      - external_human_requirement_is_evidence_linked_if_applicable
+    enforcement: reject_ambiguous_approval_contract
+    recovery_action: repair_request
+
+  AIGOV-COACH-001:
+    risk: High
+    session_scope: per_artifact
+    trigger: when_AI_critique_is_recorded
+    predicate:
+      - evidence_type_is_AI_REVIEW_SIGNAL_or_coach_critique
+      - critique_does_not_claim_technical_truth_or_real_world_outcome
+    enforcement: downgrade_or_reject_evidence_classification
+    recovery_action: repair_request
+
 security_profile:
   name: personal_ai_operated_strong_governance_minimum_security
   posture: minimum_security
@@ -150,13 +285,13 @@ enforcement_carriers:
 
 current_enforcement:
   AIGOV-START-001: validator_backed
-  AIGOV-SCOPE-001: sequence_ci
-  AIGOV-SCOPE-DISCLOSURE-001: sequence_ci
-  AIGOV-PROGRESS-001: sequence_ci
+  AIGOV-SCOPE-001: sequence_ci_enforced
+  AIGOV-SCOPE-DISCLOSURE-001: sequence_ci_enforced
+  AIGOV-PKOGRESS-001: sequence_ci_enforced
   AIGOV-EVIDENCE-001: ci_enforced
-  AIGOV-INDEPENDENCE-001: sequence_ci
-  AIGOV-STALE-001: sequence_ci
-  AIGOV-MERGE-001: sequence_ci
+  AIGOV-INDEPENDENCE-001: sequence_ci_enforced
+  AIGOV-STALE-001: sequence_ci_enforced
+  AIGOV-MERGE-001: sequence_ci_enforced
   AIGOV-SECURITY-PROFILE-001: validator_backed
   AIGOV-HUMAN-001: validator_backed
   AIGOV-COACH-001: validator_backed
