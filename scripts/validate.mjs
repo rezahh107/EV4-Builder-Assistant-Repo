@@ -49,21 +49,14 @@ const nodeChecks = [
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-
 function run(command, args, label) {
   console.log('\n==> ' + label);
   const result = spawnSync(command, args, { stdio: 'inherit' });
-  if (result.error) {
-    console.error('Failed to execute ' + command + ': ' + result.error.message);
-    process.exit(1);
-  }
+  if (result.error) { console.error('Failed to execute ' + command + ': ' + result.error.message); process.exit(1); }
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
-
-for (const script of scripts) {
-  run(npmCommand, ['run', script], 'npm run ' + script);
-}
-
+for (const script of scripts) run(npmCommand, ['run', script], 'npm run ' + script);
 for (const check of nodeChecks) {
-  run(process.execPath, [check], 'node ' + check);
+  const args = check === 'scripts/validate-governance-sequence.mjs' ? [check, '--mode=fixtures'] : [check];
+  run(process.execPath, args, 'node ' + args.join(' '));
 }
