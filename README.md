@@ -6,6 +6,17 @@ Status: Builder runtime active. Project Gate integration is planned. The Project
 
 Builder executes proven Elementor actions. Architect owns architecture. CE owns implementation-strategy proof. Responsive owns post-build responsive validation.
 
+## Governance Authorities
+
+Repository governance adoption is defined by these non-overlapping authorities:
+
+- `governance/AI_AUTHORITY_POLICY.yml` — AI technical authority, evidence authority, security profile, and prohibited human technical gates.
+- `planning/CAPABILITY_MEMORY.yml` — canonical capability IDs and lifecycle memory, including deferred capabilities that must not be silently deleted.
+- `planning/GOVERNANCE_ADOPTION_PLAN.yml` — current scope revision, committed scope, dependencies, completion evidence, and progress gates.
+- `STATUS.md` — concise mutable repository status; it must not duplicate detailed capability lifecycle or scope calculations.
+
+Live `main`, exact commit/PR evidence, validators, tests, CI, and independent exact-head review remain the evidence sources for implementation claims. These authority files do not prove their own enforcement.
+
 ## Planned Project Gate Flow
 
 ```text
