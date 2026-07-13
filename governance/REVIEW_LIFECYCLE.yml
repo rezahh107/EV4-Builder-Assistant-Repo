@@ -1,14 +1,14 @@
-schema_version: 1
+schema_version: 2
 protocol_id: EV4-BUILDER-EXACT-HEAD-AI-REVIEW
-protocol_version: 1
+protocol_version: 2
 repository: rezahh107/EV4-Builder-Assistant-Repo
 scope_revision_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
+implementation_context_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
 receipt_schema: governance/schemas/review-receipt.schema.json
 
 receipt_transport:
   - pull_request_review
   - pull_request_comment
-  - repository_evidence_artifact
 
 required_receipt_fields:
   - repository
@@ -39,6 +39,31 @@ technical_statuses:
   - YELLOW_REVIEW_REQUIRED
   - RED_DO_NOT_MERGE
 
+required_check_set:
+  version: 1
+  checks:
+    - check_id: implementation_validation
+      workflow_name: Schema validation
+      event: pull_request
+    - check_id: project_gate_pin
+      workflow_name: Verify Project Gate Contract Pin
+      event: pull_request
+
+live_receipt_validation:
+  mode: github_api_read_only_operator_invoked
+  marker: AI_GOVERNANCE_REVIEW_RECEIPT
+  supported_transports:
+    - pull_request_review
+    - pull_request_comment
+  command: node scripts/validate-governance-sequence.mjs --mode=live --source=github
+  phase: post_review_exact_head_validation
+  activation_state: premerge_operator_invoked_default_branch_workflow_not_claimed
+  required_token_permissions:
+    - actions_read
+    - contents_read
+    - issues_read
+    - pull_requests_read
+
 green_merge_predicates:
   exact_head_matches_receipt: true
   scope_revision_matches_receipt: true
@@ -64,4 +89,4 @@ enforcement_carriers:
   exact_head_workflow: .github/workflows/schema-validation.yml
   pr_template: .github/pull_request_template.md
 
-current_enforcement_status: sequence_ci_enforced
+current_enforcement_status: mixed_sequence_ci_and_live_validator_backed
