@@ -106,7 +106,6 @@ rules:
       - dependencies_checked
     enforcement: block_execution
     recovery_action: repair_request
-
   AIGOV-SCOPE-001:
     risk: Critical
     session_scope: cross_turn
@@ -119,13 +118,12 @@ rules:
       - scope_revision_matches_current_authority_content
     enforcement: block_execution_or_mark_STATUS_DRIFT
     recovery_action: rollback_or_reconcile
-
   AIGOV-SCOPE-DISCLOSURE-001:
     risk: Critical
     session_scope: cross_turn
     trigger: before_independent_inspector_emits_GREEN
     predicate:
-      - scope_chane_disclosure_exists
+      - scope_change_disclosure_exists
       - disclosure_is_bound_to_exact_reviewed_head_sha
       - capability_lists_use_canonical_unique_ids
       - counts_are_derived_from_set_cardinality
@@ -134,7 +132,6 @@ rules:
       - owner_facing_disclosure_is_rendered
     enforcement: missing_or_mismatched_disclosure_YELLOW_silent_material_deletion_RED
     recovery_action: repair_and_rerun_review
-
   AIGOV-PROGRESS-001:
     risk: Critical
     session_scope: cross_turn
@@ -147,7 +144,6 @@ rules:
       - no_blocking_gate_remains
     enforcement: reject_completion_status
     recovery_action: repair_request
-
   AIGOV-EVIDENCE-001:
     risk: Critical
     session_scope: per_artifact
@@ -159,7 +155,6 @@ rules:
       - unknown_remains_unknown
     enforcement: reject_or_downgrade_claim
     recovery_action: repair_request
-
   AIGOV-INDEPENDENCE-001:
     risk: Critical
     session_scope: cross_turn
@@ -171,7 +166,6 @@ rules:
       - reviewer_did_not_rely_on_implementer_self_assertion
     enforcement: block_GREEN
     recovery_action: rerun_independent_review
-
   AIGOV-STALE-001:
     risk: Critical
     session_scope: cross_turn
@@ -181,7 +175,6 @@ rules:
       - reviewed_scope_revision_equals_current_scope_revision
     enforcement: invalidate_prior_review
     recovery_action: rerun_review
-
   AIGOV-MERGE-001:
     risk: Critical
     session_scope: cross_turn
@@ -193,7 +186,6 @@ rules:
       - no_blocking_evidence_gap_remains
     enforcement: YELLOW_or_RED
     recovery_action: repair_or_verify
-
   AIGOV-SECURITY-PROFILE-001:
     risk: High
     session_scope: cross_turn
@@ -206,7 +198,6 @@ rules:
       - out_of_scope_controls_do_not_create_false_blocking_gap
     enforcement: missing_profile_repair_minimum_control_violation_block_enterprise_not_activated_do_not_block
     recovery_action: repair_or_activate_bounded_security_increment
-
   AIGOV-HUMAN-001:
     risk: High
     session_scope: per_artifact
@@ -217,7 +208,6 @@ rules:
       - external_human_requirement_is_evidence_linked_if_applicable
     enforcement: reject_ambiguous_approval_contract
     recovery_action: repair_request
-
   AIGOV-COACH-001:
     risk: High
     session_scope: per_artifact
@@ -280,6 +270,7 @@ enforcement_carriers:
   review_lifecycle_authority: governance/REVIEW_LIFECYCLE.yml
   review_receipt_schema: governance/schemas/review-receipt.schema.json
   exact_head_ci: .github/workflows/schema-validation.yml
+  live_review_receipt_validator: scripts/validate-governance-sequence.mjs --mode=live --source=github
   positive_fixtures: tests/governance/valid
   negative_fixtures: tests/governance/invalid
 
@@ -287,11 +278,11 @@ current_enforcement:
   AIGOV-START-001: validator_backed
   AIGOV-SCOPE-001: sequence_ci_enforced
   AIGOV-SCOPE-DISCLOSURE-001: sequence_ci_enforced
-  AIGOV-PKOGRESS-001: sequence_ci_enforced
+  AIGOV-PROGRESS-001: sequence_ci_enforced
   AIGOV-EVIDENCE-001: ci_enforced
-  AIGOV-INDEPENDENCE-001: sequence_ci_enforced
-  AIGOV-STALE-001: sequence_ci_enforced
-  AIGOV-MERGE-001: sequence_ci_enforced
+  AIGOV-INDEPENDENCE-001: live_validator_backed
+  AIGOV-STALE-001: live_validator_backed
+  AIGOV-MERGE-001: live_validator_backed
   AIGOV-SECURITY-PROFILE-001: validator_backed
   AIGOV-HUMAN-001: validator_backed
   AIGOV-COACH-001: validator_backed
@@ -303,3 +294,4 @@ non_claims:
   - builder_to_responsive_export_implemented
   - repository_settings_enforced
   - branch_protection_enforced
+  - automatic_premerge_live_receipt_ci_enforced
