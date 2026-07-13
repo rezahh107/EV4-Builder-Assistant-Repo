@@ -49,14 +49,31 @@ const nodeChecks = [
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
 function run(command, args, label) {
-  console.log('\n==> ' + label);
-  const result = spawnSync(command, args, { stdio: 'inherit' });
-  if (result.error) { console.error('Failed to execute ' + command + ': ' + result.error.message); process.exit(1); }
-  if (result.status !== 0) process.exit(result.status ?? 1);
+  console.log(`\n==> ${label}`);
+  const result = spawnSync(command, args, {
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024
+  });
+
+  if (result.error) {
+    console.error(`Failed to execute ${command}: ${result.error.message}`);
+    process.exit(1);
+  }
+
+  if (result.status !== 0) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    console.error(`${label}: failed with exit code ${result.status ?? 1}.`);
+    process.exit(result.status ?? 1);
+  }
+
+  console.log(`${label}: passed.`);
 }
-for (const script of scripts) run(npmCommand, ['run', script], 'npm run ' + script);
+
+for (const script of scripts) run(npmCommand, ['run', script], `npm run ${script}`);
 for (const check of nodeChecks) {
   const args = check === 'scripts/validate-governance-sequence.mjs' ? [check, '--mode=fixtures'] : [check];
-  run(process.execPath, args, 'node ' + args.join(' '));
+  run(process.execPath, args, `node ${args.join(' ')}`);
 }
