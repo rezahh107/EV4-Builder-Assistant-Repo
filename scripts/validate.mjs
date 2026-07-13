@@ -43,7 +43,9 @@ const nodeChecks = [
   'scripts/validate-builder-producer-adoption.mjs',
   'scripts/validate-builder-context-decision-lineage.mjs',
   'scripts/validate-decision-escape-routes.mjs',
-  'scripts/validate-kernel-decision-receipts.mjs'
+  'scripts/validate-kernel-decision-receipts.mjs',
+  'scripts/validate-governance-authorities.mjs',
+  'scripts/validate-governance-sequence.mjs'
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';

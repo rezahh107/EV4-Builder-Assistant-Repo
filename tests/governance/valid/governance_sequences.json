@@ -1,0 +1,1 @@
+{"scenarios":[{"scenario_id":"green_exact_head_complete"},{"scenario_id":"pending_review_without_green_claim","overrides":{"review_receipt":{"technical_status":"YELLOW_REVIEW_REQUIRED","exact_head_ci_run_ids":[]},"completion":{"required_artifacts":[],"present_artifacts":[],"implementation_commit":null,"ci_run_ids":[]}}}]}

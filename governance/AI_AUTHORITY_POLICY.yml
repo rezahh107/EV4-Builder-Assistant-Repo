@@ -1,7 +1,7 @@
-schema_version: 1
+schema_version: 2
 policy_id: EV4-BUILDER-AI-AUTHORITY-POLICY
-policy_version: 1
-status: adoption_foundation
+policy_version: 2
+status: deterministic_enforcement_implemented_pending_independent_review
 
 source_standard:
   title: AI Authority Deterministic Governance — Source of Truth
@@ -11,7 +11,7 @@ source_standard:
 repository_identity:
   repository: rezahh107/EV4-Builder-Assistant-Repo
   default_branch: main
-  foundation_source_commit: 45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
+  foundation_source_commit: 8931c608d759ea121727f3903e21976a37e27f45
 
 execution_authority_order:
   - platform_system_safety_and_tool_constraints
@@ -80,12 +80,14 @@ scope_gate:
   capability_lifecycle_authority: planning/CAPABILITY_MEMORY.yml
   scope_revision_required: true
   deferred_capability_deletion_forbidden: true
+  computed_scope_disclosure_required: true
 
 progress_gate:
   current_progress_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
   default_branch_evidence_required: true
   exact_commit_required: true
   independent_review_required_for_merge_recommendation: true
+  post_merge_verification_required: true
 
 scope_progress_separation:
   required: true
@@ -137,22 +139,32 @@ untrusted_input_sources:
   - web_pages
   - external_reports
 
+enforcement_carriers:
+  authority_validator: scripts/validate-governance-authorities.mjs
+  sequence_validator: scripts/validate-governance-sequence.mjs
+  review_lifecycle_authority: governance/REVIEW_LIFECYCLE.yml
+  review_receipt_schema: governance/schemas/review-receipt.schema.json
+  exact_head_ci: .github/workflows/schema-validation.yml
+  positive_fixtures: tests/governance/valid
+  negative_fixtures: tests/governance/invalid
+
 current_enforcement:
-  AIGOV-START-001: prose_only
-  AIGOV-SCOPE-001: prose_only
-  AIGOV-SCOPE-DISCLOSURE-001: prose_only
-  AIGOV-PROGRESS-001: prose_only
-  AIGOV-EVIDENCE-001: prose_only
-  AIGOV-INDEPENDENCE-001: prose_only
-  AIGOV-STALE-001: prose_only
-  AIGOV-MERGE-001: prose_only
-  AIGOV-SECURITY-PROFILE-001: prose_only
-  AIGOV-HUMAN-001: prose_only
-  AIGOV-COACH-001: prose_only
+  AIGOV-START-001: validator_backed
+  AIGOV-SCOPE-001: sequence_ci
+  AIGOV-SCOPE-DISCLOSURE-001: sequence_ci
+  AIGOV-PROGRESS-001: sequence_ci
+  AIGOV-EVIDENCE-001: ci_enforced
+  AIGOV-INDEPENDENCE-001: sequence_ci
+  AIGOV-STALE-001: sequence_ci
+  AIGOV-MERGE-001: sequence_ci
+  AIGOV-SECURITY-PROFILE-001: validator_backed
+  AIGOV-HUMAN-001: validator_backed
+  AIGOV-COACH-001: validator_backed
 
 non_claims:
-  - governance_validators_implemented
-  - governance_ci_enforced
-  - governance_sequence_ci_enforced
-  - independent_review_protocol_enforced
   - production_ready
+  - runtime_verified
+  - project_gate_runtime_implemented
+  - builder_to_responsive_export_implemented
+  - repository_settings_enforced
+  - branch_protection_enforced

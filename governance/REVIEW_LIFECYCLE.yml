@@ -1,0 +1,67 @@
+schema_version: 1
+protocol_id: EV4-BUILDER-EXACT-HEAD-AI-REVIEW
+protocol_version: 1
+repository: rezahh107/EV4-Builder-Assistant-Repo
+scope_revision_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
+receipt_schema: governance/schemas/review-receipt.schema.json
+
+receipt_transport:
+  - pull_request_review
+  - pull_request_comment
+  - repository_evidence_artifact
+
+required_receipt_fields:
+  - repository
+  - pull_request
+  - base_sha
+  - reviewed_head_sha
+  - scope_revision
+  - implementation_context_id
+  - reviewer_context_id
+  - independent
+  - technical_status
+  - exact_head_ci_run_ids
+  - findings
+  - reviewed_at
+
+independence_rule:
+  implementation_context_must_differ_from_reviewer_context: true
+  reviewer_must_not_be_implementer: true
+  self_authored_review_is_invalid: true
+
+stale_on_change:
+  - pull_request_head_sha
+  - scope_revision
+  - required_check_set
+
+technical_statuses:
+  - GREEN_MERGE_RECOMMENDED
+  - YELLOW_REVIEW_REQUIRED
+  - RED_DO_NOT_MERGE
+
+green_merge_predicates:
+  exact_head_matches_receipt: true
+  scope_revision_matches_receipt: true
+  independent_reviewer: true
+  all_required_exact_head_checks_success: true
+  unresolved_blocking_findings: false
+  scope_change_disclosure_valid: true
+  prohibited_human_technical_gate_absent: true
+  security_profile_valid: true
+  completion_evidence_complete: true
+
+post_merge_verification:
+  required: true
+  verify_live_default_branch_contains_reviewed_head_tree: true
+  verify_merge_commit_on_default_branch: true
+  verify_authorities_synchronized: true
+  verify_no_stronger_claim_than_evidence: true
+  close_increment_only_after_success: true
+
+enforcement_carriers:
+  schema: governance/schemas/review-receipt.schema.json
+  sequence_validator: scripts/validate-governance-sequence.mjs
+  exact_head_workflow: .github/workflows/schema-validation.yml
+  pr_template: .github/pull_request_template.md
+
+current_enforcement_status: sequence_ci

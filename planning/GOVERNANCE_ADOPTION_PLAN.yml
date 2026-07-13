@@ -1,36 +1,50 @@
-schema_version: 1
+schema_version: 2
 
 plan_identity:
   plan_id: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
-  plan_version: 1
+  plan_version: 2
   target_repository: rezahh107/EV4-Builder-Assistant-Repo
   audit_base_branch: main
   audit_base_sha: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
 
 repository_state:
   default_branch: main
-  current_source_commit: 45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
+  current_source_commit: 8931c608d759ea121727f3903e21976a37e27f45
   verified_prerequisite:
-    increment_id: GOV-001-WAVE5-STATUS-RECONCILIATION
-    pr: 53
-    merge_commit: 45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
+    increment_id: GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES
+    pr: 54
+    merge_commit: 8931c608d759ea121727f3903e21976a37e27f45
     state: merged_and_repository_content_verified
     evidence_state: REPOSITORY_CONFIRMED
-  limitation:
-    post_merge_ci_for_merge_commit: not_observed
+  exact_head_ci_mechanism:
+    workflow: .github/workflows/schema-validation.yml
+    checkout_identity_assertion: active
 
 current_increment:
-  increment_id: GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES
+  increment_id: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
   classification: REQUIRED_GOVERNANCE_ADOPTION
+  scope_revision: GOV-004-v1
+  implementation_status: implemented_on_branch_pending_exact_head_validation_and_independent_review
+  objective: complete deterministic governance enforcement exact-head independent review lifecycle and post-merge verification mechanism without product or runtime expansion
+
+previous_scope_snapshot:
   scope_revision: GOV-002-v1
-  implementation_status: implemented_on_branch_pending_validation
-  objective: establish the minimal canonical AI authority, evidence authority, security profile, scope projection, capability memory, and progress semantics
+  lifecycle_by_id:
+    GOV-CAP-001: committed_now
+    GOV-CAP-002: committed_now
+    GOV-CAP-003: deferred_not_deleted
+    GOV-CAP-004: deferred_not_deleted
+    GOV-CAP-005: deferred_not_deleted
+    PROD-CAP-001: deferred_not_deleted
+    PROD-CAP-002: deferred_not_deleted
+    PROD-CAP-003: deferred_not_deleted
+    PROD-CAP-004: deferred_not_deleted
 
 scope_projection:
   project: rezahh107/EV4-Builder-Assistant-Repo
-  phase: GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES
-  scope_revision: GOV-002-v1
-  source_commit: 45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
+  phase: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
+  scope_revision: GOV-004-v1
+  source_commit: 8931c608d759ea121727f3903e21976a37e27f45
 
   long_term_target_ids:
     - GOV-CAP-001
@@ -43,23 +57,22 @@ scope_projection:
     - PROD-CAP-003
     - PROD-CAP-004
 
-  committed_now_ids:
+  implemented_ids:
     - GOV-CAP-001
     - GOV-CAP-002
 
-  excluded_now_ids:
+  committed_now_ids:
     - GOV-CAP-003
     - GOV-CAP-004
     - GOV-CAP-005
+
+  excluded_now_ids:
     - PROD-CAP-001
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
 
   deferred_not_deleted_ids:
-    - GOV-CAP-003
-    - GOV-CAP-004
-    - GOV-CAP-005
     - PROD-CAP-001
     - PROD-CAP-002
     - PROD-CAP-003
@@ -69,40 +82,80 @@ scope_projection:
   superseded_ids: []
 
   dependencies:
-    - GOV-001_merge_commit_45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
+    - GOV-002_merge_commit_8931c608d759ea121727f3903e21976a37e27f45
 
   authority_files:
     - path: governance/AI_AUTHORITY_POLICY.yml
-      responsibility: AI authority evidence authority security profile and governance boundaries
+      responsibility: AI authority evidence authority security profile and rule enforcement levels
     - path: planning/CAPABILITY_MEMORY.yml
       responsibility: canonical capability IDs and lifecycle memory
     - path: planning/GOVERNANCE_ADOPTION_PLAN.yml
-      responsibility: current committed scope dependencies and progress evidence
+      responsibility: current committed scope dependencies computed disclosure and progress evidence
+    - path: governance/REVIEW_LIFECYCLE.yml
+      responsibility: independent exact-head review stale-on-change merge predicates and post-merge verification
     - path: STATUS.md
       responsibility: concise mutable repository status without duplicating detailed scope lifecycle
+
+scope_change_disclosure:
+  from_scope_revision: GOV-002-v1
+  to_scope_revision: GOV-004-v1
+  lifecycle_changes:
+    - capability_id: GOV-CAP-001
+      from: committed_now
+      to: implemented
+    - capability_id: GOV-CAP-002
+      from: committed_now
+      to: implemented
+    - capability_id: GOV-CAP-003
+      from: deferred_not_deleted
+      to: committed_now
+    - capability_id: GOV-CAP-004
+      from: deferred_not_deleted
+      to: committed_now
+    - capability_id: GOV-CAP-005
+      from: deferred_not_deleted
+      to: committed_now
+  deleted_target_ids: []
+  newly_introduced_target_ids: []
+  disclosure_computed_from_capability_ids: true
 
 completion_evidence:
   required_artifacts:
     - governance/AI_AUTHORITY_POLICY.yml
+    - governance/REVIEW_LIFECYCLE.yml
+    - governance/schemas/ai-authority-policy.schema.json
+    - governance/schemas/capability-memory.schema.json
+    - governance/schemas/governance-adoption-plan.schema.json
+    - governance/schemas/review-lifecycle.schema.json
+    - governance/schemas/review-receipt.schema.json
     - planning/CAPABILITY_MEMORY.yml
     - planning/GOVERNANCE_ADOPTION_PLAN.yml
-    - AGENTS.md
-    - README.md
+    - scripts/governance-lib.mjs
+    - scripts/validate-governance-authorities.mjs
+    - scripts/validate-governance-sequence.mjs
+    - tests/governance/valid
+    - tests/governance/invalid
+    - .github/workflows/schema-validation.yml
+    - .github/pull_request_template.md
     - STATUS.md
   validation_commands:
     - npm run validate
+    - node scripts/validate-governance-authorities.mjs
+    - node scripts/validate-governance-sequence.mjs
   exact_head_ci_required: true
   independent_review_required: true
   user_merge_required: true
+  post_merge_verification_required: true
 
 progress_gate:
-  implementation_status: implemented_on_branch_pending_validation
-  exact_commit_recorded: false
+  implementation_status: implemented_on_branch_pending_exact_head_validation_and_independent_review
+  exact_commit_evidence_source: github_pull_request_head_sha_and_ci_assertion
   required_artifacts_verified_on_live_default_branch: false
   validator_result: UNKNOWN
   ci_result: UNKNOWN
   independent_review_result: UNKNOWN
   merge_state: not_merged
+  post_merge_verification_result: UNKNOWN
   open_gates:
     - exact_head_validation
     - independent_ai_review
@@ -110,24 +163,22 @@ progress_gate:
     - post_merge_verification
 
 prohibited_claims:
-  - governance_adoption_complete
-  - governance_validator_backed
-  - governance_ci_enforced
-  - governance_sequence_ci_enforced
-  - independent_review_enforced
   - production_ready
   - runtime_verified
+  - project_gate_runtime_implemented
+  - builder_to_responsive_export_implemented
+  - repository_settings_enforced
+  - branch_protection_enforced
 
 next_increment:
-  increment_id: GOV-003-DETERMINISTIC-GOVERNANCE-ENFORCEMENT
+  increment_id: NONE_FOR_GOVERNANCE_ADOPTION
   blocked_until:
-    - GOV-002_exact_head_ci_success
-    - GOV-002_independent_review_complete
-    - GOV-002_user_merge
-    - GOV-002_post_merge_verification
+    - current_increment_merge
+    - current_increment_post_merge_verification
 
 scope_change_rule:
   revision_must_change_when:
+    - implemented_ids
     - committed_now_ids
     - excluded_now_ids
     - deferred_not_deleted_ids
@@ -135,4 +186,4 @@ scope_change_rule:
     - completion_evidence
   prior_review_becomes_stale_on_revision_change: true
 
-current_enforcement_status: prose_only
+current_enforcement_status: implementation_on_branch_pending_exact_head_review

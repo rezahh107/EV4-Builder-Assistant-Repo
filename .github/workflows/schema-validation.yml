@@ -36,6 +36,14 @@ jobs:
         run: |
           npm run validate
 
+      - name: Run governance authority validation
+        run: |
+          node scripts/validate-governance-authorities.mjs
+
+      - name: Run governance sequence validation
+        run: |
+          node scripts/validate-governance-sequence.mjs
+
       - name: Run Builder decision lineage sequence validation
         run: |
           npm run validate:builder-lineage-sequence
