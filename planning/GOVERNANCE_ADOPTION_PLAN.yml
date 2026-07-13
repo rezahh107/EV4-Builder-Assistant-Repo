@@ -26,7 +26,7 @@ current_increment:
   classification: REQUIRED_GOVERNANCE_ADOPTION
   scope_revision: GOV-004-v2
   implementation_context_id: repo-maintainer-gov-003-004
-  implementation_status: implemented_on_branch_pending_exact_head_validation_and_independent_review
+  implementation_status: implemented_on_branch_pending_fresh_independent_exact_head_review
   objective: complete deterministic governance enforcement exact-head independent review lifecycle and post-merge verification mechanism without product or runtime expansion
 
 previous_scope_snapshot:
@@ -148,17 +148,17 @@ completion_evidence:
   post_merge_verification_required: true
 
 progress_gate:
-  implementation_status: implemented_on_branch_pending_exact_head_validation_and_independent_review
+  implementation_status: implemented_on_branch_pending_fresh_independent_exact_head_review
   exact_commit_evidence_source: github_pull_request_head_sha_and_ci_assertion
   required_artifacts_verified_on_live_default_branch: false
-  validator_result: UNKNOWN
-  ci_result: UNKNOWN
+  validator_result: CI_CONFIRMED_EXACT_HEAD
+  ci_result: CI_CONFIRMED_EXACT_HEAD
   independent_review_result: UNKNOWN
   merge_state: not_merged
   post_merge_verification_result: UNKNOWN
   open_gates:
-    - exact_head_validation
     - independent_ai_review
+    - live_review_receipt_validation
     - user_merge
     - post_merge_verification
 
