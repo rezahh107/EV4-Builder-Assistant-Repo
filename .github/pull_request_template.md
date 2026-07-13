@@ -13,26 +13,52 @@
 
 ## Progress Gate
 
-- exact PR head SHA:
-- required exact-head CI run IDs:
-- implementation evidence:
-- remaining open gates:
-- [ ] I did not claim completion from prose, schema presence, or a Green CI badge alone.
+### Phase 1 — exact-head implementation and regression validation
 
-## Independent exact-head review
+- exact PR head SHA:
+- required implementation CI run IDs:
+- fixture/regression validation:
+- remaining open gates:
+- [ ] I did not claim completion from prose, schema presence, synthetic evidence, or a Green CI badge alone.
+
+### Phase 2 — independent review receipt issuance
 
 - implementation context ID:
 - reviewer context ID:
 - reviewed head SHA:
 - reviewed scope revision:
 - technical status: `PENDING` / `GREEN_MERGE_RECOMMENDED` / `YELLOW_REVIEW_REQUIRED` / `RED_DO_NOT_MERGE`
-- review receipt location:
+- receipt transport: `pull_request_review` / `pull_request_comment`
+- receipt marker: `AI_GOVERNANCE_REVIEW_RECEIPT`
+- receipt location:
+- [ ] The receipt is external to the reviewed head and does not mutate it.
 - [ ] The reviewer context differs from the implementation context.
+
+### Phase 3 — exact-head live receipt validation
+
+Run with a read-only GitHub token after the external receipt exists:
+
+```bash
+GITHUB_TOKEN=... \
+CURRENT_REPOSITORY=rezahh107/EV4-Builder-Assistant-Repo \
+CURRENT_PULL_REQUEST=... \
+CURRENT_HEAD_SHA=... \
+CURRENT_BASE_SHA=... \
+node scripts/validate-governance-sequence.mjs --mode=live --source=github
+```
+
+- observed live-validation evidence:
+- [ ] Missing, malformed, unsupported, self-authored, stale, non-Green, blocking, or CI-incomplete receipts fail closed.
+- [ ] Automatic pre-merge live-receipt CI is not claimed; the current carrier is operator-invoked and read-only.
 - [ ] Any head SHA, scope revision, or required-check-set change invalidates prior review evidence.
 
-## Validation
+### Phase 4 — user administrative merge
 
--
+- merge state: `not_merged`
+
+### Phase 5 — post-merge verification
+
+- live default-branch verification: `pending`
 
 ## Governance safety
 
