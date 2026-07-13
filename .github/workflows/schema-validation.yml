@@ -36,67 +36,25 @@ jobs:
           node-version: '20'
 
       - name: Run central contract validation
-        id: central
-        continue-on-error: true
         run: |
           npm run validate
 
       - name: Run governance authority validation
-        id: governance_authorities
-        if: always()
-        continue-on-error: true
         run: |
           node scripts/validate-governance-authorities.mjs
 
       - name: Run governance fixture regression validation
-        id: governance_fixtures
-        if: always()
-        continue-on-error: true
         run: |
           node scripts/validate-governance-sequence.mjs --mode=fixtures
 
       - name: Run synthetic valid live receipt regression
-        id: live_valid
-        if: always()
-        continue-on-error: true
         run: |
           node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json
 
       - name: Run invalid live receipt regressions
-        id: live_invalid
-        if: always()
-        continue-on-error: true
         run: |
           node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/invalid/live_receipt_evidence.json
 
       - name: Run Builder decision lineage sequence validation
-        id: builder_lineage
-        if: always()
-        continue-on-error: true
         run: |
           npm run validate:builder-lineage-sequence
-
-      - name: Assert all required validation steps succeeded
-        if: always()
-        shell: bash
-        env:
-          CENTRAL: ${{ steps.central.outcome }}
-          AUTHORITIES: ${{ steps.governance_authorities.outcome }}
-          FIXTURES: ${{ steps.governance_fixtures.outcome }}
-          LIVE_VALID: ${{ steps.live_valid.outcome }}
-          LIVE_INVALID: ${{ steps.live_invalid.outcome }}
-          BUILDER_LINEAGE: ${{ steps.builder_lineage.outcome }}
-        run: |
-          printf '%s\n' \
-            "central=$CENTRAL" \
-            "governance_authorities=$AUTHORITIES" \
-            "governance_fixtures=$FIXTURES" \
-            "live_valid=$LIVE_VALID" \
-            "live_invalid=$LIVE_INVALID" \
-            "builder_lineage=$BUILDER_LINEAGE"
-          test "$CENTRAL" = success
-          test "$AUTHORITIES" = success
-          test "$FIXTURES" = success
-          test "$LIVE_VALID" = success
-          test "$LIVE_INVALID" = success
-          test "$BUILDER_LINEAGE" = success
