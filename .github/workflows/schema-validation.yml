@@ -11,8 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout exact tested commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Assert exact PR head
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          actual_sha="$(git rev-parse HEAD)"
+          expected_sha="${{ github.event.pull_request.head.sha }}"
+          echo "actual_sha=$actual_sha"
+          echo "expected_sha=$expected_sha"
+          test "$actual_sha" = "$expected_sha"
 
       - name: Setup Node
         uses: actions/setup-node@v4

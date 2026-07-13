@@ -41,6 +41,11 @@ project_status:
   ce_connector_layer_projection: node_model_compact_id_enforced
   builder_to_responsive_handoff_boundary: documented_not_implemented
   kernel_decision_receipts_wave_5: presentation_layer_merged
+  ai_governance_policy: authority_foundation_defined
+  ai_governance_adoption_plan: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
+  ai_governance_current_increment: GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES
+  ai_governance_enforcement: not_implemented
+  ai_governance_review_lifecycle: not_implemented
   action_batch_contract: active
   class_application_safety: elementor_local_global_scope_required
   unit_strategy_gate: active
@@ -249,6 +254,7 @@ Production ready remains false unless completion-gate evidence proves otherwise.
 ## Pending Next Work
 
 ```text
+Complete GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES through exact-head validation, independent review, user Merge, and post-merge verification before GOV-003.
 Continue real Elementor UI evidence collection using examples/smart-home-connector/real_elementor_execution_evidence.template.json.
 Do not claim production readiness until real execution evidence and completion gate proofs are confirmed.
 Formal Builder→Responsive export schema remains not implemented.

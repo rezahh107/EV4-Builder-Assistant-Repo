@@ -1,0 +1,138 @@
+schema_version: 1
+
+plan_identity:
+  plan_id: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
+  plan_version: 1
+  target_repository: rezahh107/EV4-Builder-Assistant-Repo
+  audit_base_branch: main
+  audit_base_sha: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
+
+repository_state:
+  default_branch: main
+  current_source_commit: 45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
+  verified_prerequisite:
+    increment_id: GOV-001-WAVE5-STATUS-RECONCILIATION
+    pr: 53
+    merge_commit: 45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
+    state: merged_and_repository_content_verified
+    evidence_state: REPOSITORY_CONFIRMED
+  limitation:
+    post_merge_ci_for_merge_commit: not_observed
+
+current_increment:
+  increment_id: GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES
+  classification: REQUIRED_GOVERNANCE_ADOPTION
+  scope_revision: GOV-002-v1
+  implementation_status: implemented_on_branch_pending_validation
+  objective: establish the minimal canonical AI authority, evidence authority, security profile, scope projection, capability memory, and progress semantics
+
+scope_projection:
+  project: rezahh107/EV4-Builder-Assistant-Repo
+  phase: GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES
+  scope_revision: GOV-002-v1
+  source_commit: 45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
+
+  long_term_target_ids:
+    - GOV-CAP-001
+    - GOV-CAP-002
+    - GOV-CAP-003
+    - GOV-CAP-004
+    - GOV-CAP-005
+    - PROD-CAP-001
+    - PROD-CAP-002
+    - PROD-CAP-003
+    - PROD-CAP-004
+
+  committed_now_ids:
+    - GOV-CAP-001
+    - GOV-CAP-002
+
+  excluded_now_ids:
+    - GOV-CAP-003
+    - GOV-CAP-004
+    - GOV-CAP-005
+    - PROD-CAP-001
+    - PROD-CAP-002
+    - PROD-CAP-003
+    - PROD-CAP-004
+
+  deferred_not_deleted_ids:
+    - GOV-CAP-003
+    - GOV-CAP-004
+    - GOV-CAP-005
+    - PROD-CAP-001
+    - PROD-CAP-002
+    - PROD-CAP-003
+    - PROD-CAP-004
+
+  rejected_ids: []
+  superseded_ids: []
+
+  dependencies:
+    - GOV-001_merge_commit_45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
+
+  authority_files:
+    - path: governance/AI_AUTHORITY_POLICY.yml
+      responsibility: AI authority evidence authority security profile and governance boundaries
+    - path: planning/CAPABILITY_MEMORY.yml
+      responsibility: canonical capability IDs and lifecycle memory
+    - path: planning/GOVERNANCE_ADOPTION_PLAN.yml
+      responsibility: current committed scope dependencies and progress evidence
+    - path: STATUS.md
+      responsibility: concise mutable repository status without duplicating detailed scope lifecycle
+
+completion_evidence:
+  required_artifacts:
+    - governance/AI_AUTHORITY_POLICY.yml
+    - planning/CAPABILITY_MEMORY.yml
+    - planning/GOVERNANCE_ADOPTION_PLAN.yml
+    - AGENTS.md
+    - README.md
+    - STATUS.md
+  validation_commands:
+    - npm run validate
+  exact_head_ci_required: true
+  independent_review_required: true
+  user_merge_required: true
+
+progress_gate:
+  implementation_status: implemented_on_branch_pending_validation
+  exact_commit_recorded: false
+  required_artifacts_verified_on_live_default_branch: false
+  validator_result: UNKNOWN
+  ci_result: UNKNOWN
+  independent_review_result: UNKNOWN
+  merge_state: not_merged
+  open_gates:
+    - exact_head_validation
+    - independent_ai_review
+    - user_merge
+    - post_merge_verification
+
+prohibited_claims:
+  - governance_adoption_complete
+  - governance_validator_backed
+  - governance_ci_enforced
+  - governance_sequence_ci_enforced
+  - independent_review_enforced
+  - production_ready
+  - runtime_verified
+
+next_increment:
+  increment_id: GOV-003-DETERMINISTIC-GOVERNANCE-ENFORCEMENT
+  blocked_until:
+    - GOV-002_exact_head_ci_success
+    - GOV-002_independent_review_complete
+    - GOV-002_user_merge
+    - GOV-002_post_merge_verification
+
+scope_change_rule:
+  revision_must_change_when:
+    - committed_now_ids
+    - excluded_now_ids
+    - deferred_not_deleted_ids
+    - dependencies
+    - completion_evidence
+  prior_review_becomes_stale_on_revision_change: true
+
+current_enforcement_status: prose_only
