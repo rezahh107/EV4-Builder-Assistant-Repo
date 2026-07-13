@@ -36,8 +36,13 @@ function toLogicalLines(yamlText) {
     .filter((line) => line.text.length > 0 && !line.text.startsWith('#'));
 }
 
+function findMappingSeparator(text) {
+  const match = /:(?=\s|$)/.exec(text);
+  return match ? match.index : -1;
+}
+
 function splitKeyValue(text, lineNumber) {
-  const separator = text.indexOf(':');
+  const separator = findMappingSeparator(text);
   if (separator === -1) throw new Error(`Line ${lineNumber}: expected key/value pair.`);
   const key = text.slice(0, separator).trim();
   const value = text.slice(separator + 1).trim();
@@ -69,7 +74,7 @@ export function parseYamlSubset(yamlText) {
         continue;
       }
 
-      if (rest.includes(':')) {
+      if (findMappingSeparator(rest) !== -1) {
         const [key, rawValue] = splitKeyValue(rest, line.lineNumber);
         const item = {};
         index += 1;
