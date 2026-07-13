@@ -133,7 +133,6 @@ scope_change_rule:
     - deferred_not_deleted_ids
     - dependencies
     - completion_evidence
-    - non_goals
   prior_review_becomes_stale_on_revision_change: true
 
 current_enforcement_status: prose_only
