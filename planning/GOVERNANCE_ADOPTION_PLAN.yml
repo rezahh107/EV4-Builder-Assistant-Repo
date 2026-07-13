@@ -151,8 +151,8 @@ progress_gate:
   implementation_status: implemented_on_branch_pending_fresh_independent_exact_head_review
   exact_commit_evidence_source: github_pull_request_head_sha_and_ci_assertion
   required_artifacts_verified_on_live_default_branch: false
-  validator_result: CI_CONFIRMED_EXACT_HEAD
-  ci_result: CI_CONFIRMED_EXACT_HEAD
+  validator_result: EXTERNAL_EXACT_HEAD_CI_REQUIRED
+  ci_result: EXTERNAL_EXACT_HEAD_CI_REQUIRED
   independent_review_result: UNKNOWN
   merge_state: not_merged
   post_merge_verification_result: UNKNOWN
