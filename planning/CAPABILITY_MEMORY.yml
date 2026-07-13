@@ -17,7 +17,8 @@ capabilities:
   - capability_id: GOV-CAP-001
     name: ai_authority_and_evidence_authority
     lifecycle: committed_now
-    authority: governance/AI_AUTHORITY_POLICY.yml
+    authority:
+      - governance/AI_AUTHORITY_POLICY.yml
     rationale: establish technical decision authority and factual evidence authority without human technical approval
 
   - capability_id: GOV-CAP-002
