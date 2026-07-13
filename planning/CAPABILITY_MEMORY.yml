@@ -2,7 +2,7 @@ schema_version: 2
 repository: rezahh107/EV4-Builder-Assistant-Repo
 source_default_branch: main
 source_commit: 8931c608d759ea121727f3903e21976a37e27f45
-scope_revision: GOV-004-v1
+scope_revision: GOV-004-v2
 
 lifecycle_states:
   - committed_now
@@ -23,7 +23,6 @@ capabilities:
       - PR-54
       - 8931c608d759ea121727f3903e21976a37e27f45
     rationale: merged governance authority foundation
-
   - capability_id: GOV-CAP-002
     name: scope_and_capability_memory
     lifecycle: implemented
@@ -34,7 +33,6 @@ capabilities:
       - PR-54
       - 8931c608d759ea121727f3903e21976a37e27f45
     rationale: merged scope and capability-memory foundation
-
   - capability_id: GOV-CAP-003
     name: deterministic_governance_enforcement
     lifecycle: committed_now
@@ -48,7 +46,6 @@ capabilities:
       - tests/governance/invalid
       - .github/workflows/schema-validation.yml
     rationale: add schema-backed deterministic governance validation and sequence CI
-
   - capability_id: GOV-CAP-004
     name: exact_head_independent_review_lifecycle
     lifecycle: committed_now
@@ -57,9 +54,9 @@ capabilities:
       - governance/schemas/review-lifecycle.schema.json
       - governance/schemas/review-receipt.schema.json
       - scripts/validate-governance-sequence.mjs
+      - .github/workflows/schema-validation.yml
       - .github/pull_request_template.md
-    rationale: enforce exact-head review identity independence stale-on-change and Green predicates
-
+    rationale: validate exact-head review identity independence stale-on-change and Green predicates through an operator-invoked read-only live validator; automatic pre-merge receipt CI is not claimed
   - capability_id: GOV-CAP-005
     name: post_merge_governance_verification
     lifecycle: committed_now
@@ -68,25 +65,21 @@ capabilities:
       - governance/REVIEW_LIFECYCLE.yml
       - scripts/validate-governance-sequence.mjs
     rationale: require live-default-branch verification before closing a governance increment
-
   - capability_id: PROD-CAP-001
     name: real_elementor_execution_evidence
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
     rationale: real user-provided Elementor UI evidence remains pending and is unrelated to governance adoption
-
   - capability_id: PROD-CAP-002
     name: builder_to_responsive_formal_export
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
     rationale: formal Builder-to-Responsive export remains documented but not implemented
-
   - capability_id: PROD-CAP-003
     name: project_gate_verifier_and_runtime
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
     rationale: Project Gate verifier and runtime are external future integration work
-
   - capability_id: PROD-CAP-004
     name: production_readiness
     lifecycle: deferred_not_deleted
@@ -104,4 +97,4 @@ integrity_rules:
   - capability_removal_requires_decision_provenance
   - granularity_changes_require_explicit_mapping
 
-current_enforcement_status: sequence_ci_enforced
+current_enforcement_status: mixed_sequence_ci_and_live_validator_backed
