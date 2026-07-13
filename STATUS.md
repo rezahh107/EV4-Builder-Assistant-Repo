@@ -40,7 +40,7 @@ project_status:
   ce_builder_executable_schema_alignment: completed_in_ce_pr_24
   ce_connector_layer_projection: node_model_compact_id_enforced
   builder_to_responsive_handoff_boundary: documented_not_implemented
-  kernel_decision_receipts_wave_5: presentation_layer_added_on_branch
+  kernel_decision_receipts_wave_5: presentation_layer_merged
   action_batch_contract: active
   class_application_safety: elementor_local_global_scope_required
   unit_strategy_gate: active
@@ -165,8 +165,10 @@ patches:
     status: documented_not_implemented
     boundary_doc: docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md
   Wave_5_Kernel_Decision_Receipts:
-    status: completed_on_branch
+    status: merged
     branch: ux/builder-kernel-decision-receipts-wave-5
+    pr: 52
+    merge_commit: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
     boundary: presentation_layer_only
     notes:
       - Added UX-safe human-readable Kernel decision receipts for Builder output surfaces.
