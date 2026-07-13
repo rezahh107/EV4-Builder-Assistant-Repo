@@ -1,1 +1,63 @@
-{"scenarios":[{"scenario_id":"self_authored_review","overrides":{"review_receipt":{"reviewer_context_id":"repo-maintainer-55"}},"expected_diagnostics":["GOV-SEQ-007_REVIEW_NOT_INDEPENDENT"]},{"scenario_id":"review_head_mismatch","overrides":{"review_receipt":{"reviewed_head_sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},"expected_diagnostics":["GOV-SEQ-008_REVIEW_HEAD_MISMATCH_OR_STALE"]},{"scenario_id":"review_scope_revision_mismatch","overrides":{"review_receipt":{"scope_revision":"GOV-003-v1"}},"expected_diagnostics":["GOV-SEQ-009_REVIEW_SCOPE_REVISION_MISMATCH_OR_STALE"]},{"scenario_id":"stale_after_head_change","overrides":{"current":{"head_sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},"ci":{"head_sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},"completion":{"implementation_commit":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},"expected_diagnostics":["GOV-SEQ-008_REVIEW_HEAD_MISMATCH_OR_STALE"]}]}
+{
+  "scenarios": [
+    {
+      "scenario_id": "missing_review_receipt",
+      "overrides": {
+        "review_receipt": null
+      },
+      "expected_diagnostics": [
+        "GOV-SEQ-019_REVIEW_RECEIPT_MISSING"
+      ]
+    },
+    {
+      "scenario_id": "self_authored_review",
+      "overrides": {
+        "review_receipt": {
+          "reviewer_context_id": "repo-maintainer-55"
+        }
+      },
+      "expected_diagnostics": [
+        "GOV-SEQ-007_REVIEW_NOT_INDEPENDENT"
+      ]
+    },
+    {
+      "scenario_id": "review_head_mismatch",
+      "overrides": {
+        "review_receipt": {
+          "reviewed_head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "expected_diagnostics": [
+        "GOV-SEQ-008_REVIEW_HEAD_MISMATCH_OR_STALE"
+      ]
+    },
+    {
+      "scenario_id": "review_scope_revision_mismatch",
+      "overrides": {
+        "review_receipt": {
+          "scope_revision": "GOV-003-v1"
+        }
+      },
+      "expected_diagnostics": [
+        "GOV-SEQ-009_REVIEW_SCOPE_REVISION_MISMATCH_OR_STALE"
+      ]
+    },
+    {
+      "scenario_id": "stale_after_head_change",
+      "overrides": {
+        "current": {
+          "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "ci": {
+          "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "completion": {
+          "implementation_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "expected_diagnostics": [
+        "GOV-SEQ-008_REVIEW_HEAD_MISMATCH_OR_STALE"
+      ]
+    }
+  ]
+}

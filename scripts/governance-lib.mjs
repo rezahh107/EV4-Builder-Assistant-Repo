@@ -15,8 +15,8 @@ function parseScalar(raw) {
   if (value === 'null') return null;
   if (value === 'true') return true;
   if (value === 'false') return false;
-  if (value === '[]') return [];
-  if (value === '{}') return {};
+  if (/^\[\s*\]$/.test(value)) return [];
+  if (/^\{\s*\}$/.test(value)) return {};
   if (/^-?\d+$/.test(value)) return Number(value);
   if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
     return value.startsWith('"') ? JSON.parse(value) : value.slice(1, -1);

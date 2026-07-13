@@ -141,12 +141,18 @@ if (!setEquals(introducedTargets, plan.scope_change_disclosure?.newly_introduced
   errors.push(`newly_introduced_target_ids disclosure mismatch: computed=${JSON.stringify(introducedTargets)}.`);
 }
 
+const normalizeChange = (change) => ({
+  capability_id: change.capability_id ?? null,
+  from: change.from ?? null,
+  to: change.to ?? null
+});
 const computedChanges = capabilityIds
   .filter((id) => Object.prototype.hasOwnProperty.call(previous, id) && previous[id] !== lifecycleById[id])
-  .map((id) => ({ capability_id: id, from: previous[id], to: lifecycleById[id] }))
-  .sort((a, b) => a.capability_id.localeCompare(b.capability_id));
+  .map((id) => normalizeChange({ capability_id: id, from: previous[id], to: lifecycleById[id] }))
+  .sort((a, b) => (a.capability_id ?? '').localeCompare(b.capability_id ?? ''));
 const disclosedChanges = [...(plan.scope_change_disclosure?.lifecycle_changes || [])]
-  .sort((a, b) => a.capability_id.localeCompare(b.capability_id));
+  .map(normalizeChange)
+  .sort((a, b) => (a.capability_id ?? '').localeCompare(b.capability_id ?? ''));
 if (JSON.stringify(computedChanges) !== JSON.stringify(disclosedChanges)) {
   errors.push(`scope lifecycle disclosure mismatch: computed=${JSON.stringify(computedChanges)} disclosed=${JSON.stringify(disclosedChanges)}.`);
 }
