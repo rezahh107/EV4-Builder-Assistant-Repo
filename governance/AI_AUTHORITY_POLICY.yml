@@ -1,7 +1,7 @@
 schema_version: 2
 policy_id: EV4-BUILDER-AI-AUTHORITY-POLICY
-policy_version: 4
-status: deterministic_enforcement_implemented_pending_independent_review
+policy_version: 5
+status: deterministic_enforcement_implemented_on_main_with_recorded_review_gap
 
 source_standard:
   title: AI Authority Deterministic Governance — Source of Truth
@@ -11,7 +11,7 @@ source_standard:
 repository_identity:
   repository: rezahh107/EV4-Builder-Assistant-Repo
   default_branch: main
-  foundation_source_commit: 8931c608d759ea121727f3903e21976a37e27f45
+  foundation_source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
 
 execution_authority_order:
   - platform_system_safety_and_tool_constraints
