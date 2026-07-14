@@ -1,6 +1,6 @@
 schema_version: 2
 policy_id: EV4-BUILDER-AI-AUTHORITY-POLICY
-policy_version: 2
+policy_version: 3
 status: deterministic_enforcement_implemented_pending_independent_review
 
 source_standard:
@@ -27,6 +27,7 @@ authority_model:
     - exact_repository_commit_tree_branch_and_pr_evidence
     - validators_fixtures_tests_ci_and_logs
     - canonical_repository_authorities
+    - verified_canonical_pr_inspector_artifacts
     - independent_review_evidence
     - unmerged_work
     - chat_history_or_model_memory
@@ -74,6 +75,10 @@ claim_rules:
   - schema_presence_does_not_prove_execution
   - ci_green_does_not_prove_production_readiness
   - authored_status_does_not_create_provenance
+  - typed_receipt_does_not_prove_pr_inspector_decision
+  - transport_actor_is_not_canonical_technical_authority
+  - canonical_bundle_must_be_verified_from_one_captured_byte_snapshot
+  - decision_status_must_be_derived_from_verified_DECISION_PROJECTION_json
 
 scope_gate:
   current_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
@@ -160,31 +165,35 @@ rules:
     session_scope: cross_turn
     trigger: before_technical_acceptance_or_merge_recommendation
     predicate:
-      - review_session_is_separate
-      - exact_head_is_inspected
-      - immutable_protocol_identity_is_recorded
-      - reviewer_did_not_rely_on_implementer_self_assertion
-    enforcement: block_GREEN
-    recovery_action: rerun_independent_review
+      - canonical_PR_Inspector_bundle_is_available
+      - exact_bundle_bytes_are_captured_once
+      - inspector_commit_provenance_is_verified
+      - canonical_review_evidence_id_is_recomputed
+      - technical_status_is_derived_from_verified_decision_projection
+    enforcement: block_GREEN_when_official_bundle_cannot_be_verified
+    recovery_action: rerun_independent_review_with_retrievable_official_bundle
   AIGOV-STALE-001:
     risk: Critical
     session_scope: cross_turn
-    trigger: when_PR_head_or_governing_scope_revision_changes
+    trigger: when_PR_head_scope_required_checks_or_inspector_protocol_changes
     predicate:
-      - reviewed_head_sha_equals_current_head_sha
-      - reviewed_scope_revision_equals_current_scope_revision
-    enforcement: invalidate_prior_review
+      - verified_bundle_reviewed_head_sha_equals_current_head_sha
+      - verified_bundle_scope_revision_equals_current_scope_revision
+      - verified_bundle_protocol_identity_is_supported
+      - review_validity_equals_CURRENT
+    enforcement: invalidate_or_block_unverified_review
     recovery_action: rerun_review
   AIGOV-MERGE-001:
     risk: Critical
     session_scope: cross_turn
     trigger: before_GREEN_merge_recommendation
     predicate:
-      - current_exact_head_independent_AI_review_is_GREEN
+      - verified_canonical_decision_projection_is_GREEN_TECHNICALLY_READY
       - required_exact_head_CI_passed
       - scope_and_progress_gates_passed
       - no_blocking_evidence_gap_remains
-    enforcement: YELLOW_or_RED
+      - official_bundle_verification_completed
+    enforcement: block_merge_recommendation_without_verified_bundle
     recovery_action: repair_or_verify
   AIGOV-SECURITY-PROFILE-001:
     risk: High
@@ -270,7 +279,8 @@ enforcement_carriers:
   review_lifecycle_authority: governance/REVIEW_LIFECYCLE.yml
   review_receipt_schema: governance/schemas/review-receipt.schema.json
   exact_head_ci: .github/workflows/schema-validation.yml
-  live_review_receipt_validator: scripts/validate-governance-sequence.mjs --mode=live --source=github
+  github_live_review_path: fail_closed_without_external_official_bundle_accessor
+  canonical_bundle_synthetic_regression: scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json
   positive_fixtures: tests/governance/valid
   negative_fixtures: tests/governance/invalid
 
@@ -280,9 +290,9 @@ current_enforcement:
   AIGOV-SCOPE-DISCLOSURE-001: sequence_ci_enforced
   AIGOV-PROGRESS-001: sequence_ci_enforced
   AIGOV-EVIDENCE-001: ci_enforced
-  AIGOV-INDEPENDENCE-001: live_validator_backed
-  AIGOV-STALE-001: live_validator_backed
-  AIGOV-MERGE-001: live_validator_backed
+  AIGOV-INDEPENDENCE-001: fail_closed_validator_backed
+  AIGOV-STALE-001: fail_closed_validator_backed
+  AIGOV-MERGE-001: fail_closed_validator_backed
   AIGOV-SECURITY-PROFILE-001: validator_backed
   AIGOV-HUMAN-001: validator_backed
   AIGOV-COACH-001: validator_backed
@@ -295,3 +305,7 @@ non_claims:
   - repository_settings_enforced
   - branch_protection_enforced
   - automatic_premerge_live_receipt_ci_enforced
+  - official_remote_review_bundle_accessor_available
+  - canonical_pr_inspector_bundle_live_verified
+  - independent_review_live_enforced
+  - merge_recommendation_live_enforced
