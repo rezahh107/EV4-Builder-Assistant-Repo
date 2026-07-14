@@ -33,6 +33,9 @@ const plan = loaded.plan;
 const lifecycle = loaded.lifecycle;
 const receiptSchema = readJson('governance/schemas/review-receipt.schema.json');
 const projectionCases = readJson('tests/governance/pr-inspector-projection-cases.json');
+const progressCases = readJson('tests/governance/progress-evidence-cases.json');
+const templateCases = readJson('tests/governance/pr-template-hygiene-cases.json');
+
 const repository = 'rezahh107/EV4-Builder-Assistant-Repo';
 const inspectorRepository = 'rezahh107/PR-Inspector';
 const inspectorRepositoryId = 1288323264;
@@ -40,11 +43,12 @@ const inspectorCommit = '88e8610bcc2ada48c8cf902d23d4296983310872';
 const inspectorProtocol = 'v1.10.0';
 const reviewedHead = '064805f59762e191ae386423b07d73bcf5cae7be';
 const mergeCommit = '65450bc5a4d19edf66098669a6fd48bdcda3ed70';
-const scopeRevision = 'GOV-004-v6';
-const previousScopeRevision = 'GOV-004-v5';
-const implementationContext = 'repo-maintainer-gov-003-004-closure';
+const previousScopeHead = '921cfd7623eb5698901b5bce7ab77a053d09e6b9';
+const scopeRevision = 'GOV-004-v7';
+const previousScopeRevision = 'GOV-004-v6';
+const implementationContext = 'repo-maintainer-gov-003-004-closure-repair';
 const enforcementStatus = 'mixed_sequence_ci_and_fail_closed_validator_backed';
-const policyStatus = 'deterministic_enforcement_implemented_on_main_with_recorded_review_gap';
+const policyStatus = 'deterministic_enforcement_implemented_on_main_external_exact_head_evidence_repair_pending';
 
 for (const [label, actual] of [
   ['policy repository', policy.repository_identity?.repository],
@@ -57,10 +61,10 @@ for (const [label, actual] of [
 }
 
 if (
-  policy.policy_version !== 5
+  policy.policy_version !== 6
   || policy.status !== policyStatus
   || policy.repository_identity?.foundation_source_commit !== mergeCommit
-) errors.push('policy closure identity is invalid.');
+) errors.push('policy repair identity is invalid.');
 if (
   memory.source_commit !== mergeCommit
   || plan.repository_state?.current_source_commit !== mergeCommit
@@ -78,19 +82,20 @@ if (!revisions.every((value) => value === scopeRevision)) {
 }
 if (
   plan.previous_scope_snapshot?.scope_revision !== previousScopeRevision
-  || plan.previous_scope_snapshot?.source_commit !== mergeCommit
-) errors.push('previous GOV-004-v5 scope identity is invalid.');
+  || plan.previous_scope_snapshot?.source_commit !== previousScopeHead
+) errors.push('previous GOV-004-v6 scope identity is invalid.');
 if (
   plan.scope_change_disclosure?.from_scope_revision !== previousScopeRevision
   || plan.scope_change_disclosure?.to_scope_revision !== scopeRevision
-  || plan.scope_change_disclosure?.revision_reason !== 'post_merge_governance_closure'
-) errors.push('GOV-004-v5 to GOV-004-v6 disclosure is invalid.');
+  || plan.scope_change_disclosure?.revision_reason
+    !== 'external_exact_head_evidence_boundary_and_reusable_pr_template'
+) errors.push('GOV-004-v6 to GOV-004-v7 disclosure is invalid.');
 if (
   plan.scope_change_disclosure?.source_object_identities
-    ?.previous_scope_source_commit !== mergeCommit
+    ?.previous_scope_source_commit !== previousScopeHead
 ) errors.push('previous scope source commit disclosure is invalid.');
 if (plan.current_increment?.implementation_context_id !== implementationContext) {
-  errors.push('closure implementation context is invalid.');
+  errors.push('closure-repair implementation context is invalid.');
 }
 
 const verifiedMerge = plan.repository_state?.verified_current_increment_merge || {};
@@ -186,23 +191,43 @@ for (const [name, expected] of Object.entries({
   if (counts[name] !== expected) errors.push(`scope count ${name} mismatch.`);
 }
 
+const pendingStatus = 'implemented_on_branch_pending_external_exact_head_ci_and_fresh_rereview';
 const progress = plan.progress_gate || {};
 if (
-  plan.current_increment?.implementation_status
-    !== 'implemented_and_merged_with_recorded_independent_review_gap'
-  || progress.implementation_status
-    !== 'implemented_and_merged_with_recorded_independent_review_gap'
-  || progress.required_artifacts_verified_on_live_default_branch !== true
-  || progress.validator_result !== 'CI_CONFIRMED_FOR_REVIEWED_HEAD'
-  || progress.ci_result !== 'CI_CONFIRMED_FOR_REVIEWED_HEAD'
-  || progress.independent_review_result !== 'BLOCKED_INSUFFICIENT_EVIDENCE'
-  || progress.merge_state !== 'merged_pr_55'
-  || progress.post_merge_verification_result !== 'REPOSITORY_CONFIRMED'
-) errors.push('post-merge progress closure is invalid.');
+  plan.current_increment?.implementation_status !== pendingStatus
+  || progress.implementation_status !== pendingStatus
+  || progress.required_artifacts_verified_on_live_default_branch !== false
+  || progress.validator_result !== 'EXTERNAL_EXACT_HEAD_CI_PENDING'
+  || progress.ci_result !== 'EXTERNAL_EXACT_HEAD_CI_PENDING'
+  || progress.independent_review_result !== 'FRESH_PR_INSPECTOR_REREVIEW_REQUIRED'
+  || progress.merge_state !== 'pr_55_merged_pr_56_not_merged'
+  || progress.post_merge_verification_result !== 'PR_55_REPOSITORY_CONFIRMED'
+) errors.push('closure-repair progress state must remain pending.');
+if (
+  progress.validator_result === 'CI_CONFIRMED_FOR_REVIEWED_HEAD'
+  || progress.ci_result === 'CI_CONFIRMED_FOR_REVIEWED_HEAD'
+  || Object.prototype.hasOwnProperty.call(progress, 'exact_head_ci_run_ids')
+) errors.push('GOV-AUTH-EXT-CI-001_REPOSITORY_AUTHORED_CI_CONFIRMATION_FORBIDDEN');
 if (!setEquals(progress.open_gates || [], [
+  'external_exact_head_ci_evidence',
+  'fresh_pr_inspector_rereview',
   'official_external_pr_inspector_bundle_accessor',
-  'historical_independent_review_evidence_gap'
-])) errors.push('remaining governance limitations mismatch.');
+  'historical_independent_review_evidence_gap',
+  'pr_56_merge',
+  'gov_004_v7_post_merge_verification'
+])) errors.push('remaining closure-repair gates mismatch.');
+
+const mechanism = plan.repository_state?.exact_head_ci_mechanism || {};
+if (
+  mechanism.external_evidence_workflow
+    !== '.github/workflows/governance-exact-head-evidence.yml'
+  || mechanism.external_evidence_validator
+    !== 'scripts/validate-governance-progress-evidence.mjs'
+  || mechanism.repository_authored_confirmation_allowed !== false
+) errors.push('external exact-head evidence mechanism is invalid.');
+if (plan.completion_evidence?.external_exact_head_evidence_required !== true) {
+  errors.push('external exact-head evidence requirement is missing.');
+}
 
 const postMerge = plan.completion_evidence?.post_merge_verification || {};
 if (
@@ -212,7 +237,7 @@ if (
   || postMerge.reviewed_head_tree_preserved !== true
   || postMerge.additional_file_changes_in_merge_commit !== 0
   || postMerge.evidence_state !== 'REPOSITORY_CONFIRMED'
-) errors.push('post-merge verification evidence is invalid.');
+) errors.push('PR 55 post-merge verification evidence is invalid.');
 
 const receiptFields = [
   'repository', 'pull_request', 'base_sha', 'reviewed_head_sha',
@@ -374,6 +399,9 @@ for (const value of requiredNonClaims) {
     errors.push(`plan prohibited claim missing: ${value}.`);
   }
 }
+if (!plan.prohibited_claims?.includes('repository_authored_exact_head_ci_confirmation')) {
+  errors.push('plan must prohibit repository-authored exact-head CI confirmation.');
+}
 if (
   lifecycle.current_enforcement_status !== enforcementStatus
   || memory.current_enforcement_status !== enforcementStatus
@@ -416,7 +444,7 @@ for (const forbidden of [
   if (adapter.includes(forbidden)) errors.push(`adapter replica: ${forbidden}.`);
 }
 
-const workflow = readText('.github/workflows/schema-validation.yml');
+const schemaWorkflow = readText('.github/workflows/schema-validation.yml');
 for (const required of [
   inspectorCommit,
   'repository: rezahh107/PR-Inspector',
@@ -427,7 +455,27 @@ for (const required of [
   'GOV-LIVE-030_OFFICIAL_BUNDLE_ACCESSOR_UNAVAILABLE',
   'GOV-LIVE-049_LOCAL_CANONICAL_BUNDLE_ACCEPTANCE_REMOVED'
 ]) {
-  if (!workflow.includes(required)) errors.push(`workflow missing ${required}.`);
+  if (!schemaWorkflow.includes(required)) errors.push(`schema workflow missing ${required}.`);
+}
+const evidenceWorkflow = readText('.github/workflows/governance-exact-head-evidence.yml');
+for (const required of [
+  'name: Verify Governance Exact-Head Evidence',
+  'actions: read',
+  'pull-requests: read',
+  'Schema validation',
+  'Verify Project Gate Contract Pin',
+  'github_actions_api',
+  'scripts/validate-governance-progress-evidence.mjs',
+  'persist-credentials: false'
+]) {
+  if (!evidenceWorkflow.includes(required)) errors.push(`external evidence workflow missing ${required}.`);
+}
+const central = readText('scripts/validate.mjs');
+for (const required of [
+  'scripts/validate-governance-progress-evidence.mjs',
+  'scripts/validate-pr-template-hygiene.mjs'
+]) {
+  if (!central.includes(required)) errors.push(`central validation missing ${required}.`);
 }
 if (
   projectionCases.schema_version !== 1
@@ -435,6 +483,16 @@ if (
   || projectionCases.cases.length !== 20
   || unique(projectionCases.cases.map((item) => item.case_id)).length !== 20
 ) errors.push('projection registry must contain 20 unique cases.');
+if (
+  progressCases.schema_version !== 1
+  || !Array.isArray(progressCases.cases)
+  || progressCases.cases.length < 8
+) errors.push('progress evidence mutation coverage is incomplete.');
+if (
+  templateCases.schema_version !== 1
+  || !Array.isArray(templateCases.cases)
+  || templateCases.cases.length < 6
+) errors.push('pull request template hygiene coverage is incomplete.');
 
 for (const artifact of plan.completion_evidence?.required_artifacts || []) {
   if (!fs.existsSync(artifact)) errors.push(`missing artifact: ${artifact}.`);
@@ -447,8 +505,9 @@ console.log('Governance authority validation passed.');
 console.log(`scope_revision=${scopeRevision}`);
 console.log(`merge_commit=${mergeCommit}`);
 console.log(`reviewed_head=${reviewedHead}`);
-console.log('post_merge_verification=REPOSITORY_CONFIRMED');
-console.log('independent_review_result=BLOCKED_INSUFFICIENT_EVIDENCE');
+console.log('pr_55_post_merge_verification=REPOSITORY_CONFIRMED');
+console.log('closure_exact_head_ci=EXTERNAL_EXACT_HEAD_CI_PENDING');
+console.log('fresh_pr_inspector_rereview=required');
 console.log(`immutable_inspector_commit=${inspectorCommit}`);
 console.log('official_projection=project_decision');
 console.log('official_completion=verify_completed_review');
