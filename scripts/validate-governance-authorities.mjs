@@ -38,10 +38,13 @@ const inspectorRepository = 'rezahh107/PR-Inspector';
 const inspectorRepositoryId = 1288323264;
 const inspectorCommit = '88e8610bcc2ada48c8cf902d23d4296983310872';
 const inspectorProtocol = 'v1.10.0';
-const scopeRevision = 'GOV-004-v5';
-const previousScopeRevision = 'GOV-004-v4';
-const previousScopeHead = 'b0fd5f577f70ad9d0514115a3a5e119802489944';
+const reviewedHead = '064805f59762e191ae386423b07d73bcf5cae7be';
+const mergeCommit = '65450bc5a4d19edf66098669a6fd48bdcda3ed70';
+const scopeRevision = 'GOV-004-v6';
+const previousScopeRevision = 'GOV-004-v5';
+const implementationContext = 'repo-maintainer-gov-003-004-closure';
 const enforcementStatus = 'mixed_sequence_ci_and_fail_closed_validator_backed';
+const policyStatus = 'deterministic_enforcement_implemented_on_main_with_recorded_review_gap';
 
 for (const [label, actual] of [
   ['policy repository', policy.repository_identity?.repository],
@@ -52,6 +55,17 @@ for (const [label, actual] of [
 ]) {
   if (actual !== repository) errors.push(`${label}: received ${actual}.`);
 }
+
+if (
+  policy.policy_version !== 5
+  || policy.status !== policyStatus
+  || policy.repository_identity?.foundation_source_commit !== mergeCommit
+) errors.push('policy closure identity is invalid.');
+if (
+  memory.source_commit !== mergeCommit
+  || plan.repository_state?.current_source_commit !== mergeCommit
+  || plan.scope_projection?.source_commit !== mergeCommit
+) errors.push('live main source commit identity is invalid.');
 
 const revisions = [
   memory.scope_revision,
@@ -64,22 +78,32 @@ if (!revisions.every((value) => value === scopeRevision)) {
 }
 if (
   plan.previous_scope_snapshot?.scope_revision !== previousScopeRevision
-  || plan.previous_scope_snapshot?.source_commit !== previousScopeHead
-) errors.push('previous GOV-004-v4 scope identity is invalid.');
+  || plan.previous_scope_snapshot?.source_commit !== mergeCommit
+) errors.push('previous GOV-004-v5 scope identity is invalid.');
 if (
   plan.scope_change_disclosure?.from_scope_revision !== previousScopeRevision
   || plan.scope_change_disclosure?.to_scope_revision !== scopeRevision
-  || plan.scope_change_disclosure?.revision_reason
-    !== 'immutable_official_pr_inspector_verifier_integration'
-) errors.push('GOV-004-v4 to GOV-004-v5 disclosure is invalid.');
+  || plan.scope_change_disclosure?.revision_reason !== 'post_merge_governance_closure'
+) errors.push('GOV-004-v5 to GOV-004-v6 disclosure is invalid.');
 if (
   plan.scope_change_disclosure?.source_object_identities
-    ?.previous_scope_source_commit !== previousScopeHead
+    ?.previous_scope_source_commit !== mergeCommit
 ) errors.push('previous scope source commit disclosure is invalid.');
+if (plan.current_increment?.implementation_context_id !== implementationContext) {
+  errors.push('closure implementation context is invalid.');
+}
+
+const verifiedMerge = plan.repository_state?.verified_current_increment_merge || {};
 if (
-  plan.current_increment?.implementation_context_id
-    !== 'repo-maintainer-gov-003-004'
-) errors.push('implementation context changed unexpectedly.');
+  verifiedMerge.increment_id !== 'GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT'
+  || verifiedMerge.pr !== 55
+  || verifiedMerge.reviewed_head_sha !== reviewedHead
+  || verifiedMerge.merge_commit !== mergeCommit
+  || verifiedMerge.reviewed_head_tree_preserved !== true
+  || verifiedMerge.additional_file_changes_in_merge_commit !== 0
+  || verifiedMerge.state !== 'merged_and_repository_content_verified'
+  || verifiedMerge.evidence_state !== 'REPOSITORY_CONFIRMED'
+) errors.push('verified PR 55 merge evidence is invalid.');
 
 const capabilities = memory.capabilities || [];
 const capabilityIds = capabilities.map((item) => item.capability_id);
@@ -95,9 +119,9 @@ const byId = Object.fromEntries(
 const expectedLifecycle = {
   'GOV-CAP-001': 'implemented',
   'GOV-CAP-002': 'implemented',
-  'GOV-CAP-003': 'committed_now',
-  'GOV-CAP-004': 'committed_now',
-  'GOV-CAP-005': 'committed_now',
+  'GOV-CAP-003': 'implemented',
+  'GOV-CAP-004': 'implemented',
+  'GOV-CAP-005': 'implemented',
   'PROD-CAP-001': 'deferred_not_deleted',
   'PROD-CAP-002': 'deferred_not_deleted',
   'PROD-CAP-003': 'deferred_not_deleted',
@@ -152,8 +176,8 @@ if (JSON.stringify(disclosed) !== JSON.stringify(computed)) {
 const counts = plan.scope_change_disclosure?.set_counts || {};
 for (const [name, expected] of Object.entries({
   target: 9,
-  implemented: 2,
-  committed: 3,
+  implemented: 5,
+  committed: 0,
   deferred: 4,
   excluded: 4,
   rejected: 0,
@@ -161,6 +185,34 @@ for (const [name, expected] of Object.entries({
 })) {
   if (counts[name] !== expected) errors.push(`scope count ${name} mismatch.`);
 }
+
+const progress = plan.progress_gate || {};
+if (
+  plan.current_increment?.implementation_status
+    !== 'implemented_and_merged_with_recorded_independent_review_gap'
+  || progress.implementation_status
+    !== 'implemented_and_merged_with_recorded_independent_review_gap'
+  || progress.required_artifacts_verified_on_live_default_branch !== true
+  || progress.validator_result !== 'CI_CONFIRMED_FOR_REVIEWED_HEAD'
+  || progress.ci_result !== 'CI_CONFIRMED_FOR_REVIEWED_HEAD'
+  || progress.independent_review_result !== 'BLOCKED_INSUFFICIENT_EVIDENCE'
+  || progress.merge_state !== 'merged_pr_55'
+  || progress.post_merge_verification_result !== 'REPOSITORY_CONFIRMED'
+) errors.push('post-merge progress closure is invalid.');
+if (!setEquals(progress.open_gates || [], [
+  'official_external_pr_inspector_bundle_accessor',
+  'historical_independent_review_evidence_gap'
+])) errors.push('remaining governance limitations mismatch.');
+
+const postMerge = plan.completion_evidence?.post_merge_verification || {};
+if (
+  postMerge.merge_commit !== mergeCommit
+  || postMerge.reviewed_head_sha !== reviewedHead
+  || postMerge.live_default_branch !== 'main'
+  || postMerge.reviewed_head_tree_preserved !== true
+  || postMerge.additional_file_changes_in_merge_commit !== 0
+  || postMerge.evidence_state !== 'REPOSITORY_CONFIRMED'
+) errors.push('post-merge verification evidence is invalid.');
 
 const receiptFields = [
   'repository', 'pull_request', 'base_sha', 'reviewed_head_sha',
@@ -185,8 +237,8 @@ if (receiptSchema.properties?.scope_revision?.const !== scopeRevision) {
 }
 if (
   receiptSchema.properties?.inspector_repository?.const !== inspectorRepository
-  || receiptSchema.properties?.inspector_repository_id?.const
-    !== inspectorRepositoryId
+  || receiptSchema.properties?.inspector_repository_id?.const !== inspectorRepositoryId
+  || receiptSchema.properties?.inspector_commit_sha?.const !== inspectorCommit
   || receiptSchema.properties?.protocol_version?.const !== inspectorProtocol
 ) errors.push('receipt inspector identity mismatch.');
 for (const forbidden of [
@@ -226,11 +278,9 @@ const live = lifecycle.live_receipt_validation || {};
 if (
   live.github_source_command
     !== 'node scripts/validate-governance-sequence.mjs --mode=live --source=github'
-  || live.activation_state
-    !== 'official_external_bundle_accessor_unavailable_fail_closed'
+  || live.activation_state !== 'official_external_bundle_accessor_unavailable_fail_closed'
   || live.external_official_bundle_accessor_available !== false
-  || live.technical_status_authority
-    !== 'immutable_pr_inspector_project_decision'
+  || live.technical_status_authority !== 'immutable_pr_inspector_project_decision'
 ) errors.push('live fail-closed boundary mismatch.');
 
 const expectedEnforcement = {
@@ -395,6 +445,10 @@ if (errors.length) {
 }
 console.log('Governance authority validation passed.');
 console.log(`scope_revision=${scopeRevision}`);
+console.log(`merge_commit=${mergeCommit}`);
+console.log(`reviewed_head=${reviewedHead}`);
+console.log('post_merge_verification=REPOSITORY_CONFIRMED');
+console.log('independent_review_result=BLOCKED_INSUFFICIENT_EVIDENCE');
 console.log(`immutable_inspector_commit=${inspectorCommit}`);
 console.log('official_projection=project_decision');
 console.log('official_completion=verify_completed_review');
