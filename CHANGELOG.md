@@ -1,5 +1,25 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## Unreleased — 2026-07-14
+
+### Changed
+
+- Recorded the merge and live-default-branch verification of deterministic governance enforcement from PR #55.
+- Advanced governance memory from `GOV-004-v5` to `GOV-004-v6`.
+- Moved `GOV-CAP-003`, `GOV-CAP-004`, and `GOV-CAP-005` from `committed_now` to `implemented` after verifying merge commit `65450bc5a4d19edf66098669a6fd48bdcda3ed70`.
+- Synchronized `STATUS.md`, `planning/CAPABILITY_MEMORY.yml`, and `planning/GOVERNANCE_ADOPTION_PLAN.yml` with the post-merge repository state.
+
+### Status
+
+- The reviewed head tree `064805f59762e191ae386423b07d73bcf5cae7be` is preserved by the merge commit with no additional file changes.
+- The historical independent-review evidence gap remains recorded as `BLOCKED_INSUFFICIENT_EVIDENCE`.
+- The official external PR Inspector bundle accessor remains unavailable; the live path remains fail-closed.
+- `PROD-CAP-001` through `PROD-CAP-004` remain `deferred_not_deleted`.
+- Runtime behavior and product contracts were not changed.
+- `production_ready` remains false.
+
+---
+
 ## Unreleased — 2026-07-09
 
 ### Added
