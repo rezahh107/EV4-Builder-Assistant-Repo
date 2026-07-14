@@ -2,18 +2,28 @@ schema_version: 2
 
 plan_identity:
   plan_id: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
-  plan_version: 5
+  plan_version: 6
   target_repository: rezahh107/EV4-Builder-Assistant-Repo
   audit_base_branch: main
   audit_base_sha: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
 
 repository_state:
   default_branch: main
-  current_source_commit: 8931c608d759ea121727f3903e21976a37e27f45
+  current_source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
   verified_prerequisite:
     increment_id: GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES
     pr: 54
     merge_commit: 8931c608d759ea121727f3903e21976a37e27f45
+    state: merged_and_repository_content_verified
+    evidence_state: REPOSITORY_CONFIRMED
+  verified_current_increment_merge:
+    increment_id: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
+    pr: 55
+    reviewed_head_sha: 064805f59762e191ae386423b07d73bcf5cae7be
+    merge_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
+    merged_at: 2026-07-14T10:41:24Z
+    reviewed_head_tree_preserved: true
+    additional_file_changes_in_merge_commit: 0
     state: merged_and_repository_content_verified
     evidence_state: REPOSITORY_CONFIRMED
   exact_head_ci_mechanism:
@@ -27,14 +37,14 @@ repository_state:
 current_increment:
   increment_id: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
   classification: REQUIRED_GOVERNANCE_ADOPTION
-  scope_revision: GOV-004-v5
-  implementation_context_id: repo-maintainer-gov-003-004
-  implementation_status: implemented_on_branch_pending_fresh_independent_exact_head_review
-  objective: remove target-repository PR Inspector projection and provenance replicas, execute synthetic regressions through the immutable official implementation, and preserve fail-closed live GitHub behavior
+  scope_revision: GOV-004-v6
+  implementation_context_id: repo-maintainer-gov-003-004-closure
+  implementation_status: implemented_and_merged_with_recorded_independent_review_gap
+  objective: close governance memory after verifying PR 55 on live main while preserving the unavailable external review-bundle limitation
 
 previous_scope_snapshot:
-  scope_revision: GOV-004-v4
-  source_commit: b0fd5f577f70ad9d0514115a3a5e119802489944
+  scope_revision: GOV-004-v5
+  source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
   lifecycle_by_id:
     GOV-CAP-001: implemented
     GOV-CAP-002: implemented
@@ -48,9 +58,9 @@ previous_scope_snapshot:
 
 scope_projection:
   project: rezahh107/EV4-Builder-Assistant-Repo
-  phase: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
-  scope_revision: GOV-004-v5
-  source_commit: 8931c608d759ea121727f3903e21976a37e27f45
+  phase: GOV-003-004-POST-MERGE-CLOSURE
+  scope_revision: GOV-004-v6
+  source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
   long_term_target_ids:
     - GOV-CAP-001
     - GOV-CAP-002
@@ -64,10 +74,10 @@ scope_projection:
   implemented_ids:
     - GOV-CAP-001
     - GOV-CAP-002
-  committed_now_ids:
     - GOV-CAP-003
     - GOV-CAP-004
     - GOV-CAP-005
+  committed_now_ids: []
   excluded_now_ids:
     - PROD-CAP-001
     - PROD-CAP-002
@@ -82,6 +92,7 @@ scope_projection:
   superseded_ids: []
   dependencies:
     - GOV-002_merge_commit_8931c608d759ea121727f3903e21976a37e27f45
+    - GOV-003-004_merge_commit_65450bc5a4d19edf66098669a6fd48bdcda3ed70
     - PR_Inspector_commit_88e8610bcc2ada48c8cf902d23d4296983310872
   authority_files:
     - path: governance/AI_AUTHORITY_POLICY.yml
@@ -89,17 +100,26 @@ scope_projection:
     - path: planning/CAPABILITY_MEMORY.yml
       responsibility: canonical capability IDs and lifecycle memory
     - path: planning/GOVERNANCE_ADOPTION_PLAN.yml
-      responsibility: current committed scope dependencies computed disclosure and progress evidence
+      responsibility: current committed scope dependencies computed disclosure progress evidence and post-merge closure
     - path: governance/REVIEW_LIFECYCLE.yml
       responsibility: immutable official PR Inspector integration exact-head staleness fail-closed Green boundary and post-review lifecycle
     - path: STATUS.md
       responsibility: concise mutable repository status without duplicating detailed scope lifecycle
 
 scope_change_disclosure:
-  from_scope_revision: GOV-004-v4
-  to_scope_revision: GOV-004-v5
-  revision_reason: immutable_official_pr_inspector_verifier_integration
-  lifecycle_changes: []
+  from_scope_revision: GOV-004-v5
+  to_scope_revision: GOV-004-v6
+  revision_reason: post_merge_governance_closure
+  lifecycle_changes:
+    - capability_id: GOV-CAP-003
+      from: committed_now
+      to: implemented
+    - capability_id: GOV-CAP-004
+      from: committed_now
+      to: implemented
+    - capability_id: GOV-CAP-005
+      from: committed_now
+      to: implemented
   deleted_target_ids: []
   newly_introduced_target_ids: []
   disclosure_computed_from_capability_ids: true
@@ -107,18 +127,18 @@ scope_change_disclosure:
   exact_head_binding_carrier: governance/schemas/review-receipt.schema.json
   source_object_identities:
     previous_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
-    previous_scope_source_commit: b0fd5f577f70ad9d0514115a3a5e119802489944
+    previous_scope_source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
     current_capability_authority: planning/CAPABILITY_MEMORY.yml
     current_scope_source_identity: github_pull_request_head_sha
   set_counts:
     target: 9
-    implemented: 2
-    committed: 3
+    implemented: 5
+    committed: 0
     deferred: 4
     excluded: 4
     rejected: 0
     superseded: 0
-  owner_facing_disclosure_carrier: pull_request_55_body_scope_gate
+  owner_facing_disclosure_carrier: post_merge_closure_pull_request_body
   owner_facing_disclosure_rendered: true
 
 completion_evidence:
@@ -155,22 +175,28 @@ completion_evidence:
   independent_review_required: true
   user_merge_required: true
   post_merge_verification_required: true
+  post_merge_verification:
+    merge_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
+    reviewed_head_sha: 064805f59762e191ae386423b07d73bcf5cae7be
+    live_default_branch: main
+    reviewed_head_tree_preserved: true
+    additional_file_changes_in_merge_commit: 0
+    capability_memory_blob_on_main: 88e683704c30f8134ead30659344fa17ebca65d2
+    adoption_plan_blob_on_main: 91913fd5300fdbc3cb54f842fe0b334d21b7ce5f
+    evidence_state: REPOSITORY_CONFIRMED
 
 progress_gate:
-  implementation_status: implemented_on_branch_pending_fresh_independent_exact_head_review
-  exact_commit_evidence_source: github_pull_request_head_sha_and_ci_assertion
-  required_artifacts_verified_on_live_default_branch: false
-  validator_result: EXTERNAL_EXACT_HEAD_CI_REQUIRED
-  ci_result: EXTERNAL_EXACT_HEAD_CI_REQUIRED
-  independent_review_result: UNKNOWN
-  merge_state: not_merged
-  post_merge_verification_result: UNKNOWN
+  implementation_status: implemented_and_merged_with_recorded_independent_review_gap
+  exact_commit_evidence_source: pr_55_merge_commit_and_live_default_branch_blob_identity
+  required_artifacts_verified_on_live_default_branch: true
+  validator_result: CI_CONFIRMED_FOR_REVIEWED_HEAD
+  ci_result: CI_CONFIRMED_FOR_REVIEWED_HEAD
+  independent_review_result: BLOCKED_INSUFFICIENT_EVIDENCE
+  merge_state: merged_pr_55
+  post_merge_verification_result: REPOSITORY_CONFIRMED
   open_gates:
     - official_external_pr_inspector_bundle_accessor
-    - independent_ai_review
-    - canonical_bundle_live_validation
-    - user_merge
-    - post_merge_verification
+    - historical_independent_review_evidence_gap
 
 prohibited_claims:
   - production_ready
@@ -189,9 +215,12 @@ prohibited_claims:
 
 next_increment:
   increment_id: NONE_FOR_GOVERNANCE_ADOPTION
-  blocked_until:
-    - current_increment_merge
-    - current_increment_post_merge_verification
+  blocked_until: []
+  remaining_non_governance_work:
+    - PROD-CAP-001
+    - PROD-CAP-002
+    - PROD-CAP-003
+    - PROD-CAP-004
 
 scope_change_rule:
   revision_must_change_when:
