@@ -2,7 +2,7 @@ schema_version: 2
 repository: rezahh107/EV4-Builder-Assistant-Repo
 source_default_branch: main
 source_commit: 8931c608d759ea121727f3903e21976a37e27f45
-scope_revision: GOV-004-v3
+scope_revision: GOV-004-v4
 
 lifecycle_states:
   - committed_now
@@ -57,7 +57,7 @@ capabilities:
       - scripts/validate-governance-sequence.mjs
       - .github/workflows/schema-validation.yml
       - .github/pull_request_template.md
-    rationale: validate exact-head review identity inspector provenance source actor binding independence stale-on-change and Green predicates through an operator-invoked read-only live validator; automatic pre-merge receipt CI is not claimed
+    rationale: bind technical status to canonical PR Inspector artifact bytes and DECISION_PROJECTION.json in synthetic regression; block Green fail closed because v1.10.0 exposes only a local review-directory accessor and no externally retrievable official bundle accessor for this target repository
   - capability_id: GOV-CAP-005
     name: post_merge_governance_verification
     lifecycle: committed_now
@@ -98,4 +98,4 @@ integrity_rules:
   - capability_removal_requires_decision_provenance
   - granularity_changes_require_explicit_mapping
 
-current_enforcement_status: mixed_sequence_ci_and_live_validator_backed
+current_enforcement_status: mixed_sequence_ci_and_fail_closed_validator_backed
