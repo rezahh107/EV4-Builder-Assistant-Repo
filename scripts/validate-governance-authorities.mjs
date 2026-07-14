@@ -30,7 +30,11 @@ const policy = loaded['governance/AI_AUTHORITY_POLICY.yml'];
 const memory = loaded['planning/CAPABILITY_MEMORY.yml'];
 const plan = loaded['planning/GOVERNANCE_ADOPTION_PLAN.yml'];
 const lifecycle = loaded['governance/REVIEW_LIFECYCLE.yml'];
+const receiptSchema = readJson('governance/schemas/review-receipt.schema.json');
 const repository = 'rezahh107/EV4-Builder-Assistant-Repo';
+const inspectorRepository = 'rezahh107/PR-Inspector';
+const inspectorRepositoryId = 1288323264;
+const inspectorProtocolVersion = 'v1.10.0';
 
 for (const [label, actual] of [
   ['policy repository', policy.repository_identity?.repository],
@@ -42,6 +46,8 @@ for (const [label, actual] of [
 
 const revisions = [memory.scope_revision, plan.current_increment?.scope_revision, plan.scope_projection?.scope_revision, plan.scope_change_disclosure?.to_scope_revision];
 if (!revisions.every((revision) => revision === revisions[0])) errors.push(`scope revisions must match: ${JSON.stringify(revisions)}.`);
+if (!revisions.every((revision) => revision === 'GOV-004-v3')) errors.push(`current scope revision must be GOV-004-v3: ${JSON.stringify(revisions)}.`);
+if (plan.previous_scope_snapshot?.scope_revision !== 'GOV-004-v2') errors.push('previous_scope_snapshot.scope_revision must preserve GOV-004-v2.');
 if (plan.current_increment?.implementation_context_id !== 'repo-maintainer-gov-003-004') errors.push('current_increment.implementation_context_id must identify the implementation context.');
 
 const capabilities = memory.capabilities || [];
@@ -57,10 +63,16 @@ if (!setEquals(derivedCommitted, plan.scope_projection?.committed_now_ids || [])
 if (!setEquals(derivedDeferred, plan.scope_projection?.deferred_not_deleted_ids || [])) errors.push('deferred_not_deleted_ids must match capability memory lifecycle=deferred_not_deleted.');
 if (!setEquals(plan.scope_projection?.excluded_now_ids || [], derivedDeferred)) errors.push('excluded_now_ids must equal the current deferred_not_deleted capability set.');
 
-for (const [id, expected] of Object.entries({ 'GOV-CAP-001':'implemented','GOV-CAP-002':'implemented','GOV-CAP-003':'committed_now','GOV-CAP-004':'committed_now','GOV-CAP-005':'committed_now' })) {
-  if (lifecycleById[id] !== expected) errors.push(`${id}: expected lifecycle ${expected}, received ${lifecycleById[id]}.`);
+for (const [id, expected] of Object.entries({
+  'GOV-CAP-001': 'implemented',
+  'GOV-CAP-002': 'implemented',
+  'GOV-CAP-003': 'committed_now',
+  'GOV-CAP-004': 'committed_now',
+  'GOV-CAP-005': 'committed_now'
+})) if (lifecycleById[id] !== expected) errors.push(`${id}: expected lifecycle ${expected}, received ${lifecycleById[id]}.`);
+for (const id of ['PROD-CAP-001', 'PROD-CAP-002', 'PROD-CAP-003', 'PROD-CAP-004']) {
+  if (lifecycleById[id] !== 'deferred_not_deleted') errors.push(`${id}: product capability must remain deferred_not_deleted.`);
 }
-for (const id of ['PROD-CAP-001','PROD-CAP-002','PROD-CAP-003','PROD-CAP-004']) if (lifecycleById[id] !== 'deferred_not_deleted') errors.push(`${id}: product capability must remain deferred_not_deleted.`);
 for (const capability of capabilities) {
   if (capability.capability_id.startsWith('GOV-')) {
     if (!Array.isArray(capability.authority) || capability.authority.length === 0) errors.push(`${capability.capability_id}: governance authority must be a non-empty sequence.`);
@@ -75,74 +87,175 @@ if (deletedTargets.length > 0) errors.push(`silent capability deletion is forbid
 const introducedTargets = capabilityIds.filter((id) => !Object.prototype.hasOwnProperty.call(previous, id)).sort();
 if (!setEquals(introducedTargets, plan.scope_change_disclosure?.newly_introduced_target_ids || [])) errors.push(`newly_introduced_target_ids disclosure mismatch: computed=${JSON.stringify(introducedTargets)}.`);
 const normalizeChange = (change) => ({ capability_id: change.capability_id ?? null, from: change.from ?? null, to: change.to ?? null });
-const computedChanges = capabilityIds.filter((id) => Object.prototype.hasOwnProperty.call(previous,id) && previous[id] !== lifecycleById[id]).map((id) => normalizeChange({capability_id:id,from:previous[id],to:lifecycleById[id]})).sort((a,b)=>(a.capability_id??'').localeCompare(b.capability_id??''));
-const disclosedChanges = [...(plan.scope_change_disclosure?.lifecycle_changes || [])].map(normalizeChange).sort((a,b)=>(a.capability_id??'').localeCompare(b.capability_id??''));
+const computedChanges = capabilityIds
+  .filter((id) => Object.prototype.hasOwnProperty.call(previous, id) && previous[id] !== lifecycleById[id])
+  .map((id) => normalizeChange({ capability_id: id, from: previous[id], to: lifecycleById[id] }))
+  .sort((a, b) => (a.capability_id ?? '').localeCompare(b.capability_id ?? ''));
+const disclosedChanges = [...(plan.scope_change_disclosure?.lifecycle_changes || [])]
+  .map(normalizeChange)
+  .sort((a, b) => (a.capability_id ?? '').localeCompare(b.capability_id ?? ''));
 if (JSON.stringify(computedChanges) !== JSON.stringify(disclosedChanges)) errors.push(`scope lifecycle disclosure mismatch: computed=${JSON.stringify(computedChanges)} disclosed=${JSON.stringify(disclosedChanges)}.`);
 if (plan.scope_change_disclosure?.disclosure_computed_from_capability_ids !== true) errors.push('scope disclosure must state disclosure_computed_from_capability_ids=true.');
-if (plan.scope_change_disclosure?.revision_reason !== 'live_review_receipt_validation_and_versioned_required_check_contract') errors.push('scope disclosure must record the GOV-004-v2 revision reason.');
+if (plan.scope_change_disclosure?.revision_reason !== 'authoritative_api_origin_and_non_self_asserted_review_identity') errors.push('scope disclosure must record the GOV-004-v3 revision reason.');
+if (plan.scope_change_disclosure?.from_scope_revision !== 'GOV-004-v2' || plan.scope_change_disclosure?.to_scope_revision !== 'GOV-004-v3') errors.push('scope disclosure must explicitly map GOV-004-v2 to GOV-004-v3.');
 
-const forbiddenFields = ['human_technical_approval','owner_technical_signoff','owner_scope_acknowledgement','human_review_required','specialist_signoff'];
-for (const [filePath,state] of Object.entries(loaded)) for (const finding of findForbiddenKeys(state,forbiddenFields)) errors.push(`${filePath}: prohibited human technical gate field at ${finding}.`);
+const forbiddenFields = ['human_technical_approval', 'owner_technical_signoff', 'owner_scope_acknowledgement', 'human_review_required', 'specialist_signoff'];
+for (const [filePath, state] of Object.entries(loaded)) {
+  for (const finding of findForbiddenKeys(state, forbiddenFields)) errors.push(`${filePath}: prohibited human technical gate field at ${finding}.`);
+}
 const publicDisposition = policy.security_profile?.activation_trigger_evaluation?.public_repository?.decision;
 if (publicDisposition !== 'retain_minimum_security_with_public_repository_hygiene') errors.push('public repository security trigger requires an explicit minimum-security disposition.');
 const controls = policy.security_profile?.mandatory_minimum_controls || [];
-for (const requiredControl of ['no_secrets_credentials_tokens_passwords_or_private_keys','destructive_action_requires_exact_target_scope_and_recovery_path','missing_access_identity_or_evidence_must_fail_closed']) if (!controls.includes(requiredControl)) errors.push(`missing mandatory security control: ${requiredControl}.`);
+for (const requiredControl of ['no_secrets_credentials_tokens_passwords_or_private_keys', 'destructive_action_requires_exact_target_scope_and_recovery_path', 'missing_access_identity_or_evidence_must_fail_closed']) {
+  if (!controls.includes(requiredControl)) errors.push(`missing mandatory security control: ${requiredControl}.`);
+}
 
 const expectedEnforcement = {
-  'AIGOV-START-001':'validator_backed','AIGOV-SCOPE-001':'sequence_ci_enforced','AIGOV-SCOPE-DISCLOSURE-001':'sequence_ci_enforced','AIGOV-PROGRESS-001':'sequence_ci_enforced','AIGOV-EVIDENCE-001':'ci_enforced','AIGOV-INDEPENDENCE-001':'live_validator_backed','AIGOV-STALE-001':'live_validator_backed','AIGOV-MERGE-001':'live_validator_backed','AIGOV-SECURITY-PROFILE-001':'validator_backed','AIGOV-HUMAN-001':'validator_backed','AIGOV-COACH-001':'validator_backed'
+  'AIGOV-START-001': 'validator_backed',
+  'AIGOV-SCOPE-001': 'sequence_ci_enforced',
+  'AIGOV-SCOPE-DISCLOSURE-001': 'sequence_ci_enforced',
+  'AIGOV-PROGRESS-001': 'sequence_ci_enforced',
+  'AIGOV-EVIDENCE-001': 'ci_enforced',
+  'AIGOV-INDEPENDENCE-001': 'live_validator_backed',
+  'AIGOV-STALE-001': 'live_validator_backed',
+  'AIGOV-MERGE-001': 'live_validator_backed',
+  'AIGOV-SECURITY-PROFILE-001': 'validator_backed',
+  'AIGOV-HUMAN-001': 'validator_backed',
+  'AIGOV-COACH-001': 'validator_backed'
 };
-for (const [ruleId,expected] of Object.entries(expectedEnforcement)) if (policy.current_enforcement?.[ruleId] !== expected) errors.push(`${ruleId}: expected enforcement ${expected}, received ${policy.current_enforcement?.[ruleId]}.`);
-const requiredGateFields = ['risk','session_scope','trigger','predicate','enforcement','recovery_action'];
+for (const [ruleId, expected] of Object.entries(expectedEnforcement)) {
+  if (policy.current_enforcement?.[ruleId] !== expected) errors.push(`${ruleId}: expected enforcement ${expected}, received ${policy.current_enforcement?.[ruleId]}.`);
+}
+const requiredGateFields = ['risk', 'session_scope', 'trigger', 'predicate', 'enforcement', 'recovery_action'];
 for (const ruleId of Object.keys(expectedEnforcement)) {
   const definition = policy.rules?.[ruleId];
-  if (!definition) { errors.push(`${ruleId}: gate definition is missing.`); continue; }
+  if (!definition) {
+    errors.push(`${ruleId}: gate definition is missing.`);
+    continue;
+  }
   for (const field of requiredGateFields) if (definition[field] === undefined || definition[field] === null) errors.push(`${ruleId}: gate definition is missing ${field}.`);
   if (!Array.isArray(definition.predicate) || definition.predicate.length < 2) errors.push(`${ruleId}: gate predicate must contain at least two checks.`);
 }
 
 const disclosureCounts = plan.scope_change_disclosure?.set_counts || {};
-const computedCounts = {target:capabilityIds.length,implemented:derivedImplemented.length,committed:derivedCommitted.length,deferred:derivedDeferred.length,excluded:(plan.scope_projection?.excluded_now_ids||[]).length,rejected:(plan.scope_projection?.rejected_ids||[]).length,superseded:(plan.scope_projection?.superseded_ids||[]).length};
-for (const [name,expected] of Object.entries(computedCounts)) if (disclosureCounts[name] !== expected) errors.push(`scope disclosure set_counts.${name}: expected ${expected}, received ${disclosureCounts[name]}.`);
+const computedCounts = {
+  target: capabilityIds.length,
+  implemented: derivedImplemented.length,
+  committed: derivedCommitted.length,
+  deferred: derivedDeferred.length,
+  excluded: (plan.scope_projection?.excluded_now_ids || []).length,
+  rejected: (plan.scope_projection?.rejected_ids || []).length,
+  superseded: (plan.scope_projection?.superseded_ids || []).length
+};
+for (const [name, expected] of Object.entries(computedCounts)) {
+  if (disclosureCounts[name] !== expected) errors.push(`scope disclosure set_counts.${name}: expected ${expected}, received ${disclosureCounts[name]}.`);
+}
 if (plan.scope_change_disclosure?.reviewed_head_binding_required !== true) errors.push('scope disclosure must require exact reviewed-head binding.');
 if (plan.scope_change_disclosure?.exact_head_binding_carrier !== 'governance/schemas/review-receipt.schema.json') errors.push('scope disclosure exact-head binding carrier must be the canonical review receipt schema.');
 const previousSourceCommit = plan.previous_scope_snapshot?.source_commit;
 if (!/^[0-9a-f]{40}$/.test(previousSourceCommit || '')) errors.push('previous_scope_snapshot.source_commit must be an exact commit SHA.');
+if (previousSourceCommit !== '2ba2a3eed2ebb6943c7a062214c1fc985fad622e') errors.push('previous_scope_snapshot.source_commit must identify the reviewed GOV-004-v2 head.');
 if (plan.scope_change_disclosure?.source_object_identities?.previous_scope_source_commit !== previousSourceCommit) errors.push('scope disclosure previous source commit identity is missing or mismatched.');
 if (plan.scope_change_disclosure?.source_object_identities?.current_scope_source_identity !== 'github_pull_request_head_sha') errors.push('scope disclosure current source identity must be github_pull_request_head_sha.');
 if (plan.scope_change_disclosure?.owner_facing_disclosure_rendered !== true) errors.push('owner-facing scope disclosure must be rendered.');
 
-const expectedGreenPredicates = {exact_head_matches_receipt:true,scope_revision_matches_receipt:true,independent_reviewer:true,all_required_exact_head_checks_success:true,unresolved_blocking_findings:false,scope_change_disclosure_valid:true,prohibited_human_technical_gate_absent:true,security_profile_valid:true,completion_evidence_complete:true};
-function greenPredicateErrors(predicates) { const findings=[]; for (const [key,expected] of Object.entries(expectedGreenPredicates)) if (predicates?.[key] !== expected) findings.push(`GOV-AUTH-001_GREEN_PREDICATE_VALUE:${key}:expected=${expected}:received=${predicates?.[key]}`); return findings; }
+const expectedGreenPredicates = {
+  exact_head_matches_receipt: true,
+  scope_revision_matches_receipt: true,
+  independent_reviewer: true,
+  all_required_exact_head_checks_success: true,
+  unresolved_blocking_findings: false,
+  scope_change_disclosure_valid: true,
+  prohibited_human_technical_gate_absent: true,
+  security_profile_valid: true,
+  completion_evidence_complete: true
+};
+function greenPredicateErrors(predicates) {
+  const findings = [];
+  for (const [key, expected] of Object.entries(expectedGreenPredicates)) {
+    if (predicates?.[key] !== expected) findings.push(`GOV-AUTH-001_GREEN_PREDICATE_VALUE:${key}:expected=${expected}:received=${predicates?.[key]}`);
+  }
+  return findings;
+}
 errors.push(...greenPredicateErrors(lifecycle.green_merge_predicates));
-const authorityFixturePath='tests/governance/invalid/authority_failures.json';
+const authorityFixturePath = 'tests/governance/invalid/authority_failures.json';
 if (fs.existsSync(authorityFixturePath)) {
-  const fixture=readJson(authorityFixturePath);
+  const fixture = readJson(authorityFixturePath);
   for (const entry of fixture.green_merge_predicate_cases || []) {
-    const diagnostics=greenPredicateErrors({...lifecycle.green_merge_predicates,...(entry.overrides||{})});
-    for (const expected of entry.expected_diagnostics || []) if (!diagnostics.some((diagnostic)=>diagnostic===expected||diagnostic.startsWith(`${expected}:`))) errors.push(`${authorityFixturePath}:${entry.case_id}: missing expected diagnostic ${expected}; got ${JSON.stringify(diagnostics)}.`);
-    if (diagnostics.length===0) errors.push(`${authorityFixturePath}:${entry.case_id}: invalid Green predicate fixture unexpectedly passed.`);
+    const diagnostics = greenPredicateErrors({ ...lifecycle.green_merge_predicates, ...(entry.overrides || {}) });
+    for (const expected of entry.expected_diagnostics || []) {
+      if (!diagnostics.some((diagnostic) => diagnostic === expected || diagnostic.startsWith(`${expected}:`))) errors.push(`${authorityFixturePath}:${entry.case_id}: missing expected diagnostic ${expected}; got ${JSON.stringify(diagnostics)}.`);
+    }
+    if (diagnostics.length === 0) errors.push(`${authorityFixturePath}:${entry.case_id}: invalid Green predicate fixture unexpectedly passed.`);
   }
 }
 
-const expectedChecks=[{check_id:'implementation_validation',workflow_name:'Schema validation',event:'pull_request'},{check_id:'project_gate_pin',workflow_name:'Verify Project Gate Contract Pin',event:'pull_request'}].sort((a,b)=>a.check_id.localeCompare(b.check_id));
-const actualChecks=[...(lifecycle.required_check_set?.checks||[])].map((item)=>({check_id:item.check_id,workflow_name:item.workflow_name,event:item.event})).sort((a,b)=>(a.check_id||'').localeCompare(b.check_id||''));
-if (lifecycle.required_check_set?.version !== 1 || JSON.stringify(actualChecks)!==JSON.stringify(expectedChecks)) errors.push('review lifecycle required_check_set must match the explicit versioned canonical workflow set.');
-if (!setEquals(lifecycle.receipt_transport||[],['pull_request_review','pull_request_comment'])) errors.push('review lifecycle receipt_transport must contain only supported non-head-mutating transports.');
-if (!setEquals(lifecycle.live_receipt_validation?.supported_transports||[],lifecycle.receipt_transport||[])) errors.push('live receipt supported transports must match the canonical receipt transports.');
+const expectedChecks = [
+  { check_id: 'implementation_validation', workflow_name: 'Schema validation', event: 'pull_request' },
+  { check_id: 'project_gate_pin', workflow_name: 'Verify Project Gate Contract Pin', event: 'pull_request' }
+].sort((a, b) => a.check_id.localeCompare(b.check_id));
+const actualChecks = [...(lifecycle.required_check_set?.checks || [])]
+  .map((item) => ({ check_id: item.check_id, workflow_name: item.workflow_name, event: item.event }))
+  .sort((a, b) => (a.check_id || '').localeCompare(b.check_id || ''));
+if (lifecycle.required_check_set?.version !== 1 || JSON.stringify(actualChecks) !== JSON.stringify(expectedChecks)) errors.push('review lifecycle required_check_set must match the explicit versioned canonical workflow set.');
+if (lifecycle.protocol_version !== 3) errors.push('review lifecycle protocol_version must be 3 for the GOV-004-v3 receipt contract.');
+if (!setEquals(lifecycle.receipt_transport || [], ['pull_request_review', 'pull_request_comment'])) errors.push('review lifecycle receipt_transport must contain only supported non-head-mutating transports.');
+if (!setEquals(lifecycle.live_receipt_validation?.supported_transports || [], lifecycle.receipt_transport || [])) errors.push('live receipt supported transports must match the canonical receipt transports.');
+if (!setEquals(lifecycle.stale_on_change || [], ['pull_request_head_sha', 'scope_revision', 'required_check_set', 'inspector_protocol_identity'])) errors.push('stale_on_change must include inspector protocol identity.');
+
+const requiredReceiptFields = [
+  'repository', 'pull_request', 'base_sha', 'reviewed_head_sha', 'scope_revision',
+  'inspector_repository', 'inspector_repository_id', 'inspector_commit_sha', 'protocol_version', 'reviewer_actor_login',
+  'implementation_context_id', 'reviewer_context_id', 'independent', 'technical_status', 'exact_head_ci_run_ids', 'findings', 'reviewed_at'
+];
+if (!setEquals(lifecycle.required_receipt_fields || [], requiredReceiptFields)) errors.push('review lifecycle required_receipt_fields must include immutable inspector and source actor identity.');
+if (!setEquals(receiptSchema.required || [], requiredReceiptFields)) errors.push('review receipt schema required fields must match the lifecycle authority.');
+if (receiptSchema.properties?.inspector_repository?.const !== inspectorRepository) errors.push('review receipt schema inspector_repository const is missing or mismatched.');
+if (receiptSchema.properties?.inspector_repository_id?.const !== inspectorRepositoryId) errors.push('review receipt schema inspector_repository_id const is missing or mismatched.');
+if (receiptSchema.properties?.protocol_version?.const !== inspectorProtocolVersion) errors.push('review receipt schema protocol_version const is missing or mismatched.');
+if (receiptSchema.properties?.inspector_commit_sha?.pattern !== '^[0-9a-f]{40}$') errors.push('review receipt schema inspector_commit_sha must require an exact 40-character SHA.');
+
+const inspectorAuthority = lifecycle.inspector_identity_authority || {};
+if (inspectorAuthority.repository !== inspectorRepository) errors.push('trusted inspector repository must be rezahh107/PR-Inspector.');
+if (inspectorAuthority.repository_id !== inspectorRepositoryId) errors.push('trusted inspector repository ID must be 1288323264.');
+if (!setEquals(inspectorAuthority.supported_protocol_versions || [], [inspectorProtocolVersion])) errors.push('supported inspector protocol set must contain only v1.10.0.');
+if (inspectorAuthority.commit_provenance !== 'github_api_commit_lookup') errors.push('inspector commit provenance must use an official GitHub API commit lookup.');
+if (inspectorAuthority.source_actor_binding_required !== true) errors.push('inspector identity authority must require source actor binding.');
+for (const [field, expected] of Object.entries({
+  implementation_context_must_differ_from_reviewer_context: true,
+  reviewer_must_not_be_implementer: true,
+  reviewer_actor_must_match_github_source_actor: true,
+  reviewer_actor_must_not_be_pull_request_author: true,
+  inspector_commit_must_exist_in_exact_inspector_repository: true,
+  independent_boolean_is_not_sufficient_evidence: true,
+  self_authored_review_is_invalid: true
+})) if (lifecycle.independence_rule?.[field] !== expected) errors.push(`independence_rule.${field} must equal ${expected}.`);
+
 if (lifecycle.live_receipt_validation?.mode !== 'github_api_read_only_operator_invoked') errors.push('live receipt validation mode must be github_api_read_only_operator_invoked.');
 if (lifecycle.live_receipt_validation?.marker !== 'AI_GOVERNANCE_REVIEW_RECEIPT') errors.push('live receipt validation marker is missing or mismatched.');
+if (lifecycle.live_receipt_validation?.authoritative_api_origin !== 'https://api.github.com') errors.push('live receipt validation must pin https://api.github.com.');
+if (lifecycle.live_receipt_validation?.caller_controlled_api_origin_allowed !== false) errors.push('caller-controlled API origins must be forbidden.');
+if (lifecycle.live_receipt_validation?.redirects_allowed !== false) errors.push('GitHub API redirects must be forbidden.');
 if (lifecycle.live_receipt_validation?.command !== 'node scripts/validate-governance-sequence.mjs --mode=live --source=github') errors.push('live receipt validation command must use the canonical operator-invoked validator path.');
 if (lifecycle.live_receipt_validation?.activation_state !== 'premerge_operator_invoked_default_branch_workflow_not_claimed') errors.push('live receipt validation activation state must explicitly avoid an unsupported pre-merge workflow claim.');
-if (!setEquals(lifecycle.live_receipt_validation?.required_token_permissions||[],['actions_read','contents_read','issues_read','pull_requests_read'])) errors.push('live receipt validation token permissions must remain the bounded read-only set.');
+if (!setEquals(lifecycle.live_receipt_validation?.required_token_permissions || [], ['actions_read', 'contents_read', 'issues_read', 'pull_requests_read'])) errors.push('live receipt validation token permissions must remain the bounded read-only set.');
 if (lifecycle.current_enforcement_status !== 'mixed_sequence_ci_and_live_validator_backed') errors.push('review lifecycle current_enforcement_status must match the mixed executable evidence level.');
 if (memory.current_enforcement_status !== 'mixed_sequence_ci_and_live_validator_backed' || plan.current_enforcement_status !== 'mixed_sequence_ci_and_live_validator_backed') errors.push('capability memory and adoption plan must use the mixed executable evidence status.');
 if (!policy.non_claims?.includes('automatic_premerge_live_receipt_ci_enforced') || !plan.prohibited_claims?.includes('automatic_premerge_live_receipt_ci_enforced')) errors.push('unsupported automatic pre-merge receipt CI enforcement must be an explicit non-claim.');
 
-for (const artifact of plan.completion_evidence?.required_artifacts || []) if (!fs.existsSync(artifact)) errors.push(`required governance artifact is missing: ${artifact}.`);
-if (errors.length>0) { printFailure('Governance authority validation failed:',errors); process.exit(1); }
+for (const artifact of plan.completion_evidence?.required_artifacts || []) {
+  if (!fs.existsSync(artifact)) errors.push(`required governance artifact is missing: ${artifact}.`);
+}
+if (errors.length > 0) {
+  printFailure('Governance authority validation failed:', errors);
+  process.exit(1);
+}
 console.log('Governance authority validation passed.');
 console.log(`scope_revision=${revisions[0]}`);
 console.log(`capabilities=${capabilityIds.length}`);
 console.log(`lifecycle_changes=${computedChanges.length}`);
 console.log(`required_check_set_version=${lifecycle.required_check_set.version}`);
 console.log('live_receipt_validation=github_api_read_only_operator_invoked');
+console.log('authoritative_api_origin=https://api.github.com');
+console.log(`inspector_repository=${inspectorRepository}`);
+console.log(`inspector_protocol_version=${inspectorProtocolVersion}`);
