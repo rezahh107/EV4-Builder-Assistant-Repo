@@ -2,7 +2,7 @@ schema_version: 2
 repository: rezahh107/EV4-Builder-Assistant-Repo
 source_default_branch: main
 source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-scope_revision: GOV-004-v6
+scope_revision: GOV-004-v7
 
 lifecycle_states:
   - committed_now
@@ -42,15 +42,20 @@ capabilities:
       - governance/schemas/governance-adoption-plan.schema.json
       - scripts/validate-governance-authorities.mjs
       - scripts/validate-governance-sequence.mjs
+      - scripts/validate-governance-progress-evidence.mjs
+      - scripts/validate-pr-template-hygiene.mjs
+      - tests/governance/progress-evidence-cases.json
+      - tests/governance/pr-template-hygiene-cases.json
       - tests/governance/valid
       - tests/governance/invalid
       - tests/governance/invalid-yaml
       - .github/workflows/schema-validation.yml
+      - .github/workflows/governance-exact-head-evidence.yml
     implementation_evidence:
       - PR-55
       - 064805f59762e191ae386423b07d73bcf5cae7be
       - 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-    rationale: deterministic governance validation and sequence CI are merged on main
+    rationale: deterministic governance validation is merged on main; the v7 repair prevents repository-authored exact-head CI confirmation and adds an external GitHub Actions evidence boundary pending fresh exact-head validation and rereview
   - capability_id: GOV-CAP-004
     name: exact_head_independent_review_lifecycle
     lifecycle: implemented
@@ -68,7 +73,7 @@ capabilities:
       - PR-55
       - 064805f59762e191ae386423b07d73bcf5cae7be
       - 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-    rationale: immutable official PR Inspector integration and fail-closed live boundary are merged; real external bundle retrieval remains unavailable and is not claimed
+    rationale: immutable official PR Inspector integration and fail-closed live boundary are merged; real external bundle retrieval remains unavailable and fresh rereview is required for the v7 repair head
   - capability_id: GOV-CAP-005
     name: post_merge_governance_verification
     lifecycle: implemented
@@ -80,7 +85,7 @@ capabilities:
       - PR-55
       - 65450bc5a4d19edf66098669a6fd48bdcda3ed70
       - reviewed_head_tree_preserved_on_main
-    rationale: merge commit exists on main and contains the reviewed head tree without additional file changes
+    rationale: the PR 55 merge commit exists on main and contains the reviewed head tree without additional file changes; v7 closure-repair evidence remains pending
   - capability_id: PROD-CAP-001
     name: real_elementor_execution_evidence
     lifecycle: deferred_not_deleted
