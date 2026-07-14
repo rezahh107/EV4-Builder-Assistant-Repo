@@ -1,6 +1,6 @@
 schema_version: 2
 policy_id: EV4-BUILDER-AI-AUTHORITY-POLICY
-policy_version: 3
+policy_version: 4
 status: deterministic_enforcement_implemented_pending_independent_review
 
 source_standard:
@@ -27,7 +27,7 @@ authority_model:
     - exact_repository_commit_tree_branch_and_pr_evidence
     - validators_fixtures_tests_ci_and_logs
     - canonical_repository_authorities
-    - verified_canonical_pr_inspector_artifacts
+    - immutable_official_pr_inspector_verifier_outputs
     - independent_review_evidence
     - unmerged_work
     - chat_history_or_model_memory
@@ -77,8 +77,10 @@ claim_rules:
   - authored_status_does_not_create_provenance
   - typed_receipt_does_not_prove_pr_inspector_decision
   - transport_actor_is_not_canonical_technical_authority
-  - canonical_bundle_must_be_verified_from_one_captured_byte_snapshot
-  - decision_status_must_be_derived_from_verified_DECISION_PROJECTION_json
+  - target_repository_must_not_reimplement_pr_inspector_projection
+  - target_repository_must_not_reimplement_review_provenance
+  - technical_status_must_come_from_immutable_official_project_decision
+  - review_evidence_id_must_come_from_immutable_official_provenance
 
 scope_gate:
   current_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
@@ -165,11 +167,11 @@ rules:
     session_scope: cross_turn
     trigger: before_technical_acceptance_or_merge_recommendation
     predicate:
-      - canonical_PR_Inspector_bundle_is_available
-      - exact_bundle_bytes_are_captured_once
-      - inspector_commit_provenance_is_verified
-      - canonical_review_evidence_id_is_recomputed
-      - technical_status_is_derived_from_verified_decision_projection
+      - immutable_PR_Inspector_checkout_identity_is_verified
+      - official_project_decision_is_used_without_local_replica
+      - official_review_provenance_is_used_without_local_replica
+      - canonical_review_bundle_is_verified_by_official_code
+      - transport_actor_is_not_used_as_independence_proof
     enforcement: block_GREEN_when_official_bundle_cannot_be_verified
     recovery_action: rerun_independent_review_with_retrievable_official_bundle
   AIGOV-STALE-001:
@@ -177,10 +179,10 @@ rules:
     session_scope: cross_turn
     trigger: when_PR_head_scope_required_checks_or_inspector_protocol_changes
     predicate:
-      - verified_bundle_reviewed_head_sha_equals_current_head_sha
-      - verified_bundle_scope_revision_equals_current_scope_revision
-      - verified_bundle_protocol_identity_is_supported
-      - review_validity_equals_CURRENT
+      - official_evidence_reviewed_head_sha_equals_current_head_sha
+      - official_evidence_scope_revision_equals_current_scope_revision
+      - immutable_inspector_protocol_identity_is_unchanged
+      - official_review_validity_equals_CURRENT
     enforcement: invalidate_or_block_unverified_review
     recovery_action: rerun_review
   AIGOV-MERGE-001:
@@ -188,12 +190,12 @@ rules:
     session_scope: cross_turn
     trigger: before_GREEN_merge_recommendation
     predicate:
-      - verified_canonical_decision_projection_is_GREEN_TECHNICALLY_READY
+      - immutable_official_projection_is_GREEN_TECHNICALLY_READY
+      - immutable_official_next_action_is_merge_now
       - required_exact_head_CI_passed
       - scope_and_progress_gates_passed
       - no_blocking_evidence_gap_remains
-      - official_bundle_verification_completed
-    enforcement: block_merge_recommendation_without_verified_bundle
+    enforcement: block_merge_recommendation_without_official_verified_evidence
     recovery_action: repair_or_verify
   AIGOV-SECURITY-PROFILE-001:
     risk: High
@@ -279,8 +281,11 @@ enforcement_carriers:
   review_lifecycle_authority: governance/REVIEW_LIFECYCLE.yml
   review_receipt_schema: governance/schemas/review-receipt.schema.json
   exact_head_ci: .github/workflows/schema-validation.yml
+  immutable_inspector_checkout: rezahh107/PR-Inspector@88e8610bcc2ada48c8cf902d23d4296983310872
+  official_verifier_adapter: scripts/verify-pr-inspector-bundle.py
+  official_verifier_regression: scripts/test-pr-inspector-official-integration.py
+  official_projection_case_registry: tests/governance/pr-inspector-projection-cases.json
   github_live_review_path: fail_closed_without_external_official_bundle_accessor
-  canonical_bundle_synthetic_regression: scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json
   positive_fixtures: tests/governance/valid
   negative_fixtures: tests/governance/invalid
 
@@ -309,3 +314,5 @@ non_claims:
   - canonical_pr_inspector_bundle_live_verified
   - independent_review_live_enforced
   - merge_recommendation_live_enforced
+  - target_repository_independently_implements_pr_inspector_projection
+  - target_repository_independently_implements_review_provenance
