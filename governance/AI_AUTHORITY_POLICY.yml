@@ -1,7 +1,7 @@
 schema_version: 2
 policy_id: EV4-BUILDER-AI-AUTHORITY-POLICY
-policy_version: 4
-status: deterministic_enforcement_implemented_pending_independent_review
+policy_version: 6
+status: deterministic_enforcement_implemented_on_main_external_exact_head_evidence_repair_pending
 
 source_standard:
   title: AI Authority Deterministic Governance — Source of Truth
@@ -11,7 +11,7 @@ source_standard:
 repository_identity:
   repository: rezahh107/EV4-Builder-Assistant-Repo
   default_branch: main
-  foundation_source_commit: 8931c608d759ea121727f3903e21976a37e27f45
+  foundation_source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
 
 execution_authority_order:
   - platform_system_safety_and_tool_constraints
@@ -75,6 +75,7 @@ claim_rules:
   - schema_presence_does_not_prove_execution
   - ci_green_does_not_prove_production_readiness
   - authored_status_does_not_create_provenance
+  - repository_authored_ci_confirmation_is_not_external_exact_head_evidence
   - typed_receipt_does_not_prove_pr_inspector_decision
   - transport_actor_is_not_canonical_technical_authority
   - target_repository_must_not_reimplement_pr_inspector_projection
@@ -93,6 +94,8 @@ progress_gate:
   current_progress_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
   default_branch_evidence_required: true
   exact_commit_required: true
+  external_exact_head_ci_evidence_required: true
+  repository_authored_ci_confirmation_allowed: false
   independent_review_required_for_merge_recommendation: true
   post_merge_verification_required: true
 
@@ -147,9 +150,10 @@ rules:
       - required_artifacts_exist_on_live_default_branch
       - acceptance_evidence_exists
       - exact_commit_is_recorded
+      - external_exact_head_ci_evidence_matches_repository_pr_head_required_workflows_run_ids_and_success
       - required_validators_tests_and_ci_passed
       - no_blocking_gate_remains
-    enforcement: reject_completion_status
+    enforcement: reject_completion_or_ci_confirmation_without_external_exact_head_evidence
     recovery_action: repair_request
   AIGOV-EVIDENCE-001:
     risk: Critical
@@ -278,6 +282,9 @@ untrusted_input_sources:
 enforcement_carriers:
   authority_validator: scripts/validate-governance-authorities.mjs
   sequence_validator: scripts/validate-governance-sequence.mjs
+  external_progress_evidence_validator: scripts/validate-governance-progress-evidence.mjs
+  external_progress_evidence_workflow: .github/workflows/governance-exact-head-evidence.yml
+  pull_request_template_hygiene_validator: scripts/validate-pr-template-hygiene.mjs
   review_lifecycle_authority: governance/REVIEW_LIFECYCLE.yml
   review_receipt_schema: governance/schemas/review-receipt.schema.json
   exact_head_ci: .github/workflows/schema-validation.yml
@@ -310,6 +317,7 @@ non_claims:
   - repository_settings_enforced
   - branch_protection_enforced
   - automatic_premerge_live_receipt_ci_enforced
+  - repository_authored_exact_head_ci_confirmation
   - official_remote_review_bundle_accessor_available
   - canonical_pr_inspector_bundle_live_verified
   - independent_review_live_enforced

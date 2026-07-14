@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "case_id": "generic_reusable_template",
+      "valid": true,
+      "text": "## Scope Gate\n- scope revision:\n## Progress Gate\n- exact PR head SHA:\n- required CI workflow/run evidence:\n- merge state:\n- post-merge verification result:\n## Trust and overclaim checks\n## Decision Escape Route / Behavioral Rule Coverage Check\n"
+    },
+    {
+      "case_id": "concrete_pr_number",
+      "text": "## Scope Gate\n## Progress Gate\n- exact PR head SHA:\n- required CI workflow/run evidence:\n- merge state: PR #56 open\n- post-merge verification result:\n## Trust and overclaim checks\n## Decision Escape Route / Behavioral Rule Coverage Check\n",
+      "expected_diagnostics": ["PR-TEMPLATE-002_CONCRETE_PR_NUMBER"]
+    },
+    {
+      "case_id": "concrete_head_or_merge_sha",
+      "text": "## Scope Gate\n## Progress Gate\n- exact PR head SHA: 921cfd7623eb5698901b5bce7ab77a053d09e6b9\n- required CI workflow/run evidence:\n- merge state:\n- post-merge verification result:\n## Trust and overclaim checks\n## Decision Escape Route / Behavioral Rule Coverage Check\n",
+      "expected_diagnostics": ["PR-TEMPLATE-003_CONCRETE_SHA"]
+    },
+    {
+      "case_id": "concrete_scope_revision",
+      "text": "## Scope Gate\n- GOV-004-v6\n## Progress Gate\n- exact PR head SHA:\n- required CI workflow/run evidence:\n- merge state:\n- post-merge verification result:\n## Trust and overclaim checks\n## Decision Escape Route / Behavioral Rule Coverage Check\n",
+      "expected_diagnostics": ["PR-TEMPLATE-004_CONCRETE_SCOPE_REVISION"]
+    },
+    {
+      "case_id": "one_off_lifecycle_transition",
+      "text": "## Scope Gate\n- GOV-CAP-X: committed_now to implemented\n## Progress Gate\n- exact PR head SHA:\n- required CI workflow/run evidence:\n- merge state:\n- post-merge verification result:\n## Trust and overclaim checks\n## Decision Escape Route / Behavioral Rule Coverage Check\n",
+      "expected_diagnostics": ["PR-TEMPLATE-005_ONE_OFF_LIFECYCLE_TRANSITION"]
+    },
+    {
+      "case_id": "one_off_closure_reason",
+      "text": "## Scope Gate\n- post_merge_governance_closure\n## Progress Gate\n- exact PR head SHA:\n- required CI workflow/run evidence:\n- merge state:\n- post-merge verification result:\n## Trust and overclaim checks\n## Decision Escape Route / Behavioral Rule Coverage Check\n",
+      "expected_diagnostics": ["PR-TEMPLATE-006_ONE_OFF_CLOSURE_REASON"]
+    },
+    {
+      "case_id": "self_asserted_ci_confirmation",
+      "text": "## Scope Gate\n## Progress Gate\n- exact PR head SHA:\n- required CI workflow/run evidence: CI_CONFIRMED_FOR_REVIEWED_HEAD\n- merge state:\n- post-merge verification result:\n## Trust and overclaim checks\n## Decision Escape Route / Behavioral Rule Coverage Check\n",
+      "expected_diagnostics": ["PR-TEMPLATE-007_SELF_ASSERTED_CI_CONFIRMATION"]
+    }
+  ]
+}

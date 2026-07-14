@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "expected": {
+    "repository": "rezahh107/EV4-Builder-Assistant-Repo",
+    "pull_request": 56,
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "base_evidence": {
+    "schema_version": 1,
+    "source": "github_actions_api",
+    "repository": "rezahh107/EV4-Builder-Assistant-Repo",
+    "pull_request": 56,
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "pull_request_api_url": "https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/pulls/56",
+    "observed_at": "2026-07-14T12:00:00Z",
+    "required_checks": [
+      {
+        "workflow_name": "Schema validation",
+        "repository": "rezahh107/EV4-Builder-Assistant-Repo",
+        "pull_request": 56,
+        "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "run_id": 5001,
+        "run_api_url": "https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001",
+        "html_url": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001",
+        "event": "pull_request",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "workflow_name": "Verify Project Gate Contract Pin",
+        "repository": "rezahh107/EV4-Builder-Assistant-Repo",
+        "pull_request": 56,
+        "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "run_id": 5002,
+        "run_api_url": "https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002",
+        "html_url": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002",
+        "event": "pull_request",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "exact_pr_head_and_required_runs",
+      "valid": true
+    },
+    {
+      "case_id": "authored_confirmation_without_external_runs",
+      "overrides": {"required_checks": []},
+      "expected_diagnostics": ["GOV-PROGRESS-011_REQUIRED_WORKFLOW_SET_MISMATCH"]
+    },
+    {
+      "case_id": "wrong_repository",
+      "overrides": {"repository": "rezahh107/Other-Repo"},
+      "expected_diagnostics": ["GOV-PROGRESS-004_REPOSITORY_MISMATCH"]
+    },
+    {
+      "case_id": "wrong_pull_request",
+      "overrides": {"pull_request": 55},
+      "expected_diagnostics": ["GOV-PROGRESS-005_PULL_REQUEST_MISMATCH"]
+    },
+    {
+      "case_id": "stale_evidence_head",
+      "overrides": {"head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+      "expected_diagnostics": ["GOV-PROGRESS-006_HEAD_MISMATCH_OR_STALE"]
+    },
+    {
+      "case_id": "stale_required_check_head",
+      "overrides": {"required_checks": [{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5002,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","event":"pull_request","status":"completed","conclusion":"success"}]},
+      "expected_diagnostics": ["GOV-PROGRESS-015_CHECK_HEAD_MISMATCH_OR_STALE"]
+    },
+    {
+      "case_id": "required_check_not_completed",
+      "overrides": {"required_checks": [{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"in_progress","conclusion":null},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5002,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","event":"pull_request","status":"completed","conclusion":"success"}]},
+      "expected_diagnostics": ["GOV-PROGRESS-017_CHECK_NOT_COMPLETED","GOV-PROGRESS-018_CHECK_NOT_SUCCESSFUL"]
+    },
+    {
+      "case_id": "required_check_failed",
+      "overrides": {"required_checks": [{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"failure"},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5002,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","event":"pull_request","status":"completed","conclusion":"success"}]},
+      "expected_diagnostics": ["GOV-PROGRESS-018_CHECK_NOT_SUCCESSFUL"]
+    },
+    {
+      "case_id": "duplicate_run_identity",
+      "overrides": {"required_checks": [{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"}]},
+      "expected_diagnostics": ["GOV-PROGRESS-010_DUPLICATE_RUN_IDENTITY"]
+    }
+  ]
+}
