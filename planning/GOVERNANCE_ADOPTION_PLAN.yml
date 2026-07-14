@@ -2,7 +2,7 @@ schema_version: 2
 
 plan_identity:
   plan_id: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
-  plan_version: 2
+  plan_version: 3
   target_repository: rezahh107/EV4-Builder-Assistant-Repo
   audit_base_branch: main
   audit_base_sha: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
@@ -24,14 +24,14 @@ repository_state:
 current_increment:
   increment_id: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
   classification: REQUIRED_GOVERNANCE_ADOPTION
-  scope_revision: GOV-004-v2
+  scope_revision: GOV-004-v3
   implementation_context_id: repo-maintainer-gov-003-004
   implementation_status: implemented_on_branch_pending_fresh_independent_exact_head_review
-  objective: complete deterministic governance enforcement exact-head independent review lifecycle and post-merge verification mechanism without product or runtime expansion
+  objective: complete deterministic governance enforcement exact-head independent review lifecycle inspector provenance and post-merge verification mechanism without product or runtime expansion
 
 previous_scope_snapshot:
-  scope_revision: GOV-004-v1
-  source_commit: 75df0c93851d89d281fd4796f37efa9df4cea87c
+  scope_revision: GOV-004-v2
+  source_commit: 2ba2a3eed2ebb6943c7a062214c1fc985fad622e
   lifecycle_by_id:
     GOV-CAP-001: implemented
     GOV-CAP-002: implemented
@@ -46,7 +46,7 @@ previous_scope_snapshot:
 scope_projection:
   project: rezahh107/EV4-Builder-Assistant-Repo
   phase: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
-  scope_revision: GOV-004-v2
+  scope_revision: GOV-004-v3
   source_commit: 8931c608d759ea121727f3903e21976a37e27f45
   long_term_target_ids:
     - GOV-CAP-001
@@ -87,14 +87,14 @@ scope_projection:
     - path: planning/GOVERNANCE_ADOPTION_PLAN.yml
       responsibility: current committed scope dependencies computed disclosure and progress evidence
     - path: governance/REVIEW_LIFECYCLE.yml
-      responsibility: independent exact-head review stale-on-change merge predicates and live receipt validation
+      responsibility: independent exact-head review inspector provenance stale-on-change merge predicates and live receipt validation
     - path: STATUS.md
       responsibility: concise mutable repository status without duplicating detailed scope lifecycle
 
 scope_change_disclosure:
-  from_scope_revision: GOV-004-v1
-  to_scope_revision: GOV-004-v2
-  revision_reason: live_review_receipt_validation_and_versioned_required_check_contract
+  from_scope_revision: GOV-004-v2
+  to_scope_revision: GOV-004-v3
+  revision_reason: authoritative_api_origin_and_non_self_asserted_review_identity
   lifecycle_changes: []
   deleted_target_ids: []
   newly_introduced_target_ids: []
@@ -103,7 +103,7 @@ scope_change_disclosure:
   exact_head_binding_carrier: governance/schemas/review-receipt.schema.json
   source_object_identities:
     previous_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
-    previous_scope_source_commit: 75df0c93851d89d281fd4796f37efa9df4cea87c
+    previous_scope_source_commit: 2ba2a3eed2ebb6943c7a062214c1fc985fad622e
     current_capability_authority: planning/CAPABILITY_MEMORY.yml
     current_scope_source_identity: github_pull_request_head_sha
   set_counts:
@@ -133,6 +133,7 @@ completion_evidence:
     - scripts/validate-governance-sequence.mjs
     - tests/governance/valid
     - tests/governance/invalid
+    - tests/governance/invalid-yaml
     - .github/workflows/schema-validation.yml
     - .github/pull_request_template.md
     - STATUS.md
