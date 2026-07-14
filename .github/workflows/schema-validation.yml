@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout exact tested commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
@@ -24,22 +24,159 @@ jobs:
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
+          set -euo pipefail
           actual_sha="$(git rev-parse HEAD)"
           expected_sha="${{ github.event.pull_request.head.sha }}"
           echo "actual_sha=$actual_sha"
           echo "expected_sha=$expected_sha"
           test "$actual_sha" = "$expected_sha"
 
+      - name: Checkout immutable PR Inspector implementation
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          repository: rezahh107/PR-Inspector
+          ref: 88e8610bcc2ada48c8cf902d23d4296983310872
+          fetch-depth: 1
+          path: .pr-inspector
+          persist-credentials: false
+
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
+
+      - name: Setup Python
+        if: github.event_name == 'pull_request'
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+
+      - name: Verify immutable PR Inspector checkout and protocol identity
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          inspector_sha="$(git -C .pr-inspector rev-parse HEAD)"
+          test "$inspector_sha" = "88e8610bcc2ada48c8cf902d23d4296983310872"
+          remote="$(git -C .pr-inspector remote get-url origin)"
+          case "$remote" in
+            https://github.com/rezahh107/PR-Inspector|https://github.com/rezahh107/PR-Inspector.git) ;;
+            *) echo "unexpected PR Inspector remote: $remote" >&2; exit 1 ;;
+          esac
+          test "$(tr -d '\r\n' < .pr-inspector/CURRENT_VERSION)" = "v1.10.0"
+          grep -Fx 'active_version: v1.10.0' .pr-inspector/protocol-manifest.yaml
+          echo "inspector_repository=rezahh107/PR-Inspector"
+          echo "inspector_commit=$inspector_sha"
+          echo "inspector_protocol=v1.10.0"
+
+      - name: Fetch and verify canonical PR Inspector repository and commit payloads
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo_payload="$RUNNER_TEMP/pr-inspector-repository.json"
+          commit_payload="$RUNNER_TEMP/pr-inspector-commit.json"
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 --max-redirs 0 \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            https://api.github.com/repos/rezahh107/PR-Inspector > "$repo_payload"
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 --max-redirs 0 \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            https://api.github.com/repos/rezahh107/PR-Inspector/commits/88e8610bcc2ada48c8cf902d23d4296983310872 > "$commit_payload"
+          python - "$repo_payload" "$commit_payload" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          repository = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
+          commit = json.loads(Path(sys.argv[2]).read_text(encoding='utf-8'))
+          sha = '88e8610bcc2ada48c8cf902d23d4296983310872'
+          assert repository['full_name'] == 'rezahh107/PR-Inspector'
+          assert repository['id'] == 1288323264
+          assert repository['url'] == 'https://api.github.com/repos/rezahh107/PR-Inspector'
+          assert repository['html_url'] == 'https://github.com/rezahh107/PR-Inspector'
+          assert commit['sha'] == sha
+          assert commit['url'] == f'https://api.github.com/repos/rezahh107/PR-Inspector/commits/{sha}'
+          assert commit['html_url'] == f'https://github.com/rezahh107/PR-Inspector/commit/{sha}'
+          print('immutable_inspector_api_identity=verified')
+          PY
+          {
+            echo "PR_INSPECTOR_ROOT=$GITHUB_WORKSPACE/.pr-inspector"
+            echo "PR_INSPECTOR_REPOSITORY_PAYLOAD=$repo_payload"
+            echo "PR_INSPECTOR_COMMIT_PAYLOAD=$commit_payload"
+          } >> "$GITHUB_ENV"
+
+      - name: Install immutable PR Inspector checkout
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input --editable ./.pr-inspector
+          python - <<'PY'
+          import importlib.metadata
+          import inspect
+          from pathlib import Path
+          import pr_inspector
+          root = Path('.pr-inspector').resolve()
+          module_path = Path(inspect.getfile(pr_inspector)).resolve()
+          assert root == module_path or root in module_path.parents
+          assert importlib.metadata.version('pr-inspector-protocol') == '1.10.0'
+          print(f'pr_inspector_module={module_path}')
+          PY
+
+      - name: Run immutable official PR Inspector verifier integration
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python scripts/test-pr-inspector-official-integration.py \
+            --inspector-root "$PR_INSPECTOR_ROOT" \
+            --repository-payload "$PR_INSPECTOR_REPOSITORY_PAYLOAD" \
+            --commit-payload "$PR_INSPECTOR_COMMIT_PAYLOAD" \
+            --expected-inspector-commit 88e8610bcc2ada48c8cf902d23d4296983310872 \
+            --target-repository "${{ github.repository }}" \
+            --pr-number "${{ github.event.pull_request.number }}" \
+            --base-sha "${{ github.event.pull_request.base.sha }}" \
+            --head-sha "${{ github.event.pull_request.head.sha }}"
+
+      - name: Assert GitHub-source review path fails closed
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          output="$(node scripts/validate-governance-sequence.mjs --mode=live --source=github 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          test "$status" -ne 0
+          grep -F 'GOV-LIVE-030_OFFICIAL_BUNDLE_ACCESSOR_UNAVAILABLE' <<< "$output"
+
+      - name: Assert local JavaScript canonical-bundle acceptance is removed
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          output="$(node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          test "$status" -ne 0
+          grep -F 'GOV-LIVE-049_LOCAL_CANONICAL_BUNDLE_ACCEPTANCE_REMOVED' <<< "$output"
 
       - name: Run central contract validation
         id: central_validation
         continue-on-error: true
-        run: |
-          npm run validate
+        run: npm run validate
 
       - name: Central validation failed at ${{ steps.central_validation.outputs.failed_check }}
         if: steps.central_validation.outcome == 'failure'
@@ -47,21 +184,10 @@ jobs:
         run: exit 1
 
       - name: Run governance authority validation
-        run: |
-          node scripts/validate-governance-authorities.mjs
+        run: node scripts/validate-governance-authorities.mjs
 
       - name: Run governance fixture regression validation
-        run: |
-          node scripts/validate-governance-sequence.mjs --mode=fixtures
-
-      - name: Run synthetic valid live receipt regression
-        run: |
-          node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json
-
-      - name: Run invalid live receipt regressions
-        run: |
-          node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/invalid/live_receipt_evidence.json
+        run: node scripts/validate-governance-sequence.mjs --mode=fixtures
 
       - name: Run Builder decision lineage sequence validation
-        run: |
-          npm run validate:builder-lineage-sequence
+        run: npm run validate:builder-lineage-sequence
