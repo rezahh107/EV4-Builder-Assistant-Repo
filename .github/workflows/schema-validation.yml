@@ -154,7 +154,7 @@ jobs:
         run: |
           set -euo pipefail
           set +e
-          output="$(node scripts/validate-governance-sequence.mjs --mode=live --source=github 2>&1)"
+          output="$(env -u GITHUB_API_URL node scripts/validate-governance-sequence.mjs --mode=live --source=github 2>&1)"
           status=$?
           set -e
           printf '%s\n' "$output"
