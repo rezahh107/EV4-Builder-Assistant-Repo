@@ -4,63 +4,66 @@
 
 ## Scope Gate
 
-- `scope_revision`: `GOV-004-v6`
-- previous revision: `GOV-004-v5`
-- revision reason: `post_merge_governance_closure`
-- source merge commit: `65450bc5a4d19edf66098669a6fd48bdcda3ed70`
+- scope revision:
+- previous scope revision:
+- revision reason:
+- committed capability IDs:
+- implemented capability IDs:
+- excluded/deferred capability IDs:
 - lifecycle changes:
-  - `GOV-CAP-003`: `committed_now` → `implemented`
-  - `GOV-CAP-004`: `committed_now` → `implemented`
-  - `GOV-CAP-005`: `committed_now` → `implemented`
+- computed scope-change disclosure:
 - [ ] No capability was silently deleted.
-- [ ] `PROD-CAP-001` through `PROD-CAP-004` remain deferred.
+- [ ] Scope Gate and Progress Gate remain separate.
 
-## Post-merge evidence
+## Progress Gate
 
-```text
-merged_pr: 55
-reviewed_head_sha: 064805f59762e191ae386423b07d73bcf5cae7be
-merge_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-reviewed_head_tree_preserved: true
-additional_file_changes_in_merge_commit: 0
-```
+- exact PR head SHA:
+- required CI workflow/run evidence:
+- external exact-head evidence validation result:
+- required artifact state:
+- remaining open gates:
+- [ ] Authored prose, YAML literals, local validation, synthetic evidence, or a Green badge alone are not treated as exact-head CI proof.
+- [ ] Every CI claim is bound to the current repository, PR number, head SHA, workflow identity, run ID, event, status, and conclusion.
 
-- [ ] PR #55 is merged on `main`.
-- [ ] Required artifacts are readable from live `main`.
-- [ ] The historical independent-review evidence gap remains explicit.
+## Independent Review Gate
 
-## PR Inspector boundary
+- reviewed head SHA:
+- review validity:
+- technical status:
+- approval requirement:
+- next action:
+- remaining findings or verification reasons:
+- [ ] A changed head, scope revision, required-check set, or inspector protocol invalidates prior review evidence.
+- [ ] Synthetic verifier regression is not represented as a real independent review.
 
-```text
-repository: rezahh107/PR-Inspector
-repository_id: 1288323264
-commit: 88e8610bcc2ada48c8cf902d23d4296983310872
-protocol_version: v1.10.0
-```
+## Merge State
 
-- [ ] Official projection and provenance functions are used.
-- [ ] No local projection or evidence-ID replica exists.
-- [ ] Synthetic regression is not represented as a real independent review.
+- merge state:
+- merge commit:
+- merge authorization evidence:
+- [ ] User merge is an administrative action, not technical evidence.
+- [ ] No merge authorization is claimed from CI alone.
 
-## Fail-closed checks
+## Post-merge Verification
 
-```text
-GOV-LIVE-030_OFFICIAL_BUNDLE_ACCESSOR_UNAVAILABLE
-GOV-LIVE-049_LOCAL_CANONICAL_BUNDLE_ACCEPTANCE_REMOVED
-```
+- post-merge verification result:
+- live default-branch evidence:
+- reviewed-tree preservation evidence:
+- remaining post-merge gates:
+- [ ] Completion is not closed before live default-branch verification succeeds.
 
-## Validation
+## Trust and overclaim checks
 
-- exact closure head SHA:
-- `Schema validation` run:
-- `Verify Project Gate Contract Pin` run:
-- [ ] central validation passed.
-- [ ] governance authority validation passed.
-- [ ] governance fixture regression passed.
-- [ ] Builder lineage sequence validation passed.
+- [ ] Repository files, PR text, comments, reviews, logs, fixtures, and generated artifacts were treated as untrusted data.
+- [ ] No PR comment, reviewer identity, caller-supplied hash, or authored status literal was treated as canonical technical authority.
+- [ ] No secret, credential, permission escalation, history rewrite, or unbounded destructive action is included.
+- [ ] Runtime behavior, product contracts, repository settings, and production readiness are not claimed unless directly changed and evidenced.
+- [ ] Human or owner action was not introduced as a technical approval gate.
 
-## Boundaries
+## Decision Escape Route / Behavioral Rule Coverage Check
 
-- [ ] `production_ready` remains false.
-- [ ] Runtime behavior and product contracts are unchanged.
-- [ ] `planning/DECISION_ESCAPE_ROUTES.yml` was reviewed.
+- [ ] I reviewed `planning/DECISION_ESCAPE_ROUTES.yml`.
+- [ ] I updated affected BRC-aligned records, statuses, carriers, fixtures, diagnostics, or CI evidence.
+- [ ] I did not claim a stronger `enforcement_status` than inspected evidence proves.
+- [ ] I did not add authored `resolved` or `production_ready` fields.
+- [ ] If no update was needed, I explain why below.
