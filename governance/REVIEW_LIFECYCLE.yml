@@ -1,6 +1,6 @@
 schema_version: 2
 protocol_id: EV4-BUILDER-EXACT-HEAD-AI-REVIEW
-protocol_version: 3
+protocol_version: 4
 repository: rezahh107/EV4-Builder-Assistant-Repo
 scope_revision_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
 implementation_context_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
@@ -16,45 +16,59 @@ required_receipt_fields:
   - base_sha
   - reviewed_head_sha
   - scope_revision
+  - implementation_context_id
+  - exact_head_ci_run_ids
+  - reviewed_at
   - inspector_repository
   - inspector_repository_id
   - inspector_commit_sha
+  - inspector_commit_api_url
+  - inspector_commit_html_url
+  - inspector_evidence_source
   - protocol_version
-  - reviewer_actor_login
-  - implementation_context_id
-  - reviewer_context_id
-  - independent
+  - review_evidence_id
+  - review_package_canonical_sha256
+  - review_package_file_sha256
+  - decision_projection_sha256
+  - artifact_manifest_sha256
+  - review_validity
   - technical_status
-  - exact_head_ci_run_ids
-  - findings
-  - reviewed_at
 
-inspector_identity_authority:
+canonical_pr_inspector_authority:
   repository: rezahh107/PR-Inspector
   repository_id: 1288323264
-  supported_protocol_versions:
-    - v1.10.0
-  commit_provenance: github_api_commit_lookup
-  source_actor_binding_required: true
+  active_protocol_version: v1.10.0
+  commit_provenance: github_rest_api_https
+  required_artifacts:
+    - review-package.json
+    - DECISION_PROJECTION.json
+    - artifact-manifest.json
+  official_local_accessor: pr_inspector.official_review.verify_completed_review
+  official_cli: python scripts/validate_rereview_sequence.py SEQUENCE.json --review EVENT_ID=REVIEW_DIRECTORY
+  official_artifact_source: local_review_directory
+  external_retrievable_accessor_available: false
+  external_bundle_locator: unavailable
 
 independence_rule:
-  implementation_context_must_differ_from_reviewer_context: true
-  reviewer_must_not_be_implementer: true
-  reviewer_actor_must_match_github_source_actor: true
-  reviewer_actor_must_not_be_pull_request_author: true
+  canonical_inspector_bundle_is_primary_authority: true
+  decision_projection_is_technical_status_authority: true
+  receipt_declarations_are_untrusted_until_bundle_verified: true
   inspector_commit_must_exist_in_exact_inspector_repository: true
-  independent_boolean_is_not_sufficient_evidence: true
-  self_authored_review_is_invalid: true
+  review_evidence_id_must_be_recomputed: true
+  transport_actor_is_audit_metadata_only: true
+  transport_actor_is_not_independence_proof: true
+  self_declared_independent_boolean_is_forbidden: true
 
 stale_on_change:
   - pull_request_head_sha
   - scope_revision
   - required_check_set
   - inspector_protocol_identity
+  - canonical_review_bundle_identity
 
 technical_statuses:
-  - GREEN_MERGE_RECOMMENDED
-  - YELLOW_REVIEW_REQUIRED
+  - GREEN_TECHNICALLY_READY
+  - YELLOW_CHANGES_OR_VERIFICATION_REQUIRED
   - RED_DO_NOT_MERGE
 
 required_check_set:
@@ -68,7 +82,7 @@ required_check_set:
       event: pull_request
 
 live_receipt_validation:
-  mode: github_api_read_only_operator_invoked
+  mode: canonical_bundle_fail_closed_operator_invoked
   marker: AI_GOVERNANCE_REVIEW_RECEIPT
   authoritative_api_origin: https://api.github.com
   caller_controlled_api_origin_allowed: false
@@ -76,14 +90,15 @@ live_receipt_validation:
   supported_transports:
     - pull_request_review
     - pull_request_comment
-  command: node scripts/validate-governance-sequence.mjs --mode=live --source=github
+  github_source_command: node scripts/validate-governance-sequence.mjs --mode=live --source=github
+  synthetic_fixture_command: node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json
   phase: post_review_exact_head_validation
-  activation_state: premerge_operator_invoked_default_branch_workflow_not_claimed
-  required_token_permissions:
-    - actions_read
-    - contents_read
-    - issues_read
-    - pull_requests_read
+  activation_state: official_external_bundle_accessor_unavailable_fail_closed
+  external_official_bundle_accessor_available: false
+  trusted_byte_handling: capture_hash_validate_manifest_and_parse_same_in_memory_bytes
+  technical_status_authority: verified_DECISION_PROJECTION_json
+  transport_actor_role: audit_metadata_only
+  required_token_permissions: []
 
 green_merge_predicates:
   exact_head_matches_receipt: true
@@ -110,4 +125,4 @@ enforcement_carriers:
   exact_head_workflow: .github/workflows/schema-validation.yml
   pr_template: .github/pull_request_template.md
 
-current_enforcement_status: mixed_sequence_ci_and_live_validator_backed
+current_enforcement_status: mixed_sequence_ci_and_fail_closed_validator_backed
