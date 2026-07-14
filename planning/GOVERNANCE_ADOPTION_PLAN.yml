@@ -2,7 +2,7 @@ schema_version: 2
 
 plan_identity:
   plan_id: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
-  plan_version: 4
+  plan_version: 5
   target_repository: rezahh107/EV4-Builder-Assistant-Repo
   audit_base_branch: main
   audit_base_sha: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
@@ -19,20 +19,22 @@ repository_state:
   exact_head_ci_mechanism:
     workflow: .github/workflows/schema-validation.yml
     checkout_identity_assertion: active
-    canonical_bundle_regression_validation: synthetic_evidence_only
+    immutable_pr_inspector_checkout: 88e8610bcc2ada48c8cf902d23d4296983310872
+    official_projection_regression: immutable_official_pr_inspector_project_decision
+    official_provenance_regression: immutable_official_pr_inspector_review_provenance
     live_review_receipt_validation: official_external_bundle_accessor_unavailable_fail_closed
 
 current_increment:
   increment_id: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
   classification: REQUIRED_GOVERNANCE_ADOPTION
-  scope_revision: GOV-004-v4
+  scope_revision: GOV-004-v5
   implementation_context_id: repo-maintainer-gov-003-004
   implementation_status: implemented_on_branch_pending_fresh_independent_exact_head_review
-  objective: enforce canonical PR Inspector artifact and decision-projection binding where bytes are available while blocking Green when the active protocol exposes no externally retrievable official review bundle accessor
+  objective: remove target-repository PR Inspector projection and provenance replicas, execute synthetic regressions through the immutable official implementation, and preserve fail-closed live GitHub behavior
 
 previous_scope_snapshot:
-  scope_revision: GOV-004-v3
-  source_commit: 04605d0d10f9ec731eaf074d574e96e49560dded
+  scope_revision: GOV-004-v4
+  source_commit: b0fd5f577f70ad9d0514115a3a5e119802489944
   lifecycle_by_id:
     GOV-CAP-001: implemented
     GOV-CAP-002: implemented
@@ -47,7 +49,7 @@ previous_scope_snapshot:
 scope_projection:
   project: rezahh107/EV4-Builder-Assistant-Repo
   phase: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
-  scope_revision: GOV-004-v4
+  scope_revision: GOV-004-v5
   source_commit: 8931c608d759ea121727f3903e21976a37e27f45
   long_term_target_ids:
     - GOV-CAP-001
@@ -80,6 +82,7 @@ scope_projection:
   superseded_ids: []
   dependencies:
     - GOV-002_merge_commit_8931c608d759ea121727f3903e21976a37e27f45
+    - PR_Inspector_commit_88e8610bcc2ada48c8cf902d23d4296983310872
   authority_files:
     - path: governance/AI_AUTHORITY_POLICY.yml
       responsibility: AI authority evidence authority security profile and rule enforcement levels
@@ -88,14 +91,14 @@ scope_projection:
     - path: planning/GOVERNANCE_ADOPTION_PLAN.yml
       responsibility: current committed scope dependencies computed disclosure and progress evidence
     - path: governance/REVIEW_LIFECYCLE.yml
-      responsibility: canonical PR Inspector artifact authority exact-head staleness fail-closed Green boundary and post-review lifecycle
+      responsibility: immutable official PR Inspector integration exact-head staleness fail-closed Green boundary and post-review lifecycle
     - path: STATUS.md
       responsibility: concise mutable repository status without duplicating detailed scope lifecycle
 
 scope_change_disclosure:
-  from_scope_revision: GOV-004-v3
-  to_scope_revision: GOV-004-v4
-  revision_reason: canonical_pr_inspector_artifact_and_decision_projection_binding
+  from_scope_revision: GOV-004-v4
+  to_scope_revision: GOV-004-v5
+  revision_reason: immutable_official_pr_inspector_verifier_integration
   lifecycle_changes: []
   deleted_target_ids: []
   newly_introduced_target_ids: []
@@ -104,7 +107,7 @@ scope_change_disclosure:
   exact_head_binding_carrier: governance/schemas/review-receipt.schema.json
   source_object_identities:
     previous_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
-    previous_scope_source_commit: 04605d0d10f9ec731eaf074d574e96e49560dded
+    previous_scope_source_commit: b0fd5f577f70ad9d0514115a3a5e119802489944
     current_capability_authority: planning/CAPABILITY_MEMORY.yml
     current_scope_source_identity: github_pull_request_head_sha
   set_counts:
@@ -132,6 +135,9 @@ completion_evidence:
     - scripts/governance-lib.mjs
     - scripts/validate-governance-authorities.mjs
     - scripts/validate-governance-sequence.mjs
+    - scripts/verify-pr-inspector-bundle.py
+    - scripts/test-pr-inspector-official-integration.py
+    - tests/governance/pr-inspector-projection-cases.json
     - tests/governance/valid
     - tests/governance/invalid
     - tests/governance/invalid-yaml
@@ -142,8 +148,9 @@ completion_evidence:
     - npm run validate
     - node scripts/validate-governance-authorities.mjs
     - node scripts/validate-governance-sequence.mjs --mode=fixtures
-    - node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json
-    - node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/invalid/live_receipt_evidence.json
+    - python scripts/test-pr-inspector-official-integration.py with immutable CI-bound PR Inspector and GitHub API payload arguments
+    - node scripts/validate-governance-sequence.mjs --mode=live --source=github expected GOV-LIVE-030_OFFICIAL_BUNDLE_ACCESSOR_UNAVAILABLE
+    - npm run validate:builder-lineage-sequence
   exact_head_ci_required: true
   independent_review_required: true
   user_merge_required: true
@@ -177,6 +184,8 @@ prohibited_claims:
   - canonical_pr_inspector_bundle_live_verified
   - independent_review_live_enforced
   - merge_recommendation_live_enforced
+  - target_repository_independently_implements_pr_inspector_projection
+  - target_repository_independently_implements_review_provenance
 
 next_increment:
   increment_id: NONE_FOR_GOVERNANCE_ADOPTION
