@@ -4,10 +4,11 @@
 
 ## Scope Gate
 
-- `scope_revision`:
+- `scope_revision`: `GOV-004-v4`
 - committed capability IDs:
 - excluded/deferred capability IDs:
 - computed scope-change disclosure:
+- revision reason: `canonical_pr_inspector_artifact_and_decision_projection_binding`
 - [ ] No capability was silently deleted.
 - [ ] Scope Gate and Progress Gate remain separate.
 
@@ -21,48 +22,70 @@
 - remaining open gates:
 - [ ] I did not claim completion from prose, schema presence, synthetic evidence, or a Green CI badge alone.
 
-### Phase 2 — independent review receipt issuance
+### Phase 2 — canonical PR Inspector review production
 
-- inspector repository: `rezahh107/PR-Inspector`
-- inspector repository ID: `1288323264`
-- inspector commit SHA:
-- inspector protocol version:
-- GitHub source reviewer actor login:
-- implementation context ID:
-- reviewer context ID:
+Active inspector identity:
+
+```text
+repository: rezahh107/PR-Inspector
+repository_id: 1288323264
+protocol_version: v1.10.0
+```
+
+Required receipt projections:
+
+- inspector commit SHA and official GitHub API/HTML URLs:
+- `review_evidence_id`:
+- canonical review-package SHA-256:
+- review-package file SHA-256:
+- decision-projection SHA-256:
+- artifact-manifest SHA-256:
 - reviewed head SHA:
-- reviewed scope revision:
-- technical status: `PENDING` / `GREEN_MERGE_RECOMMENDED` / `YELLOW_REVIEW_REQUIRED` / `RED_DO_NOT_MERGE`
+- review validity:
+- projected technical status:
 - receipt transport: `pull_request_review` / `pull_request_comment`
 - receipt marker: `AI_GOVERNANCE_REVIEW_RECEIPT`
-- receipt location:
-- [ ] The receipt is external to the reviewed head and does not mutate it.
-- [ ] The inspector commit exists in the exact inspector repository.
-- [ ] The GitHub source actor equals `reviewer_actor_login`.
-- [ ] The reviewer actor is not the PR author.
-- [ ] The reviewer context differs from the implementation context.
-- [ ] `independent: true` is not treated as sufficient evidence by itself.
+- [ ] Receipt text is treated as an untrusted projection, not the technical decision authority.
+- [ ] Transport actor identity is audit metadata only and is not independence proof.
 
-### Phase 3 — exact-head live receipt validation
+### Phase 3 — canonical artifact verification
 
-Run with a read-only GitHub token after the external receipt exists:
+Current active protocol exposes the official local accessor:
+
+```text
+pr_inspector.official_review.verify_completed_review
+```
+
+and the official CLI boundary:
+
+```text
+python scripts/validate_rereview_sequence.py SEQUENCE.json --review EVENT_ID=REVIEW_DIRECTORY
+```
+
+The artifact source is a validated local review directory. No externally retrievable official bundle accessor or locator is currently available to this repository.
+
+- [ ] `review-package.json`, `DECISION_PROJECTION.json`, and `artifact-manifest.json` were obtained through an official supported accessor.
+- [ ] Artifact bytes were captured once, hashed, manifest-validated, and parsed from the same in-memory bytes.
+- [ ] `review_evidence_id` was recomputed.
+- [ ] Technical status was derived from verified `DECISION_PROJECTION.json`.
+- [ ] `review_validity` is `CURRENT` and the reviewed head equals the live PR head.
+- [ ] Synthetic fixtures are not presented as the real independent review bundle.
+
+Until an official external accessor is available, this command must fail closed:
 
 ```bash
-GITHUB_TOKEN=... \
-CURRENT_REPOSITORY=rezahh107/EV4-Builder-Assistant-Repo \
-CURRENT_PULL_REQUEST=... \
-CURRENT_HEAD_SHA=... \
-CURRENT_BASE_SHA=... \
 node scripts/validate-governance-sequence.mjs --mode=live --source=github
 ```
 
-- authoritative API origin: `https://api.github.com`
-- [ ] `GITHUB_API_URL` is unset; caller-controlled API origins are rejected.
-- [ ] Redirects are rejected before credentials can be forwarded.
-- observed live-validation evidence:
-- [ ] Missing, malformed, unsupported, self-authored, stale, non-Green, blocking, CI-incomplete, actor-mismatched, protocol-mismatched, or unverified-inspector receipts fail closed.
-- [ ] Automatic pre-merge live-receipt CI is not claimed; the current carrier is operator-invoked and read-only.
-- [ ] Any head SHA, scope revision, required-check-set, or inspector protocol identity change invalidates prior review evidence.
+Synthetic regression only:
+
+```bash
+node scripts/validate-governance-sequence.mjs --mode=live \
+  --evidence-file tests/governance/valid/live_receipt_evidence.json
+```
+
+- [ ] Automatic pre-merge live-receipt CI is not claimed.
+- [ ] Any head SHA, scope revision, required-check set, inspector protocol identity, or canonical bundle identity change invalidates prior review evidence.
 
 ### Phase 4 — user administrative merge
 
@@ -74,10 +97,11 @@ node scripts/validate-governance-sequence.mjs --mode=live --source=github
 
 ## Governance safety
 
-- [ ] No `human_technical_approval`, `owner_technical_signoff`, `owner_scope_acknowledgement`, `human_review_required`, or `specialist_signoff` field was introduced as a technical gate.
+- [ ] No human technical approval field was introduced as a technical gate.
 - [ ] Repository files, PR content, reviews, comments, logs, fixtures, and generated artifacts were treated as untrusted data.
 - [ ] Public-repository minimum-security disposition remains explicit.
 - [ ] No secrets, credentials, permission escalation, history rewrite, or unbounded destructive action is included.
+- [ ] `STATUS.md`, runtime behavior, product contracts, repository settings, and production-readiness state are unchanged.
 
 ## Decision Escape Route / Behavioral Rule Coverage Check
 
