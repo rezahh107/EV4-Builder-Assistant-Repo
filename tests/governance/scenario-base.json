@@ -1,14 +1,14 @@
 {
   "previous": {
-    "scope_revision": "GOV-004-v5",
-    "head_sha": "65450bc5a4d19edf66098669a6fd48bdcda3ed70",
+    "scope_revision": "GOV-004-v6",
+    "head_sha": "921cfd7623eb5698901b5bce7ab77a053d09e6b9",
     "required_check_set": ["central_validation","governance_authorities","governance_sequence","builder_lineage_sequence","project_gate_pin"],
     "capabilities": [
       {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},
       {"capability_id":"GOV-CAP-002","lifecycle":"implemented"},
-      {"capability_id":"GOV-CAP-003","lifecycle":"committed_now"},
-      {"capability_id":"GOV-CAP-004","lifecycle":"committed_now"},
-      {"capability_id":"GOV-CAP-005","lifecycle":"committed_now"},
+      {"capability_id":"GOV-CAP-003","lifecycle":"implemented"},
+      {"capability_id":"GOV-CAP-004","lifecycle":"implemented"},
+      {"capability_id":"GOV-CAP-005","lifecycle":"implemented"},
       {"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},
       {"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},
       {"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},
@@ -16,7 +16,7 @@
     ]
   },
   "current": {
-    "scope_revision": "GOV-004-v6",
+    "scope_revision": "GOV-004-v7",
     "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "required_check_set": ["central_validation","governance_authorities","governance_sequence","builder_lineage_sequence","project_gate_pin"],
     "capabilities": [
@@ -32,13 +32,9 @@
     ]
   },
   "scope_disclosure": {
-    "from_scope_revision": "GOV-004-v5",
-    "to_scope_revision": "GOV-004-v6",
-    "lifecycle_changes": [
-      {"capability_id":"GOV-CAP-003","from":"committed_now","to":"implemented"},
-      {"capability_id":"GOV-CAP-004","from":"committed_now","to":"implemented"},
-      {"capability_id":"GOV-CAP-005","from":"committed_now","to":"implemented"}
-    ],
+    "from_scope_revision": "GOV-004-v6",
+    "to_scope_revision": "GOV-004-v7",
+    "lifecycle_changes": [],
     "deleted_target_ids": [],
     "newly_introduced_target_ids": []
   },
@@ -52,10 +48,10 @@
     "pull_request": 56,
     "base_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "reviewed_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "scope_revision": "GOV-004-v6",
-    "implementation_context_id": "repo-maintainer-gov-003-004-closure",
-    "exact_head_ci_run_ids": [4001,4002],
-    "reviewed_at": "2026-07-14T11:00:00Z",
+    "scope_revision": "GOV-004-v7",
+    "implementation_context_id": "repo-maintainer-gov-003-004-closure-repair",
+    "exact_head_ci_run_ids": [5001,5002],
+    "reviewed_at": "2026-07-14T12:00:00Z",
     "inspector_repository": "rezahh107/PR-Inspector",
     "inspector_repository_id": 1288323264,
     "inspector_commit_sha": "88e8610bcc2ada48c8cf902d23d4296983310872",
@@ -87,7 +83,7 @@
     "required_artifacts": ["governance/AI_AUTHORITY_POLICY.yml","scripts/validate-governance-sequence.mjs"],
     "present_artifacts": ["governance/AI_AUTHORITY_POLICY.yml","scripts/validate-governance-sequence.mjs"],
     "implementation_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "ci_run_ids": [4001,4002]
+    "ci_run_ids": [5001,5002]
   },
   "claims": {"uses_ai_review_signal_as_fact":false,"human_technical_gate_fields":[]},
   "security": {
