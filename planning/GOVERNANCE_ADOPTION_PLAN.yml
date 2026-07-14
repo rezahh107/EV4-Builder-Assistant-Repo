@@ -2,7 +2,7 @@ schema_version: 2
 
 plan_identity:
   plan_id: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
-  plan_version: 3
+  plan_version: 4
   target_repository: rezahh107/EV4-Builder-Assistant-Repo
   audit_base_branch: main
   audit_base_sha: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
@@ -19,19 +19,20 @@ repository_state:
   exact_head_ci_mechanism:
     workflow: .github/workflows/schema-validation.yml
     checkout_identity_assertion: active
-    live_review_receipt_validation: github_api_read_only_operator_invoked
+    canonical_bundle_regression_validation: synthetic_evidence_only
+    live_review_receipt_validation: official_external_bundle_accessor_unavailable_fail_closed
 
 current_increment:
   increment_id: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
   classification: REQUIRED_GOVERNANCE_ADOPTION
-  scope_revision: GOV-004-v3
+  scope_revision: GOV-004-v4
   implementation_context_id: repo-maintainer-gov-003-004
   implementation_status: implemented_on_branch_pending_fresh_independent_exact_head_review
-  objective: complete deterministic governance enforcement exact-head independent review lifecycle inspector provenance and post-merge verification mechanism without product or runtime expansion
+  objective: enforce canonical PR Inspector artifact and decision-projection binding where bytes are available while blocking Green when the active protocol exposes no externally retrievable official review bundle accessor
 
 previous_scope_snapshot:
-  scope_revision: GOV-004-v2
-  source_commit: 2ba2a3eed2ebb6943c7a062214c1fc985fad622e
+  scope_revision: GOV-004-v3
+  source_commit: 04605d0d10f9ec731eaf074d574e96e49560dded
   lifecycle_by_id:
     GOV-CAP-001: implemented
     GOV-CAP-002: implemented
@@ -46,7 +47,7 @@ previous_scope_snapshot:
 scope_projection:
   project: rezahh107/EV4-Builder-Assistant-Repo
   phase: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
-  scope_revision: GOV-004-v3
+  scope_revision: GOV-004-v4
   source_commit: 8931c608d759ea121727f3903e21976a37e27f45
   long_term_target_ids:
     - GOV-CAP-001
@@ -87,14 +88,14 @@ scope_projection:
     - path: planning/GOVERNANCE_ADOPTION_PLAN.yml
       responsibility: current committed scope dependencies computed disclosure and progress evidence
     - path: governance/REVIEW_LIFECYCLE.yml
-      responsibility: independent exact-head review inspector provenance stale-on-change merge predicates and live receipt validation
+      responsibility: canonical PR Inspector artifact authority exact-head staleness fail-closed Green boundary and post-review lifecycle
     - path: STATUS.md
       responsibility: concise mutable repository status without duplicating detailed scope lifecycle
 
 scope_change_disclosure:
-  from_scope_revision: GOV-004-v2
-  to_scope_revision: GOV-004-v3
-  revision_reason: authoritative_api_origin_and_non_self_asserted_review_identity
+  from_scope_revision: GOV-004-v3
+  to_scope_revision: GOV-004-v4
+  revision_reason: canonical_pr_inspector_artifact_and_decision_projection_binding
   lifecycle_changes: []
   deleted_target_ids: []
   newly_introduced_target_ids: []
@@ -103,7 +104,7 @@ scope_change_disclosure:
   exact_head_binding_carrier: governance/schemas/review-receipt.schema.json
   source_object_identities:
     previous_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
-    previous_scope_source_commit: 2ba2a3eed2ebb6943c7a062214c1fc985fad622e
+    previous_scope_source_commit: 04605d0d10f9ec731eaf074d574e96e49560dded
     current_capability_authority: planning/CAPABILITY_MEMORY.yml
     current_scope_source_identity: github_pull_request_head_sha
   set_counts:
@@ -158,8 +159,9 @@ progress_gate:
   merge_state: not_merged
   post_merge_verification_result: UNKNOWN
   open_gates:
+    - official_external_pr_inspector_bundle_accessor
     - independent_ai_review
-    - live_review_receipt_validation
+    - canonical_bundle_live_validation
     - user_merge
     - post_merge_verification
 
@@ -171,6 +173,10 @@ prohibited_claims:
   - repository_settings_enforced
   - branch_protection_enforced
   - automatic_premerge_live_receipt_ci_enforced
+  - official_remote_review_bundle_accessor_available
+  - canonical_pr_inspector_bundle_live_verified
+  - independent_review_live_enforced
+  - merge_recommendation_live_enforced
 
 next_increment:
   increment_id: NONE_FOR_GOVERNANCE_ADOPTION
@@ -188,4 +194,4 @@ scope_change_rule:
     - completion_evidence
   prior_review_becomes_stale_on_revision_change: true
 
-current_enforcement_status: mixed_sequence_ci_and_live_validator_backed
+current_enforcement_status: mixed_sequence_ci_and_fail_closed_validator_backed
