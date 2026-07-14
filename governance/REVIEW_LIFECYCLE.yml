@@ -1,6 +1,6 @@
 schema_version: 2
 protocol_id: EV4-BUILDER-EXACT-HEAD-AI-REVIEW
-protocol_version: 4
+protocol_version: 5
 repository: rezahh107/EV4-Builder-Assistant-Repo
 scope_revision_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
 implementation_context_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
@@ -33,31 +33,44 @@ required_receipt_fields:
   - artifact_manifest_sha256
   - review_validity
   - technical_status
+  - approval_requirement
+  - next_action_kind
 
 canonical_pr_inspector_authority:
   repository: rezahh107/PR-Inspector
   repository_id: 1288323264
   active_protocol_version: v1.10.0
+  immutable_commit_sha: 88e8610bcc2ada48c8cf902d23d4296983310872
   commit_provenance: github_rest_api_https
+  immutable_checkout:
+    fetch_depth: 1
+    persist_credentials: false
   required_artifacts:
     - review-package.json
     - DECISION_PROJECTION.json
     - artifact-manifest.json
-  official_local_accessor: pr_inspector.official_review.verify_completed_review
-  official_cli: python scripts/validate_rereview_sequence.py SEQUENCE.json --review EVENT_ID=REVIEW_DIRECTORY
+  official_projection_function: pr_inspector.decision_projection.project_decision
+  official_provenance_functions:
+    - pr_inspector.review_provenance.verify_github_commit_payload
+    - pr_inspector.review_provenance.verify_review_directory
+    - pr_inspector.review_provenance.event_evidence_fields
+  official_completion_boundary: pr_inspector.official_review.verify_completed_review
+  official_synthetic_boundary: pr_inspector.review_provenance.verify_review_directory
+  official_adapter: scripts/verify-pr-inspector-bundle.py
+  official_regression_test: scripts/test-pr-inspector-official-integration.py
   official_artifact_source: local_review_directory
   external_retrievable_accessor_available: false
   external_bundle_locator: unavailable
 
 independence_rule:
   canonical_inspector_bundle_is_primary_authority: true
-  decision_projection_is_technical_status_authority: true
-  receipt_declarations_are_untrusted_until_bundle_verified: true
+  official_projection_is_technical_status_authority: true
+  receipt_declarations_are_untrusted_until_official_verifier_succeeds: true
   inspector_commit_must_exist_in_exact_inspector_repository: true
-  review_evidence_id_must_be_recomputed: true
+  review_evidence_id_must_be_emitted_by_official_provenance: true
   transport_actor_is_audit_metadata_only: true
   transport_actor_is_not_independence_proof: true
-  self_declared_independent_boolean_is_forbidden: true
+  target_repository_replica_forbidden: true
 
 stale_on_change:
   - pull_request_head_sha
@@ -82,7 +95,7 @@ required_check_set:
       event: pull_request
 
 live_receipt_validation:
-  mode: canonical_bundle_fail_closed_operator_invoked
+  mode: immutable_official_verifier_with_github_source_fail_closed
   marker: AI_GOVERNANCE_REVIEW_RECEIPT
   authoritative_api_origin: https://api.github.com
   caller_controlled_api_origin_allowed: false
@@ -91,12 +104,12 @@ live_receipt_validation:
     - pull_request_review
     - pull_request_comment
   github_source_command: node scripts/validate-governance-sequence.mjs --mode=live --source=github
-  synthetic_fixture_command: node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json
+  official_synthetic_test_command: python scripts/test-pr-inspector-official-integration.py
   phase: post_review_exact_head_validation
   activation_state: official_external_bundle_accessor_unavailable_fail_closed
   external_official_bundle_accessor_available: false
-  trusted_byte_handling: capture_hash_validate_manifest_and_parse_same_in_memory_bytes
-  technical_status_authority: verified_DECISION_PROJECTION_json
+  technical_status_authority: immutable_pr_inspector_project_decision
+  provenance_authority: immutable_pr_inspector_review_provenance
   transport_actor_role: audit_metadata_only
   required_token_permissions: []
 
@@ -122,6 +135,9 @@ post_merge_verification:
 enforcement_carriers:
   schema: governance/schemas/review-receipt.schema.json
   sequence_validator: scripts/validate-governance-sequence.mjs
+  official_verifier_adapter: scripts/verify-pr-inspector-bundle.py
+  official_verifier_regression: scripts/test-pr-inspector-official-integration.py
+  projection_case_registry: tests/governance/pr-inspector-projection-cases.json
   exact_head_workflow: .github/workflows/schema-validation.yml
   pr_template: .github/pull_request_template.md
 
