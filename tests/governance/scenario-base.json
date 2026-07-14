@@ -1,0 +1,96 @@
+{
+  "previous": {
+    "scope_revision": "GOV-004-v4",
+    "head_sha": "9999999999999999999999999999999999999999",
+    "required_check_set": ["central_validation","governance_authorities","governance_sequence","builder_lineage_sequence","project_gate_pin"],
+    "capabilities": [
+      {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},
+      {"capability_id":"GOV-CAP-002","lifecycle":"implemented"},
+      {"capability_id":"GOV-CAP-003","lifecycle":"committed_now"},
+      {"capability_id":"GOV-CAP-004","lifecycle":"committed_now"},
+      {"capability_id":"GOV-CAP-005","lifecycle":"committed_now"},
+      {"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},
+      {"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},
+      {"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},
+      {"capability_id":"PROD-CAP-004","lifecycle":"deferred_not_deleted"}
+    ]
+  },
+  "current": {
+    "scope_revision": "GOV-004-v5",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "required_check_set": ["central_validation","governance_authorities","governance_sequence","builder_lineage_sequence","project_gate_pin"],
+    "capabilities": [
+      {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},
+      {"capability_id":"GOV-CAP-002","lifecycle":"implemented"},
+      {"capability_id":"GOV-CAP-003","lifecycle":"committed_now"},
+      {"capability_id":"GOV-CAP-004","lifecycle":"committed_now"},
+      {"capability_id":"GOV-CAP-005","lifecycle":"committed_now"},
+      {"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},
+      {"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},
+      {"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},
+      {"capability_id":"PROD-CAP-004","lifecycle":"deferred_not_deleted"}
+    ]
+  },
+  "scope_disclosure": {
+    "from_scope_revision": "GOV-004-v4",
+    "to_scope_revision": "GOV-004-v5",
+    "lifecycle_changes": [],
+    "deleted_target_ids": [],
+    "newly_introduced_target_ids": []
+  },
+  "official_verifier": {
+    "executed_by": "immutable_official_pr_inspector_checkout",
+    "project_decision": true,
+    "review_provenance": true
+  },
+  "review_receipt": {
+    "repository": "rezahh107/EV4-Builder-Assistant-Repo",
+    "pull_request": 55,
+    "base_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "reviewed_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "scope_revision": "GOV-004-v5",
+    "implementation_context_id": "repo-maintainer-gov-003-004",
+    "exact_head_ci_run_ids": [3001,3002],
+    "reviewed_at": "2026-07-14T08:30:00Z",
+    "inspector_repository": "rezahh107/PR-Inspector",
+    "inspector_repository_id": 1288323264,
+    "inspector_commit_sha": "88e8610bcc2ada48c8cf902d23d4296983310872",
+    "inspector_commit_api_url": "https://api.github.com/repos/rezahh107/PR-Inspector/commits/88e8610bcc2ada48c8cf902d23d4296983310872",
+    "inspector_commit_html_url": "https://github.com/rezahh107/PR-Inspector/commit/88e8610bcc2ada48c8cf902d23d4296983310872",
+    "inspector_evidence_source": "github_rest_api_https",
+    "protocol_version": "v1.10.0",
+    "review_evidence_id": "1111111111111111111111111111111111111111111111111111111111111111",
+    "review_package_canonical_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "review_package_file_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "decision_projection_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "artifact_manifest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+    "review_validity": "CURRENT",
+    "technical_status": "GREEN_TECHNICALLY_READY",
+    "approval_requirement": "NO_ADDITIONAL_TECHNICAL_APPROVAL",
+    "next_action_kind": "merge_now"
+  },
+  "ci": {
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "required_checks": {
+      "central_validation": "success",
+      "governance_authorities": "success",
+      "governance_sequence": "success",
+      "builder_lineage_sequence": "success",
+      "project_gate_pin": "success"
+    }
+  },
+  "completion": {
+    "required_artifacts": ["governance/AI_AUTHORITY_POLICY.yml","scripts/validate-governance-sequence.mjs"],
+    "present_artifacts": ["governance/AI_AUTHORITY_POLICY.yml","scripts/validate-governance-sequence.mjs"],
+    "implementation_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "ci_run_ids": [3001,3002]
+  },
+  "claims": {"uses_ai_review_signal_as_fact":false,"human_technical_gate_fields":[]},
+  "security": {
+    "repository_visibility": "public",
+    "public_repository_disposition": "retain_minimum_security_with_public_repository_hygiene",
+    "contains_secret": false,
+    "destructive_action": {"requested":false,"exact_target":null,"recovery_path":null}
+  },
+  "post_merge_verification": {"attempted":false}
+}

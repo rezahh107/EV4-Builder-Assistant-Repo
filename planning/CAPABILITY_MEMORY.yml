@@ -1,8 +1,8 @@
-schema_version: 1
+schema_version: 2
 repository: rezahh107/EV4-Builder-Assistant-Repo
 source_default_branch: main
-source_commit: 45929d59f5e1c5caf49f6be0d8ac7599d0c4e93d
-scope_revision: GOV-002-v1
+source_commit: 8931c608d759ea121727f3903e21976a37e27f45
+scope_revision: GOV-004-v5
 
 lifecycle_states:
   - committed_now
@@ -16,55 +16,74 @@ lifecycle_states:
 capabilities:
   - capability_id: GOV-CAP-001
     name: ai_authority_and_evidence_authority
-    lifecycle: committed_now
+    lifecycle: implemented
     authority:
       - governance/AI_AUTHORITY_POLICY.yml
-    rationale: establish technical decision authority and factual evidence authority without human technical approval
-
+    implementation_evidence:
+      - PR-54
+      - 8931c608d759ea121727f3903e21976a37e27f45
+    rationale: merged governance authority foundation
   - capability_id: GOV-CAP-002
     name: scope_and_capability_memory
-    lifecycle: committed_now
+    lifecycle: implemented
     authority:
       - planning/CAPABILITY_MEMORY.yml
       - planning/GOVERNANCE_ADOPTION_PLAN.yml
-    rationale: preserve committed, excluded, and deferred capabilities with a versioned scope revision
-
+    implementation_evidence:
+      - PR-54
+      - 8931c608d759ea121727f3903e21976a37e27f45
+    rationale: merged scope and capability-memory foundation
   - capability_id: GOV-CAP-003
     name: deterministic_governance_enforcement
-    lifecycle: deferred_not_deleted
-    planned_increment: GOV-003-DETERMINISTIC-GOVERNANCE-ENFORCEMENT
-    rationale: schemas validators invalid fixtures and sequence CI belong to the next dependent increment
-
+    lifecycle: committed_now
+    authority:
+      - governance/schemas/ai-authority-policy.schema.json
+      - governance/schemas/capability-memory.schema.json
+      - governance/schemas/governance-adoption-plan.schema.json
+      - scripts/validate-governance-authorities.mjs
+      - scripts/validate-governance-sequence.mjs
+      - tests/governance/valid
+      - tests/governance/invalid
+      - tests/governance/invalid-yaml
+      - .github/workflows/schema-validation.yml
+    rationale: add schema-backed deterministic governance validation and sequence CI
   - capability_id: GOV-CAP-004
     name: exact_head_independent_review_lifecycle
-    lifecycle: deferred_not_deleted
-    planned_increment: GOV-004-EXACT-HEAD-REVIEW-LIFECYCLE
-    rationale: exact-head review provenance and stale-on-change enforcement require the deterministic carriers from GOV-003
-
+    lifecycle: committed_now
+    authority:
+      - governance/REVIEW_LIFECYCLE.yml
+      - governance/schemas/review-lifecycle.schema.json
+      - governance/schemas/review-receipt.schema.json
+      - scripts/verify-pr-inspector-bundle.py
+      - scripts/test-pr-inspector-official-integration.py
+      - scripts/validate-governance-sequence.mjs
+      - tests/governance/pr-inspector-projection-cases.json
+      - .github/workflows/schema-validation.yml
+      - .github/pull_request_template.md
+    rationale: execute projection, provenance and completion regression through the immutable official PR Inspector checkout while keeping real GitHub bundle retrieval fail closed because the active protocol exposes no external official bundle accessor
   - capability_id: GOV-CAP-005
     name: post_merge_governance_verification
-    lifecycle: deferred_not_deleted
-    planned_increment: GOV-004-EXACT-HEAD-REVIEW-LIFECYCLE
-    rationale: final post-merge verification depends on review lifecycle enforcement
-
+    lifecycle: committed_now
+    authority:
+      - planning/GOVERNANCE_ADOPTION_PLAN.yml
+      - governance/REVIEW_LIFECYCLE.yml
+      - scripts/validate-governance-sequence.mjs
+    rationale: require live-default-branch verification before closing a governance increment
   - capability_id: PROD-CAP-001
     name: real_elementor_execution_evidence
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
     rationale: real user-provided Elementor UI evidence remains pending and is unrelated to governance adoption
-
   - capability_id: PROD-CAP-002
     name: builder_to_responsive_formal_export
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
     rationale: formal Builder-to-Responsive export remains documented but not implemented
-
   - capability_id: PROD-CAP-003
     name: project_gate_verifier_and_runtime
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
     rationale: Project Gate verifier and runtime are external future integration work
-
   - capability_id: PROD-CAP-004
     name: production_readiness
     lifecycle: deferred_not_deleted
@@ -82,4 +101,4 @@ integrity_rules:
   - capability_removal_requires_decision_provenance
   - granularity_changes_require_explicit_mapping
 
-current_enforcement_status: prose_only
+current_enforcement_status: mixed_sequence_ci_and_fail_closed_validator_backed

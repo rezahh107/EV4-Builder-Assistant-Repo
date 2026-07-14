@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const scripts = [
@@ -43,25 +44,56 @@ const nodeChecks = [
   'scripts/validate-builder-producer-adoption.mjs',
   'scripts/validate-builder-context-decision-lineage.mjs',
   'scripts/validate-decision-escape-routes.mjs',
-  'scripts/validate-kernel-decision-receipts.mjs'
+  'scripts/validate-kernel-decision-receipts.mjs',
+  'scripts/validate-governance-authorities.mjs',
+  'scripts/validate-governance-sequence.mjs'
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
+function writeOutput(name, value) {
+  if (!process.env.GITHUB_OUTPUT) return;
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${String(value).replace(/[\r\n]+/g, ' ')}\n`);
+}
+
+function failureDetail(result) {
+  const lines = `${result.stderr || ''}\n${result.stdout || ''}`
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const diagnostic = lines.find((line) => line.startsWith('- '))
+    || lines.find((line) => /failed|missing|mismatch|unexpectedly passed/i.test(line))
+    || lines.at(-1)
+    || 'no diagnostic output';
+  return diagnostic.replace(/[^\x20-\x7E]/g, '?').slice(0, 180);
+}
+
 function run(command, args, label) {
-  console.log('\n==> ' + label);
-  const result = spawnSync(command, args, { stdio: 'inherit' });
+  console.log(`\n==> ${label}`);
+  const result = spawnSync(command, args, {
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024
+  });
+
   if (result.error) {
-    console.error('Failed to execute ' + command + ': ' + result.error.message);
+    writeOutput('failed_check', `${label} :: ${result.error.message}`);
+    console.error(`Failed to execute ${command}: ${result.error.message}`);
     process.exit(1);
   }
-  if (result.status !== 0) process.exit(result.status ?? 1);
+
+  if (result.status !== 0) {
+    writeOutput('failed_check', `${label} :: ${failureDetail(result)}`);
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    console.error(`${label}: failed with exit code ${result.status ?? 1}.`);
+    process.exit(result.status ?? 1);
+  }
+
+  console.log(`${label}: passed.`);
 }
 
-for (const script of scripts) {
-  run(npmCommand, ['run', script], 'npm run ' + script);
-}
-
+for (const script of scripts) run(npmCommand, ['run', script], `npm run ${script}`);
 for (const check of nodeChecks) {
-  run(process.execPath, [check], 'node ' + check);
+  const args = check === 'scripts/validate-governance-sequence.mjs' ? [check, '--mode=fixtures'] : [check];
+  run(process.execPath, args, `node ${args.join(' ')}`);
 }

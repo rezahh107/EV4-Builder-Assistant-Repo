@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"case_id":"critical_code_supported","mutation":"finding","severity":"CRITICAL","evidence_label":"CODE_SUPPORTED","blocking":true,"expected_technical_status":"RED_DO_NOT_MERGE","expected_next_action_kind":"repair"},
+    {"case_id":"critical_reproduced","mutation":"finding","severity":"CRITICAL","evidence_label":"REPRODUCED","blocking":true,"expected_technical_status":"RED_DO_NOT_MERGE","expected_next_action_kind":"repair"},
+    {"case_id":"high_reproduced","mutation":"finding","severity":"HIGH","evidence_label":"REPRODUCED","blocking":true,"expected_technical_status":"RED_DO_NOT_MERGE","expected_next_action_kind":"repair"},
+    {"case_id":"high_code_supported","mutation":"finding","severity":"HIGH","evidence_label":"CODE_SUPPORTED","blocking":true,"expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"repair"},
+    {"case_id":"high_hypothesis","mutation":"finding","severity":"HIGH","evidence_label":"HYPOTHESIS","blocking":true,"expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"verify"},
+    {"case_id":"blocking_medium_supported","mutation":"finding","severity":"MEDIUM","evidence_label":"CODE_SUPPORTED","blocking":true,"expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"repair"},
+    {"case_id":"not_assessable","mutation":"finding","severity":"MEDIUM","evidence_label":"NOT_ASSESSABLE","blocking":false,"expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"verify"},
+    {"case_id":"partial_review","mutation":"partial_review","expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"verify"},
+    {"case_id":"coverage_incomplete","mutation":"coverage_incomplete","expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"verify"},
+    {"case_id":"high_risk_area_unreviewed","mutation":"high_risk_area_unreviewed","expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"verify"},
+    {"case_id":"intent_fit_missing","mutation":"intent_fit_missing","expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"verify"},
+    {"case_id":"intent_fit_unsatisfied","mutation":"intent_fit_unsatisfied","expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"verify"},
+    {"case_id":"unsupported_intent_claim","mutation":"unsupported_intent_claim","expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"verify"},
+    {"case_id":"repair_handoff_present","mutation":"repair_handoff_present","expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"repair"},
+    {"case_id":"accepted_external_repair","mutation":"accepted_external_repair","expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"repair"},
+    {"case_id":"mixed_repair_and_verify","mutation":"mixed_repair_and_verify","expected_technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED","expected_next_action_kind":"repair_and_verify"},
+    {"case_id":"project_owner_confirmation","mutation":"approval_requirement","approval_requirement":"PROJECT_OWNER_CONFIRMATION","expected_technical_status":"GREEN_TECHNICALLY_READY","expected_next_action_kind":"owner_confirmation"},
+    {"case_id":"human_technical_review","mutation":"approval_requirement","approval_requirement":"HUMAN_TECHNICAL_REVIEW_REQUIRED","expected_technical_status":"GREEN_TECHNICALLY_READY","expected_next_action_kind":"human_technical_review"},
+    {"case_id":"specialist_review","mutation":"approval_requirement","approval_requirement":"SECURITY_OR_DOMAIN_SPECIALIST_REQUIRED","expected_technical_status":"GREEN_TECHNICALLY_READY","expected_next_action_kind":"specialist_review"},
+    {"case_id":"clean_complete_current_review","mutation":"clean","expected_technical_status":"GREEN_TECHNICALLY_READY","expected_next_action_kind":"merge_now"}
+  ]
+}
