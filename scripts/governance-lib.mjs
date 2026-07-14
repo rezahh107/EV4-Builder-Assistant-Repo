@@ -50,8 +50,17 @@ function splitKeyValue(text, lineNumber) {
   return [key, value];
 }
 
-export function parseYamlSubset(yamlText) {
+export function parseYamlSubset(yamlText, inputIdentity = '<inline-yaml>') {
   const lines = toLogicalLines(yamlText);
+
+  function assignMappingValue(target, keyLines, key, value, lineNumber) {
+    if (Object.prototype.hasOwnProperty.call(target, key)) {
+      const firstLine = keyLines.get(key);
+      throw new Error(`${inputIdentity}: line ${lineNumber}: duplicate key "${key}" (first defined at line ${firstLine}).`);
+    }
+    target[key] = value;
+    keyLines.set(key, lineNumber);
+  }
 
   function parseBlock(index, indent) {
     if (index >= lines.length || lines[index].indent < indent) return [null, index];
@@ -77,19 +86,19 @@ export function parseYamlSubset(yamlText) {
       if (findMappingSeparator(rest) !== -1) {
         const [key, rawValue] = splitKeyValue(rest, line.lineNumber);
         const item = {};
+        const keyLines = new Map();
         index += 1;
 
         if (rawValue === '') {
           const parsed = parseBlock(index, indent + 4);
-          item[key] = parsed[0];
+          assignMappingValue(item, keyLines, key, parsed[0], line.lineNumber);
           index = parsed[1];
         } else {
-          item[key] = parseScalar(rawValue);
+          assignMappingValue(item, keyLines, key, parseScalar(rawValue), line.lineNumber);
         }
 
         if (index < lines.length && lines[index].indent === indent + 2 && !lines[index].text.startsWith('- ')) {
-          const parsed = parseMap(index, indent + 2);
-          Object.assign(item, parsed[0]);
+          const parsed = parseMap(index, indent + 2, item, keyLines);
           index = parsed[1];
         }
 
@@ -103,24 +112,25 @@ export function parseYamlSubset(yamlText) {
     return [result, index];
   }
 
-  function parseMap(index, indent) {
-    const result = {};
+  function parseMap(index, indent, result = {}, keyLines = new Map()) {
     while (index < lines.length && lines[index].indent === indent && !lines[index].text.startsWith('- ')) {
       const line = lines[index];
       const [key, rawValue] = splitKeyValue(line.text, line.lineNumber);
       index += 1;
 
+      let value;
       if (rawValue === '') {
         if (index < lines.length && lines[index].indent > indent) {
           const parsed = parseBlock(index, lines[index].indent);
-          result[key] = parsed[0];
+          value = parsed[0];
           index = parsed[1];
         } else {
-          result[key] = null;
+          value = null;
         }
       } else {
-        result[key] = parseScalar(rawValue);
+        value = parseScalar(rawValue);
       }
+      assignMappingValue(result, keyLines, key, value, line.lineNumber);
     }
     return [result, index];
   }
@@ -133,7 +143,7 @@ export function parseYamlSubset(yamlText) {
 }
 
 export function readYaml(filePath) {
-  return parseYamlSubset(readText(filePath));
+  return parseYamlSubset(readText(filePath), filePath);
 }
 
 function typeOf(value) {
