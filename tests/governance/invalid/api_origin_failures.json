@@ -1,0 +1,1 @@
+{"origins":["http://api.github.com","https://api.github.com.attacker.example","https://user@api.github.com","https://api.github.com:8443","https://attacker.example","http://127.0.0.1"],"cross_origin_redirect":"https://attacker.example/token-capture"}
