@@ -45,6 +45,8 @@ const nodeChecks = [
   'scripts/validate-builder-context-decision-lineage.mjs',
   'scripts/validate-decision-escape-routes.mjs',
   'scripts/validate-kernel-decision-receipts.mjs',
+  'scripts/validate-pr-template-hygiene.mjs',
+  'scripts/validate-governance-progress-evidence.mjs',
   'scripts/validate-governance-authorities.mjs',
   'scripts/validate-governance-sequence.mjs'
 ];
@@ -94,6 +96,9 @@ function run(command, args, label) {
 
 for (const script of scripts) run(npmCommand, ['run', script], `npm run ${script}`);
 for (const check of nodeChecks) {
-  const args = check === 'scripts/validate-governance-sequence.mjs' ? [check, '--mode=fixtures'] : [check];
+  const args = (
+    check === 'scripts/validate-governance-sequence.mjs'
+    || check === 'scripts/validate-governance-progress-evidence.mjs'
+  ) ? [check, '--mode=fixtures'] : [check];
   run(process.execPath, args, `node ${args.join(' ')}`);
 }
