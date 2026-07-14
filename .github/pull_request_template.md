@@ -23,6 +23,11 @@
 
 ### Phase 2 — independent review receipt issuance
 
+- inspector repository: `rezahh107/PR-Inspector`
+- inspector repository ID: `1288323264`
+- inspector commit SHA:
+- inspector protocol version:
+- GitHub source reviewer actor login:
 - implementation context ID:
 - reviewer context ID:
 - reviewed head SHA:
@@ -32,7 +37,11 @@
 - receipt marker: `AI_GOVERNANCE_REVIEW_RECEIPT`
 - receipt location:
 - [ ] The receipt is external to the reviewed head and does not mutate it.
+- [ ] The inspector commit exists in the exact inspector repository.
+- [ ] The GitHub source actor equals `reviewer_actor_login`.
+- [ ] The reviewer actor is not the PR author.
 - [ ] The reviewer context differs from the implementation context.
+- [ ] `independent: true` is not treated as sufficient evidence by itself.
 
 ### Phase 3 — exact-head live receipt validation
 
@@ -47,10 +56,13 @@ CURRENT_BASE_SHA=... \
 node scripts/validate-governance-sequence.mjs --mode=live --source=github
 ```
 
+- authoritative API origin: `https://api.github.com`
+- [ ] `GITHUB_API_URL` is unset; caller-controlled API origins are rejected.
+- [ ] Redirects are rejected before credentials can be forwarded.
 - observed live-validation evidence:
-- [ ] Missing, malformed, unsupported, self-authored, stale, non-Green, blocking, or CI-incomplete receipts fail closed.
+- [ ] Missing, malformed, unsupported, self-authored, stale, non-Green, blocking, CI-incomplete, actor-mismatched, protocol-mismatched, or unverified-inspector receipts fail closed.
 - [ ] Automatic pre-merge live-receipt CI is not claimed; the current carrier is operator-invoked and read-only.
-- [ ] Any head SHA, scope revision, or required-check-set change invalidates prior review evidence.
+- [ ] Any head SHA, scope revision, required-check-set, or inspector protocol identity change invalidates prior review evidence.
 
 ### Phase 4 — user administrative merge
 
