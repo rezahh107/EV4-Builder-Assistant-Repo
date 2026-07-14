@@ -1,0 +1,4 @@
+capabilities:
+  - capability_id: GOV-CAP-004
+    lifecycle: committed_now
+    lifecycle: implemented
