@@ -2,7 +2,7 @@ schema_version: 2
 repository: rezahh107/EV4-Builder-Assistant-Repo
 source_default_branch: main
 source_commit: 8931c608d759ea121727f3903e21976a37e27f45
-scope_revision: GOV-004-v4
+scope_revision: GOV-004-v5
 
 lifecycle_states:
   - committed_now
@@ -54,10 +54,13 @@ capabilities:
       - governance/REVIEW_LIFECYCLE.yml
       - governance/schemas/review-lifecycle.schema.json
       - governance/schemas/review-receipt.schema.json
+      - scripts/verify-pr-inspector-bundle.py
+      - scripts/test-pr-inspector-official-integration.py
       - scripts/validate-governance-sequence.mjs
+      - tests/governance/pr-inspector-projection-cases.json
       - .github/workflows/schema-validation.yml
       - .github/pull_request_template.md
-    rationale: bind technical status to canonical PR Inspector artifact bytes and DECISION_PROJECTION.json in synthetic regression; block Green fail closed because v1.10.0 exposes only a local review-directory accessor and no externally retrievable official bundle accessor for this target repository
+    rationale: execute projection, provenance and completion regression through the immutable official PR Inspector checkout while keeping real GitHub bundle retrieval fail closed because the active protocol exposes no external official bundle accessor
   - capability_id: GOV-CAP-005
     name: post_merge_governance_verification
     lifecycle: committed_now
