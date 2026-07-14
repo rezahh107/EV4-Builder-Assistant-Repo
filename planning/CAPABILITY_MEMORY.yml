@@ -2,7 +2,7 @@ schema_version: 2
 repository: rezahh107/EV4-Builder-Assistant-Repo
 source_default_branch: main
 source_commit: 8931c608d759ea121727f3903e21976a37e27f45
-scope_revision: GOV-004-v2
+scope_revision: GOV-004-v3
 
 lifecycle_states:
   - committed_now
@@ -44,6 +44,7 @@ capabilities:
       - scripts/validate-governance-sequence.mjs
       - tests/governance/valid
       - tests/governance/invalid
+      - tests/governance/invalid-yaml
       - .github/workflows/schema-validation.yml
     rationale: add schema-backed deterministic governance validation and sequence CI
   - capability_id: GOV-CAP-004
@@ -56,7 +57,7 @@ capabilities:
       - scripts/validate-governance-sequence.mjs
       - .github/workflows/schema-validation.yml
       - .github/pull_request_template.md
-    rationale: validate exact-head review identity independence stale-on-change and Green predicates through an operator-invoked read-only live validator; automatic pre-merge receipt CI is not claimed
+    rationale: validate exact-head review identity inspector provenance source actor binding independence stale-on-change and Green predicates through an operator-invoked read-only live validator; automatic pre-merge receipt CI is not claimed
   - capability_id: GOV-CAP-005
     name: post_merge_governance_verification
     lifecycle: committed_now
