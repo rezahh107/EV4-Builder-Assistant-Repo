@@ -1,6 +1,6 @@
 schema_version: 2
 protocol_id: EV4-BUILDER-EXACT-HEAD-AI-REVIEW
-protocol_version: 2
+protocol_version: 3
 repository: rezahh107/EV4-Builder-Assistant-Repo
 scope_revision_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
 implementation_context_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
@@ -16,6 +16,11 @@ required_receipt_fields:
   - base_sha
   - reviewed_head_sha
   - scope_revision
+  - inspector_repository
+  - inspector_repository_id
+  - inspector_commit_sha
+  - protocol_version
+  - reviewer_actor_login
   - implementation_context_id
   - reviewer_context_id
   - independent
@@ -24,15 +29,28 @@ required_receipt_fields:
   - findings
   - reviewed_at
 
+inspector_identity_authority:
+  repository: rezahh107/PR-Inspector
+  repository_id: 1288323264
+  supported_protocol_versions:
+    - v1.10.0
+  commit_provenance: github_api_commit_lookup
+  source_actor_binding_required: true
+
 independence_rule:
   implementation_context_must_differ_from_reviewer_context: true
   reviewer_must_not_be_implementer: true
+  reviewer_actor_must_match_github_source_actor: true
+  reviewer_actor_must_not_be_pull_request_author: true
+  inspector_commit_must_exist_in_exact_inspector_repository: true
+  independent_boolean_is_not_sufficient_evidence: true
   self_authored_review_is_invalid: true
 
 stale_on_change:
   - pull_request_head_sha
   - scope_revision
   - required_check_set
+  - inspector_protocol_identity
 
 technical_statuses:
   - GREEN_MERGE_RECOMMENDED
@@ -52,6 +70,9 @@ required_check_set:
 live_receipt_validation:
   mode: github_api_read_only_operator_invoked
   marker: AI_GOVERNANCE_REVIEW_RECEIPT
+  authoritative_api_origin: https://api.github.com
+  caller_controlled_api_origin_allowed: false
+  redirects_allowed: false
   supported_transports:
     - pull_request_review
     - pull_request_comment
