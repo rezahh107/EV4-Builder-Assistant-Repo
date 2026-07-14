@@ -56,6 +56,18 @@ function writeOutput(name, value) {
   fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${String(value).replace(/[\r\n]+/g, ' ')}\n`);
 }
 
+function failureDetail(result) {
+  const lines = `${result.stderr || ''}\n${result.stdout || ''}`
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const diagnostic = lines.find((line) => line.startsWith('- '))
+    || lines.find((line) => /failed|missing|mismatch|unexpectedly passed/i.test(line))
+    || lines.at(-1)
+    || 'no diagnostic output';
+  return diagnostic.replace(/[^\x20-\x7E]/g, '?').slice(0, 180);
+}
+
 function run(command, args, label) {
   console.log(`\n==> ${label}`);
   const result = spawnSync(command, args, {
@@ -64,13 +76,13 @@ function run(command, args, label) {
   });
 
   if (result.error) {
-    writeOutput('failed_check', label);
+    writeOutput('failed_check', `${label} :: ${result.error.message}`);
     console.error(`Failed to execute ${command}: ${result.error.message}`);
     process.exit(1);
   }
 
   if (result.status !== 0) {
-    writeOutput('failed_check', label);
+    writeOutput('failed_check', `${label} :: ${failureDetail(result)}`);
     if (result.stdout) process.stdout.write(result.stdout);
     if (result.stderr) process.stderr.write(result.stderr);
     console.error(`${label}: failed with exit code ${result.status ?? 1}.`);
