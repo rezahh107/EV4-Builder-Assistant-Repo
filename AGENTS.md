@@ -31,7 +31,7 @@ CE output → EV4 Project Gate → Builder Input Package
 Builder output and evidence → EV4 Project Gate → Responsive Input Package
 ```
 
-Project Gate integration is documented, but its verifier and UI are not implemented yet. It must not replace Builder contracts, invent execution evidence, or redesign upstream work.
+Project Gate (as an external integration) provides a verifier, guarded transition CLI paths, and an initial local operator UI at its documented pinned scopes. CE → Builder direct controlled use is also supported by the Builder-owned Contract Gate and Adapter. These capabilities do not establish compatibility with the current live heads, a real non-synthetic handoff, real Elementor execution, complete end-to-end readiness, or a formal Builder → Responsive export. Project Gate must not replace Builder contracts, invent execution evidence, or redesign upstream work.
 
 ## Hard Boundaries
 
