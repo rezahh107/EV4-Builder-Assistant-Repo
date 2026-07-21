@@ -1,27 +1,26 @@
 # EV4 Builder Implementation Decision Policy
 
 **Policy ID:** `EV4-BUILDER-IMPLEMENTATION-DECISION-POLICY-r004`  
-**Status:** `READY_FOR_TEMPORARY_BUILDER_USE_WITH_QUANTIFIED_GATES`  
+**Status:** `NON_EXECUTABLE_REFERENCE_ONLY`  
 **Intended consumer:** EV4 Builder Assistant language-model sessions  
-**Corpus basis:** Frozen EV4 Registry r001 and the available 21 EV4 Domain artifacts  
-**Operating mode:** Silent internal decision support for practical Elementor V4 implementation  
-**Primary objective:** Improve the quality of element, structure, control, value, unit, responsive, reuse, media, interaction, accessibility, performance, and runtime implementation choices before the Builder gives instructions or performs work.
-**Companion maintenance artifact:** `EV4_BUILDER_POLICY_RULE_REGISTER_r001.md`
+**Operating mode:** Non-executable reference for interpreting and applying already approved implementation decisions  
+**Primary objective:** Help Builder apply trusted upstream implementation decisions consistently without creating, replacing, or mutating architecture, constructability strategy, responsive strategy, geometry, interaction, class scope, or Kernel-governed decisions.
 
 **Authority note:** This policy is supplemental. Current repository instructions, active contracts, schemas, validators, locked task decisions, and explicit user requirements remain higher authority.
 
 **Kernel relationship:** This policy is a supplemental role-specific decision aid. It does not replace, emulate, supersede, bypass, or weaken the EV4 Decision Kernel, Kernel decision cards, required Kernel consultation, decision lineage, or any active Kernel-owned rule. When a Kernel decision applies, the Kernel remains authoritative and this policy may only help the role interpret or apply that decision within its own boundaries.
 
+**Execution-authority boundary:** This document is non-executable reference material. It cannot authorize Builder to choose among architecture or implementation-strategy candidates. Builder may use it only to interpret and apply decisions already carried by trusted upstream artifacts, including the applicable `approved_structure_tree`, `widget_mapping_table`, complete `decision_lineage`, approved class maps and scopes, unit-policy records, and validated Builder actions. If a required carrier is missing, contradictory, stale, or incomplete, Builder must return `EVIDENCE_REQUIRED` or `CORRECTION`, or request upstream CE/Kernel consultation. Builder must not locally choose or mutate structure, responsive strategy, geometry, positioning, interaction strategy, class scope, media role, unit policy, custom mechanism, `selected_candidate_id`, or Kernel decision lineage.
+
 ### Revision focus
 
-This revision preserves the lightweight Builder-only operating model and adds:
+This revision preserves a Builder-only reference model and documents:
 
 - silent preservation of explicit current task decisions;
 - quantified accessibility validation gates;
 - stronger typography, contrast, focus, target-size, motion, and reflow checks;
 - stronger Tabs/Accordion keyboard-pattern requirements;
 - measurable media-loading and Core Web Vitals targets;
-- a separate source-and-authority register so maintenance metadata does not burden routine Builder sessions;
 - protection against correct-sounding single-factor decisions that skip materially applicable checks;
 - silent parameter-level basis binding so each nontrivial implementation choice is justified by its own applicable fact or bounded assumption.
 
@@ -29,7 +28,20 @@ This revision preserves the lightweight Builder-only operating model and adds:
 
 ## 1. Purpose
 
-Use this policy whenever the Builder is about to make an implementation choice that can materially affect quality.
+Use this policy only after the required implementation decision has been approved and carried by trusted upstream evidence. The comparison rules below explain how to interpret and check an approved decision; they do not grant Builder authority to select a new architecture or strategy.
+
+Before any actionable instruction, Builder must have the materially applicable trusted carriers, such as:
+
+- `approved_structure_tree`;
+- `widget_mapping_table`;
+- complete `decision_lineage`;
+- approved class names, maps, and scopes;
+- approved unit-policy or geometry records;
+- validated Builder actions and confirmation requirements.
+
+If a required carrier is absent or does not resolve the decision, return `EVIDENCE_REQUIRED` or `CORRECTION`, or request upstream CE/Kernel consultation. Do not use this document to fill the gap by choosing among candidate strategies.
+
+Use the relevant reference section when Builder is about to apply an approved implementation decision that can materially affect quality.
 
 Typical examples:
 
@@ -64,9 +76,9 @@ This policy is a temporary implementation-quality aid. It does not claim that ev
 
 ## 2. Required Builder behavior
 
-### 2.1 Silent internal use
+### 2.1 Reference-only internal use
 
-Apply this policy internally before giving an actionable instruction.
+Use this policy internally only after the applicable upstream decision and validated Builder action are available. It may support consistency checks and concise explanation, but it may not create, replace, or broaden the approved decision. Before giving an actionable instruction, verify that the trusted carrier resolves the relevant element, structure, behavior, value source, and validation requirement. Otherwise return `EVIDENCE_REQUIRED` or `CORRECTION`, or request upstream CE/Kernel consultation.
 
 Do not expose:
 
@@ -86,15 +98,15 @@ Unless the user explicitly asks for the reasoning, give:
 
 ### 2.2 Do not make routine work unnecessarily difficult
 
-For ordinary, reversible layout and styling decisions:
+For ordinary, reversible execution details that are already authorized by trusted carriers:
 
-- use the best supported interpretation of the supplied design and content;
-- prefer the simplest sufficient native implementation;
-- make a bounded, reversible choice when the context is adequate;
+- preserve and apply the approved implementation decision;
+- use the simplest validated action that implements that decision;
+- do not introduce a new element, structure, unit family, responsive rule, interaction, class scope, or workaround unless the trusted carrier explicitly authorizes it;
 - do not stop merely because every possible runtime fact is not yet available;
 - identify assumptions briefly only when they matter.
 
-Ask a question only when the answer can change the selected element, structure, behavior model, reference frame, responsive strategy, accessibility outcome, or security decision.
+When a missing fact would require selecting or changing an element, structure, behavior model, reference frame, responsive strategy, accessibility outcome, or security decision, do not choose locally. Return `EVIDENCE_REQUIRED` or request the appropriate upstream decision.
 
 ### 2.3 High-risk exceptions
 
@@ -115,23 +127,18 @@ For these cases, request the minimum necessary fact or authorization.
 
 ## 3. Mandatory decision order
 
-Do not begin with the low-level control or value.
+Do not begin with a local choice among controls, elements, structures, or values. Begin with the trusted carrier that already resolves the decision.
 
 Use this order:
 
 ```text
-implementation goal
-→ semantic or structural responsibility
-→ content and interaction role
-→ candidate mechanism family
-→ sizing or behavior model
-→ reference frame
-→ content variability
-→ layout participation
-→ responsive behavior
-→ accessibility and safety constraints
-→ exact Elementor element/control
-→ value, unit, class, or expression
+trusted upstream decision carrier
+→ locked decision identity and lineage
+→ approved structure, widget, class, unit, responsive, and interaction records
+→ validated Builder action
+→ applicable reference checks from this document
+→ exact approved Elementor instruction
+→ structured confirmation
 → runtime sanity check
 ```
 
@@ -163,10 +170,12 @@ Begin with: is a real visual separator needed, who owns it, and should it consum
 
 Use the strongest relevant facts available in this order:
 
+0. validated upstream decision carriers and complete Kernel lineage when applicable;
+
 1. explicit current task-scoped decisions and requirements supplied by the user;
 2. observable design and content intent;
 3. exact target-project facts supplied in the session;
-4. the applicable EV4 Domain guidance;
+4. an exactly identified external EV4 Domain artifact, only as advisory evidence and never as execution authorization;
 5. documented Elementor or platform behavior within its actual version scope;
 6. a conservative native fallback.
 
@@ -203,6 +212,29 @@ Internally bind every nontrivial selected parameter to the specific fact that ju
 Do not present documented capability as confirmed target-project availability, a professional pattern as a normative requirement, or an assumption as an observed fact. One source, measurement, observation, or requirement must not silently justify unrelated parameters. For example, evidence that parent-relative sizing is appropriate does not by itself justify a particular percentage or maximum cap.
 
 When a nontrivial parameter lacks sufficient basis, either use a clearly bounded and reversible assumption or ask the smallest question whose answer can materially change that parameter. Keep this basis analysis silent unless the user explicitly requests it; ordinary Builder responses must remain practical instructions rather than evidence reports.
+
+
+### 4.2 Trusted-carrier gate
+
+Before applying any numbered policy, confirm that the relevant decision is already resolved by trusted upstream data. Depending on the decision, the carrier set may include:
+
+- `approved_structure_tree`;
+- `widget_mapping_table`;
+- complete `decision_lineage`;
+- approved class maps and scopes;
+- unit-policy, geometry, responsive, media, or interaction records;
+- validated Builder actions and expected confirmations.
+
+The comparison tables and eligibility rules in this document are interpretation aids only. They cannot authorize Builder to:
+
+- select Flexbox, Grid, Div, nesting, or positioning strategy;
+- choose Image versus Background or another media role;
+- create responsive or geometry decisions;
+- choose Button, Link, Tabs, Accordion, or interaction semantics;
+- create or change class scope, Variables, Components, units, bounds, or workarounds;
+- change `selected_candidate_id` or Kernel decision lineage.
+
+If the trusted carrier does not resolve the choice, return `EVIDENCE_REQUIRED` or `CORRECTION`, or request upstream CE/Kernel consultation. Do not choose the apparently best candidate locally.
 
 ---
 
@@ -381,13 +413,13 @@ Evaluate them at the 75th percentile of real page loads, segmented across mobile
 
 ## 7. Core implementation decision policies
 
-## 7.1 `structural_carrier_selection`
+### 7.1 `structural_carrier_selection`
 
-### Trigger
+#### Trigger
 
 A visual group, content block, repeated item, alignment responsibility, or layout region needs an Elementor structural representation.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - existing parent;
 - normal-flow child structure;
@@ -397,7 +429,7 @@ A visual group, content block, repeated item, alignment responsibility, or layou
 - nested combination;
 - another verified structural element required by the content model.
 
-### Required context
+#### Required context
 
 - what responsibility the parent must own;
 - direct child set;
@@ -410,7 +442,7 @@ A visual group, content block, repeated item, alignment responsibility, or layou
 - content variability;
 - whether another boundary is actually necessary.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Existing parent
 
@@ -476,7 +508,7 @@ Grid for the card collection
 + Flex row for the card actions
 ```
 
-### Selection preference
+#### Interpretation preference for an already approved choice
 
 After eligibility:
 
@@ -485,7 +517,7 @@ After eligibility:
 3. simplest sufficient Div/Flex/Grid mechanism;
 4. justified nested combination.
 
-### Common shallow mistakes
+#### Common shallow mistakes
 
 - new wrapper for every visual group;
 - Flexbox used for neutral grouping;
@@ -494,11 +526,11 @@ After eligibility:
 - absolute positioning used instead of layout;
 - visual reordering that damages source or focus order.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Does this parent own one sequential flow, independent row-and-column tracks, or only a neutral grouping boundary?
 
-### Runtime sanity check
+#### Runtime sanity check
 
 Check:
 
@@ -512,13 +544,13 @@ Check:
 
 ---
 
-## 7.2 `wrapper_and_nesting_selection`
+### 7.2 `wrapper_and_nesting_selection`
 
-### Trigger
+#### Trigger
 
 A new wrapper is proposed or an existing wrapper may be removed.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - no wrapper;
 - use existing parent;
@@ -528,7 +560,7 @@ A new wrapper is proposed or an existing wrapper may be removed.
 - clipping/overflow boundary;
 - reusable or repeated-item boundary.
 
-### Required context
+#### Required context
 
 - exact responsibility;
 - affected children;
@@ -539,7 +571,7 @@ A new wrapper is proposed or an existing wrapper may be removed.
 - reuse or data boundary;
 - DOM and maintainability cost.
 
-### Eligibility rules
+#### Eligibility rules
 
 A wrapper is justified only when it owns at least one necessary responsibility:
 
@@ -552,7 +584,7 @@ A wrapper is justified only when it owns at least one necessary responsibility:
 - interaction boundary without nested-interactive conflict;
 - a necessary visual surface that cannot belong to the existing parent.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 Reject the wrapper when it exists only for:
 
@@ -564,7 +596,7 @@ Reject the wrapper when it exists only for:
 - compensation for an unresolved layout;
 - decorative line or background that the current boundary can own.
 
-### Preferred professional pattern
+#### Preferred professional pattern
 
 ```text
 Responsibility first
@@ -573,23 +605,23 @@ Responsibility first
 → apply the appropriate layout/control to that boundary
 ```
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > What responsibility cannot the existing parent safely own, and which exact children require a separate boundary?
 
-### Runtime sanity check
+#### Runtime sanity check
 
 Check DOM depth, child ownership, clipping, positioning context, editor usability, responsive reflow, and whether removing the wrapper changes any real behavior.
 
 ---
 
-## 7.3 `sizing_behavior_selection`
+### 7.3 `sizing_behavior_selection`
 
-### Trigger
+#### Trigger
 
 A dimension needs a behavior model before choosing a value or unit.
 
-### Candidate behaviors
+#### Candidate behaviors
 
 - intrinsic or content-driven;
 - fill available space;
@@ -602,7 +634,7 @@ A dimension needs a behavior model before choosing a value or unit.
 - intrinsic with min/max constraints;
 - aspect-ratio-driven.
 
-### Required context
+#### Required context
 
 - width/inline-size or height/block-size;
 - design intent;
@@ -615,7 +647,7 @@ A dimension needs a behavior model before choosing a value or unit.
 - responsive expectations;
 - zoom and text expansion.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Intrinsic or content-driven
 
@@ -669,7 +701,7 @@ Choose when:
 - the design has meaningful lower and upper limits;
 - a combination such as `% + max-width` or `clamp()` is supported and clearer than many breakpoints.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - fixed width or height copied from one screenshot without intent;
 - fixed height for variable meaningful text;
@@ -678,7 +710,7 @@ Choose when:
 - `clamp()` used to avoid understanding breakpoints or bounds;
 - fill behavior without overflow and min-content review.
 
-### Combination strategies
+#### Combination strategies
 
 - `width: 100%` plus `max-width`;
 - intrinsic height plus `min-height`;
@@ -688,23 +720,23 @@ Choose when:
 - parent fill plus child maximum;
 - fixed decorative detail inside a fluid container.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Should this dimension follow its content, its parent, the viewport, or remain intentionally fixed—and what limits must it respect?
 
-### Runtime sanity check
+#### Runtime sanity check
 
 Test minimum, typical, and maximum content; required viewports; zoom; localization; media loading; missing content; overflow; and parent shrink/grow behavior.
 
 ---
 
-## 7.4 `unit_and_expression_selection`
+### 7.4 `unit_and_expression_selection`
 
-### Trigger
+#### Trigger
 
 A property requires a length, percentage, number, keyword, Variable, or calculated expression.
 
-### Mandatory internal order
+#### Mandatory internal order
 
 ```text
 exact property/control
@@ -720,7 +752,7 @@ exact property/control
 
 Do not begin with `px` versus `%`.
 
-### Candidate rules
+#### Candidate rules
 
 | Candidate | Choose when | Avoid when |
 |---|---|---|
@@ -737,7 +769,7 @@ Do not begin with `px` versus `%`.
 | Variable | A compatible reusable value should be centrally governed | The value is one-off or the property type is incompatible |
 | unitless | The exact property grammar permits or requires it | Never generalize unitless values across unrelated properties |
 
-### Property-specific caution
+#### Property-specific caution
 
 The same unit can behave differently by property. Confirm:
 
@@ -748,7 +780,7 @@ The same unit can behave differently by property. Confirm:
 - whether responsive overrides inherit or replace the base value;
 - whether the used value differs from the specified value due to Flex/Grid sizing.
 
-### Typography-specific gate
+#### Typography-specific gate
 
 For `font-size` and text-dependent dimensions:
 
@@ -758,7 +790,7 @@ For `font-size` and text-dependent dimensions:
 - do not use viewport units as the sole font-size mechanism when they prevent the required resize behavior;
 - regardless of unit, apply the text-resize, spacing, reflow, content-expansion, and clipping checks in section 6.8.
 
-### Professional combination patterns
+#### Professional combination patterns
 
 - fluid `%` width with a fixed or tokenized `max-width`;
 - `rem` bounds with a viewport-relative middle term in `clamp()` when text-resize behavior remains safe;
@@ -766,7 +798,7 @@ For `font-size` and text-dependent dimensions:
 - Variable-backed shared bounds with a local responsive expression;
 - fixed border or icon detail inside a fluid component.
 
-### Common shallow mistakes
+#### Common shallow mistakes
 
 - `fixed → px` without proving fixed behavior;
 - `parent exists → %`;
@@ -778,11 +810,11 @@ For `font-size` and text-dependent dimensions:
 - declaring `px` automatically inaccessible or declaring `rem` automatically safe without validating the resulting layout;
 - using viewport-only font sizing that cannot reach 200% text enlargement.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > For this property, should the value follow content, parent, root typography, component typography, or viewport—and what bounds are required?
 
-### Direct response example
+#### Direct response example
 
 ```text
 Set the width to 70% and add max-width: 320px;
@@ -791,13 +823,13 @@ the element should scale with its parent but should not grow beyond the intended
 
 ---
 
-## 7.5 `preferred_minimum_maximum_size_selection`
+### 7.5 `preferred_minimum_maximum_size_selection`
 
-### Trigger
+#### Trigger
 
 A dimension may need a preferred size, minimum, maximum, aspect ratio, or combination.
 
-### Candidate strategies
+#### Candidate strategies
 
 - no explicit size;
 - preferred width/height;
@@ -809,7 +841,7 @@ A dimension may need a preferred size, minimum, maximum, aspect ratio, or combin
 - aspect ratio plus one dimension;
 - bounded-fluid expression.
 
-### Selection rules
+#### Selection rules
 
 - Use preferred size to express the normal target, not an absolute guarantee.
 - Use `max-*` to cap growth while allowing smaller states.
@@ -819,7 +851,7 @@ A dimension may need a preferred size, minimum, maximum, aspect ratio, or combin
 - Use aspect ratio for media or visual surfaces that must preserve proportions.
 - Consider Flex/Grid automatic minimum-size behavior before assuming an item can shrink.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - fixed height to align cards instead of solving layout/content behavior;
 - clipping text to preserve screenshot geometry;
@@ -827,19 +859,19 @@ A dimension may need a preferred size, minimum, maximum, aspect ratio, or combin
 - min/max values without explaining what they protect;
 - aspect ratio inferred from a temporary crop.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Should the element fill, follow content, remain fixed, or grow within limits—and which minimum or maximum protects the design?
 
 ---
 
-## 7.6 `spacing_ownership_selection`
+### 7.6 `spacing_ownership_selection`
 
-### Trigger
+#### Trigger
 
 Space is needed between siblings, inside a boundary, or outside an exceptional element.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - parent `gap`;
 - boundary `padding`;
@@ -847,7 +879,7 @@ Space is needed between siblings, inside a boundary, or outside an exceptional e
 - no explicit spacing;
 - justified combination.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Gap
 
@@ -872,13 +904,13 @@ Choose when:
 - one item needs a genuine exception;
 - normal block-flow separation is the actual relationship.
 
-### Combination strategies
+#### Combination strategies
 
 - parent gap plus container padding;
 - shared Variable for base rhythm plus one bounded local exception;
 - gap for normal siblings plus margin only for a special item.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - wrapper created only for spacing;
 - child margins simulating parent-owned rhythm;
@@ -887,19 +919,19 @@ Choose when:
 - duplicate gap and margin;
 - physical left/right when direction-relative spacing is intended.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Is this space between siblings, inside a boundary, or outside one exceptional item?
 
 ---
 
-## 7.7 `positioning_and_layering_selection`
+### 7.7 `positioning_and_layering_selection`
 
-### Trigger
+#### Trigger
 
 An element may need offset, overlay, sticky/fixed behavior, a containing block, z-index, or clipping.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - normal flow;
 - relative;
@@ -910,7 +942,7 @@ An element may need offset, overlay, sticky/fixed behavior, a containing block, 
 - local stacking context;
 - clipping/overflow boundary.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Normal flow
 
@@ -954,7 +986,7 @@ Choose when:
 
 Use only after identifying the relevant stacking contexts. Do not escalate numbers blindly.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - absolute positioning used to repair unresolved Flex/Grid layout;
 - offsets copied from one screenshot;
@@ -964,23 +996,23 @@ Use only after identifying the relevant stacking contexts. Do not escalate numbe
 - clipping hiding layout failure, text, focus, errors, or controls;
 - z-index escalation without stacking-context diagnosis.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Must this element leave normal flow, and what exact parent or viewport should anchor it?
 
-### Runtime sanity check
+#### Runtime sanity check
 
 Test the computed position, containing block, stacking contexts, clipping, scroll behavior, narrow/reflowed viewport, keyboard traversal, focus visibility, and collision with persistent layers.
 
 ---
 
-## 7.8 `responsive_adaptation_selection`
+### 7.8 `responsive_adaptation_selection`
 
-### Trigger
+#### Trigger
 
 A structure, value, visibility, order, interaction, or direction may change by viewport or locale.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - inherit base behavior;
 - fluid adaptation without override;
@@ -991,7 +1023,7 @@ A structure, value, visibility, order, interaction, or direction may change by v
 - interaction-pattern change;
 - logical-direction adaptation.
 
-### Required context
+#### Required context
 
 - actual project breakpoints when available;
 - base behavior;
@@ -1001,7 +1033,7 @@ A structure, value, visibility, order, interaction, or direction may change by v
 - direction and locale;
 - viewport/state matrix.
 
-### Eligibility rules
+#### Eligibility rules
 
 - establish base behavior first;
 - prefer intrinsic/fluid behavior before adding overrides;
@@ -1011,7 +1043,7 @@ A structure, value, visibility, order, interaction, or direction may change by v
 - preserve source, reading, focus, and interaction order;
 - use logical direction where the design relationship should mirror.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - mobile overrides added before understanding desktop/base behavior;
 - assuming default breakpoints without target-project confirmation;
@@ -1020,19 +1052,19 @@ A structure, value, visibility, order, interaction, or direction may change by v
 - visual order contradicting focus or DOM order;
 - editor preview treated as complete runtime evidence.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Which behavior is the base, and at what exact viewport must it genuinely change rather than continue fluidly?
 
 ---
 
-## 7.9 `reuse_and_value_source_selection`
+### 7.9 `reuse_and_value_source_selection`
 
-### Trigger
+#### Trigger
 
 A style, value, or multi-element structure may be local, reusable, inherited, or synchronized.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - local literal/control value;
 - local Class;
@@ -1043,7 +1075,7 @@ A style, value, or multi-element structure may be local, reusable, inherited, or
 - independent repeated structure;
 - combination of Class and Variables.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Local value
 
@@ -1069,14 +1101,14 @@ Choose when a multi-element structure/content relationship should stay synchroni
 
 Choose when each instance must diverge independently while still possibly sharing Classes or Variables.
 
-### Combination patterns
+#### Combination patterns
 
 - Class applies properties; Variables supply reusable values.
 - Shared base Class plus bounded local responsive exception.
 - Component structure plus Variables for exposed design choices.
 - Independent repeated items plus shared style Class.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - repeated local literals when shared control is required;
 - Class used as synchronized structure;
@@ -1085,19 +1117,19 @@ Choose when each instance must diverge independently while still possibly sharin
 - local override silently defeating the shared rule;
 - inheritance assumed without checking cascade and source.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Should only this instance change, should the value/style remain shared, or must the whole multi-element structure stay synchronized?
 
 ---
 
-## 7.10 `content_variability_and_overflow_selection`
+### 7.10 `content_variability_and_overflow_selection`
 
-### Trigger
+#### Trigger
 
 Text length, localization, dynamic data, user input, repeated count, missing media, or loading/error state can change geometry.
 
-### Candidate strategies
+#### Candidate strategies
 
 - natural wrap and reflow;
 - intrinsic block size;
@@ -1107,7 +1139,7 @@ Text length, localization, dynamic data, user input, repeated count, missing med
 - structural reflow;
 - clipping for confirmed decoration only.
 
-### Required context
+#### Required context
 
 - minimum, typical, and maximum content;
 - localized and RTL/LTR cases;
@@ -1118,7 +1150,7 @@ Text length, localization, dynamic data, user input, repeated count, missing med
 - overflow intent;
 - required viewports.
 
-### Eligibility rules
+#### Eligibility rules
 
 - preserve meaningful content;
 - prefer natural wrap and intrinsic height;
@@ -1128,7 +1160,7 @@ Text length, localization, dynamic data, user input, repeated count, missing med
 - test Flex/Grid items for min-content and shrink behavior;
 - include empty, loading, error, and maximum states for dynamic content.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - fixed height to match a screenshot;
 - `overflow: hidden` as a layout repair;
@@ -1137,19 +1169,19 @@ Text length, localization, dynamic data, user input, repeated count, missing med
 - assuming only short English/LTR content;
 - testing only ideal data.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > What are the longest, empty, localized, and dynamic states, and may any meaningful content be truncated or scrolled?
 
 ---
 
-## 7.11 `native_control_vs_workaround_selection`
+### 7.11 `native_control_vs_workaround_selection`
 
-### Trigger
+#### Trigger
 
 The same requirement might be implemented with a native Elementor control, Class/Variable, custom CSS, additional element, custom HTML/code, or external addon.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - native element/control;
 - native Class/Variable;
@@ -1160,7 +1192,7 @@ The same requirement might be implemented with a native Elementor control, Class
 - third-party addon;
 - custom HTML/code.
 
-### Selection order
+#### Interpretation order for an already approved mechanism
 
 1. verified native control on the correct existing element;
 2. Class or Variable when reuse/governance is the real need;
@@ -1169,7 +1201,7 @@ The same requirement might be implemented with a native Elementor control, Class
 5. documented extension or addon after compatibility review;
 6. custom code only when necessary and safe.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Native control
 
@@ -1196,7 +1228,7 @@ Use when:
 
 Use only with exact compatibility, security, lifecycle, and rollback awareness.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - custom CSS used before checking native controls;
 - extra wrapper added solely to access a visual effect;
@@ -1206,19 +1238,19 @@ Use only with exact compatibility, security, lifecycle, and rollback awareness.
 - undocumented hooks or internals;
 - untrusted code or assets.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Can the exact requirement be expressed by a native control on the correct existing element, or is a real structural/custom capability missing?
 
 ---
 
-## 7.12 `runtime_sanity_check`
+### 7.12 `runtime_sanity_check`
 
-### Trigger
+#### Trigger
 
 The Builder is about to claim that the selected implementation will work correctly.
 
-### Check layers
+#### Check layers
 
 1. **Configured:** the intended setting/control was selected.
 2. **Saved:** the value or structure persisted.
@@ -1227,7 +1259,7 @@ The Builder is about to claim that the selected implementation will work correct
 5. **Responsive:** required viewports and content states behave correctly.
 6. **Quantified gates:** applicable thresholds from section 6.8 were actually tested.
 
-### Minimum checks by decision type
+#### Minimum checks by decision type
 
 #### Layout
 
@@ -1283,13 +1315,13 @@ Do not claim complete correctness from one screenshot, one editor preview, one v
 
 ## 8. Full element and presentation decision policies
 
-## 8.1 `media_representation_selection`
+### 8.1 `media_representation_selection`
 
-### Trigger
+#### Trigger
 
 A visual asset must be represented as Image Element, Background Image, SVG, Icon, Video Element, Background Video, or another verified media mechanism.
 
-### Required context
+#### Required context
 
 - informative, functional, complex, textual, or decorative purpose;
 - whether the asset needs independent alternative text;
@@ -1304,7 +1336,7 @@ A visual asset must be represented as Image Element, Background Image, SVG, Icon
 - missing/error behavior;
 - target-project support.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - Image Element;
 - Background Image;
@@ -1315,7 +1347,7 @@ A visual asset must be represented as Image Element, Background Image, SVG, Icon
 - CSS/background decoration;
 - no media element.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Image Element
 
@@ -1381,7 +1413,7 @@ Choose when:
 - autoplay/persistent-motion controls meet the applicable section 6.8 motion gate;
 - performance and mobile behavior are safe.
 
-### Fit and crop selection
+#### Fit and crop selection
 
 - `cover`: intentional surface fill with acceptable crop and a protected focal area.
 - `contain`: full asset should remain visible.
@@ -1390,7 +1422,7 @@ Choose when:
 
 Do not select `cover` or `contain` before knowing whether crop or full preservation is intended.
 
-### Text overlay and contrast
+#### Text overlay and contrast
 
 When text or controls overlay an image, video, gradient, or layered background:
 
@@ -1399,7 +1431,7 @@ When text or controls overlay an image, video, gradient, or layered background:
 - do not assume one overlay color or opacity protects every asset state;
 - prefer a stable contrast treatment when source imagery is variable.
 
-### Loading selection
+#### Loading selection
 
 - do not lazy-load a confirmed or strong LCP-image candidate;
 - do not delay initial-viewport or visually critical media by default;
@@ -1409,7 +1441,7 @@ When text or controls overlay an image, video, gradient, or layered background:
 - define fallback for missing or failed media;
 - do not claim LCP/CLS success from the configuration alone.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - meaningful or functional image implemented only as Background;
 - decorative image exposed with redundant content semantics;
@@ -1423,7 +1455,7 @@ When text or controls overlay an image, video, gradient, or layered background:
 - intrinsic file dimensions treated as the design size automatically;
 - confirmed LCP media lazy-loaded without a measured overriding reason.
 
-### Combination strategies
+#### Combination strategies
 
 - Background image on a container plus semantic text children;
 - Image Element inside a bounded responsive frame;
@@ -1432,11 +1464,11 @@ When text or controls overlay an image, video, gradient, or layered background:
 - fluid media width plus max-width and aspect ratio;
 - Background Image with a stable contrast layer tested across media states.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Is this asset meaningful or functional content that needs independent semantics/editing, or a decorative/compositional surface behind other content?
 
-### Direct response examples
+#### Direct response examples
 
 ```text
 Use the image as the container background with cover and a defined focal position;
@@ -1448,19 +1480,19 @@ Use an Image Element rather than a background;
 the image is meaningful content and needs its own alternative text and responsive asset behavior.
 ```
 
-### Runtime sanity check
+#### Runtime sanity check
 
 Verify source loading, dimensions, aspect ratio, crop, focal point, alternative/decorative treatment, overlay contrast, responsive behavior, missing source, loading priority, reserved space, performance impact, motion controls, and reduced-motion fallback.
 
 ---
 
-## 8.2 `text_element_selection`
+### 8.2 `text_element_selection`
 
-### Trigger
+#### Trigger
 
 Text must be represented as Heading, Paragraph/body text, Link, Button label, editable text, or decorative text.
 
-### Required context
+#### Required context
 
 - content meaning and hierarchy;
 - action versus navigation;
@@ -1471,7 +1503,7 @@ Text must be represented as Heading, Paragraph/body text, Link, Button label, ed
 - wrapping and length;
 - visual styling requirement.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - Heading element;
 - Paragraph/body-text element;
@@ -1481,7 +1513,7 @@ Text must be represented as Heading, Paragraph/body text, Link, Button label, ed
 - decorative generated text only when nonessential;
 - image/SVG text only when editability and accessibility are not required.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Heading
 
@@ -1510,7 +1542,7 @@ Use inside a Button when the control performs an action rather than navigation.
 
 Use only when the text is not required for meaning and will not become inaccessible or uneditable. Prefer real text when users need to read, search, translate, resize, or edit it.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - Heading selected for appearance;
 - vague Heading or control label that does not describe its topic/purpose;
@@ -1520,30 +1552,30 @@ Use only when the text is not required for meaning and will not become inaccessi
 - visual order contradicting reading order;
 - fixed height clipping localized, expanded, resized, or user-spaced text.
 
-### Combination strategies
+#### Combination strategies
 
 - semantic Heading plus Class/Variables for visual styling;
 - Paragraph with dynamic binding;
 - Link containing text and an icon while preserving accessible name;
 - real editable text over a decorative background.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Is this text a section heading, normal content, navigation target, action label, or decoration?
 
-### Runtime sanity check
+#### Runtime sanity check
 
 Verify actual semantic element/role, programmatically determinable relationships, descriptive heading/label, logical content hierarchy, accessible name, editability, wrapping, localization, direction, 200% resize, text spacing, and dynamic state.
 
 ---
 
-## 8.3 `action_navigation_and_click_target_selection`
+### 8.3 `action_navigation_and_click_target_selection`
 
-### Trigger
+#### Trigger
 
 A user must activate an action, navigate, open a destination, or click/tap a visual region.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - Button;
 - Link;
@@ -1553,7 +1585,7 @@ A user must activate an action, navigate, open a destination, or click/tap a vis
 - text Link;
 - no interactive behavior.
 
-### Required context
+#### Required context
 
 - action versus navigation;
 - target or resulting state;
@@ -1565,7 +1597,7 @@ A user must activate an action, navigate, open a destination, or click/tap a vis
 - disabled/loading/error state;
 - security implications of destination/action.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Button
 
@@ -1607,7 +1639,7 @@ Prefer when:
 - nested-interactive conflicts would occur;
 - explicit control semantics are clearer.
 
-### Quantified interaction gates
+#### Quantified interaction gates
 
 - Apply the section 6.8 target-size rule: prefer at least `24 × 24 CSS pixels` unless a documented exception applies.
 - Prefer `44 × 44 CSS pixels` for important touch-critical controls when practical.
@@ -1615,7 +1647,7 @@ Prefer when:
 - A focused component must not be entirely hidden by sticky/fixed/overlay content.
 - Visible focus, keyboard access, and sufficient state contrast remain required independently of target size.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - Button used for ordinary navigation;
 - Link used for state-changing action without correct behavior;
@@ -1628,7 +1660,7 @@ Prefer when:
 - insufficient focus/state contrast;
 - ambiguous disabled/loading state.
 
-### Combination strategies
+#### Combination strategies
 
 - noninteractive card plus title Link and separate action Button;
 - Link containing icon and label;
@@ -1636,23 +1668,23 @@ Prefer when:
 - Button with loading/disabled state;
 - Clickable Container only for a single-target simple card.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Does activation navigate somewhere, perform an action, or make an entire single-target region clickable?
 
-### Runtime sanity check
+#### Runtime sanity check
 
 Test keyboard, focus, pointer/touch, target/action, target dimensions/spacing or valid exception, nested controls, accessible name, focus obstruction, state contrast, hover/focus/active/disabled/loading states, and error behavior.
 
 ---
 
-## 8.4 `tabs_accordion_or_normal_sections_selection`
+### 8.4 `tabs_accordion_or_normal_sections_selection`
 
-### Trigger
+#### Trigger
 
 Related content could be displayed as Tabs, Accordion, continuously visible sections, or another disclosure pattern.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - normal stacked sections;
 - Tabs;
@@ -1661,7 +1693,7 @@ Related content could be displayed as Tabs, Accordion, continuously visible sect
 - responsive pattern change when justified;
 - another verified disclosure element.
 
-### Required context
+#### Required context
 
 - number of sections;
 - content length;
@@ -1675,7 +1707,7 @@ Related content could be displayed as Tabs, Accordion, continuously visible sect
 - deep linking or state persistence;
 - dynamic content and loading.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Normal sections
 
@@ -1726,7 +1758,7 @@ Changing Tabs to Accordion on narrow screens is eligible only when:
 - the transformation is supported and tested;
 - hidden content is not lost.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - Tabs for sequential steps that should be a process/stepper;
 - Tabs when users need side-by-side comparison;
@@ -1738,30 +1770,30 @@ Changing Tabs to Accordion on narrow screens is eligible only when:
 - inaccessible keyboard/focus/expanded/selected state;
 - different content order across breakpoints without preserving meaning.
 
-### Combination strategies
+#### Combination strategies
 
 - normal sections with anchor navigation;
 - Tabs on wide screens and verified Accordion on narrow screens;
 - Accordion with concise labels and clear open state;
 - normal comparison summary plus detailed disclosure sections.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Must users compare sections at the same time, or is one independently selectable/expandable section at a time sufficient?
 
-### Runtime sanity check
+#### Runtime sanity check
 
 Test semantic roles/relationships, keyboard navigation, focus movement, activation latency, selected/expanded state, screen-size adaptation, content discoverability, URL/deep-link behavior if required, dynamic content, and failure behavior where applicable.
 
 ---
 
-## 8.5 `decoration_and_separation_selection`
+### 8.5 `decoration_and_separation_selection`
 
-### Trigger
+#### Trigger
 
 The design appears to need a line, divider, visual separation, decorative shape, or additional empty space.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - no visible separator;
 - spacing only;
@@ -1772,7 +1804,7 @@ The design appears to need a line, divider, visual separation, decorative shape,
 - SVG decorative line or shape;
 - dedicated decorative element.
 
-### Required context
+#### Required context
 
 - whether separation is structural, visual, or purely spatial;
 - who owns the separator;
@@ -1783,7 +1815,7 @@ The design appears to need a line, divider, visual separation, decorative shape,
 - need for shape, gradient, texture, or animation;
 - DOM and maintenance cost.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Spacing only
 
@@ -1829,7 +1861,7 @@ Choose when:
 - Border or a simple native treatment cannot express it;
 - source safety and responsive behavior are verified.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - Divider Element for a simple border owned by an existing container;
 - decorative element added when spacing is sufficient;
@@ -1839,30 +1871,30 @@ Choose when:
 - extra wrapper solely to carry a line;
 - line placement fixed with offsets that break responsively.
 
-### Combination strategies
+#### Combination strategies
 
 - spacing plus subtle Border;
 - Border on repeated cards and gap between them;
 - Background decorative shape with real content above it;
 - independent Divider only between major sections where it owns its placement.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Is a visible separator truly needed, and does it belong to an existing boundary or need to be an independent layout item?
 
-### Runtime sanity check
+#### Runtime sanity check
 
 Check unnecessary DOM, responsive width, alignment, contrast, decorative semantics, direction, repetition, and whether spacing or Border would be simpler.
 
 ---
 
-## 8.6 `icon_svg_or_image_selection`
+### 8.6 `icon_svg_or_image_selection`
 
-### Trigger
+#### Trigger
 
 A small graphic, symbol, logo, illustration, or pictogram needs representation.
 
-### Candidate options
+#### Candidate options in the approved carrier
 
 - native Icon;
 - SVG;
@@ -1870,7 +1902,7 @@ A small graphic, symbol, logo, illustration, or pictogram needs representation.
 - CSS/background decoration;
 - text character only when semantically and visually appropriate.
 
-### Eligibility rules
+#### Eligibility rules
 
 #### Icon
 
@@ -1888,7 +1920,7 @@ Choose for raster artwork, photography, or graphics where pixel rendering and so
 
 Choose for nonsemantic visual ornament attached to a surface.
 
-### Disqualifying conditions
+#### Disqualifying conditions
 
 - raster Image for a simple icon when a suitable native/vector option exists;
 - SVG for editable text;
@@ -1897,7 +1929,7 @@ Choose for nonsemantic visual ornament attached to a surface.
 - meaningful icon lacking accessible label in an interactive control;
 - decorative icon receiving redundant spoken text.
 
-### Minimal question when necessary
+#### Minimal question when necessary
 
 > Is this a simple symbol, a custom vector/brand asset, a raster graphic, or only surface decoration?
 
@@ -1907,7 +1939,7 @@ Choose for nonsemantic visual ornament attached to a surface.
 
 These policies remain concise but mandatory when their trigger is material.
 
-## 9.1 `repeated_content_and_data_binding`
+### 9.1 `repeated_content_and_data_binding`
 
 Use when content repeats or comes from a query, template, Dynamic Tag, or data source.
 
@@ -1926,7 +1958,7 @@ Minimum question when necessary:
 
 ---
 
-## 9.2 `forms_input_validation_and_actions`
+### 9.2 `forms_input_validation_and_actions`
 
 Use when selecting form fields, validation, submission actions, uploads, or data destinations.
 
@@ -1945,7 +1977,7 @@ Minimum question when necessary:
 
 ---
 
-## 9.3 `saved_published_and_runtime_state`
+### 9.3 `saved_published_and_runtime_state`
 
 Keep these states separate:
 
@@ -1967,7 +1999,7 @@ When migration or saved identity matters:
 
 ---
 
-## 9.4 `platform_feature_availability`
+### 9.4 `platform_feature_availability`
 
 Before relying on a version-sensitive, Pro-only, experimental, prerelease, or project-enabled capability:
 
@@ -1980,7 +2012,7 @@ Do not ask for platform details when they cannot change the proposed implementat
 
 ---
 
-## 9.5 `accessibility_constraints`
+### 9.5 `accessibility_constraints`
 
 Apply when the choice affects:
 
@@ -2020,7 +2052,7 @@ Do not claim page/site conformance from a single component check.
 
 ---
 
-## 9.6 `security_constraints`
+### 9.6 `security_constraints`
 
 Apply to SVG, uploads, external media, webhooks, HTML, custom code, external services, permissions, and destructive actions.
 
@@ -2034,7 +2066,7 @@ Apply to SVG, uploads, external media, webhooks, HTML, custom code, external ser
 
 ---
 
-## 9.7 `performance_constraints`
+### 9.7 `performance_constraints`
 
 Performance is a tie-breaker after correctness and intent.
 
@@ -2072,7 +2104,7 @@ These are performance targets, not normative accessibility rules. Editor preview
 
 ---
 
-## 9.8 `ai_assisted_authoring_constraints`
+### 9.8 `ai_assisted_authoring_constraints`
 
 When an AI-assisted capability may create, modify, publish, delete, execute, or generate code:
 
@@ -2183,118 +2215,43 @@ Do not produce:
 
 ---
 
-## 12. Builder start-session instruction
+## 12. Manual reference-use instruction
 
-Attach this policy and the available EV4 Domain artifacts, then provide the following instruction at the start of the Builder session:
+This document is not loaded or activated by prose alone. When it is supplied manually to a Builder session, use this instruction:
 
 ```text
-Use the attached EV4 Builder Implementation Decision Policy and EV4 Domain
-artifacts as silent mandatory implementation-quality guidance for this session.
+Use the attached EV4 Builder Implementation Decision Policy only as
+NON_EXECUTABLE_REFERENCE_ONLY guidance for interpreting and applying decisions
+that are already approved and carried by trusted upstream artifacts.
 
-Before giving or applying any meaningful Elementor instruction, internally check
-whether a better element, structure, layout mode, sizing behavior, unit,
-constraint, spacing mechanism, positioning mode, responsive treatment, reuse
-mechanism, media representation, interaction pattern, or native control exists.
+Before giving an implementation instruction, verify the materially applicable
+approved_structure_tree, widget_mapping_table, complete decision_lineage,
+approved class maps and scopes, unit-policy or geometry records, responsive and
+interaction decisions, and validated Builder actions. Preserve selected_candidate_id
+and Kernel lineage exactly.
 
-Resolve the higher-level implementation behavior before selecting the low-level
-element, control, value, or unit. For example, decide fixed versus intrinsic,
-parent-relative, viewport-relative, or bounded-fluid sizing before recommending
-px, %, rem, em, viewport units, auto, min/max, or clamp().
+Do not use this policy to choose or redesign structure, Flexbox/Grid/nesting,
+media role, element semantics, responsive strategy, geometry, positioning,
+interaction, class scope, unit family, bounds, custom CSS, addon, or custom
+mechanism. The candidate comparisons in the policy explain an approved decision;
+they do not authorize a new decision.
 
-For element selection, compare the materially relevant candidates rather than
-choosing the first familiar element. This includes, where applicable:
+If a required carrier is missing, contradictory, stale, or incomplete, return
+EVIDENCE_REQUIRED or CORRECTION, or request upstream CE/Kernel consultation. Do
+not fill the gap with a local Builder choice.
 
-- existing parent vs Div Block vs Flexbox vs Grid vs justified nesting;
-- Image Element vs Background Image vs SVG vs Icon vs Video;
-- Heading vs Paragraph;
-- Button vs Link vs Clickable Container;
-- Tabs vs Accordion vs normal visible sections;
-- Divider Element vs Border vs background/SVG decoration vs spacing only;
-- local value vs Class vs Variable vs Component;
-- native Elementor control vs custom CSS, extra wrapper, addon, or custom code.
-
-Apply this analysis silently. Give the user the direct practical instruction and,
-when useful, one short reason. Do not expose internal policy names, Domain names,
-checklists, decision statuses, or process narration.
-
-Do not treat a one-factor explanation as sufficient for a consequential choice.
-Internally bind every nontrivial selected element, control, value, unit, bound,
-override, wrapper, or workaround to its actual basis or to a clearly bounded
-assumption. Keep that basis analysis internal by default and do not turn ordinary
-Builder responses into evidence reports.
-
-If one missing fact can materially change the choice, ask only one concise
-question for that fact. Otherwise choose the simplest sufficient, maintainable,
-responsive, accessible, reversible, and natively supported implementation.
-
-Do not assume that a documented or version-sensitive feature is available in
-the target project. Avoid risky custom code, untrusted assets, destructive
-actions, or sensitive-data behavior without the necessary evidence or approval.
-
-Treat configured, saved, loaded, and runtime-effective behavior as different
-states. Keep untested cases as assumptions rather than claiming certainty.
+Keep user-facing instructions concise and execute only validated Builder actions.
+Do not claim activation, enforcement, runtime success, responsive completion, or
+production readiness from this Markdown reference.
 ```
 
 ---
 
-## 13. Coverage map
+## 13. Reference topic map
 
-All 21 Registry Domains contribute to this policy.
+The sections in this document cover common implementation topics such as structure, sizing, units, spacing, positioning, responsive behavior, reuse, media, text semantics, interaction, dynamic content, forms, runtime checks, accessibility, security, and performance.
 
-### Detailed implementation decision coverage
-
-- `ELEMENT_ENTITY_IDENTITY`
-- `LAYOUT_STRUCTURE`
-- `UNITS_SIZE_SPACING`
-- `POSITIONING_LAYERING`
-- `RESPONSIVE_BREAKPOINTS_DIRECTION`
-- `CLASSES_REUSE_COMPONENTS`
-- `VARIABLES_VALUES_BINDING`
-- `TEXT_SEMANTICS`
-- `INTERACTION_STATE_TOPOLOGY`
-- `MEDIA_DECISIONS`
-- `RUNTIME_RENDERING_VALIDATION`
-
-### Supporting operational coverage
-
-- `REPEATED_CONTENT_DATA_BINDING`
-- `FORMS_INPUT_ACTIONS`
-- `MIGRATION_SAVED_STATE_LIFECYCLE`
-- `PERFORMANCE_OPTIMIZATION`
-- `EXTENSIBILITY_COMPATIBILITY`
-
-### Cross-cutting constraints
-
-- `PLATFORM_ENVIRONMENT`
-- `EVIDENCE_SOURCE_BOUNDARIES`
-- `ACCESSIBILITY_GOVERNANCE`
-- `SECURITY_GOVERNANCE`
-- `AI_ASSISTED_AUTHORING_GOVERNANCE`
-
-### Core professional comparison coverage
-
-This revision provides direct decision policies for:
-
-1. existing parent vs Div Block vs Flexbox vs Grid vs nesting;
-2. wrapper vs no wrapper;
-3. intrinsic vs fixed vs fluid vs fill vs bounded-fluid sizing;
-4. `px` vs `%` vs typography-relative vs viewport-relative vs intrinsic/expression strategies;
-5. preferred size vs min/max/aspect-ratio combinations;
-6. gap vs padding vs margin;
-7. normal flow vs relative vs absolute vs sticky vs fixed;
-8. responsive inherit vs fluid adaptation vs override vs reflow vs visibility change;
-9. local value vs Class vs Variable vs Component vs inheritance;
-10. native control vs custom CSS vs extra element vs custom mechanism;
-11. Image vs Background vs SVG vs Icon vs Video;
-12. Heading vs Paragraph vs interactive text roles;
-13. Button vs Link vs Clickable Container;
-14. Tabs vs Accordion vs normal sections;
-15. Divider vs Border vs decorative background/SVG vs spacing only;
-16. Icon vs SVG vs Image;
-17. content reflow vs truncation vs scroll vs clipping;
-18. runtime validation appropriate to the selected mechanism;
-19. quantified text resize, reflow, text-spacing, contrast, target-size, focus-obstruction, and motion gates;
-20. measurable LCP, INP, CLS, critical-media loading, and visual-stability checks.
+This topic map is not a claim that any external Registry or set of 21 Domain artifacts is present, approved, current, compatible, or validated in this pull request. External Domain artifacts remain optional advisory evidence and must be exactly identified before consultation. They cannot independently authorize a Builder action or replace repository contracts, CE/Kernel decisions, schemas, validators, or decision lineage.
 
 ---
 
@@ -2314,14 +2271,14 @@ It does not automatically know:
 
 When one of these facts can materially change the recommendation, ask one concise question or use a clearly stated conservative assumption.
 
-The policy intentionally does not reproduce every Domain Claim, source record, version history, citation, or diagnostic detail. The attached Domain artifacts remain available for deeper consultation when a specific decision requires them. Source identity, authority class, operational effect, and validation mapping for load-bearing rules are maintained separately in `EV4_BUILDER_POLICY_RULE_REGISTER_r001.md`.
+This pull request does not include or claim an external Domain corpus, source register, or validation mapping. Any external Domain artifact is optional advisory evidence only and must be exactly identified before consultation. Its absence does not authorize Builder to invent or select an implementation strategy.
 
 ---
 
 ## 15. Final policy state
 
 ```text
-EV4_BUILDER_IMPLEMENTATION_DECISION_POLICY_READY
+EV4_BUILDER_IMPLEMENTATION_DECISION_POLICY_NON_EXECUTABLE_REFERENCE_ONLY
 ```
 
-This revision is intended for immediate temporary use as a Builder-only best-practice decision aid. It prioritizes practical intelligence, element and control comparison, professional implementation details, quantified validation outcomes, concise user-facing instructions, and broad EV4 Domain coverage without introducing unnecessary process ceremony.
+This revision is intended only as a manually supplied, non-executable Builder reference for applying already approved decisions. It prioritizes practical intelligence, element and control comparison, professional implementation details, quantified validation outcomes, concise user-facing instructions, and broad EV4 Domain coverage without introducing unnecessary process ceremony.
