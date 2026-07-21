@@ -1,14 +1,11 @@
 {
   "schema": "ev4-builder-runtime-transaction-evidence@1.0.0",
+  "fixture_classification": "synthetic_validation_only",
   "source": {
     "source_kind": "project_gate_builder_input",
     "input_path": "builder-input.json",
-    "semantic_candidate_paths": [
-      "builder-input.json"
-    ],
-    "audit_receipt_paths": [
-      "project-gate-c2b-receipt.json"
-    ],
+    "semantic_candidate_paths": ["builder-input.json"],
+    "audit_receipt_paths": ["project-gate-c2b-receipt.json"],
     "captured_source_bytes": "{\"schema\":\"ev4-builder-context-package@1.0.0\",\"package_id\":\"PKG-BUILDER-TRX-001\"}\n",
     "captured_source_sha256": "7a1b18d2bdce23d71186b39db80f807625c36c0e34eeb2b9ede5907150e4645c",
     "parsed_schema": "ev4-builder-context-package@1.0.0",
@@ -36,26 +33,11 @@
     "production_ready_allowed": false,
     "required_constructability_carriers_complete": true,
     "blocking_dependencies": [],
-    "source_payload_ledger": [
-      {
-        "payload_name": "Kernel_Decision_Lineage",
-        "schema": "ev4-kernel-decision-lineage@1.0.0",
-        "status": "validated"
-      }
-    ],
-    "approved_structure_node_ids": [
-      "n-root",
-      "n-card"
-    ],
+    "source_payload_ledger": [{"payload_name":"Kernel_Decision_Lineage","schema":"ev4-kernel-decision-lineage@1.0.0","status":"validated"}],
+    "approved_structure_node_ids": ["n-root", "n-card"],
     "approved_class_map": [
-      {
-        "class_name": "smart-home__section",
-        "class_scope": "Local Classes"
-      },
-      {
-        "class_name": "smart-home__card",
-        "class_scope": "Local Classes"
-      }
+      {"class_name":"smart-home__section","class_scope":"Local Classes"},
+      {"class_name":"smart-home__card","class_scope":"Local Classes"}
     ],
     "package_identity": {
       "material": "{\"package_id\":\"PKG-BUILDER-TRX-001\",\"selected_candidate_id\":\"ARCH-FAM-C\",\"batch_id\":\"BATCH-001\",\"actions\":[\"BATCH-001-A01\",\"BATCH-001-A02\"]}",
@@ -73,13 +55,8 @@
             "decision_family": "layout_strategy",
             "decision_card_ref": "KERNEL-DECISION-001",
             "selected_option": "locked_option_c",
-            "rejected_options": [
-              "option_a",
-              "option_b"
-            ],
-            "evidence_refs": [
-              "EVID-KERNEL-001"
-            ],
+            "rejected_options": ["option_a", "option_b"],
+            "evidence_refs": ["EVID-KERNEL-001"],
             "evidence_state": "validated",
             "consumer_stage": "builder"
           }
@@ -93,13 +70,8 @@
             "decision_family": "layout_strategy",
             "decision_card_ref": "KERNEL-DECISION-001",
             "selected_option": "locked_option_c",
-            "rejected_options": [
-              "option_a",
-              "option_b"
-            ],
-            "evidence_refs": [
-              "EVID-KERNEL-001"
-            ],
+            "rejected_options": ["option_a", "option_b"],
+            "evidence_refs": ["EVID-KERNEL-001"],
             "evidence_state": "validated",
             "consumer_stage": "builder"
           }
@@ -108,10 +80,7 @@
     },
     "confirmation_request": {
       "confirmation_id": "CONFIRM-BATCH-001",
-      "confirmed_action_ids": [
-        "BATCH-001-A01",
-        "BATCH-001-A02"
-      ],
+      "confirmed_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
       "expected_user_token": "تایید BATCH-001",
       "template_id": "standard_batch_confirmation",
       "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee"
@@ -120,30 +89,20 @@
       "confirmation_sentence_used_as_authority": false,
       "builder_assistant_prompt_seed_used_as_authority": false
     },
-    "decision_lineage": [
-      {
-        "decision_family": "layout_strategy",
-        "decision_card_ref": "KERNEL-DECISION-001",
-        "selected_option": "locked_option_c",
-        "rejected_options": [
-          "option_a",
-          "option_b"
-        ],
-        "evidence_refs": [
-          "EVID-KERNEL-001"
-        ],
-        "evidence_state": "validated",
-        "consumer_stage": "builder"
-      }
-    ],
+    "decision_lineage": [{
+      "decision_family": "layout_strategy",
+      "decision_card_ref": "KERNEL-DECISION-001",
+      "selected_option": "locked_option_c",
+      "rejected_options": ["option_a", "option_b"],
+      "evidence_refs": ["EVID-KERNEL-001"],
+      "evidence_state": "validated",
+      "consumer_stage": "builder"
+    }],
     "caller_input_authorization": {
       "decision": "approved",
       "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
       "source_sha256": "7a1b18d2bdce23d71186b39db80f807625c36c0e34eeb2b9ede5907150e4645c",
-      "authorized_action_ids": [
-        "BATCH-001-A01",
-        "BATCH-001-A02"
-      ]
+      "authorized_action_ids": ["BATCH-001-A01", "BATCH-001-A02"]
     }
   },
   "derived_input_authorization": {
@@ -152,10 +111,7 @@
     "eligible_runtime_state": "WAITING_FOR_CONFIRMATION",
     "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
     "source_sha256": "7a1b18d2bdce23d71186b39db80f807625c36c0e34eeb2b9ede5907150e4645c",
-    "authorized_action_ids": [
-      "BATCH-001-A01",
-      "BATCH-001-A02"
-    ],
+    "authorized_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
     "derived_by": "scripts/validate-builder-runtime-transaction.mjs"
   },
   "session_state": {
@@ -165,35 +121,22 @@
     "selected_candidate_id": "ARCH-FAM-C",
     "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
     "source_sha256": "7a1b18d2bdce23d71186b39db80f807625c36c0e34eeb2b9ede5907150e4645c",
-    "authorized_action_ids": [
-      "BATCH-001-A01",
-      "BATCH-001-A02"
-    ],
-    "decision_lineage": [
-      {
-        "decision_family": "layout_strategy",
-        "decision_card_ref": "KERNEL-DECISION-001",
-        "selected_option": "locked_option_c",
-        "rejected_options": [
-          "option_a",
-          "option_b"
-        ],
-        "evidence_refs": [
-          "EVID-KERNEL-001"
-        ],
-        "evidence_state": "validated",
-        "consumer_stage": "builder"
-      }
-    ]
+    "authorized_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
+    "decision_lineage": [{
+      "decision_family": "layout_strategy",
+      "decision_card_ref": "KERNEL-DECISION-001",
+      "selected_option": "locked_option_c",
+      "rejected_options": ["option_a", "option_b"],
+      "evidence_refs": ["EVID-KERNEL-001"],
+      "evidence_state": "validated",
+      "consumer_stage": "builder"
+    }]
   },
   "confirmation_event": {
     "confirmation_id": "CONFIRM-BATCH-001",
     "session_id": "SESSION-001",
     "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
-    "confirmed_action_ids": [
-      "BATCH-001-A01",
-      "BATCH-001-A02"
-    ],
+    "confirmed_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
     "user_token": "تایید BATCH-001"
   },
   "action_batch": {
@@ -212,13 +155,8 @@
           "decision_family": "layout_strategy",
           "decision_card_ref": "KERNEL-DECISION-001",
           "selected_option": "locked_option_c",
-          "rejected_options": [
-            "option_a",
-            "option_b"
-          ],
-          "evidence_refs": [
-            "EVID-KERNEL-001"
-          ],
+          "rejected_options": ["option_a", "option_b"],
+          "evidence_refs": ["EVID-KERNEL-001"],
           "evidence_state": "validated",
           "consumer_stage": "builder"
         }
@@ -232,50 +170,26 @@
           "decision_family": "layout_strategy",
           "decision_card_ref": "KERNEL-DECISION-001",
           "selected_option": "locked_option_c",
-          "rejected_options": [
-            "option_a",
-            "option_b"
-          ],
-          "evidence_refs": [
-            "EVID-KERNEL-001"
-          ],
+          "rejected_options": ["option_a", "option_b"],
+          "evidence_refs": ["EVID-KERNEL-001"],
           "evidence_state": "validated",
           "consumer_stage": "builder"
         }
       }
     ],
-    "decision_lineage": [
-      {
-        "decision_family": "layout_strategy",
-        "decision_card_ref": "KERNEL-DECISION-001",
-        "selected_option": "locked_option_c",
-        "rejected_options": [
-          "option_a",
-          "option_b"
-        ],
-        "evidence_refs": [
-          "EVID-KERNEL-001"
-        ],
-        "evidence_state": "validated",
-        "consumer_stage": "builder"
-      }
-    ]
+    "decision_lineage": [{
+      "decision_family": "layout_strategy",
+      "decision_card_ref": "KERNEL-DECISION-001",
+      "selected_option": "locked_option_c",
+      "rejected_options": ["option_a", "option_b"],
+      "evidence_refs": ["EVID-KERNEL-001"],
+      "evidence_state": "validated",
+      "consumer_stage": "builder"
+    }]
   },
   "evidence_records": [
-    {
-      "evidence_id": "EVID-A01",
-      "action_id": "BATCH-001-A01",
-      "kind": "machine_trace",
-      "status": "available",
-      "machine_trace_complete": true
-    },
-    {
-      "evidence_id": "EVID-A02",
-      "action_id": "BATCH-001-A02",
-      "kind": "machine_trace",
-      "status": "available",
-      "machine_trace_complete": true
-    }
+    {"evidence_id":"EVID-A01","action_id":"BATCH-001-A01","kind":"machine_trace","status":"available","machine_trace_complete":true},
+    {"evidence_id":"EVID-A02","action_id":"BATCH-001-A02","kind":"machine_trace","status":"available","machine_trace_complete":true}
   ],
   "checkpoint": {
     "checkpoint_id": "CP-001",
@@ -283,109 +197,61 @@
     "batch_id": "BATCH-001",
     "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
     "selected_candidate_id": "ARCH-FAM-C",
-    "confirmed_action_ids": [
-      "BATCH-001-A01",
-      "BATCH-001-A02"
-    ],
+    "confirmed_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
     "unconfirmed_action_ids": [],
-    "evidence_refs": [
-      "EVID-A01",
-      "EVID-A02"
-    ],
-    "decision_lineage": [
-      {
-        "decision_family": "layout_strategy",
-        "decision_card_ref": "KERNEL-DECISION-001",
-        "selected_option": "locked_option_c",
-        "rejected_options": [
-          "option_a",
-          "option_b"
-        ],
-        "evidence_refs": [
-          "EVID-KERNEL-001"
-        ],
-        "evidence_state": "validated",
-        "consumer_stage": "builder"
-      }
-    ]
+    "evidence_refs": ["EVID-A01", "EVID-A02"],
+    "decision_lineage": [{
+      "decision_family": "layout_strategy",
+      "decision_card_ref": "KERNEL-DECISION-001",
+      "selected_option": "locked_option_c",
+      "rejected_options": ["option_a", "option_b"],
+      "evidence_refs": ["EVID-KERNEL-001"],
+      "evidence_state": "validated",
+      "consumer_stage": "builder"
+    }]
   },
   "fallback": {
     "kind": "warning",
-    "claims": {
-      "executed": false,
-      "successful": false,
-      "validated": false,
-      "completed": false,
-      "equivalent": false
-    },
+    "claims": {"executed":false,"successful":false,"validated":false,"completed":false,"equivalent":false},
     "evidence_refs": [],
-    "decision_lineage": [
-      {
-        "decision_family": "layout_strategy",
-        "decision_card_ref": "KERNEL-DECISION-001",
-        "selected_option": "locked_option_c",
-        "rejected_options": [
-          "option_a",
-          "option_b"
-        ],
-        "evidence_refs": [
-          "EVID-KERNEL-001"
-        ],
-        "evidence_state": "validated",
-        "consumer_stage": "builder"
-      }
-    ]
+    "decision_lineage": [{
+      "decision_family": "layout_strategy",
+      "decision_card_ref": "KERNEL-DECISION-001",
+      "selected_option": "locked_option_c",
+      "rejected_options": ["option_a", "option_b"],
+      "evidence_refs": ["EVID-KERNEL-001"],
+      "evidence_state": "validated",
+      "consumer_stage": "builder"
+    }]
   },
   "repair_packet": {
     "state": "not_required",
-    "claims": {
-      "executed": false,
-      "successful": false,
-      "validated": false,
-      "completed": false,
-      "equivalent": false
-    },
+    "claims": {"executed":false,"successful":false,"validated":false,"completed":false,"equivalent":false},
     "evidence_refs": [],
-    "decision_lineage": [
-      {
-        "decision_family": "layout_strategy",
-        "decision_card_ref": "KERNEL-DECISION-001",
-        "selected_option": "locked_option_c",
-        "rejected_options": [
-          "option_a",
-          "option_b"
-        ],
-        "evidence_refs": [
-          "EVID-KERNEL-001"
-        ],
-        "evidence_state": "validated",
-        "consumer_stage": "builder"
-      }
-    ]
+    "decision_lineage": [{
+      "decision_family": "layout_strategy",
+      "decision_card_ref": "KERNEL-DECISION-001",
+      "selected_option": "locked_option_c",
+      "rejected_options": ["option_a", "option_b"],
+      "evidence_refs": ["EVID-KERNEL-001"],
+      "evidence_state": "validated",
+      "consumer_stage": "builder"
+    }]
   },
   "completion": {
-    "action_complete_ids": [
-      "BATCH-001-A01",
-      "BATCH-001-A02"
-    ],
+    "action_complete_ids": ["BATCH-001-A01", "BATCH-001-A02"],
     "batch_complete": true,
     "session_complete": true,
     "build_complete": true,
     "responsive_ready": false,
     "production_ready": false,
-    "required_checkpoint_ids": [
-      "CP-001"
-    ],
-    "observed_checkpoint_ids": [
-      "CP-001"
-    ],
+    "required_checkpoint_ids": ["CP-001"],
+    "observed_checkpoint_ids": ["CP-001"],
     "execution_evidence_complete": true,
     "completion_gate_status": "passed",
-    "evidence_refs": [
-      "EVID-A01",
-      "EVID-A02"
-    ],
-    "display_text": "Batch and session completed from retained machine evidence."
+    "evidence_refs": ["EVID-A01", "EVID-A02"],
+    "display_text": "Batch and session completed from retained machine evidence.",
+    "final_session_runtime_state": "COMPLETED"
   },
   "publication": {
     "source_path": "builder-input.json",
@@ -402,14 +268,8 @@
     "prior_valid_output_preserved": true
   },
   "enforcement": {
-    "central_validator_entries": [
-      "validate:builder-lineage-sequence",
-      "scripts/validate-builder-runtime-transaction.mjs"
-    ],
-    "exact_head_workflow_entries": [
-      "npm run validate",
-      "npm run validate:builder-lineage-sequence"
-    ],
+    "central_validator_entries": ["validate:builder-lineage-sequence", "scripts/validate-builder-runtime-transaction.mjs"],
+    "exact_head_workflow_entries": ["npm run validate", "npm run validate:builder-lineage-sequence"],
     "schema_strict": true,
     "mutation_negative_count": 38,
     "positive_control_count": 1,
