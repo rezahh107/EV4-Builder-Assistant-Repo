@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
-Status: builder_conversation_bootstrap_implemented_on_branch_pending_exact_head_ci_and_independent_review
+Status: builder_conversation_bootstrap_implemented_pending_fresh_independent_rereview
 Date: 2026-07-21
 
 ---
@@ -13,6 +13,7 @@ repository:
   default_branch: main
   verified_starting_main_sha: a99ac58ef09c0b4b479c96236c82426ad979c5c7
   active_implementation_branch: feature/builder-conversation-bootstrap
+  active_pull_request: 60
   package_version: 0.3.6
   ai_governance_scope_revision: GOV-004-v9
   ai_governance_pr_inspector_protocol: v1.11.1
@@ -32,7 +33,8 @@ builder_conversation_bootstrap:
   manifest: manifests/builder-conversation-bootstrap.v1.json
   schema: schemas/builder-conversation-bootstrap.v1.schema.json
   validator: scripts/validate-builder-bootstrap.mjs
-  implementation_state: implemented_in_pr_pending_exact_head_ci_and_independent_review
+  package_command: npm run validate:builder-bootstrap
+  implementation_state: implemented_pending_fresh_independent_rereview
   canonical_fresh_trigger: شروع
   canonical_resume_trigger: استارت
   canonical_personal_input: ev4-builder-context-package@1.0.0
@@ -44,7 +46,7 @@ builder_conversation_bootstrap:
   attachment_first: enforced_by_contract_and_validator
   filename_only_acceptance: false
   stale_builder_feed_export_route: removed_from_active_startup_carriers
-  deployable_project_instructions: synchronized_pending_exact_head_ci
+  deployable_project_instructions: synchronized
   exact_bare_start_response: controlled_and_byte_bound
   semantic_validator: implemented
   positive_cases: 1
@@ -99,15 +101,15 @@ execution_boundary:
   confirmation_sentence_is_runtime_command: false
 
 validation_state:
-  focused_bootstrap_validation: pending_exact_head_ci
-  project_pack_reproducibility: pending_exact_head_ci
-  central_validation: pending_exact_head_ci
+  focused_bootstrap_validation: required_on_exact_current_pr_head
+  project_pack_reproducibility: two_verification_passes_required_on_exact_current_pr_head
+  central_validation: required_on_exact_current_pr_head
   required_exact_head_workflows:
     - Schema validation
     - Verify Project Gate Contract Pin
     - Verify Governance Exact-Head Evidence
-  exact_head_workflow_runs: pending_exact_head_ci
-  fresh_independent_review: required_for_final_pr_head_and_GOV-004-v9
+  exact_head_evidence_authority: live_github_actions_for_current_pr_head
+  fresh_independent_review: requested_for_exact_final_head_and_GOV-004-v9
 
 remaining_evidence_limits:
   external_chatgpt_project_loading: unverified
@@ -172,9 +174,8 @@ Real Elementor and production-readiness claims require retained execution eviden
 ## Pending Next Work
 
 ```text
-Open one draft PR from feature/builder-conversation-bootstrap.
-Run and inspect all three required exact-head workflows on the final PR head.
-Repair only verified failures without broadening scope.
-Request a fresh independent PR Inspector review bound to repository, PR, base SHA, final head SHA, GOV-004-v9, and exact workflow run IDs.
+Inspect all three required exact-head workflows on the current final PR head.
+Keep the draft PR open for fresh independent PR Inspector review.
+Treat any new head or scope revision as invalidating prior exact-head review evidence.
 Do not merge, approve, enable auto-merge, deploy, or claim real Builder/Elementor execution.
 ```
