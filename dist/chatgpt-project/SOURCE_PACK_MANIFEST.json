@@ -13,15 +13,15 @@
   "files": [
     {
       "path": "dist/chatgpt-project/BUILD_REPORT.json",
-      "sha256": "ed4c302ec0260fc20dc752576614fac6dba528b273ffeb5ffad9dec3678fe2e2",
+      "sha256": "70080647cc7cd430444c6953e29392eb14910e586975a49f8b04945ca18d42a9",
       "bytes": 400,
       "chars": 400
     },
     {
       "path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "sha256": "1f1b58ba9a60e9ffc01ebd3d456a41f34070884c7f6eb8592599f8c4eac1ebff",
-      "bytes": 8174,
-      "chars": 7964
+      "sha256": "a52e5014343b75281c222bc408fe46eeaf9cfa5aba7bb62c108dc7daab639eb4",
+      "bytes": 7670,
+      "chars": 7309
     },
     {
       "path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
