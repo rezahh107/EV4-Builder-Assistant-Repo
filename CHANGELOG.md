@@ -1,5 +1,32 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## Unreleased — 2026-07-21
+
+### Added
+
+- Added canonical `ev4-builder-conversation-bootstrap@1.0.0` manifest and Draft 2020-12 schema.
+- Added fail-closed semantic validation with one canonical positive case and 35 isolated semantic mutations.
+- Added exact-byte controlled `شروع` response enforcement across active runtime instruction carriers.
+
+### Changed
+
+- Bound fresh intake to `شروع` and checkpoint continuation to `استارت` without conflating their semantics.
+- Made intake attachment-first and content-validated; filenames remain operator hints only.
+- Defined `builder-input.json` from `EV4-Project-Gate / ce-to-builder` as the canonical personal input route.
+- Kept `project-gate-c2b-receipt.json` optional and separate from Builder semantic input.
+- Removed the obsolete active startup route for the historical Builder feed export command.
+- Preserved the Builder-owned CE→Builder Contract Gate and Adapter as an explicit technical direct path, never a silent fallback.
+- Synchronized source and deployable Project Instructions and registered bootstrap validation in `scripts/validate.mjs`.
+
+### Compatibility
+
+- `ev4-builder-context-package@1.0.0` remains unchanged.
+- CE→Builder mapping, Action Batch semantics, Builder→Responsive scope, and external Project Gate authority evidence remain unchanged.
+- Repository package version remains `0.3.6`; the active version-consistency policy requires synchronized markers but does not mandate a semantic-version increment for this non-schema startup hardening.
+- External ChatGPT Project instruction loading, a real non-synthetic Builder session, real Elementor execution, and production readiness remain unverified.
+
+---
+
 ## Unreleased — 2026-07-14
 
 ### Changed
@@ -62,181 +89,13 @@
 - Wired the transformation registry validator into central validation through `scripts/validate.mjs`.
 - Added the deterministic CE→Builder Contract Gate in `scripts/validate-ce-to-builder-contract-gate.mjs`.
 - Added the CE→Builder Contract Gate report schema in `schemas/ce-to-builder-contract-gate-report.schema.json`.
-- Added valid and invalid CE→Builder Contract Gate regression fixtures, including Gemini-driven malformed-item, missing batch/action ID, and missing architect class coverage.
-- Added `docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md` to document the current Builder evidence boundary for the future Builder→Responsive Project Gate route without adding runtime behavior.
+- Added valid and invalid CE→Builder Contract Gate regression fixtures.
+- Added `docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md` without adding runtime behavior.
 
 ### Changed
 
 - Hardened CE reference map normalization so CE `connector_layer: { node, model }` projects to Builder `connector_layer: "node:model"` without inserted whitespace.
-- Updated CE reference map adapter contract and CE Builder package adapter contract to require declared transformation mappings and explicit data-loss policy.
-- Updated CE reference map fixture expectations for the exact `node:model` connector projection.
-- Updated `STATUS.md` with CE→Builder transformation IR, registry, validator, and contract gate state.
-- Addressed Gemini review feedback by removing redundant region node validation and caching transformation mappings by ID.
+- Updated CE reference map adapter and package adapter contracts to require declared transformation mappings and explicit data-loss policy.
 - Hardened Builder normalization so CE packages must pass the CE→Builder Contract Gate before Builder-side projection or runtime intake.
-- Hardened gate error reporting so failing CE gate paths remain visible to downstream validation checks.
-- Synced downstream CE producer expectations through `rezahh107/EV4-Constructability-Engineer-Repo#24` so CE emits `schema: ev4-builder-executable-package@1.0.0`.
-- Documented that a single formal Builder→Responsive export schema is not implemented yet.
+- Synced downstream CE producer expectations through `rezahh107/EV4-Constructability-Engineer-Repo#24`.
 - Preserved prior changelog history while adding this unreleased section.
-
-### Status
-
-- No architecture, scoring, recommendation, constructability review, or redesign was rerun.
-- `selected_candidate_id` preservation remains enforced by the adapter and gate.
-- `production_ready_allowed` remains false.
-- PR #42 passed `Schema validation` before merge.
-- Downstream CE producer schema alignment was completed in `EV4-Constructability-Engineer-Repo` PR #24.
-- Builder→Responsive Project Gate transition remains not implemented.
-
----
-
-## v0.3.6 — 2026-07-01
-
-### Added
-
-- Added central contract validation through `scripts/validate.mjs`.
-- Added schema registry validation through `scripts/validate-schema-registry.mjs`.
-- Added behavioral contract schemas, validators, and fixtures for action batches, unit policy, evidence claims, visual parity, generated assets, UI confidence, wording, layout checks, completion checks, repair packets, and cognitive mode hints.
-- Added Reference Paradigm Gate support with `schemas/reference-paradigm-gate.schema.json` and `scripts/validate-reference-paradigm-gate.mjs`.
-- Added structured `first_batch_structure_intent` support for visual-reference parity builds.
-- Added diagnostics:
-  - `EV4-RPG-006 blocked_missing_first_batch_structure_intent`
-  - `EV4-RPG-007 blocked_first_batch_structure_intent_mismatch`
-- Added structured reference intent regression fixtures, including missing intent, wrong anchor, wrong distribution, wrong repeated unit form, missing connector layer staging, forbidden composition start, plausible prose with wrong structured intent, and no-connector `none` handling.
-- Added Real Elementor Execution Evidence Pack:
-  - `schemas/real-elementor-execution-evidence.schema.json`
-  - `scripts/validate-real-elementor-execution-evidence.mjs`
-  - `docs/REAL_ELEMENTOR_EXECUTION_EVIDENCE.md`
-  - `examples/smart-home-connector/real_elementor_execution_evidence.template.json`
-  - invalid regression for production-ready claims without completed real evidence.
-
-### Changed
-
-- Hardened package validation and cross-field checks for executable package status, selected candidate locking, production readiness boundary, approved structure references, and first-batch action limits.
-- Reduced `first_builder_batch.max_actions` and `first_builder_batch.actions.maxItems` to 5.
-- Simplified CI so `.github/workflows/schema-validation.yml` runs central validation through `npm run validate`.
-- Hardened central validation runner execution by avoiding shell execution and using cross-platform `npm` / `npm.cmd` handling.
-- Hardened Reference Paradigm Gate so `first_batch_structure_intent` is the decisive first-batch structural source; free-text first-batch checks remain fallback-only.
-- Updated Smart Home Connector valid fixtures and example package with structured first-batch intent.
-- Updated runtime-facing docs and deployable ChatGPT Project source pack for structured reference intent.
-- Addressed Gemini review by treating connector value `none` as no connector and by normalizing connector comparison with explicit mismatch reporting.
-- Synced Batch 3 status after post-implementation audit so repository status no longer describes pre-merge PR work.
-- Documented the no-connector coverage split: full-package no-connector regression runs through central package validation, while the standalone gate fixture remains a focused validator smoke fixture.
-- Central validation now runs Real Elementor Execution Evidence validation as a final non-production-readiness evidence gate.
-
-### Status
-
-- No architecture, scoring, recommendation, constructability review, or redesign was rerun.
-- `selected_candidate_id: ARCH-FAM-C` remains preserved.
-- Approved class names remain preserved.
-- `production_ready` remains false.
-- Real Elementor execution still requires real user-provided UI evidence before any production-readiness claim.
-
----
-
-## v0.3.5 — 2026-06-28
-
-### Added
-
-- Added `protocols/SESSION_REPAIR_PACKET.md`.
-- Added `schemas/repair-packet.schema.json`.
-- Added `scripts/validate-repair-packet.mjs`.
-- Added Smart Home Connector repair packet example.
-- Added valid and invalid repair-packet regression fixtures.
-- Added session-state regression fixtures requiring `repair_packet` in `CORRECTION`.
-- Added `patch-reports/PATCH_SESSION_REPAIR_PACKET.md`.
-
-### Changed
-
-- Updated runtime docs so build-impacting incidents freeze normal batches and require a formal repair packet.
-- Updated `schemas/session-state.schema.json` so `runtime_state: CORRECTION` requires `repair_packet`.
-- Updated CI and package scripts so repair packet validation runs centrally.
-
-### Status
-
-- No architecture, scoring, recommendation, or redesign was rerun.
-- `selected_candidate_id: ARCH-FAM-C` remains preserved.
-- Approved class names remain preserved.
-- `production_ready` remains false.
-
----
-
-## v0.3.4 — 2026-06-28
-
-### Added
-
-- Added `protocols/UX_PRECEDENCE_TABLE.md`.
-- Added `protocols/ESCAPE_HATCH_RECOVERY.md`.
-- Added `schemas/recovery-state.schema.json`.
-- Added `recovery_state` to `schemas/session-state.schema.json`.
-- Added compact project source `dist/chatgpt-project/knowledge/10_USER_FACING_UX_RECOVERY.md`.
-
-### Changed
-
-- Updated `core/MASTER_PROMPT.md`, `core/SESSION_STATE_MACHINE.md`, and runtime docs with UX precedence and Escape Hatch recovery rules.
-- Updated deployable ChatGPT Project source pack.
-
-### Status
-
-- No Smart Home architecture redesign was intended.
-- `selected_candidate_id: ARCH-FAM-C` remains preserved.
-- Approved class names remain preserved.
-- `production_ready_allowed: false` and `production_ready: false` remain preserved.
-
----
-
-## v0.3.3 — 2026-06-28
-
-### Added
-
-- Added Builder batch output format and user-facing response policy.
-- Added UI vocabulary handling and practical UX commands.
-- Added copy-pasteable session summary behavior.
-
-### Changed
-
-- Normal builder batch output hides internal/source fields unless explicitly requested or required by state.
-- Confirmation after a valid `تایید BATCH-XXX` uses Token Echo / active silence.
-- Updated deployable ChatGPT Project source pack.
-
-### Status
-
-- No Smart Home architecture redesign was intended.
-- `selected_candidate_id: ARCH-FAM-C` remains preserved.
-- Approved class names remain preserved.
-- production readiness remains false.
-
----
-
-## v0.3.2 — 2026-06-28
-
-### Added
-
-- Added `protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md`.
-- Added `known_control_map` concept and targeted UI screenshot recipe.
-- Added structured confirmation fixtures and untrusted prose fixtures.
-
-### Changed
-
-- Completed Patch C migration to structured `confirmation_request`.
-- Upgraded `protocols/SMART_GUIDANCE_FOOTER.md` to v0.2.0.
-- Wired UI-confidence rules into runtime docs.
-- Updated deployable ChatGPT Project source pack.
-
-### Validation
-
-- GitHub Actions `Schema validation` passed on run `111` for head `90b8a8c3345b0329d8e47e99c8c32a624b077d79`.
-
----
-
-## v0.3.1 — 2026-06-27
-
-### Hardened
-
-- Added workflow_mode/runtime_state separation hardening.
-- Hardened intake-result and session-state schemas.
-- Expanded CI fixture coverage.
-
-### Status
-
-- No Smart Home architecture, class names, `selected_candidate_id`, or production-readiness rules were changed.
-- Production readiness remains false.
