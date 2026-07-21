@@ -14,6 +14,7 @@ repository:
   verified_starting_main_sha: a99ac58ef09c0b4b479c96236c82426ad979c5c7
   active_implementation_branch: feature/builder-conversation-bootstrap
   package_version: 0.3.6
+  ai_governance_scope_revision: GOV-004-v9
 
 previous_authority_reconciliation:
   pull_request: 59
@@ -102,7 +103,7 @@ validation_state:
     - Schema validation
     - Verify Project Gate Contract Pin
     - Verify Governance Exact-Head Evidence
-  exact_head_workflow_runs: pending_pr_creation
+  exact_head_workflow_runs: pending_exact_head_ci
   fresh_independent_review: required_for_final_pr_head_and_GOV-004-v9
 
 remaining_evidence_limits:
