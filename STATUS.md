@@ -15,6 +15,9 @@ repository:
   active_implementation_branch: feature/builder-conversation-bootstrap
   package_version: 0.3.6
   ai_governance_scope_revision: GOV-004-v9
+  ai_governance_pr_inspector_protocol: v1.11.1
+  ai_governance_required_check_set: three_exact_head_workflows
+  project_gate_external_authority_evidence: github_api_commit_blob_verified_on_ci
 
 previous_authority_reconciliation:
   pull_request: 59
