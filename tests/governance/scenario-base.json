@@ -1,7 +1,7 @@
 {
   "previous": {
-    "scope_revision": "GOV-004-v6",
-    "head_sha": "921cfd7623eb5698901b5bce7ab77a053d09e6b9",
+    "scope_revision": "GOV-004-v7",
+    "head_sha": "a0ad601fc2dfcc69c38604d9ca53482403f4089a",
     "required_check_set": ["central_validation","governance_authorities","governance_sequence","builder_lineage_sequence","project_gate_pin"],
     "capabilities": [
       {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},
@@ -16,7 +16,7 @@
     ]
   },
   "current": {
-    "scope_revision": "GOV-004-v7",
+    "scope_revision": "GOV-004-v8",
     "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "required_check_set": ["central_validation","governance_authorities","governance_sequence","builder_lineage_sequence","project_gate_pin"],
     "capabilities": [
@@ -28,15 +28,16 @@
       {"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},
       {"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},
       {"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},
-      {"capability_id":"PROD-CAP-004","lifecycle":"deferred_not_deleted"}
+      {"capability_id":"PROD-CAP-004","lifecycle":"deferred_not_deleted"},
+      {"capability_id":"PROD-CAP-005","lifecycle":"implemented_elsewhere"}
     ]
   },
   "scope_disclosure": {
-    "from_scope_revision": "GOV-004-v6",
-    "to_scope_revision": "GOV-004-v7",
+    "from_scope_revision": "GOV-004-v7",
+    "to_scope_revision": "GOV-004-v8",
     "lifecycle_changes": [],
     "deleted_target_ids": [],
-    "newly_introduced_target_ids": []
+    "newly_introduced_target_ids": ["PROD-CAP-005"]
   },
   "official_verifier": {
     "executed_by": "immutable_official_pr_inspector_checkout",
@@ -45,13 +46,13 @@
   },
   "review_receipt": {
     "repository": "rezahh107/EV4-Builder-Assistant-Repo",
-    "pull_request": 56,
+    "pull_request": 59,
     "base_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "reviewed_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "scope_revision": "GOV-004-v7",
-    "implementation_context_id": "repo-maintainer-gov-003-004-closure-repair",
+    "scope_revision": "GOV-004-v8",
+    "implementation_context_id": "builder-project-gate-authority-reconciliation",
     "exact_head_ci_run_ids": [5001,5002],
-    "reviewed_at": "2026-07-14T12:00:00Z",
+    "reviewed_at": "2026-07-21T16:00:00Z",
     "inspector_repository": "rezahh107/PR-Inspector",
     "inspector_repository_id": 1288323264,
     "inspector_commit_sha": "88e8610bcc2ada48c8cf902d23d4296983310872",
