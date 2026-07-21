@@ -31,7 +31,8 @@ const scripts = [
   'validate:unit-strategy',
   'validate:batch-compaction',
   'validate:cognitive-mode-hint',
-  'validate:runtime-behavior'
+  'validate:runtime-behavior',
+  'validate:builder-lineage-sequence'
 ];
 
 const nodeChecks = [
@@ -48,7 +49,8 @@ const nodeChecks = [
   'scripts/validate-pr-template-hygiene.mjs',
   'scripts/validate-governance-progress-evidence.mjs',
   'scripts/validate-governance-authorities.mjs',
-  'scripts/validate-governance-sequence.mjs'
+  'scripts/validate-governance-sequence.mjs',
+  'scripts/validate-builder-runtime-transaction.mjs'
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
