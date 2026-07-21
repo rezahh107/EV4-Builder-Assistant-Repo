@@ -2,24 +2,12 @@
   "scenarios": [
     {
       "scenario_id": "silent_deletion",
-      "expected_diagnostics": [
-        "GOV-SEQ-003_SILENT_TARGET_DELETION",
-        "GOV-SEQ-004_SCOPE_REVISION_NOT_BUMPED",
-        "GOV-SEQ-005_SCOPE_DISCLOSURE_MISMATCH"
-      ],
+      "expected_diagnostics": ["GOV-SEQ-003_SILENT_TARGET_DELETION","GOV-SEQ-004_SCOPE_REVISION_NOT_BUMPED","GOV-SEQ-005_SCOPE_DISCLOSURE_MISMATCH"],
       "overrides": {
         "current": {
-          "scope_revision": "GOV-004-v7",
+          "scope_revision": "GOV-004-v8",
           "capabilities": [
-            {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-002","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-003","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-004","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-005","lifecycle":"implemented"},
-            {"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-005","lifecycle":"implemented_elsewhere"}
+            {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},{"capability_id":"GOV-CAP-002","lifecycle":"implemented"},{"capability_id":"GOV-CAP-003","lifecycle":"implemented"},{"capability_id":"GOV-CAP-004","lifecycle":"implemented"},{"capability_id":"GOV-CAP-005","lifecycle":"implemented"},{"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-005","lifecycle":"implemented_elsewhere"}
           ]
         },
         "official_verifier": {"executed_by":null,"project_decision":false,"review_provenance":false},
@@ -29,52 +17,22 @@
     },
     {
       "scenario_id": "duplicate_and_conflicting_lifecycle",
-      "expected_diagnostics": [
-        "GOV-SEQ-001_DUPLICATE_CAPABILITY_ID",
-        "GOV-SEQ-002_LIFECYCLE_CONFLICT"
-      ],
+      "expected_diagnostics": ["GOV-SEQ-001_DUPLICATE_CAPABILITY_ID","GOV-SEQ-002_LIFECYCLE_CONFLICT"],
       "overrides": {
-        "current": {
-          "capabilities": [
-            {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-002","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-003","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-004","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-005","lifecycle":"implemented"},
-            {"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-004","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-005","lifecycle":"implemented_elsewhere"},
-            {"capability_id":"GOV-CAP-003","lifecycle":"committed_now"}
-          ]
-        },
+        "current": {"capabilities": [
+          {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},{"capability_id":"GOV-CAP-002","lifecycle":"implemented"},{"capability_id":"GOV-CAP-003","lifecycle":"implemented"},{"capability_id":"GOV-CAP-004","lifecycle":"implemented"},{"capability_id":"GOV-CAP-005","lifecycle":"implemented"},{"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-004","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-005","lifecycle":"implemented_elsewhere"},{"capability_id":"GOV-CAP-003","lifecycle":"committed_now"}
+        ]},
         "official_verifier": {"executed_by":null,"project_decision":false,"review_provenance":false},
         "review_receipt": {"next_action_kind":"verify","technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED"}
       }
     },
     {
       "scenario_id": "lifecycle_change_without_revision_bump",
-      "expected_diagnostics": [
-        "GOV-SEQ-004_SCOPE_REVISION_NOT_BUMPED",
-        "GOV-SEQ-005_SCOPE_DISCLOSURE_MISMATCH"
-      ],
+      "expected_diagnostics": ["GOV-SEQ-004_SCOPE_REVISION_NOT_BUMPED","GOV-SEQ-005_SCOPE_DISCLOSURE_MISMATCH"],
       "overrides": {
-        "current": {
-          "scope_revision": "GOV-004-v7",
-          "capabilities": [
-            {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-002","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-003","lifecycle":"implemented"},
-            {"capability_id":"GOV-CAP-004","lifecycle":"committed_now"},
-            {"capability_id":"GOV-CAP-005","lifecycle":"implemented"},
-            {"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-004","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-005","lifecycle":"implemented_elsewhere"}
-          ]
-        },
+        "current": {"scope_revision":"GOV-004-v8","capabilities": [
+          {"capability_id":"GOV-CAP-001","lifecycle":"implemented"},{"capability_id":"GOV-CAP-002","lifecycle":"implemented"},{"capability_id":"GOV-CAP-003","lifecycle":"implemented"},{"capability_id":"GOV-CAP-004","lifecycle":"committed_now"},{"capability_id":"GOV-CAP-005","lifecycle":"implemented"},{"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-004","lifecycle":"deferred_not_deleted"},{"capability_id":"PROD-CAP-005","lifecycle":"implemented_elsewhere"}
+        ]},
         "official_verifier": {"executed_by":null,"project_decision":false,"review_provenance":false},
         "review_receipt": {"next_action_kind":"verify","technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED"}
       }
@@ -82,11 +40,7 @@
     {
       "scenario_id": "computed_disclosure_mismatch",
       "expected_diagnostics": ["GOV-SEQ-005_SCOPE_DISCLOSURE_MISMATCH"],
-      "overrides": {
-        "official_verifier": {"executed_by":null,"project_decision":false,"review_provenance":false},
-        "review_receipt": {"next_action_kind":"verify","technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED"},
-        "scope_disclosure": {"newly_introduced_target_ids":["GOV-CAP-999"]}
-      }
+      "overrides": {"official_verifier":{"executed_by":null,"project_decision":false,"review_provenance":false},"review_receipt":{"next_action_kind":"verify","technical_status":"YELLOW_CHANGES_OR_VERIFICATION_REQUIRED"},"scope_disclosure":{"newly_introduced_target_ids":["GOV-CAP-999"]}}
     }
   ]
 }
