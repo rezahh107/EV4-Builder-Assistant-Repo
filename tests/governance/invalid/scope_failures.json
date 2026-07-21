@@ -19,7 +19,7 @@
             {"capability_id":"PROD-CAP-001","lifecycle":"deferred_not_deleted"},
             {"capability_id":"PROD-CAP-002","lifecycle":"deferred_not_deleted"},
             {"capability_id":"PROD-CAP-003","lifecycle":"deferred_not_deleted"},
-            {"capability_id":"PROD-CAP-004","lifecycle":"deferred_not_deleted"}
+            {"capability_id":"PROD-CAP-005","lifecycle":"implemented_elsewhere"}
           ]
         },
         "official_verifier": {"executed_by":null,"project_decision":false,"review_provenance":false},
