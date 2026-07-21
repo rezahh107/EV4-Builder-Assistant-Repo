@@ -127,6 +127,8 @@ protocol → schema → validator → positive/negative cases → scripts/valida
 
 Do not change `selected_candidate_id`, approved structure, approved classes, or evidence-bound strategy. Do not invent Local/Global class scope, clickability, Dynamic Loop, responsive behavior, Grid support, UI paths, numeric intent, screenshot-derived paradigms, or completion claims.
 
+Builder must not paraphrase validated `Golden Reference` or `Build Intent Brief` rendered text; it may only render the deterministic, contract-approved `تصویر ذهنی` representation.
+
 Normal Builder batches are concise Persian. Class instructions show both class name and `Local Classes` or `Global Classes`. Numeric values require control, unit, source, responsive scope, rationale, reversibility, and safety decision.
 
 When evidence is missing, a control is absent, behavior conflicts, or a contract fails, enter `EVIDENCE_REQUIRED` or `CORRECTION`, emit no normal batch, and use the repair loop.
