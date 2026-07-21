@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "authority_id": "ev4-project-gate-ce-to-builder-authority-v1",
+  "repository": "rezahh107/EV4-Project-Gate",
+  "repository_id": 1286355650,
+  "commit_sha": "d0d90165980c087b6e9b3d7af0aac7933fe22ec9",
+  "commit_api_url": "https://api.github.com/repos/rezahh107/EV4-Project-Gate/commits/d0d90165980c087b6e9b3d7af0aac7933fe22ec9",
+  "commit_html_url": "https://github.com/rezahh107/EV4-Project-Gate/commit/d0d90165980c087b6e9b3d7af0aac7933fe22ec9",
+  "files": [
+    {
+      "path": "src/ev4_transition/data/capability-status.v1.json",
+      "blob_sha": "babaa185193bb9213649c07824a08662955a31f5",
+      "required_utf8_substrings": [
+        "\"ce_to_builder\"",
+        "\"orchestration_baseline\": \"implemented\"",
+        "\"real_non_synthetic_handoff\": \"insufficient_evidence\"",
+        "\"local operator UI shell\""
+      ]
+    },
+    {
+      "path": "docs/IMPLEMENTATION_STATUS.yaml",
+      "blob_sha": "4b2c81499c0cde17c1413f59bed6c959564cb6e9",
+      "required_utf8_substrings": [
+        "status_authority: active_capability_truth",
+        "capability_truth_source: src/ev4_transition/data/capability-status.v1.json",
+        "Real non-synthetic handoff",
+        "production readiness remain insufficient_evidence"
+      ]
+    },
+    {
+      "path": "docs/PG_C2B_OPERATOR_WORKFLOW.md",
+      "blob_sha": "9fa5c639e63515ad9b98ef13b524ac91c3646cc6",
+      "required_utf8_substrings": [
+        "accepts the official CE-produced `ce-project-gate.json`",
+        "`builder-input.json`: the Builder-owned `ev4-builder-context-package@1.0.0` input.",
+        "`project-gate-c2b-receipt.json`: Project Gate evidence",
+        "The receipt is not Builder semantic input.",
+        "runs Builder `scripts/validate-ce-to-builder-contract-gate.mjs`",
+        "runs Builder `scripts/normalize-ce-builder-executable-package.mjs`",
+        "runs Builder `scripts/validate-package.mjs`"
+      ]
+    }
+  ]
+}

@@ -2,14 +2,17 @@ schema_version: 2
 
 plan_identity:
   plan_id: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
-  plan_version: 7
+  plan_version: 9
   target_repository: rezahh107/EV4-Builder-Assistant-Repo
   audit_base_branch: main
   audit_base_sha: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
 
 repository_state:
   default_branch: main
-  current_source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
+  current_source_commit: 7b7272e08da8dfebb5dbaa15a821d67783173bed
+  authority_reconciliation_starting_main: a0ad601fc2dfcc69c38604d9ca53482403f4089a
+  authority_reconciliation_v8_head: 7b7272e08da8dfebb5dbaa15a821d67783173bed
+  observed_external_project_gate_main: d0d90165980c087b6e9b3d7af0aac7933fe22ec9
   verified_prerequisite:
     increment_id: GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES
     pr: 54
@@ -31,24 +34,47 @@ repository_state:
     project_gate_workflow: .github/workflows/project-gate-contract-pin.yml
     external_evidence_workflow: .github/workflows/governance-exact-head-evidence.yml
     external_evidence_validator: scripts/validate-governance-progress-evidence.mjs
+    external_project_gate_authority_lock: governance/external-authorities/project-gate-authority.v1.json
     checkout_identity_assertion: active
     repository_authored_confirmation_allowed: false
-    immutable_pr_inspector_checkout: 88e8610bcc2ada48c8cf902d23d4296983310872
+    immutable_pr_inspector_checkout: 273ba7d4a6930015eb07c32c5de7210fa4692b1c
+    active_pr_inspector_protocol: v1.11.1
+    required_check_set_version: 2
+    required_workflows:
+      - Schema validation
+      - Verify Project Gate Contract Pin
+      - Verify Governance Exact-Head Evidence
+    exact_run_binding:
+      - workflow_name
+      - producer_repository
+      - producer_repository_id
+      - pull_request
+      - reviewed_head_sha
+      - run_id
+      - run_api_url
+      - event
+      - status
+      - conclusion
+    external_project_gate_evidence:
+      repository: rezahh107/EV4-Project-Gate
+      repository_id: 1286355650
+      commit_sha: d0d90165980c087b6e9b3d7af0aac7933fe22ec9
+      verification: github_api_repository_commit_blob_and_semantic_content
     official_projection_regression: immutable_official_pr_inspector_project_decision
     official_provenance_regression: immutable_official_pr_inspector_review_provenance
     live_review_receipt_validation: official_external_bundle_accessor_unavailable_fail_closed
 
 current_increment:
-  increment_id: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
-  classification: REQUIRED_GOVERNANCE_ADOPTION
-  scope_revision: GOV-004-v7
-  implementation_context_id: repo-maintainer-gov-003-004-closure-repair
+  increment_id: BUILDER_PROJECT_GATE_GOVERNANCE_ENFORCEMENT_REPAIR
+  classification: REQUIRED_GOVERNANCE_REPAIR
+  scope_revision: GOV-004-v9
+  implementation_context_id: builder-project-gate-governance-enforcement-repair
   implementation_status: implemented_on_branch_pending_external_exact_head_ci_and_fresh_rereview
-  objective: bind GOV-004 closure progress to external current-head GitHub Actions evidence and restore the global pull request template as evidence-neutral reusable infrastructure
+  objective: synchronize the live PR Inspector identity, verify external Project Gate authority from GitHub API evidence, and make the external evidence workflow a required exact-head check with deterministic run binding
 
 previous_scope_snapshot:
-  scope_revision: GOV-004-v6
-  source_commit: 921cfd7623eb5698901b5bce7ab77a053d09e6b9
+  scope_revision: GOV-004-v8
+  source_commit: 7b7272e08da8dfebb5dbaa15a821d67783173bed
   lifecycle_by_id:
     GOV-CAP-001: implemented
     GOV-CAP-002: implemented
@@ -59,12 +85,13 @@ previous_scope_snapshot:
     PROD-CAP-002: deferred_not_deleted
     PROD-CAP-003: deferred_not_deleted
     PROD-CAP-004: deferred_not_deleted
+    PROD-CAP-005: implemented_elsewhere
 
 scope_projection:
   project: rezahh107/EV4-Builder-Assistant-Repo
-  phase: GOV-003-004-POST-MERGE-CLOSURE-REPAIR
-  scope_revision: GOV-004-v7
-  source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
+  phase: BUILDER_PROJECT_GATE_GOVERNANCE_ENFORCEMENT_REPAIR
+  scope_revision: GOV-004-v9
+  source_commit: 7b7272e08da8dfebb5dbaa15a821d67783173bed
   long_term_target_ids:
     - GOV-CAP-001
     - GOV-CAP-002
@@ -75,6 +102,7 @@ scope_projection:
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
+    - PROD-CAP-005
   implemented_ids:
     - GOV-CAP-001
     - GOV-CAP-002
@@ -87,57 +115,80 @@ scope_projection:
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
+    - PROD-CAP-005
   deferred_not_deleted_ids:
     - PROD-CAP-001
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
+  implemented_elsewhere_ids:
+    - PROD-CAP-005
   rejected_ids: []
   superseded_ids: []
   dependencies:
     - GOV-002_merge_commit_8931c608d759ea121727f3903e21976a37e27f45
     - GOV-003-004_merge_commit_65450bc5a4d19edf66098669a6fd48bdcda3ed70
-    - GOV-004-v6_reviewed_head_921cfd7623eb5698901b5bce7ab77a053d09e6b9
-    - PR_Inspector_commit_88e8610bcc2ada48c8cf902d23d4296983310872
+    - GOV-004-v8_head_7b7272e08da8dfebb5dbaa15a821d67783173bed
+    - PR_Inspector_v1.11.1_commit_273ba7d4a6930015eb07c32c5de7210fa4692b1c
+    - EV4_Project_Gate_repository_id_1286355650
+    - EV4_Project_Gate_main_d0d90165980c087b6e9b3d7af0aac7933fe22ec9
+    - EV4_Project_Gate_C2B_builder_pin_b599c000118dcbe77572d6f387da5da0f46d1f91
+    - required_check_set_v2_three_workflows
   authority_files:
     - path: governance/AI_AUTHORITY_POLICY.yml
       responsibility: AI authority evidence authority security profile and rule enforcement levels
     - path: planning/CAPABILITY_MEMORY.yml
-      responsibility: canonical capability IDs and lifecycle memory
+      responsibility: canonical capability IDs lifecycle memory and external-versus-local Project Gate identity
     - path: planning/GOVERNANCE_ADOPTION_PLAN.yml
-      responsibility: current scope dependencies computed disclosure progress evidence and post-merge closure state
+      responsibility: scope dependencies exact-head check set external authority evidence and review staleness
     - path: governance/REVIEW_LIFECYCLE.yml
-      responsibility: immutable official PR Inspector integration exact-head staleness fail-closed Green boundary and post-review lifecycle
+      responsibility: live immutable PR Inspector identity and three-workflow exact-head review lifecycle
+    - path: governance/schemas/review-lifecycle.schema.json
+      responsibility: enforce the live inspector identity and canonical three-workflow check set
+    - path: governance/schemas/review-receipt.schema.json
+      responsibility: bind fresh review and exactly three workflow runs to GOV-004-v9
+    - path: governance/external-authorities/project-gate-authority.v1.json
+      responsibility: immutable Project Gate repository commit file blob and semantic evidence lock
     - path: scripts/validate-governance-progress-evidence.mjs
-      responsibility: validate external repository PR head workflow run identity and successful conclusions
+      responsibility: validate GitHub Actions and Project Gate repository commit blob evidence
+    - path: scripts/validate-governance-authorities.mjs
+      responsibility: validate scope lifecycle inspector identity check set and external authority correspondence
+    - path: scripts/validate-governance-sequence.mjs
+      responsibility: bind receipt run IDs to workflow producer PR head API identity and success state
+    - path: .github/workflows/schema-validation.yml
+      responsibility: exercise PR Inspector v1.11.1 immutable official integration at exact PR head
     - path: .github/workflows/governance-exact-head-evidence.yml
-      responsibility: collect exact-head workflow evidence from GitHub Actions API outside repository-authored authority data
-    - path: .github/pull_request_template.md
-      responsibility: reusable evidence-neutral pull request intake surface
+      responsibility: verify two upstream checks and external Project Gate authority before becoming the third required check
     - path: STATUS.md
-      responsibility: concise mutable repository status without duplicating detailed scope lifecycle
+      responsibility: concise mutable repository status
 
 scope_change_disclosure:
-  from_scope_revision: GOV-004-v6
-  to_scope_revision: GOV-004-v7
-  revision_reason: external_exact_head_evidence_boundary_and_reusable_pr_template
+  from_scope_revision: GOV-004-v8
+  to_scope_revision: GOV-004-v9
+  revision_reason: live_inspector_external_authority_and_required_check_enforcement
   lifecycle_changes: []
   deleted_target_ids: []
   newly_introduced_target_ids: []
+  preserved_capability_resolution:
+    PROD-CAP-003: builder_local_project_gate_runtime_integration_deferred_not_deleted
+    PROD-CAP-005: external_project_gate_ce_to_builder_orchestration_implemented_elsewhere
   disclosure_computed_from_capability_ids: true
   reviewed_head_binding_required: true
   exact_head_binding_carrier: governance/schemas/review-receipt.schema.json
   source_object_identities:
     previous_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
-    previous_scope_source_commit: 921cfd7623eb5698901b5bce7ab77a053d09e6b9
+    previous_scope_source_commit: 7b7272e08da8dfebb5dbaa15a821d67783173bed
     current_capability_authority: planning/CAPABILITY_MEMORY.yml
     current_scope_source_identity: github_pull_request_head_sha
+    pr_inspector_authority: rezahh107/PR-Inspector@273ba7d4a6930015eb07c32c5de7210fa4692b1c
+    external_project_gate_authority: rezahh107/EV4-Project-Gate@d0d90165980c087b6e9b3d7af0aac7933fe22ec9
   set_counts:
-    target: 9
+    target: 10
     implemented: 5
     committed: 0
     deferred: 4
-    excluded: 4
+    implemented_elsewhere: 1
+    excluded: 5
     rejected: 0
     superseded: 0
   owner_facing_disclosure_carrier: pull_request_body
@@ -152,6 +203,7 @@ completion_evidence:
     - governance/schemas/governance-adoption-plan.schema.json
     - governance/schemas/review-lifecycle.schema.json
     - governance/schemas/review-receipt.schema.json
+    - governance/external-authorities/project-gate-authority.v1.json
     - planning/CAPABILITY_MEMORY.yml
     - planning/GOVERNANCE_ADOPTION_PLAN.yml
     - scripts/governance-lib.mjs
@@ -161,28 +213,36 @@ completion_evidence:
     - scripts/validate-pr-template-hygiene.mjs
     - scripts/verify-pr-inspector-bundle.py
     - scripts/test-pr-inspector-official-integration.py
+    - scripts/test-pr-inspector-official-integration-v1-11-1.py
     - tests/governance/progress-evidence-cases.json
     - tests/governance/pr-template-hygiene-cases.json
     - tests/governance/pr-inspector-projection-cases.json
+    - tests/governance/invalid/authority_failures.json
+    - tests/governance/invalid/merge_failures.json
+    - tests/governance/scenario-base.json
     - tests/governance/valid
     - tests/governance/invalid
     - tests/governance/invalid-yaml
     - .github/workflows/schema-validation.yml
     - .github/workflows/governance-exact-head-evidence.yml
     - .github/pull_request_template.md
+    - AGENTS.md
+    - README.md
     - STATUS.md
   validation_commands:
     - npm run validate
     - node scripts/validate-governance-authorities.mjs
     - node scripts/validate-governance-sequence.mjs --mode=fixtures
+    - node scripts/validate-governance-sequence.mjs --mode=run-bindings
     - node scripts/validate-governance-progress-evidence.mjs --mode=fixtures
     - node scripts/validate-pr-template-hygiene.mjs
-    - Verify Governance Exact-Head Evidence workflow with GitHub Actions API evidence for the current PR head
-    - python scripts/test-pr-inspector-official-integration.py with immutable CI-bound PR Inspector and GitHub API payload arguments
+    - Verify Governance Exact-Head Evidence with GitHub API repository commit blob and semantic evidence
+    - python scripts/test-pr-inspector-official-integration-v1-11-1.py with immutable CI-bound PR Inspector v1.11.1 and GitHub API payload arguments
     - node scripts/validate-governance-sequence.mjs --mode=live --source=github expected GOV-LIVE-030_OFFICIAL_BUNDLE_ACCESSOR_UNAVAILABLE
     - npm run validate:builder-lineage-sequence
   exact_head_ci_required: true
   external_exact_head_evidence_required: true
+  external_project_gate_authority_evidence_required: true
   independent_review_required: true
   user_merge_required: true
   post_merge_verification_required: true
@@ -198,25 +258,30 @@ completion_evidence:
 
 progress_gate:
   implementation_status: implemented_on_branch_pending_external_exact_head_ci_and_fresh_rereview
-  exact_commit_evidence_source: external_github_actions_api_current_pr_head_and_required_run_identity
+  exact_commit_evidence_source: external_github_actions_api_current_pr_head_required_workflow_and_producer_identity
   required_artifacts_verified_on_live_default_branch: false
   validator_result: EXTERNAL_EXACT_HEAD_CI_PENDING
   ci_result: EXTERNAL_EXACT_HEAD_CI_PENDING
   independent_review_result: FRESH_PR_INSPECTOR_REREVIEW_REQUIRED
-  merge_state: pr_55_merged_pr_56_not_merged
-  post_merge_verification_result: PR_55_REPOSITORY_CONFIRMED
+  merge_state: pr_58_merged_authority_reconciliation_pr_not_merged
+  post_merge_verification_result: GOV_004_V9_NOT_MERGED
   open_gates:
     - external_exact_head_ci_evidence
+    - external_project_gate_authority_evidence
     - fresh_pr_inspector_rereview
     - official_external_pr_inspector_bundle_accessor
     - historical_independent_review_evidence_gap
-    - pr_56_merge
-    - gov_004_v7_post_merge_verification
+    - authority_reconciliation_pr_merge
+    - gov_004_v9_post_merge_verification
 
 prohibited_claims:
   - production_ready
   - runtime_verified
-  - project_gate_runtime_implemented
+  - builder_local_project_gate_runtime_implemented
+  - project_gate_runtime_implemented_without_repository_qualification
+  - real_non_synthetic_ce_to_builder_handoff_proven
+  - project_gate_receipt_is_builder_semantic_input
+  - project_gate_replaces_builder_contracts
   - builder_to_responsive_export_implemented
   - repository_settings_enforced
   - branch_protection_enforced
@@ -232,10 +297,10 @@ prohibited_claims:
 next_increment:
   increment_id: NONE_FOR_GOVERNANCE_ADOPTION
   blocked_until:
-    - current_closure_external_exact_head_ci
-    - current_closure_fresh_pr_inspector_rereview
-    - current_closure_merge
-    - current_closure_post_merge_verification
+    - current_authority_reconciliation_external_exact_head_ci
+    - current_authority_reconciliation_fresh_pr_inspector_rereview
+    - current_authority_reconciliation_merge
+    - current_authority_reconciliation_post_merge_verification
   remaining_non_governance_work:
     - PROD-CAP-001
     - PROD-CAP-002
@@ -244,11 +309,15 @@ next_increment:
 
 scope_change_rule:
   revision_must_change_when:
+    - capability_identity_or_meaning
     - implemented_ids
     - committed_now_ids
     - excluded_now_ids
     - deferred_not_deleted_ids
+    - implemented_elsewhere_ids
     - dependencies
+    - required_check_set
+    - inspector_protocol_identity
     - completion_evidence
   prior_review_becomes_stale_on_revision_change: true
 

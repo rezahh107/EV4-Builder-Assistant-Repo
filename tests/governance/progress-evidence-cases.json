@@ -1,89 +1,48 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "expected": {
     "repository": "rezahh107/EV4-Builder-Assistant-Repo",
-    "pull_request": 56,
+    "pull_request": 59,
     "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   },
   "base_evidence": {
-    "schema_version": 1,
+    "schema_version": 2,
     "source": "github_actions_api",
     "repository": "rezahh107/EV4-Builder-Assistant-Repo",
-    "pull_request": 56,
+    "pull_request": 59,
     "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "pull_request_api_url": "https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/pulls/56",
-    "observed_at": "2026-07-14T12:00:00Z",
-    "required_checks": [
-      {
-        "workflow_name": "Schema validation",
-        "repository": "rezahh107/EV4-Builder-Assistant-Repo",
-        "pull_request": 56,
-        "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "run_id": 5001,
-        "run_api_url": "https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001",
-        "html_url": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001",
-        "event": "pull_request",
-        "status": "completed",
-        "conclusion": "success"
-      },
-      {
-        "workflow_name": "Verify Project Gate Contract Pin",
-        "repository": "rezahh107/EV4-Builder-Assistant-Repo",
-        "pull_request": 56,
-        "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "run_id": 5002,
-        "run_api_url": "https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002",
-        "html_url": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002",
-        "event": "pull_request",
-        "status": "completed",
-        "conclusion": "success"
+    "pull_request_api_url": "https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/pulls/59",
+    "observed_at": "2026-07-21T18:00:00Z",
+    "upstream_checks": [
+      {"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":59,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"},
+      {"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":59,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5002,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","event":"pull_request","status":"completed","conclusion":"success"}
+    ],
+    "external_authorities": {
+      "project_gate": {
+        "repository": "rezahh107/EV4-Project-Gate",
+        "repository_id": 1286355650,
+        "repository_api_url": "https://api.github.com/repos/rezahh107/EV4-Project-Gate",
+        "commit_sha": "d0d90165980c087b6e9b3d7af0aac7933fe22ec9",
+        "commit_api_url": "https://api.github.com/repos/rezahh107/EV4-Project-Gate/commits/d0d90165980c087b6e9b3d7af0aac7933fe22ec9",
+        "commit_html_url": "https://github.com/rezahh107/EV4-Project-Gate/commit/d0d90165980c087b6e9b3d7af0aac7933fe22ec9",
+        "files": [
+          {"path":"src/ev4_transition/data/capability-status.v1.json","blob_sha":"babaa185193bb9213649c07824a08662955a31f5","git_blob_sha":"babaa185193bb9213649c07824a08662955a31f5","content_sha256":"1111111111111111111111111111111111111111111111111111111111111111","contents_api_url":"https://api.github.com/repos/rezahh107/EV4-Project-Gate/contents/src/ev4_transition/data/capability-status.v1.json?ref=d0d90165980c087b6e9b3d7af0aac7933fe22ec9","semantic_substrings_verified":true},
+          {"path":"docs/IMPLEMENTATION_STATUS.yaml","blob_sha":"4b2c81499c0cde17c1413f59bed6c959564cb6e9","git_blob_sha":"4b2c81499c0cde17c1413f59bed6c959564cb6e9","content_sha256":"2222222222222222222222222222222222222222222222222222222222222222","contents_api_url":"https://api.github.com/repos/rezahh107/EV4-Project-Gate/contents/docs/IMPLEMENTATION_STATUS.yaml?ref=d0d90165980c087b6e9b3d7af0aac7933fe22ec9","semantic_substrings_verified":true},
+          {"path":"docs/PG_C2B_OPERATOR_WORKFLOW.md","blob_sha":"9fa5c639e63515ad9b98ef13b524ac91c3646cc6","git_blob_sha":"9fa5c639e63515ad9b98ef13b524ac91c3646cc6","content_sha256":"3333333333333333333333333333333333333333333333333333333333333333","contents_api_url":"https://api.github.com/repos/rezahh107/EV4-Project-Gate/contents/docs/PG_C2B_OPERATOR_WORKFLOW.md?ref=d0d90165980c087b6e9b3d7af0aac7933fe22ec9","semantic_substrings_verified":true}
+        ]
       }
-    ]
+    }
   },
   "cases": [
-    {
-      "case_id": "exact_pr_head_and_required_runs",
-      "valid": true
-    },
-    {
-      "case_id": "authored_confirmation_without_external_runs",
-      "overrides": {"required_checks": []},
-      "expected_diagnostics": ["GOV-PROGRESS-011_REQUIRED_WORKFLOW_SET_MISMATCH"]
-    },
-    {
-      "case_id": "wrong_repository",
-      "overrides": {"repository": "rezahh107/Other-Repo"},
-      "expected_diagnostics": ["GOV-PROGRESS-004_REPOSITORY_MISMATCH"]
-    },
-    {
-      "case_id": "wrong_pull_request",
-      "overrides": {"pull_request": 55},
-      "expected_diagnostics": ["GOV-PROGRESS-005_PULL_REQUEST_MISMATCH"]
-    },
-    {
-      "case_id": "stale_evidence_head",
-      "overrides": {"head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "expected_diagnostics": ["GOV-PROGRESS-006_HEAD_MISMATCH_OR_STALE"]
-    },
-    {
-      "case_id": "stale_required_check_head",
-      "overrides": {"required_checks": [{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5002,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","event":"pull_request","status":"completed","conclusion":"success"}]},
-      "expected_diagnostics": ["GOV-PROGRESS-015_CHECK_HEAD_MISMATCH_OR_STALE"]
-    },
-    {
-      "case_id": "required_check_not_completed",
-      "overrides": {"required_checks": [{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"in_progress","conclusion":null},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5002,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","event":"pull_request","status":"completed","conclusion":"success"}]},
-      "expected_diagnostics": ["GOV-PROGRESS-017_CHECK_NOT_COMPLETED","GOV-PROGRESS-018_CHECK_NOT_SUCCESSFUL"]
-    },
-    {
-      "case_id": "required_check_failed",
-      "overrides": {"required_checks": [{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"failure"},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5002,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","event":"pull_request","status":"completed","conclusion":"success"}]},
-      "expected_diagnostics": ["GOV-PROGRESS-018_CHECK_NOT_SUCCESSFUL"]
-    },
-    {
-      "case_id": "duplicate_run_identity",
-      "overrides": {"required_checks": [{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":56,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"}]},
-      "expected_diagnostics": ["GOV-PROGRESS-010_DUPLICATE_RUN_IDENTITY"]
-    }
+    {"case_id":"exact_head_upstream_and_project_gate_authority","valid":true},
+    {"case_id":"missing_upstream","overrides":{"upstream_checks":[]},"expected_diagnostics":["GOV-PROGRESS-011_UPSTREAM_WORKFLOW_SET_MISMATCH"]},
+    {"case_id":"wrong_repository","overrides":{"repository":"rezahh107/Other-Repo"},"expected_diagnostics":["GOV-PROGRESS-004_REPOSITORY_MISMATCH"]},
+    {"case_id":"stale_head","overrides":{"head_sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},"expected_diagnostics":["GOV-PROGRESS-006_HEAD_MISMATCH_OR_STALE"]},
+    {"case_id":"duplicate_run","overrides":{"upstream_checks":[{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":59,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":59,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"}]},"expected_diagnostics":["GOV-PROGRESS-010_DUPLICATE_RUN_IDENTITY"]},
+    {"case_id":"project_gate_repository_id_tampered","overrides":{"external_authorities":{"project_gate":{"repository_id":1}}},"expected_diagnostics":["PG-AUTH-EVIDENCE-003_REPOSITORY_ID_MISMATCH"]},
+    {"case_id":"project_gate_commit_tampered","overrides":{"external_authorities":{"project_gate":{"commit_sha":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}}},"expected_diagnostics":["PG-AUTH-EVIDENCE-005_COMMIT_MISMATCH"]},
+    {"case_id":"project_gate_blob_tampered","overrides":{"external_authorities":{"project_gate":{"files":[{"path":"src/ev4_transition/data/capability-status.v1.json","blob_sha":"ffffffffffffffffffffffffffffffffffffffff","git_blob_sha":"babaa185193bb9213649c07824a08662955a31f5","content_sha256":"1111111111111111111111111111111111111111111111111111111111111111","contents_api_url":"https://api.github.com/repos/rezahh107/EV4-Project-Gate/contents/src/ev4_transition/data/capability-status.v1.json?ref=d0d90165980c087b6e9b3d7af0aac7933fe22ec9","semantic_substrings_verified":true},{"path":"docs/IMPLEMENTATION_STATUS.yaml","blob_sha":"4b2c81499c0cde17c1413f59bed6c959564cb6e9","git_blob_sha":"4b2c81499c0cde17c1413f59bed6c959564cb6e9","content_sha256":"2222222222222222222222222222222222222222222222222222222222222222","contents_api_url":"https://api.github.com/repos/rezahh107/EV4-Project-Gate/contents/docs/IMPLEMENTATION_STATUS.yaml?ref=d0d90165980c087b6e9b3d7af0aac7933fe22ec9","semantic_substrings_verified":true},{"path":"docs/PG_C2B_OPERATOR_WORKFLOW.md","blob_sha":"9fa5c639e63515ad9b98ef13b524ac91c3646cc6","git_blob_sha":"9fa5c639e63515ad9b98ef13b524ac91c3646cc6","content_sha256":"3333333333333333333333333333333333333333333333333333333333333333","contents_api_url":"https://api.github.com/repos/rezahh107/EV4-Project-Gate/contents/docs/PG_C2B_OPERATOR_WORKFLOW.md?ref=d0d90165980c087b6e9b3d7af0aac7933fe22ec9","semantic_substrings_verified":true}]}}},"expected_diagnostics":["PG-AUTH-EVIDENCE-011_BLOB_MISMATCH"]},
+    {"case_id":"project_gate_semantic_content_unverified","overrides":{"external_authorities":{"project_gate":{"files":[{"path":"src/ev4_transition/data/capability-status.v1.json","blob_sha":"babaa185193bb9213649c07824a08662955a31f5","git_blob_sha":"babaa185193bb9213649c07824a08662955a31f5","content_sha256":"1111111111111111111111111111111111111111111111111111111111111111","contents_api_url":"https://api.github.com/repos/rezahh107/EV4-Project-Gate/contents/src/ev4_transition/data/capability-status.v1.json?ref=d0d90165980c087b6e9b3d7af0aac7933fe22ec9","semantic_substrings_verified":false},{"path":"docs/IMPLEMENTATION_STATUS.yaml","blob_sha":"4b2c81499c0cde17c1413f59bed6c959564cb6e9","git_blob_sha":"4b2c81499c0cde17c1413f59bed6c959564cb6e9","content_sha256":"2222222222222222222222222222222222222222222222222222222222222222","contents_api_url":"https://api.github.com/repos/rezahh107/EV4-Project-Gate/contents/docs/IMPLEMENTATION_STATUS.yaml?ref=d0d90165980c087b6e9b3d7af0aac7933fe22ec9","semantic_substrings_verified":true},{"path":"docs/PG_C2B_OPERATOR_WORKFLOW.md","blob_sha":"9fa5c639e63515ad9b98ef13b524ac91c3646cc6","git_blob_sha":"9fa5c639e63515ad9b98ef13b524ac91c3646cc6","content_sha256":"3333333333333333333333333333333333333333333333333333333333333333","contents_api_url":"https://api.github.com/repos/rezahh107/EV4-Project-Gate/contents/docs/PG_C2B_OPERATOR_WORKFLOW.md?ref=d0d90165980c087b6e9b3d7af0aac7933fe22ec9","semantic_substrings_verified":true}]}}},"expected_diagnostics":["PG-AUTH-EVIDENCE-014_SEMANTIC_CONTENT_NOT_VERIFIED"]},
+    {"case_id":"upstream_run_api_identity_tampered","overrides":{"upstream_checks":[{"workflow_name":"Schema validation","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":59,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5001,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/9999","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5001","event":"pull_request","status":"completed","conclusion":"success"},{"workflow_name":"Verify Project Gate Contract Pin","repository":"rezahh107/EV4-Builder-Assistant-Repo","pull_request":59,"head_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","run_id":5002,"run_api_url":"https://api.github.com/repos/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","html_url":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/actions/runs/5002","event":"pull_request","status":"completed","conclusion":"success"}]},"expected_diagnostics":["GOV-PROGRESS-019_RUN_API_IDENTITY_MISMATCH"]}
   ]
 }

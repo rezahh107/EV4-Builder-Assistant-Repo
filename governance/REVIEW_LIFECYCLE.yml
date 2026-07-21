@@ -1,6 +1,6 @@
 schema_version: 2
 protocol_id: EV4-BUILDER-EXACT-HEAD-AI-REVIEW
-protocol_version: 5
+protocol_version: 6
 repository: rezahh107/EV4-Builder-Assistant-Repo
 scope_revision_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
 implementation_context_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
@@ -18,6 +18,7 @@ required_receipt_fields:
   - scope_revision
   - implementation_context_id
   - exact_head_ci_run_ids
+  - exact_head_ci_runs
   - reviewed_at
   - inspector_repository
   - inspector_repository_id
@@ -39,8 +40,8 @@ required_receipt_fields:
 canonical_pr_inspector_authority:
   repository: rezahh107/PR-Inspector
   repository_id: 1288323264
-  active_protocol_version: v1.10.0
-  immutable_commit_sha: 88e8610bcc2ada48c8cf902d23d4296983310872
+  active_protocol_version: v1.11.1
+  immutable_commit_sha: 273ba7d4a6930015eb07c32c5de7210fa4692b1c
   commit_provenance: github_rest_api_https
   immutable_checkout:
     fetch_depth: 1
@@ -57,7 +58,7 @@ canonical_pr_inspector_authority:
   official_completion_boundary: pr_inspector.official_review.verify_completed_review
   official_synthetic_boundary: pr_inspector.review_provenance.verify_review_directory
   official_adapter: scripts/verify-pr-inspector-bundle.py
-  official_regression_test: scripts/test-pr-inspector-official-integration.py
+  official_regression_test: scripts/test-pr-inspector-official-integration-v1-11-1.py
   official_artifact_source: local_review_directory
   external_retrievable_accessor_available: false
   external_bundle_locator: unavailable
@@ -85,14 +86,29 @@ technical_statuses:
   - RED_DO_NOT_MERGE
 
 required_check_set:
-  version: 1
+  version: 2
   checks:
     - check_id: implementation_validation
       workflow_name: Schema validation
       event: pull_request
+      producer_repository: rezahh107/EV4-Builder-Assistant-Repo
+      producer_repository_id: 1282136475
+      head_binding: reviewed_head_sha
+      run_identity_source: github_actions_api
     - check_id: project_gate_pin
       workflow_name: Verify Project Gate Contract Pin
       event: pull_request
+      producer_repository: rezahh107/EV4-Builder-Assistant-Repo
+      producer_repository_id: 1282136475
+      head_binding: reviewed_head_sha
+      run_identity_source: github_actions_api
+    - check_id: governance_exact_head_evidence
+      workflow_name: Verify Governance Exact-Head Evidence
+      event: pull_request
+      producer_repository: rezahh107/EV4-Builder-Assistant-Repo
+      producer_repository_id: 1282136475
+      head_binding: reviewed_head_sha
+      run_identity_source: github_actions_api
 
 live_receipt_validation:
   mode: immutable_official_verifier_with_github_source_fail_closed
@@ -104,7 +120,8 @@ live_receipt_validation:
     - pull_request_review
     - pull_request_comment
   github_source_command: node scripts/validate-governance-sequence.mjs --mode=live --source=github
-  official_synthetic_test_command: python scripts/test-pr-inspector-official-integration.py
+  official_synthetic_test_command: python scripts/test-pr-inspector-official-integration-v1-11-1.py
+  required_check_run_binding_command: node scripts/validate-governance-sequence.mjs --mode=run-bindings
   phase: post_review_exact_head_validation
   activation_state: official_external_bundle_accessor_unavailable_fail_closed
   external_official_bundle_accessor_available: false
@@ -136,9 +153,11 @@ enforcement_carriers:
   schema: governance/schemas/review-receipt.schema.json
   sequence_validator: scripts/validate-governance-sequence.mjs
   official_verifier_adapter: scripts/verify-pr-inspector-bundle.py
-  official_verifier_regression: scripts/test-pr-inspector-official-integration.py
+  official_verifier_regression: scripts/test-pr-inspector-official-integration-v1-11-1.py
   projection_case_registry: tests/governance/pr-inspector-projection-cases.json
   exact_head_workflow: .github/workflows/schema-validation.yml
+  external_authority_lock: governance/external-authorities/project-gate-authority.v1.json
+  external_authority_workflow: .github/workflows/governance-exact-head-evidence.yml
   pr_template: .github/pull_request_template.md
 
 current_enforcement_status: mixed_sequence_ci_and_fail_closed_validator_backed
