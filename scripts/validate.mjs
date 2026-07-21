@@ -35,6 +35,7 @@ const scripts = [
 ];
 
 const nodeChecks = [
+  'scripts/validate-builder-bootstrap.mjs',
   'scripts/validate-ce-builder-transformation-registry.mjs',
   'scripts/validate-ce-reference-map-adapter.mjs',
   'scripts/validate-ce-to-builder-contract-gate.mjs',
