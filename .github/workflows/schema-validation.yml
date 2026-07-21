@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           repository: rezahh107/PR-Inspector
-          ref: 88e8610bcc2ada48c8cf902d23d4296983310872
+          ref: 273ba7d4a6930015eb07c32c5de7210fa4692b1c
           fetch-depth: 1
           path: .pr-inspector
           persist-credentials: false
@@ -58,17 +58,18 @@ jobs:
         run: |
           set -euo pipefail
           inspector_sha="$(git -C .pr-inspector rev-parse HEAD)"
-          test "$inspector_sha" = "88e8610bcc2ada48c8cf902d23d4296983310872"
+          test "$inspector_sha" = "273ba7d4a6930015eb07c32c5de7210fa4692b1c"
           remote="$(git -C .pr-inspector remote get-url origin)"
           case "$remote" in
             https://github.com/rezahh107/PR-Inspector|https://github.com/rezahh107/PR-Inspector.git) ;;
             *) echo "unexpected PR Inspector remote: $remote" >&2; exit 1 ;;
           esac
-          test "$(tr -d '\r\n' < .pr-inspector/CURRENT_VERSION)" = "v1.10.0"
-          grep -Fx 'active_version: v1.10.0' .pr-inspector/protocol-manifest.yaml
+          test "$(tr -d '\r\n' < .pr-inspector/CURRENT_VERSION)" = "v1.11.1"
+          grep -Fx 'active_version: v1.11.1' .pr-inspector/protocol-manifest.yaml
+          grep -Fx '  "protocol_version": "v1.11.1",' .pr-inspector/protocols/v1.11.1/trust/INSPECTOR_TRUST_POLICY.json
           echo "inspector_repository=rezahh107/PR-Inspector"
           echo "inspector_commit=$inspector_sha"
-          echo "inspector_protocol=v1.10.0"
+          echo "inspector_protocol=v1.11.1"
 
       - name: Fetch and verify canonical PR Inspector repository and commit payloads
         if: github.event_name == 'pull_request'
@@ -89,14 +90,13 @@ jobs:
             -H 'Accept: application/vnd.github+json' \
             -H 'X-GitHub-Api-Version: 2022-11-28' \
             -H "Authorization: Bearer ${GH_TOKEN}" \
-            https://api.github.com/repos/rezahh107/PR-Inspector/commits/88e8610bcc2ada48c8cf902d23d4296983310872 > "$commit_payload"
+            https://api.github.com/repos/rezahh107/PR-Inspector/commits/273ba7d4a6930015eb07c32c5de7210fa4692b1c > "$commit_payload"
           python - "$repo_payload" "$commit_payload" <<'PY'
-          import json
-          import sys
+          import json, sys
           from pathlib import Path
           repository = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
           commit = json.loads(Path(sys.argv[2]).read_text(encoding='utf-8'))
-          sha = '88e8610bcc2ada48c8cf902d23d4296983310872'
+          sha = '273ba7d4a6930015eb07c32c5de7210fa4692b1c'
           assert repository['full_name'] == 'rezahh107/PR-Inspector'
           assert repository['id'] == 1288323264
           assert repository['url'] == 'https://api.github.com/repos/rezahh107/PR-Inspector'
@@ -119,14 +119,13 @@ jobs:
           set -euo pipefail
           python -m pip install --disable-pip-version-check --no-input --editable ./.pr-inspector
           python - <<'PY'
-          import importlib.metadata
-          import inspect
+          import importlib.metadata, inspect
           from pathlib import Path
           import pr_inspector
           root = Path('.pr-inspector').resolve()
           module_path = Path(inspect.getfile(pr_inspector)).resolve()
           assert root == module_path or root in module_path.parents
-          assert importlib.metadata.version('pr-inspector-protocol') == '1.10.0'
+          assert importlib.metadata.version('pr-inspector-protocol') == '1.11.1'
           print(f'pr_inspector_module={module_path}')
           PY
 
@@ -137,11 +136,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          python scripts/test-pr-inspector-official-integration.py \
+          python scripts/test-pr-inspector-official-integration-v1-11-1.py \
             --inspector-root "$PR_INSPECTOR_ROOT" \
             --repository-payload "$PR_INSPECTOR_REPOSITORY_PAYLOAD" \
             --commit-payload "$PR_INSPECTOR_COMMIT_PAYLOAD" \
-            --expected-inspector-commit 88e8610bcc2ada48c8cf902d23d4296983310872 \
+            --expected-inspector-commit 273ba7d4a6930015eb07c32c5de7210fa4692b1c \
             --target-repository "${{ github.repository }}" \
             --pr-number "${{ github.event.pull_request.number }}" \
             --base-sha "${{ github.event.pull_request.base.sha }}" \
@@ -160,6 +159,7 @@ jobs:
           printf '%s\n' "$output"
           test "$status" -ne 0
           grep -F 'GOV-LIVE-030_OFFICIAL_BUNDLE_ACCESSOR_UNAVAILABLE' <<< "$output"
+          grep -F 'v1.11.1' <<< "$output"
 
       - name: Assert local JavaScript canonical-bundle acceptance is removed
         if: github.event_name == 'pull_request'
