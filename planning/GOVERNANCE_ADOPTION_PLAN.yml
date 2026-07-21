@@ -2,14 +2,16 @@ schema_version: 2
 
 plan_identity:
   plan_id: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
-  plan_version: 7
+  plan_version: 8
   target_repository: rezahh107/EV4-Builder-Assistant-Repo
   audit_base_branch: main
   audit_base_sha: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
 
 repository_state:
   default_branch: main
-  current_source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
+  current_source_commit: a0ad601fc2dfcc69c38604d9ca53482403f4089a
+  authority_reconciliation_starting_main: a0ad601fc2dfcc69c38604d9ca53482403f4089a
+  observed_external_project_gate_main: d0d90165980c087b6e9b3d7af0aac7933fe22ec9
   verified_prerequisite:
     increment_id: GOV-002-AI-AUTHORITY-AND-SCOPE-AUTHORITIES
     pr: 54
@@ -39,16 +41,16 @@ repository_state:
     live_review_receipt_validation: official_external_bundle_accessor_unavailable_fail_closed
 
 current_increment:
-  increment_id: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
-  classification: REQUIRED_GOVERNANCE_ADOPTION
-  scope_revision: GOV-004-v7
-  implementation_context_id: repo-maintainer-gov-003-004-closure-repair
+  increment_id: BUILDER_PROJECT_GATE_AUTHORITY_RECONCILIATION
+  classification: REQUIRED_AUTHORITY_RECONCILIATION
+  scope_revision: GOV-004-v8
+  implementation_context_id: builder-project-gate-authority-reconciliation
   implementation_status: implemented_on_branch_pending_external_exact_head_ci_and_fresh_rereview
-  objective: bind GOV-004 closure progress to external current-head GitHub Actions evidence and restore the global pull request template as evidence-neutral reusable infrastructure
+  objective: distinguish external Project Gate capability from Builder-local runtime integration while preserving Builder-owned contract authority and evidence limits
 
 previous_scope_snapshot:
-  scope_revision: GOV-004-v6
-  source_commit: 921cfd7623eb5698901b5bce7ab77a053d09e6b9
+  scope_revision: GOV-004-v7
+  source_commit: a0ad601fc2dfcc69c38604d9ca53482403f4089a
   lifecycle_by_id:
     GOV-CAP-001: implemented
     GOV-CAP-002: implemented
@@ -62,9 +64,9 @@ previous_scope_snapshot:
 
 scope_projection:
   project: rezahh107/EV4-Builder-Assistant-Repo
-  phase: GOV-003-004-POST-MERGE-CLOSURE-REPAIR
-  scope_revision: GOV-004-v7
-  source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
+  phase: BUILDER_PROJECT_GATE_AUTHORITY_RECONCILIATION
+  scope_revision: GOV-004-v8
+  source_commit: a0ad601fc2dfcc69c38604d9ca53482403f4089a
   long_term_target_ids:
     - GOV-CAP-001
     - GOV-CAP-002
@@ -75,6 +77,7 @@ scope_projection:
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
+    - PROD-CAP-005
   implemented_ids:
     - GOV-CAP-001
     - GOV-CAP-002
@@ -87,57 +90,82 @@ scope_projection:
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
+    - PROD-CAP-005
   deferred_not_deleted_ids:
     - PROD-CAP-001
     - PROD-CAP-002
     - PROD-CAP-003
     - PROD-CAP-004
+  implemented_elsewhere_ids:
+    - PROD-CAP-005
   rejected_ids: []
   superseded_ids: []
   dependencies:
     - GOV-002_merge_commit_8931c608d759ea121727f3903e21976a37e27f45
     - GOV-003-004_merge_commit_65450bc5a4d19edf66098669a6fd48bdcda3ed70
-    - GOV-004-v6_reviewed_head_921cfd7623eb5698901b5bce7ab77a053d09e6b9
+    - GOV-004-v7_main_a0ad601fc2dfcc69c38604d9ca53482403f4089a
     - PR_Inspector_commit_88e8610bcc2ada48c8cf902d23d4296983310872
+    - EV4_Project_Gate_main_d0d90165980c087b6e9b3d7af0aac7933fe22ec9
+    - EV4_Project_Gate_C2B_builder_pin_b599c000118dcbe77572d6f387da5da0f46d1f91
   authority_files:
     - path: governance/AI_AUTHORITY_POLICY.yml
       responsibility: AI authority evidence authority security profile and rule enforcement levels
     - path: planning/CAPABILITY_MEMORY.yml
-      responsibility: canonical capability IDs and lifecycle memory
+      responsibility: canonical capability IDs lifecycle memory and external-versus-local capability identity
     - path: planning/GOVERNANCE_ADOPTION_PLAN.yml
-      responsibility: current scope dependencies computed disclosure progress evidence and post-merge closure state
+      responsibility: current scope dependencies computed disclosure progress evidence and review staleness
     - path: governance/REVIEW_LIFECYCLE.yml
       responsibility: immutable official PR Inspector integration exact-head staleness fail-closed Green boundary and post-review lifecycle
-    - path: scripts/validate-governance-progress-evidence.mjs
-      responsibility: validate external repository PR head workflow run identity and successful conclusions
-    - path: .github/workflows/governance-exact-head-evidence.yml
-      responsibility: collect exact-head workflow evidence from GitHub Actions API outside repository-authored authority data
-    - path: .github/pull_request_template.md
-      responsibility: reusable evidence-neutral pull request intake surface
+    - path: governance/schemas/review-receipt.schema.json
+      responsibility: bind fresh independent review to GOV-004-v8
+    - path: scripts/validate-governance-authorities.mjs
+      responsibility: validate capability sets scope disclosure and Project Gate authority correspondence
+    - path: tests/governance/invalid/authority_failures.json
+      responsibility: invalid authority-correspondence mutation cases
+    - path: tests/governance/scenario-base.json
+      responsibility: valid GOV-004-v8 governance sequence baseline
+    - path: AGENTS.md
+      responsibility: concise repository instruction authority
+    - path: README.md
+      responsibility: bounded public capability and operator-flow explanation
     - path: STATUS.md
       responsibility: concise mutable repository status without duplicating detailed scope lifecycle
 
 scope_change_disclosure:
-  from_scope_revision: GOV-004-v6
-  to_scope_revision: GOV-004-v7
-  revision_reason: external_exact_head_evidence_boundary_and_reusable_pr_template
+  from_scope_revision: GOV-004-v7
+  to_scope_revision: GOV-004-v8
+  revision_reason: project_gate_authority_split_external_vs_builder_local
   lifecycle_changes: []
   deleted_target_ids: []
-  newly_introduced_target_ids: []
+  newly_introduced_target_ids:
+    - PROD-CAP-005
+  capability_identity_mapping:
+    - prior_capability_id: PROD-CAP-003
+      prior_name: project_gate_verifier_and_runtime
+      final_capability_id: PROD-CAP-003
+      final_name: builder_local_project_gate_runtime_integration
+      disposition: qualified_and_renamed
+    - prior_capability_id: PROD-CAP-003
+      prior_name: project_gate_verifier_and_runtime
+      final_capability_id: PROD-CAP-005
+      final_name: external_project_gate_ce_to_builder_orchestration
+      disposition: split_to_implemented_elsewhere
   disclosure_computed_from_capability_ids: true
   reviewed_head_binding_required: true
   exact_head_binding_carrier: governance/schemas/review-receipt.schema.json
   source_object_identities:
     previous_scope_authority: planning/GOVERNANCE_ADOPTION_PLAN.yml
-    previous_scope_source_commit: 921cfd7623eb5698901b5bce7ab77a053d09e6b9
+    previous_scope_source_commit: a0ad601fc2dfcc69c38604d9ca53482403f4089a
     current_capability_authority: planning/CAPABILITY_MEMORY.yml
     current_scope_source_identity: github_pull_request_head_sha
+    external_project_gate_authority: rezahh107/EV4-Project-Gate@d0d90165980c087b6e9b3d7af0aac7933fe22ec9
   set_counts:
-    target: 9
+    target: 10
     implemented: 5
     committed: 0
     deferred: 4
-    excluded: 4
+    implemented_elsewhere: 1
+    excluded: 5
     rejected: 0
     superseded: 0
   owner_facing_disclosure_carrier: pull_request_body
@@ -164,12 +192,16 @@ completion_evidence:
     - tests/governance/progress-evidence-cases.json
     - tests/governance/pr-template-hygiene-cases.json
     - tests/governance/pr-inspector-projection-cases.json
+    - tests/governance/invalid/authority_failures.json
+    - tests/governance/scenario-base.json
     - tests/governance/valid
     - tests/governance/invalid
     - tests/governance/invalid-yaml
     - .github/workflows/schema-validation.yml
     - .github/workflows/governance-exact-head-evidence.yml
     - .github/pull_request_template.md
+    - AGENTS.md
+    - README.md
     - STATUS.md
   validation_commands:
     - npm run validate
@@ -203,20 +235,24 @@ progress_gate:
   validator_result: EXTERNAL_EXACT_HEAD_CI_PENDING
   ci_result: EXTERNAL_EXACT_HEAD_CI_PENDING
   independent_review_result: FRESH_PR_INSPECTOR_REREVIEW_REQUIRED
-  merge_state: pr_55_merged_pr_56_not_merged
-  post_merge_verification_result: PR_55_REPOSITORY_CONFIRMED
+  merge_state: pr_58_merged_authority_reconciliation_pr_not_merged
+  post_merge_verification_result: GOV_004_V8_NOT_MERGED
   open_gates:
     - external_exact_head_ci_evidence
     - fresh_pr_inspector_rereview
     - official_external_pr_inspector_bundle_accessor
     - historical_independent_review_evidence_gap
-    - pr_56_merge
-    - gov_004_v7_post_merge_verification
+    - authority_reconciliation_pr_merge
+    - gov_004_v8_post_merge_verification
 
 prohibited_claims:
   - production_ready
   - runtime_verified
-  - project_gate_runtime_implemented
+  - builder_local_project_gate_runtime_implemented
+  - project_gate_runtime_implemented_without_repository_qualification
+  - real_non_synthetic_ce_to_builder_handoff_proven
+  - project_gate_receipt_is_builder_semantic_input
+  - project_gate_replaces_builder_contracts
   - builder_to_responsive_export_implemented
   - repository_settings_enforced
   - branch_protection_enforced
@@ -232,10 +268,10 @@ prohibited_claims:
 next_increment:
   increment_id: NONE_FOR_GOVERNANCE_ADOPTION
   blocked_until:
-    - current_closure_external_exact_head_ci
-    - current_closure_fresh_pr_inspector_rereview
-    - current_closure_merge
-    - current_closure_post_merge_verification
+    - current_authority_reconciliation_external_exact_head_ci
+    - current_authority_reconciliation_fresh_pr_inspector_rereview
+    - current_authority_reconciliation_merge
+    - current_authority_reconciliation_post_merge_verification
   remaining_non_governance_work:
     - PROD-CAP-001
     - PROD-CAP-002
@@ -244,10 +280,12 @@ next_increment:
 
 scope_change_rule:
   revision_must_change_when:
+    - capability_identity_or_meaning
     - implemented_ids
     - committed_now_ids
     - excluded_now_ids
     - deferred_not_deleted_ids
+    - implemented_elsewhere_ids
     - dependencies
     - completion_evidence
   prior_review_becomes_stale_on_revision_change: true
