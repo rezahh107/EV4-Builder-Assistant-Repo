@@ -1,0 +1,34 @@
+{
+  "schema": "ev4-builder-checkpoint@0.2.0",
+  "checkpoint_id": "BUILDER-TRX-CP-000",
+  "checkpoint_sequence": 1,
+  "parent_checkpoint_id": null,
+  "package_id": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
+  "package_sha256": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "workflow_mode": "APPROVED_HANDOFF_MODE",
+  "runtime_state": "WAITING_FOR_CONFIRMATION",
+  "batch_id": "BATCH-001",
+  "confirmed_action_ids": [],
+  "unconfirmed_action_ids": [
+    "BATCH-001-A01"
+  ],
+  "assertions": [
+    {
+      "assertion_id": "ASSERT-BATCH-001-A01",
+      "subject_ref": "BATCH-001-A01",
+      "claim": "Root Container exists with approved label and class.",
+      "status": "not_checked",
+      "evidence_refs": []
+    }
+  ],
+  "evidence_ledger": [],
+  "retry_policy": {
+    "max_retry_per_action": 3,
+    "retry_1": "clarify_instruction",
+    "retry_2": "request_targeted_screenshot",
+    "retry_3": "enter_CORRECTION"
+  },
+  "created_at": "2026-07-22T00:00:00Z",
+  "created_from": "initial"
+}
