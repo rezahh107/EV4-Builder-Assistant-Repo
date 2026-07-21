@@ -147,6 +147,8 @@ def main() -> int:
                 raise AssertionError(f"{case['case_id']}: adapter differs from official projection")
 
         package = copy.deepcopy(package_base)
+        canonical_projection = project_decision(package)
+        package["decision"]["technical_status"] = canonical_projection["technical_status"]
         package_bytes = canonical_json_bytes(package)
         directory = temp / "official-positive-review"
         directory.mkdir()
@@ -199,7 +201,7 @@ def main() -> int:
         projection_path = directory / "DECISION_PROJECTION.json"
         original = projection_path.read_text(encoding="utf-8")
         tampered = json.loads(original)
-        tampered["technical_status"] = "YELLOW_CHANGES_OR_VERIFICATION_REQUIRED"
+        tampered["technical_status"] = "GREEN_TECHNICALLY_READY"
         projection_path.write_text(json.dumps(tampered, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
         require_failure(verify_command)
         projection_path.write_text(original, encoding="utf-8")
@@ -217,6 +219,7 @@ def main() -> int:
 
     print("Official PR Inspector v1.11.1 immutable integration regression passed.")
     print(f"projection_cases={len(cases)}")
+    print(f"synthetic_canonical_status={canonical_projection['technical_status']}")
     print("official_positive_synthetic_verification=true")
     print("official_transport=fetch_github_api_response")
     print("copied_json_provenance_rejected=true")
