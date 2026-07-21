@@ -55,6 +55,7 @@ const nodeChecks = [
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const transactionFixture = 'tests/valid/runtime-transaction/complete-transaction.json';
 
 function writeOutput(name, value) {
   if (!process.env.GITHUB_OUTPUT) return;
@@ -99,9 +100,18 @@ function run(command, args, label) {
 
 for (const script of scripts) run(npmCommand, ['run', script], `npm run ${script}`);
 for (const check of nodeChecks) {
-  const args = (
+  let args;
+  if (check === 'scripts/validate-builder-runtime-transaction.mjs') {
+    args = [check, transactionFixture, '--self-test'];
+  } else if (check === 'scripts/validate-builder-runtime-transaction-state.mjs') {
+    args = [check, transactionFixture];
+  } else if (
     check === 'scripts/validate-governance-sequence.mjs'
     || check === 'scripts/validate-governance-progress-evidence.mjs'
-  ) ? [check, '--mode=fixtures'] : [check];
+  ) {
+    args = [check, '--mode=fixtures'];
+  } else {
+    args = [check];
+  }
   run(process.execPath, args, `node ${args.join(' ')}`);
 }
