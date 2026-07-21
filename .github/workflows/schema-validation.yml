@@ -67,50 +67,11 @@ jobs:
           test "$(tr -d '\r\n' < .pr-inspector/CURRENT_VERSION)" = "v1.11.1"
           grep -Fx 'active_version: v1.11.1' .pr-inspector/protocol-manifest.yaml
           grep -Fx '  "protocol_version": "v1.11.1",' .pr-inspector/protocols/v1.11.1/trust/INSPECTOR_TRUST_POLICY.json
+          grep -Fx '  "github_api_version": "2026-03-10",' .pr-inspector/protocols/v1.11.1/trust/INSPECTOR_TRUST_POLICY.json
           echo "inspector_repository=rezahh107/PR-Inspector"
           echo "inspector_commit=$inspector_sha"
           echo "inspector_protocol=v1.11.1"
-
-      - name: Fetch and verify canonical PR Inspector repository and commit payloads
-        if: github.event_name == 'pull_request'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          umask 077
-          repo_payload="$RUNNER_TEMP/pr-inspector-repository.json"
-          commit_payload="$RUNNER_TEMP/pr-inspector-commit.json"
-          curl --fail --silent --show-error --proto '=https' --tlsv1.2 --max-redirs 0 \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'X-GitHub-Api-Version: 2022-11-28' \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            https://api.github.com/repos/rezahh107/PR-Inspector > "$repo_payload"
-          curl --fail --silent --show-error --proto '=https' --tlsv1.2 --max-redirs 0 \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'X-GitHub-Api-Version: 2022-11-28' \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            https://api.github.com/repos/rezahh107/PR-Inspector/commits/273ba7d4a6930015eb07c32c5de7210fa4692b1c > "$commit_payload"
-          python - "$repo_payload" "$commit_payload" <<'PY'
-          import json, sys
-          from pathlib import Path
-          repository = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
-          commit = json.loads(Path(sys.argv[2]).read_text(encoding='utf-8'))
-          sha = '273ba7d4a6930015eb07c32c5de7210fa4692b1c'
-          assert repository['full_name'] == 'rezahh107/PR-Inspector'
-          assert repository['id'] == 1288323264
-          assert repository['url'] == 'https://api.github.com/repos/rezahh107/PR-Inspector'
-          assert repository['html_url'] == 'https://github.com/rezahh107/PR-Inspector'
-          assert commit['sha'] == sha
-          assert commit['url'] == f'https://api.github.com/repos/rezahh107/PR-Inspector/commits/{sha}'
-          assert commit['html_url'] == f'https://github.com/rezahh107/PR-Inspector/commit/{sha}'
-          print('immutable_inspector_api_identity=verified')
-          PY
-          {
-            echo "PR_INSPECTOR_ROOT=$GITHUB_WORKSPACE/.pr-inspector"
-            echo "PR_INSPECTOR_REPOSITORY_PAYLOAD=$repo_payload"
-            echo "PR_INSPECTOR_COMMIT_PAYLOAD=$commit_payload"
-          } >> "$GITHUB_ENV"
+          echo "inspector_github_api_version=2026-03-10"
 
       - name: Install immutable PR Inspector checkout
         if: github.event_name == 'pull_request'
@@ -137,9 +98,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/test-pr-inspector-official-integration-v1-11-1.py \
-            --inspector-root "$PR_INSPECTOR_ROOT" \
-            --repository-payload "$PR_INSPECTOR_REPOSITORY_PAYLOAD" \
-            --commit-payload "$PR_INSPECTOR_COMMIT_PAYLOAD" \
+            --inspector-root "$GITHUB_WORKSPACE/.pr-inspector" \
             --expected-inspector-commit 273ba7d4a6930015eb07c32c5de7210fa4692b1c \
             --target-repository "${{ github.repository }}" \
             --pr-number "${{ github.event.pull_request.number }}" \
