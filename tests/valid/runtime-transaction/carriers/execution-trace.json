@@ -1,0 +1,11 @@
+{
+  "trace_schema": "ev4-builder-fixture-execution-trace@1",
+  "fixture_classification": "synthetic_validation_only",
+  "transaction_id": "BUILDER-TRX-FIXTURE-001",
+  "session_id": "SESSION-001",
+  "package_digest": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
+  "action_id": "BATCH-001-A01",
+  "action_digest": "8376fabf3d358799361ba95923470253c310e87a6a9ee5ded5f1d10a2c97f88c",
+  "status": "executed",
+  "result": "Root Container exists with approved label and class."
+}
