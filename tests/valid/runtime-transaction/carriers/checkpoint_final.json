@@ -1,0 +1,48 @@
+{
+  "schema": "ev4-builder-checkpoint@0.2.0",
+  "checkpoint_id": "BUILDER-TRX-CP-001",
+  "checkpoint_sequence": 2,
+  "parent_checkpoint_id": "BUILDER-TRX-CP-000",
+  "package_id": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
+  "package_sha256": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "workflow_mode": "APPROVED_HANDOFF_MODE",
+  "runtime_state": "COMPLETED",
+  "batch_id": "BATCH-001",
+  "confirmed_action_ids": [
+    "BATCH-001-A01"
+  ],
+  "unconfirmed_action_ids": [],
+  "assertions": [
+    {
+      "assertion_id": "ASSERT-BATCH-001-A01",
+      "subject_ref": "BATCH-001-A01",
+      "claim": "Root Container exists with approved label and class.",
+      "status": "confirmed",
+      "evidence_refs": [
+        "EV-BATCH-001-A01"
+      ]
+    }
+  ],
+  "evidence_ledger": [
+    {
+      "evidence_id": "EV-BATCH-001-A01",
+      "evidence_type": "export_json",
+      "source_ref": "tests/valid/runtime-transaction/carriers/execution-trace.json",
+      "captured_at": "2026-07-22T00:01:00Z",
+      "content_sha256": "ad55f74ad2983a0e2c1cec68569d45a7ef031950dadac9a816eca1e8c2c2b449",
+      "supports_claim_ids": [
+        "ASSERT-BATCH-001-A01"
+      ],
+      "status": "available"
+    }
+  ],
+  "retry_policy": {
+    "max_retry_per_action": 3,
+    "retry_1": "clarify_instruction",
+    "retry_2": "request_targeted_screenshot",
+    "retry_3": "enter_CORRECTION"
+  },
+  "created_at": "2026-07-22T00:01:00Z",
+  "created_from": "export_json"
+}
