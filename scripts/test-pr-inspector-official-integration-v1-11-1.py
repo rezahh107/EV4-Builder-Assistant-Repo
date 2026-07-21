@@ -109,6 +109,10 @@ def main() -> int:
     package_base = legacy.base_package(args, root)
     package_base["review_identity"]["target_repository_id"] = TARGET_REPOSITORY_ID
     package_base["review_identity"]["head_branch"] = "docs/reconcile-project-gate-authority"
+    package_base["external_review_intake"] = {
+        "sources_inspected": [],
+        "suggestions": [],
+    }
 
     token = os.environ.get("GITHUB_TOKEN")
     repository_url = "https://api.github.com/repos/rezahh107/PR-Inspector"
