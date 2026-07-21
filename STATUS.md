@@ -1,7 +1,7 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
-Status: project_gate_authority_reconciliation_on_branch
+Status: project_gate_governance_enforcement_repair_on_branch
 Date: 2026-07-21
 
 ---
@@ -46,6 +46,10 @@ project_status:
   project_gate_standalone_builder_input_filename: builder-input.json
   project_gate_separate_receipt_filename: project-gate-c2b-receipt.json
   project_gate_receipt_is_builder_semantic_input: false
+  project_gate_external_authority_lock: governance/external-authorities/project-gate-authority.v1.json
+  project_gate_external_authority_evidence: github_api_commit_blob_verified_on_ci
+  project_gate_external_repository_id: 1286355650
+  project_gate_external_commit: d0d90165980c087b6e9b3d7af0aac7933fe22ec9
   builder_local_project_gate_runtime: not_implemented
   builder_ce_to_builder_contract_gate: active
   builder_ce_to_builder_adapter: active
@@ -56,12 +60,20 @@ project_status:
   kernel_decision_receipts_wave_5: presentation_layer_merged
   ai_governance_policy: deterministic_enforcement_implemented_on_main
   ai_governance_adoption_plan: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
-  ai_governance_current_increment: BUILDER_PROJECT_GATE_AUTHORITY_RECONCILIATION
-  ai_governance_scope_revision: GOV-004-v8
-  ai_governance_enforcement: implemented_on_main_with_v8_reconciliation_pending
+  ai_governance_current_increment: BUILDER_PROJECT_GATE_GOVERNANCE_ENFORCEMENT_REPAIR
+  ai_governance_scope_revision: GOV-004-v9
+  ai_governance_enforcement: implemented_on_main_with_v9_repair_pending
   ai_governance_review_lifecycle: immutable_official_pr_inspector_integrated_fail_closed_live_boundary
+  ai_governance_pr_inspector_protocol: v1.11.1
+  ai_governance_pr_inspector_commit: 273ba7d4a6930015eb07c32c5de7210fa4692b1c
+  ai_governance_required_check_set: three_exact_head_workflows
+  ai_governance_required_workflows:
+    - Schema validation
+    - Verify Project Gate Contract Pin
+    - Verify Governance Exact-Head Evidence
+  ai_governance_run_binding: workflow_producer_pr_head_api_identity_status
   ai_governance_post_merge_verification: prior_increment_repository_confirmed
-  ai_governance_independent_review_evidence: fresh_v8_rereview_required
+  ai_governance_independent_review_evidence: fresh_v9_rereview_required
   ai_governance_merge_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
   action_batch_contract: active
   class_application_safety: elementor_local_global_scope_required
@@ -217,18 +229,23 @@ patches:
       - production_ready_false_preserved
   Project_Gate_Authority_Reconciliation:
     status: implemented_on_branch_pending_external_exact_head_ci_and_fresh_rereview
-    scope_revision: GOV-004-v8
+    scope_revision: GOV-004-v9
     starting_builder_main_sha: a0ad601fc2dfcc69c38604d9ca53482403f4089a
+    prior_v8_head_sha: 7b7272e08da8dfebb5dbaa15a821d67783173bed
     observed_project_gate_main_sha: d0d90165980c087b6e9b3d7af0aac7933fe22ec9
     capability_resolution:
       PROD-CAP-003: builder_local_project_gate_runtime_integration_deferred_not_deleted
       PROD-CAP-005: external_project_gate_ce_to_builder_orchestration_implemented_elsewhere
+    governance_repairs:
+      live_pr_inspector_identity: v1.11.1_at_273ba7d4a6930015eb07c32c5de7210fa4692b1c
+      external_authority: github_api_repository_commit_blob_and_semantic_verification
+      required_check_set: schema_validation_project_gate_pin_governance_exact_head_evidence
+      receipt_run_binding: exact_three_runs_bound_to_workflow_producer_pr_head_api_identity
     notes:
-      - External Project Gate bounded capability is distinguished from Builder-local runtime integration.
       - Builder-owned Contract Gate, Adapter, normalization, validation, runtime, and evidence authority are preserved.
       - The canonical personal path publishes builder-input.json and a separate receipt.
       - Real non-synthetic handoff and production readiness remain unproven.
-      - Prior exact-head review evidence is stale for GOV-004-v8.
+      - All v8 and older review evidence is stale for GOV-004-v9.
 ```
 
 ---
@@ -237,7 +254,7 @@ patches:
 
 ```yaml
 integration_sync:
-  status: completed_for_ce_builder_contract_gate_governance_enforcement_and_authority_reconciliation_on_branch
+  status: completed_for_ce_builder_contract_gate_governance_enforcement_and_v9_authority_repair_on_branch
   docs_status_changelog: status_agents_readme_synced_for_project_gate_authority
   package_version: 0.3.6
   smart_home_architecture_mutation: none_intended
@@ -247,10 +264,10 @@ integration_sync:
   ce_to_builder_transform_mutation: none
   ce_producer_schema_alignment: completed_in_constructability_engineer_pr_24
   project_gate_external_capability_mutation: none_external_repository_read_only
-  project_gate_pin_mutation: none_documentation_and_governance_only
+  project_gate_pin_mutation: none_builder_contract_bytes_unchanged
   builder_local_runtime_mutation: none
   wave_5_mutation: receipt_presentation_layer_only
-  governance_runtime_mutation: authority_correspondence_validation_only
+  governance_runtime_mutation: authority_evidence_and_exact_head_check_binding_only
 ```
 
 ---
@@ -259,7 +276,7 @@ integration_sync:
 
 ```yaml
 validation_state:
-  local_validation: unavailable_no_local_checkout_or_gh_cli
+  local_validation: syntax_and_static_candidate_validation_only
   central_validation_entrypoint: npm run validate
   ce_to_builder_transformation_registry_validator: scripts/validate-ce-builder-transformation-registry.mjs
   ce_to_builder_contract_gate_validator: scripts/validate-ce-to-builder-contract-gate.mjs
@@ -267,9 +284,12 @@ validation_state:
   kernel_decision_receipt_schema: schemas/kernel-decision-receipt.schema.json
   builder_to_responsive_boundary_doc: docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md
   governance_authority_correspondence_validator: scripts/validate-governance-authorities.mjs
-  governance_scope_revision: GOV-004-v8
-  exact_head_ci: pending_current_pr_head
-  fresh_independent_review: required_current_pr_head_and_scope
+  governance_progress_evidence_validator: scripts/validate-governance-progress-evidence.mjs
+  governance_run_binding_validator: scripts/validate-governance-sequence.mjs
+  governance_scope_revision: GOV-004-v9
+  exact_head_ci: pending_new_repair_head
+  external_project_gate_authority_ci: pending_new_repair_head
+  fresh_independent_review: required_new_repair_head_and_scope
   ce_reference_ir_preservation_check: added
   ce_connector_layer_node_model_projection_check: added
   class_scope_regressions_added: true
@@ -319,8 +339,8 @@ Production ready remains false unless completion-gate evidence proves otherwise.
 ## Pending Next Work
 
 ```text
-Project Gate authority reconciliation is implemented on branch and requires exact-head CI plus a fresh independent review bound to GOV-004-v8.
-The external Project Gate verifier, guarded CE→Builder orchestration, standalone builder-input.json publication, separate receipt, and initial operator UI exist at documented pinned scopes.
+The v9 Project Gate governance enforcement repair requires all three exact-head workflows and a fresh independent PR Inspector v1.11.1 review bound to the final head and GOV-004-v9.
+The external Project Gate claim must be accepted only when the GitHub-API-backed workflow verifies repository ID, exact commit, exact blob identities, and required semantic content.
 Builder-local Project Gate runtime integration remains not implemented in this repository.
 Continue real Elementor UI evidence collection using examples/smart-home-connector/real_elementor_execution_evidence.template.json.
 Do not claim real non-synthetic handoff or production readiness until direct retained evidence and completion-gate proofs are confirmed.
