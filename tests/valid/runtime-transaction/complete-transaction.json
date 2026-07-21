@@ -1,260 +1,82 @@
 {
   "schema": "ev4-builder-runtime-transaction-evidence@1.0.0",
   "fixture_classification": "synthetic_validation_only",
+  "transaction_id": "BUILDER-TRX-FIXTURE-001",
   "source": {
     "source_kind": "project_gate_builder_input",
-    "input_path": "builder-input.json",
-    "semantic_candidate_paths": ["builder-input.json"],
-    "audit_receipt_paths": ["project-gate-c2b-receipt.json"],
-    "captured_source_bytes": "{\"schema\":\"ev4-builder-context-package@1.0.0\",\"package_id\":\"PKG-BUILDER-TRX-001\"}\n",
-    "captured_source_sha256": "7a1b18d2bdce23d71186b39db80f807625c36c0e34eeb2b9ede5907150e4645c",
-    "parsed_schema": "ev4-builder-context-package@1.0.0",
-    "provenance": {
-      "repository_id": 1286355650,
-      "commit_sha": "d0d90165980c087b6e9b3d7af0aac7933fe22ec9",
-      "path": "builder-input.json",
-      "blob_sha": "1111111111111111111111111111111111111111",
-      "content_sha256": "7a1b18d2bdce23d71186b39db80f807625c36c0e34eeb2b9ede5907150e4645c",
-      "verified": true
-    },
-    "equivalence_probe": {
-      "project_gate_result": "pass",
-      "direct_builder_gate_result": "pass",
-      "project_gate_package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
-      "direct_builder_package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee"
-    }
+    "captured_artifact_ref": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
+    "captured_file_sha256": "da1be2b6f57c4ad17dcfe24f4934adcf01c408c7a64a12d37f4f184e3cca30bc",
+    "audit_receipt_paths": [
+      "project-gate-c2b-receipt.json"
+    ]
   },
-  "builder_package": {
-    "package_id": "PKG-BUILDER-TRX-001",
-    "schema": "ev4-builder-context-package@1.0.0",
-    "package_status": "ready",
-    "selected_candidate_id": "ARCH-FAM-C",
-    "selected_candidate_locked": true,
-    "production_ready_allowed": false,
-    "required_constructability_carriers_complete": true,
-    "blocking_dependencies": [],
-    "source_payload_ledger": [{"payload_name":"Kernel_Decision_Lineage","schema":"ev4-kernel-decision-lineage@1.0.0","status":"validated"}],
-    "approved_structure_node_ids": ["n-root", "n-card"],
-    "approved_class_map": [
-      {"class_name":"smart-home__section","class_scope":"Local Classes"},
-      {"class_name":"smart-home__card","class_scope":"Local Classes"}
-    ],
-    "package_identity": {
-      "material": "{\"package_id\":\"PKG-BUILDER-TRX-001\",\"selected_candidate_id\":\"ARCH-FAM-C\",\"batch_id\":\"BATCH-001\",\"actions\":[\"BATCH-001-A01\",\"BATCH-001-A02\"]}",
-      "digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee"
-    },
-    "first_builder_batch": {
-      "batch_id": "BATCH-001",
-      "actions": [
-        {
-          "action_id": "BATCH-001-A01",
-          "target_node": "n-root",
-          "class_name": "smart-home__section",
-          "class_scope": "Local Classes",
-          "decision_lineage_ref": {
-            "decision_family": "layout_strategy",
-            "decision_card_ref": "KERNEL-DECISION-001",
-            "selected_option": "locked_option_c",
-            "rejected_options": ["option_a", "option_b"],
-            "evidence_refs": ["EVID-KERNEL-001"],
-            "evidence_state": "validated",
-            "consumer_stage": "builder"
-          }
-        },
-        {
-          "action_id": "BATCH-001-A02",
-          "target_node": "n-card",
-          "class_name": "smart-home__card",
-          "class_scope": "Local Classes",
-          "decision_lineage_ref": {
-            "decision_family": "layout_strategy",
-            "decision_card_ref": "KERNEL-DECISION-001",
-            "selected_option": "locked_option_c",
-            "rejected_options": ["option_a", "option_b"],
-            "evidence_refs": ["EVID-KERNEL-001"],
-            "evidence_state": "validated",
-            "consumer_stage": "builder"
-          }
-        }
-      ]
-    },
-    "confirmation_request": {
-      "confirmation_id": "CONFIRM-BATCH-001",
-      "confirmed_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
-      "expected_user_token": "تایید BATCH-001",
-      "template_id": "standard_batch_confirmation",
-      "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee"
-    },
-    "legacy_text_usage": {
-      "confirmation_sentence_used_as_authority": false,
-      "builder_assistant_prompt_seed_used_as_authority": false
-    },
-    "decision_lineage": [{
-      "decision_family": "layout_strategy",
-      "decision_card_ref": "KERNEL-DECISION-001",
-      "selected_option": "locked_option_c",
-      "rejected_options": ["option_a", "option_b"],
-      "evidence_refs": ["EVID-KERNEL-001"],
-      "evidence_state": "validated",
-      "consumer_stage": "builder"
-    }],
-    "caller_input_authorization": {
-      "decision": "approved",
-      "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
-      "source_sha256": "7a1b18d2bdce23d71186b39db80f807625c36c0e34eeb2b9ede5907150e4645c",
-      "authorized_action_ids": ["BATCH-001-A01", "BATCH-001-A02"]
-    }
+  "carriers": {
+    "builder_package_ref": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
+    "action_batch_ref": "tests/valid/runtime-transaction/carriers/action_batch.json",
+    "initial_session_state_ref": "tests/valid/runtime-transaction/carriers/session_state_initial.json",
+    "final_session_state_ref": "tests/valid/runtime-transaction/carriers/session_state_final.json",
+    "initial_checkpoint_ref": "tests/valid/runtime-transaction/carriers/checkpoint_initial.json",
+    "final_checkpoint_ref": "tests/valid/runtime-transaction/carriers/checkpoint_final.json",
+    "completion_status_ref": "tests/valid/runtime-transaction/carriers/completion_status.json",
+    "completion_gate_ref": "tests/valid/runtime-transaction/carriers/completion_gate.json"
   },
-  "derived_input_authorization": {
-    "decision": "approved",
-    "eligible_workflow_mode": "APPROVED_HANDOFF_MODE",
-    "eligible_runtime_state": "WAITING_FOR_CONFIRMATION",
-    "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
-    "source_sha256": "7a1b18d2bdce23d71186b39db80f807625c36c0e34eeb2b9ede5907150e4645c",
-    "authorized_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
-    "derived_by": "scripts/validate-builder-runtime-transaction.mjs"
-  },
-  "session_state": {
+  "identity": {
     "session_id": "SESSION-001",
-    "workflow_mode": "APPROVED_HANDOFF_MODE",
-    "runtime_state": "WAITING_FOR_CONFIRMATION",
-    "selected_candidate_id": "ARCH-FAM-C",
-    "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
-    "source_sha256": "7a1b18d2bdce23d71186b39db80f807625c36c0e34eeb2b9ede5907150e4645c",
-    "authorized_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
-    "decision_lineage": [{
-      "decision_family": "layout_strategy",
-      "decision_card_ref": "KERNEL-DECISION-001",
-      "selected_option": "locked_option_c",
-      "rejected_options": ["option_a", "option_b"],
-      "evidence_refs": ["EVID-KERNEL-001"],
-      "evidence_state": "validated",
-      "consumer_stage": "builder"
-    }]
+    "package_digest": {
+      "algorithm": "sha256",
+      "scope": "canonical_package_without_digest",
+      "value": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7"
+    },
+    "action_set_digest": {
+      "algorithm": "sha256",
+      "scope": "ordered_canonical_action_set",
+      "value": "ebe8b7b413779bd447ef36c0b84651e08eb6ca4d4e03544dde3b47457fb1baea"
+    }
   },
-  "confirmation_event": {
+  "confirmation": {
     "confirmation_id": "CONFIRM-BATCH-001",
     "session_id": "SESSION-001",
-    "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
-    "confirmed_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
+    "package_digest": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
+    "confirmed_action_ids": [
+      "BATCH-001-A01"
+    ],
+    "confirmed_action_digests": [
+      "8376fabf3d358799361ba95923470253c310e87a6a9ee5ded5f1d10a2c97f88c"
+    ],
     "user_token": "تایید BATCH-001"
   },
-  "action_batch": {
-    "batch_id": "BATCH-001",
-    "session_id": "SESSION-001",
-    "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
-    "selected_candidate_id": "ARCH-FAM-C",
-    "authorized": true,
-    "actions": [
-      {
-        "action_id": "BATCH-001-A01",
-        "target_node": "n-root",
-        "class_name": "smart-home__section",
-        "class_scope": "Local Classes",
-        "decision_lineage_ref": {
-          "decision_family": "layout_strategy",
-          "decision_card_ref": "KERNEL-DECISION-001",
-          "selected_option": "locked_option_c",
-          "rejected_options": ["option_a", "option_b"],
-          "evidence_refs": ["EVID-KERNEL-001"],
-          "evidence_state": "validated",
-          "consumer_stage": "builder"
-        }
-      },
-      {
-        "action_id": "BATCH-001-A02",
-        "target_node": "n-card",
-        "class_name": "smart-home__card",
-        "class_scope": "Local Classes",
-        "decision_lineage_ref": {
-          "decision_family": "layout_strategy",
-          "decision_card_ref": "KERNEL-DECISION-001",
-          "selected_option": "locked_option_c",
-          "rejected_options": ["option_a", "option_b"],
-          "evidence_refs": ["EVID-KERNEL-001"],
-          "evidence_state": "validated",
-          "consumer_stage": "builder"
-        }
-      }
-    ],
-    "decision_lineage": [{
-      "decision_family": "layout_strategy",
-      "decision_card_ref": "KERNEL-DECISION-001",
-      "selected_option": "locked_option_c",
-      "rejected_options": ["option_a", "option_b"],
-      "evidence_refs": ["EVID-KERNEL-001"],
-      "evidence_state": "validated",
-      "consumer_stage": "builder"
-    }]
-  },
-  "evidence_records": [
-    {"evidence_id":"EVID-A01","action_id":"BATCH-001-A01","kind":"machine_trace","status":"available","machine_trace_complete":true},
-    {"evidence_id":"EVID-A02","action_id":"BATCH-001-A02","kind":"machine_trace","status":"available","machine_trace_complete":true}
-  ],
-  "checkpoint": {
-    "checkpoint_id": "CP-001",
-    "session_id": "SESSION-001",
-    "batch_id": "BATCH-001",
-    "package_digest": "bf07ca63dc66c38014ba304d3f1823536b9386a2d889ff44661d7b90ffc5deee",
-    "selected_candidate_id": "ARCH-FAM-C",
-    "confirmed_action_ids": ["BATCH-001-A01", "BATCH-001-A02"],
-    "unconfirmed_action_ids": [],
-    "evidence_refs": ["EVID-A01", "EVID-A02"],
-    "decision_lineage": [{
-      "decision_family": "layout_strategy",
-      "decision_card_ref": "KERNEL-DECISION-001",
-      "selected_option": "locked_option_c",
-      "rejected_options": ["option_a", "option_b"],
-      "evidence_refs": ["EVID-KERNEL-001"],
-      "evidence_state": "validated",
-      "consumer_stage": "builder"
-    }]
-  },
-  "fallback": {
-    "kind": "warning",
-    "claims": {"executed":false,"successful":false,"validated":false,"completed":false,"equivalent":false},
-    "evidence_refs": [],
-    "decision_lineage": [{
-      "decision_family": "layout_strategy",
-      "decision_card_ref": "KERNEL-DECISION-001",
-      "selected_option": "locked_option_c",
-      "rejected_options": ["option_a", "option_b"],
-      "evidence_refs": ["EVID-KERNEL-001"],
-      "evidence_state": "validated",
-      "consumer_stage": "builder"
-    }]
-  },
-  "repair_packet": {
-    "state": "not_required",
-    "claims": {"executed":false,"successful":false,"validated":false,"completed":false,"equivalent":false},
-    "evidence_refs": [],
-    "decision_lineage": [{
-      "decision_family": "layout_strategy",
-      "decision_card_ref": "KERNEL-DECISION-001",
-      "selected_option": "locked_option_c",
-      "rejected_options": ["option_a", "option_b"],
-      "evidence_refs": ["EVID-KERNEL-001"],
-      "evidence_state": "validated",
-      "consumer_stage": "builder"
-    }]
-  },
-  "completion": {
-    "action_complete_ids": ["BATCH-001-A01", "BATCH-001-A02"],
-    "batch_complete": true,
-    "session_complete": true,
-    "build_complete": true,
-    "responsive_ready": false,
-    "production_ready": false,
-    "required_checkpoint_ids": ["CP-001"],
-    "observed_checkpoint_ids": ["CP-001"],
-    "execution_evidence_complete": true,
-    "completion_gate_status": "passed",
-    "evidence_refs": ["EVID-A01", "EVID-A02"],
-    "display_text": "Batch and session completed from retained machine evidence.",
-    "final_session_runtime_state": "COMPLETED"
+  "bindings": {
+    "initial_session": {
+      "session_id": "SESSION-001",
+      "package_digest": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
+      "carrier_sha256": "74e92e7a44ba64b884d1e289f1b9bd61df9fffa543a3c431a212c37ae025fd03"
+    },
+    "final_session": {
+      "session_id": "SESSION-001",
+      "package_digest": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
+      "carrier_sha256": "15f2ea09425ee81a3639e92f983e8cf552dbc20af43f13fed4c77d4e94e5a3f9"
+    },
+    "initial_checkpoint": {
+      "session_id": "SESSION-001",
+      "action_set_digest": "ebe8b7b413779bd447ef36c0b84651e08eb6ca4d4e03544dde3b47457fb1baea",
+      "carrier_sha256": "e6a1a4bff3b8b6edb61f55628c740384385202c52f3087c749740e5e61149e11"
+    },
+    "final_checkpoint": {
+      "session_id": "SESSION-001",
+      "action_set_digest": "ebe8b7b413779bd447ef36c0b84651e08eb6ca4d4e03544dde3b47457fb1baea",
+      "carrier_sha256": "00606abfda5045fc56b063e152203858d40dcb89cb6d63628bbfead96e26f4b9"
+    },
+    "completion": {
+      "session_id": "SESSION-001",
+      "package_digest": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
+      "final_session_sha256": "15f2ea09425ee81a3639e92f983e8cf552dbc20af43f13fed4c77d4e94e5a3f9",
+      "final_checkpoint_id": "BUILDER-TRX-CP-001",
+      "session_complete": true,
+      "builder_build_complete": true
+    }
   },
   "publication": {
-    "source_path": "builder-input.json",
+    "source_path": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
     "output_path": "out/action-batch.json",
     "temporary_path": "out/.action-batch.json.tmp",
     "construction_complete": true,
@@ -262,17 +84,8 @@
     "structural_failure": false,
     "validated_before_publish": true,
     "atomic_publish": true,
-    "publish_attempted": true,
     "artifact_published": true,
     "artifact_must_not_be_consumed": false,
     "prior_valid_output_preserved": true
-  },
-  "enforcement": {
-    "central_validator_entries": ["validate:builder-lineage-sequence", "scripts/validate-builder-runtime-transaction.mjs"],
-    "exact_head_workflow_entries": ["npm run validate", "npm run validate:builder-lineage-sequence"],
-    "schema_strict": true,
-    "mutation_negative_count": 38,
-    "positive_control_count": 1,
-    "mutation_registry_locked": true
   }
 }
