@@ -50,7 +50,8 @@ const nodeChecks = [
   'scripts/validate-governance-progress-evidence.mjs',
   'scripts/validate-governance-authorities.mjs',
   'scripts/validate-governance-sequence.mjs',
-  'scripts/validate-builder-runtime-transaction.mjs'
+  'scripts/validate-builder-runtime-transaction.mjs',
+  'scripts/validate-builder-runtime-transaction-state.mjs'
 ];
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
