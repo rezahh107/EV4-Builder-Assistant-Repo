@@ -1,8 +1,8 @@
 schema_version: 2
 repository: rezahh107/EV4-Builder-Assistant-Repo
 source_default_branch: main
-source_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-scope_revision: GOV-004-v7
+source_commit: a0ad601fc2dfcc69c38604d9ca53482403f4089a
+scope_revision: GOV-004-v8
 
 lifecycle_states:
   - committed_now
@@ -55,7 +55,7 @@ capabilities:
       - PR-55
       - 064805f59762e191ae386423b07d73bcf5cae7be
       - 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-    rationale: deterministic governance validation is merged on main; the v7 repair prevents repository-authored exact-head CI confirmation and adds an external GitHub Actions evidence boundary pending fresh exact-head validation and rereview
+    rationale: deterministic governance validation is merged on main; the v8 authority reconciliation preserves fail-closed exact-head evidence and adds external-versus-local Project Gate correspondence checks pending fresh exact-head validation and rereview
   - capability_id: GOV-CAP-004
     name: exact_head_independent_review_lifecycle
     lifecycle: implemented
@@ -73,7 +73,7 @@ capabilities:
       - PR-55
       - 064805f59762e191ae386423b07d73bcf5cae7be
       - 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-    rationale: immutable official PR Inspector integration and fail-closed live boundary are merged; real external bundle retrieval remains unavailable and fresh rereview is required for the v7 repair head
+    rationale: immutable official PR Inspector integration and fail-closed live boundary are merged; the scope revision change to v8 makes prior exact-head review evidence stale and requires fresh rereview
   - capability_id: GOV-CAP-005
     name: post_merge_governance_verification
     lifecycle: implemented
@@ -85,7 +85,7 @@ capabilities:
       - PR-55
       - 65450bc5a4d19edf66098669a6fd48bdcda3ed70
       - reviewed_head_tree_preserved_on_main
-    rationale: the PR 55 merge commit exists on main and contains the reviewed head tree without additional file changes; v7 closure-repair evidence remains pending
+    rationale: the PR 55 merge commit exists on main and contains the reviewed head tree without additional file changes; v8 authority-reconciliation evidence remains pending
   - capability_id: PROD-CAP-001
     name: real_elementor_execution_evidence
     lifecycle: deferred_not_deleted
@@ -97,19 +97,33 @@ capabilities:
     source_authority: STATUS.md
     rationale: formal Builder-to-Responsive export remains documented but not implemented
   - capability_id: PROD-CAP-003
-    name: project_gate_verifier_and_runtime
+    name: builder_local_project_gate_runtime_integration
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
-    rationale: Project Gate verifier and runtime are external future integration work
+    rationale: renamed from the ambiguous project_gate_verifier_and_runtime identity; this capability now tracks only a native or embedded Project Gate verifier runtime or operator UI inside the Builder repository, which is not implemented here
   - capability_id: PROD-CAP-004
     name: production_readiness
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
     rationale: production readiness remains false until real execution and completion evidence exist
+  - capability_id: PROD-CAP-005
+    name: external_project_gate_ce_to_builder_orchestration
+    lifecycle: implemented_elsewhere
+    authority:
+      - rezahh107/EV4-Project-Gate@d0d90165980c087b6e9b3d7af0aac7933fe22ec9:src/ev4_transition/data/capability-status.v1.json
+      - rezahh107/EV4-Project-Gate@d0d90165980c087b6e9b3d7af0aac7933fe22ec9:docs/IMPLEMENTATION_STATUS.yaml
+      - rezahh107/EV4-Project-Gate@d0d90165980c087b6e9b3d7af0aac7933fe22ec9:docs/PG_C2B_OPERATOR_WORKFLOW.md
+    implementation_evidence:
+      - EV4-Project-Gate-PR-55
+      - external_main_d0d90165980c087b6e9b3d7af0aac7933fe22ec9
+      - standalone_builder_input_builder-input.json
+      - separate_receipt_project-gate-c2b-receipt.json
+    rationale: external Project Gate provides guarded CE-to-Builder orchestration, official Builder-owned tool execution, standalone Builder input publication, a separate receipt, a reusable verifier, and an initial operator UI at documented pinned scopes; real non-synthetic handoff remains insufficient_evidence and this does not implement Builder-local Project Gate runtime
 
 rejected_ids: []
 superseded_ids: []
-implemented_elsewhere_ids: []
+implemented_elsewhere_ids:
+  - PROD-CAP-005
 
 integrity_rules:
   - capability_ids_must_be_unique
