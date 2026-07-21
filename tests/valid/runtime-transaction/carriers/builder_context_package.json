@@ -177,5 +177,21 @@
       "evidence_state": "validated",
       "consumer_stage": "builder"
     }
-  ]
+  ],
+  "input_authorization": {
+    "decision": "approved",
+    "eligible_workflow_mode": "APPROVED_HANDOFF_MODE",
+    "eligible_runtime_state": "BUILD_ACTIVE",
+    "package_digest": {
+      "algorithm": "sha256",
+      "scope": "canonical_package_without_digest",
+      "value": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22"
+    },
+    "blocking_diagnostics": [],
+    "visible_flags": [
+      "FA-MED-001",
+      "mobile/tablet screenshot absent",
+      "connector behavior unresolved"
+    ]
+  }
 }
