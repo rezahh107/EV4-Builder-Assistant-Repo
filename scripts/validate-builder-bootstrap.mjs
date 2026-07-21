@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -8,6 +9,15 @@ const manifestPath = path.join(root, 'manifests/builder-conversation-bootstrap.v
 const schemaPath = path.join(root, 'schemas/builder-conversation-bootstrap.v1.schema.json');
 const START = '<!-- BUILDER_BOOTSTRAP_EXACT_RESPONSE_START -->';
 const END = '<!-- BUILDER_BOOTSTRAP_EXACT_RESPONSE_END -->';
+const EXACT_BARE_START_RESPONSE = `EV4 Builder Assistant آماده است.
+
+برای شروع ساخت، فایل \`builder-input.json\` تولیدشده توسط مسیر \`EV4-Project-Gate / ce-to-builder\` را ارسال کن.
+
+ورودی باید با قرارداد \`ev4-builder-context-package@1.0.0\` معتبر باشد.
+فایل \`project-gate-c2b-receipt.json\` اختیاری و فقط برای بررسی فنی است؛ جایگزین ورودی Builder نیست.
+
+پس از دریافت ورودی معتبر، Builder آن را اعتبارسنجی می‌کند و فقط در صورت عبور از Gate وارد \`APPROVED_HANDOFF_MODE / BUILD_ACTIVE\` می‌شود.
+تا پیش از آن، هیچ \`BATCH-001\`، دستور Elementor یا ادعای آمادگی اجرا صادر نمی‌شود.`;
 const ACTIVE_CARRIERS = [
   'AGENTS.md',
   'PROJECT_INSTRUCTIONS.md',
@@ -85,7 +95,7 @@ function validateManifest(m) {
   eq(m.blocked_runtime_state, 'EVIDENCE_REQUIRED', 'BBOOT-024');
   eq(m.approved_workflow_mode, 'APPROVED_HANDOFF_MODE', 'BBOOT-025');
   eq(m.approved_runtime_state, 'BUILD_ACTIVE', 'BBOOT-026');
-  if (!m.exact_bare_start_response.includes('هیچ `BATCH-001`')) fail('BBOOT-027', 'exact response must prohibit BATCH-001');
+  eq(m.exact_bare_start_response, EXACT_BARE_START_RESPONSE, 'BBOOT-027');
   eq(m.trigger_policy.fresh_intake.complete_trimmed_message, true, 'BBOOT-028');
   eq(m.trigger_policy.fresh_intake.command_prefix_with_delimiter, true, 'BBOOT-029');
   eq(m.trigger_policy.fresh_intake.repository_maintenance_exception, true, 'BBOOT-030');
@@ -120,9 +130,9 @@ function validateManifest(m) {
   return true;
 }
 
-function runSchemaValidation() {
+function runSchemaValidation(dataPath = manifestPath) {
   const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  const result = spawnSync(npx, ['--yes','ajv-cli@5','validate','--spec=draft2020','--strict=false','-s',schemaPath,'-d',manifestPath], {encoding:'utf8'});
+  const result = spawnSync(npx, ['--yes','ajv-cli@5','validate','--spec=draft2020','--strict=false','-s',schemaPath,'-d',dataPath], {encoding:'utf8'});
   if (result.status !== 0) {
     process.stdout.write(result.stdout || '');
     process.stderr.write(result.stderr || '');
@@ -194,20 +204,30 @@ JSON.parse(readText('schemas/builder-conversation-bootstrap.v1.schema.json'));
 runSchemaValidation();
 validateManifest(manifest);
 validateCarriers(manifest);
+
+const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'builder-bootstrap-mutations-'));
 let negativeCount = 0;
-for (const [name, expectedCode, mutate] of mutations) {
-  const candidate = clone(manifest);
-  mutate(candidate);
-  try {
-    validateManifest(candidate);
-    fail('BBOOT-MUTATION-001', `mutation unexpectedly passed: ${name}`);
-  } catch (error) {
-    if (error.code === 'BBOOT-MUTATION-001') throw error;
-    if (expectedCode && error.code !== expectedCode && !(expectedCode === 'BBOOT-057' && ['BBOOT-054','BBOOT-057'].includes(error.code))) {
-      fail('BBOOT-MUTATION-002', `${name} failed for ${error.code}, expected ${expectedCode}`);
+try {
+  for (let index = 0; index < mutations.length; index += 1) {
+    const [name, expectedCode, mutate] = mutations[index];
+    const candidate = clone(manifest);
+    mutate(candidate);
+    const candidatePath = path.join(tempRoot, `${String(index + 1).padStart(2, '0')}.json`);
+    fs.writeFileSync(candidatePath, `${JSON.stringify(candidate, null, 2)}\n`, 'utf8');
+    const isolatedCandidate = JSON.parse(fs.readFileSync(candidatePath, 'utf8'));
+    try {
+      validateManifest(isolatedCandidate);
+      fail('BBOOT-MUTATION-001', `mutation unexpectedly passed: ${name}`);
+    } catch (error) {
+      if (error.code === 'BBOOT-MUTATION-001') throw error;
+      if (expectedCode && error.code !== expectedCode && !(expectedCode === 'BBOOT-057' && ['BBOOT-054','BBOOT-057'].includes(error.code))) {
+        fail('BBOOT-MUTATION-002', `${name} failed for ${error.code}, expected ${expectedCode}`);
+      }
+      negativeCount += 1;
     }
-    negativeCount += 1;
   }
+} finally {
+  fs.rmSync(tempRoot, {recursive:true, force:true});
 }
 
 for (let i = 0; i < 2; i += 1) {
