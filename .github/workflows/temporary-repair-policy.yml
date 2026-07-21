@@ -1,0 +1,137 @@
+name: temporary-repair-policy
+
+on:
+  push:
+    branches:
+      - policy/builder-implementation-policy-r004
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: ${{ !contains(github.event.head_commit.message, '[policy-repair-bot]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: policy/builder-implementation-policy-r004
+          persist-credentials: true
+      - name: Repair policy deterministically
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('policies/EV4_BUILDER_IMPLEMENTATION_DECISION_POLICY_r004.md')
+          text = path.read_text(encoding='utf-8')
+
+          text = text.replace('**Status:** `READY_FOR_TEMPORARY_BUILDER_USE_WITH_QUANTIFIED_GATES`', '**Status:** `NON_EXECUTABLE_REFERENCE_ONLY`')
+          text = text.replace('**Corpus basis:** Frozen EV4 Registry r001 and the available 21 EV4 Domain artifacts  \n', '')
+          text = text.replace('**Operating mode:** Silent internal decision support for practical Elementor V4 implementation', '**Operating mode:** Non-executable reference for interpreting and applying already approved implementation decisions')
+          text = text.replace('**Primary objective:** Improve the quality of element, structure, control, value, unit, responsive, reuse, media, interaction, accessibility, performance, and runtime implementation choices before the Builder gives instructions or performs work.', '**Primary objective:** Help Builder apply trusted upstream implementation decisions consistently without creating, replacing, or mutating architecture, constructability strategy, responsive strategy, geometry, interaction, class scope, or Kernel-governed decisions.')
+          text = re.sub(r'^\*\*Companion maintenance artifact:\*\*.*\n', '', text, flags=re.M)
+
+          kernel = '**Kernel relationship:** This policy is a supplemental role-specific decision aid. It does not replace, emulate, supersede, bypass, or weaken the EV4 Decision Kernel, Kernel decision cards, required Kernel consultation, decision lineage, or any active Kernel-owned rule. When a Kernel decision applies, the Kernel remains authoritative and this policy may only help the role interpret or apply that decision within its own boundaries.\n'
+          boundary = '''\n**Execution-authority boundary:** This document is non-executable reference material. It cannot authorize Builder to choose among architecture or implementation-strategy candidates. Builder may use it only to interpret and apply decisions already carried by trusted upstream artifacts, including the applicable `approved_structure_tree`, `widget_mapping_table`, complete `decision_lineage`, approved class maps and scopes, unit-policy records, and validated Builder actions. If a required carrier is missing, contradictory, stale, or incomplete, Builder must return `EVIDENCE_REQUIRED` or `CORRECTION`, or request upstream CE/Kernel consultation. Builder must not locally choose or mutate structure, responsive strategy, geometry, positioning, interaction strategy, class scope, media role, unit policy, custom mechanism, `selected_candidate_id`, or Kernel decision lineage.\n'''
+          if boundary.strip() not in text:
+              text = text.replace(kernel, kernel + boundary)
+
+          text = text.replace('This revision preserves the lightweight Builder-only operating model and adds:', 'This revision preserves a Builder-only reference model and documents:')
+          text = text.replace('- a separate source-and-authority register so maintenance metadata does not burden routine Builder sessions;\n', '')
+
+          purpose_start = '## 1. Purpose\n\n'
+          purpose_insert = '''Use this policy only after the required implementation decision has been approved and carried by trusted upstream evidence. The comparison rules below explain how to interpret and check an approved decision; they do not grant Builder authority to select a new architecture or strategy.\n\nBefore any actionable instruction, Builder must have the materially applicable trusted carriers, such as:\n\n- `approved_structure_tree`;\n- `widget_mapping_table`;\n- complete `decision_lineage`;\n- approved class names, maps, and scopes;\n- approved unit-policy or geometry records;\n- validated Builder actions and confirmation requirements.\n\nIf a required carrier is absent or does not resolve the decision, return `EVIDENCE_REQUIRED` or `CORRECTION`, or request upstream CE/Kernel consultation. Do not use this document to fill the gap by choosing among candidate strategies.\n\n'''
+          if purpose_insert not in text:
+              text = text.replace(purpose_start, purpose_start + purpose_insert)
+          text = text.replace('Use this policy whenever the Builder is about to make an implementation choice that can materially affect quality.', 'Use the relevant reference section when Builder is about to apply an approved implementation decision that can materially affect quality.')
+
+          sec21 = '### 2.1 Silent internal use\n\nApply this policy internally before giving an actionable instruction.'
+          sec21_new = '''### 2.1 Reference-only internal use\n\nUse this policy internally only after the applicable upstream decision and validated Builder action are available. It may support consistency checks and concise explanation, but it may not create, replace, or broaden the approved decision. Before giving an actionable instruction, verify that the trusted carrier resolves the relevant element, structure, behavior, value source, and validation requirement. Otherwise return `EVIDENCE_REQUIRED` or `CORRECTION`, or request upstream CE/Kernel consultation.'''
+          text = text.replace(sec21, sec21_new)
+
+          text = text.replace('For ordinary, reversible layout and styling decisions:', 'For ordinary, reversible execution details that are already authorized by trusted carriers:')
+          text = text.replace('- use the best supported interpretation of the supplied design and content;\n- prefer the simplest sufficient native implementation;\n- make a bounded, reversible choice when the context is adequate;', '- preserve and apply the approved implementation decision;\n- use the simplest validated action that implements that decision;\n- do not introduce a new element, structure, unit family, responsive rule, interaction, class scope, or workaround unless the trusted carrier explicitly authorizes it;')
+          text = text.replace('Ask a question only when the answer can change the selected element, structure, behavior model, reference frame, responsive strategy, accessibility outcome, or security decision.', 'When a missing fact would require selecting or changing an element, structure, behavior model, reference frame, responsive strategy, accessibility outcome, or security decision, do not choose locally. Return `EVIDENCE_REQUIRED` or request the appropriate upstream decision.')
+
+          order_old = '''implementation goal\n→ semantic or structural responsibility\n→ content and interaction role\n→ candidate mechanism family\n→ sizing or behavior model\n→ reference frame\n→ content variability\n→ layout participation\n→ responsive behavior\n→ accessibility and safety constraints\n→ exact Elementor element/control\n→ value, unit, class, or expression\n→ runtime sanity check'''
+          order_new = '''trusted upstream decision carrier\n→ locked decision identity and lineage\n→ approved structure, widget, class, unit, responsive, and interaction records\n→ validated Builder action\n→ applicable reference checks from this document\n→ exact approved Elementor instruction\n→ structured confirmation\n→ runtime sanity check'''
+          text = text.replace(order_old, order_new)
+          text = text.replace('Do not begin with the low-level control or value.', 'Do not begin with a local choice among controls, elements, structures, or values. Begin with the trusted carrier that already resolves the decision.')
+
+          evidence_intro = 'Use the strongest relevant facts available in this order:'
+          evidence_replacement = '''Use the strongest relevant facts available in this order:\n\n0. validated upstream decision carriers and complete Kernel lineage when applicable;'''
+          text = text.replace(evidence_intro, evidence_replacement, 1)
+          text = text.replace('4. the applicable EV4 Domain guidance;', '4. an exactly identified external EV4 Domain artifact, only as advisory evidence and never as execution authorization;')
+
+          marker = '\n---\n\n## 5. Quick routing index'
+          gate = '''\n### 4.2 Trusted-carrier gate\n\nBefore applying any numbered policy, confirm that the relevant decision is already resolved by trusted upstream data. Depending on the decision, the carrier set may include:\n\n- `approved_structure_tree`;\n- `widget_mapping_table`;\n- complete `decision_lineage`;\n- approved class maps and scopes;\n- unit-policy, geometry, responsive, media, or interaction records;\n- validated Builder actions and expected confirmations.\n\nThe comparison tables and eligibility rules in this document are interpretation aids only. They cannot authorize Builder to:\n\n- select Flexbox, Grid, Div, nesting, or positioning strategy;\n- choose Image versus Background or another media role;\n- create responsive or geometry decisions;\n- choose Button, Link, Tabs, Accordion, or interaction semantics;\n- create or change class scope, Variables, Components, units, bounds, or workarounds;\n- change `selected_candidate_id` or Kernel decision lineage.\n\nIf the trusted carrier does not resolve the choice, return `EVIDENCE_REQUIRED` or `CORRECTION`, or request upstream CE/Kernel consultation. Do not choose the apparently best candidate locally.\n\n'''
+          if '### 4.2 Trusted-carrier gate' not in text:
+              text = text.replace(marker, '\n' + gate + '---\n\n## 5. Quick routing index')
+
+          # Make operative selection language explicitly interpretive at the start of policy sections.
+          text = text.replace('### Candidate options\n', '### Candidate options in the approved carrier\n')
+          text = text.replace('### Selection preference\n', '### Interpretation preference for an already approved choice\n')
+          text = text.replace('### Selection order\n', '### Interpretation order for an already approved mechanism\n')
+
+          start = text.index('## 12. Builder start-session instruction')
+          end = text.index('\n---\n\n## 13.', start)
+          section12 = '''## 12. Manual reference-use instruction\n\nThis document is not loaded or activated by prose alone. When it is supplied manually to a Builder session, use this instruction:\n\n```text\nUse the attached EV4 Builder Implementation Decision Policy only as\nNON_EXECUTABLE_REFERENCE_ONLY guidance for interpreting and applying decisions\nthat are already approved and carried by trusted upstream artifacts.\n\nBefore giving an implementation instruction, verify the materially applicable\napproved_structure_tree, widget_mapping_table, complete decision_lineage,\napproved class maps and scopes, unit-policy or geometry records, responsive and\ninteraction decisions, and validated Builder actions. Preserve selected_candidate_id\nand Kernel lineage exactly.\n\nDo not use this policy to choose or redesign structure, Flexbox/Grid/nesting,\nmedia role, element semantics, responsive strategy, geometry, positioning,\ninteraction, class scope, unit family, bounds, custom CSS, addon, or custom\nmechanism. The candidate comparisons in the policy explain an approved decision;\nthey do not authorize a new decision.\n\nIf a required carrier is missing, contradictory, stale, or incomplete, return\nEVIDENCE_REQUIRED or CORRECTION, or request upstream CE/Kernel consultation. Do\nnot fill the gap with a local Builder choice.\n\nKeep user-facing instructions concise and execute only validated Builder actions.\nDo not claim activation, enforcement, runtime success, responsive completion, or\nproduction readiness from this Markdown reference.\n```\n'''
+          text = text[:start] + section12 + text[end:]
+
+          start = text.index('## 13. Coverage map')
+          end = text.index('\n---\n\n## 14.', start)
+          section13 = '''## 13. Reference topic map\n\nThe sections in this document cover common implementation topics such as structure, sizing, units, spacing, positioning, responsive behavior, reuse, media, text semantics, interaction, dynamic content, forms, runtime checks, accessibility, security, and performance.\n\nThis topic map is not a claim that any external Registry or set of 21 Domain artifacts is present, approved, current, compatible, or validated in this pull request. External Domain artifacts remain optional advisory evidence and must be exactly identified before consultation. They cannot independently authorize a Builder action or replace repository contracts, CE/Kernel decisions, schemas, validators, or decision lineage.\n'''
+          text = text[:start] + section13 + text[end:]
+
+          text = text.replace('The policy intentionally does not reproduce every Domain Claim, source record, version history, citation, or diagnostic detail. The attached Domain artifacts remain available for deeper consultation when a specific decision requires them. Source identity, authority class, operational effect, and validation mapping for load-bearing rules are maintained separately in `EV4_BUILDER_POLICY_RULE_REGISTER_r001.md`.', 'This pull request does not include or claim an external Domain corpus, source register, or validation mapping. Any external Domain artifact is optional advisory evidence only and must be exactly identified before consultation. Its absence does not authorize Builder to invent or select an implementation strategy.')
+          text = text.replace('EV4_BUILDER_IMPLEMENTATION_DECISION_POLICY_READY', 'EV4_BUILDER_IMPLEMENTATION_DECISION_POLICY_NON_EXECUTABLE_REFERENCE_ONLY')
+          text = text.replace('This revision is intended for immediate temporary use as a Builder-only best-practice decision aid.', 'This revision is intended only as a manually supplied, non-executable Builder reference for applying already approved decisions.')
+
+          # Correct hierarchy: parent sections 7/8/9 H2, numbered policies H3, internal labels H4.
+          lines = text.splitlines()
+          out = []
+          in_target = False
+          for line in lines:
+              top = re.match(r'^## (\d+)\. ', line)
+              if top:
+                  in_target = int(top.group(1)) in (7, 8, 9)
+                  out.append(line)
+                  continue
+              if in_target and re.match(r'^## (7|8|9)\.\d+ ', line):
+                  out.append('#' + line)
+                  continue
+              if in_target and line.startswith('### ') and not re.match(r'^### (7|8|9)\.\d+ ', line):
+                  out.append('#' + line)
+                  continue
+              out.append(line)
+          text = '\n'.join(out) + '\n'
+
+          assert '**Status:** `NON_EXECUTABLE_REFERENCE_ONLY`' in text
+          assert '### 4.2 Trusted-carrier gate' in text
+          assert 'EVIDENCE_REQUIRED' in text and 'CORRECTION' in text
+          assert 'approved_structure_tree' in text and 'widget_mapping_table' in text and 'decision_lineage' in text
+          assert 'EV4_BUILDER_POLICY_RULE_REGISTER_r001.md' not in text
+          assert 'available 21 EV4 Domain artifacts' not in text
+          assert 'All 21 Registry Domains contribute' not in text
+          assert 'silent mandatory' not in text.lower()
+          assert 'immediate temporary use' not in text.lower()
+          assert not re.search(r'^## (7|8|9)\.\d+ ', text, re.M)
+          assert re.search(r'^### 7\.1 ', text, re.M)
+          assert re.search(r'^### 8\.1 ', text, re.M)
+          assert re.search(r'^### 9\.1 ', text, re.M)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit repaired policy and remove temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/temporary-repair-policy.yml
+          git config user.name 'policy-repair-bot'
+          git config user.email 'policy-repair-bot@users.noreply.github.com'
+          git add policies/EV4_BUILDER_IMPLEMENTATION_DECISION_POLICY_r004.md .github/workflows/temporary-repair-policy.yml
+          git commit -m '[policy-repair-bot] Repair Builder policy findings'
+          git push origin HEAD:policy/builder-implementation-policy-r004
