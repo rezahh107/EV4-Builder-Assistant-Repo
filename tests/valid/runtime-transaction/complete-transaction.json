@@ -5,7 +5,7 @@
   "source": {
     "source_kind": "project_gate_builder_input",
     "captured_artifact_ref": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
-    "captured_file_sha256": "da1be2b6f57c4ad17dcfe24f4934adcf01c408c7a64a12d37f4f184e3cca30bc",
+    "captured_file_sha256": "f6135dc5767dd0ceb4e2e51cebdf5221cac05b7b89888f628a25fce7d525b9f6",
     "audit_receipt_paths": [
       "project-gate-c2b-receipt.json"
     ]
@@ -25,7 +25,7 @@
     "package_digest": {
       "algorithm": "sha256",
       "scope": "canonical_package_without_digest",
-      "value": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7"
+      "value": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22"
     },
     "action_set_digest": {
       "algorithm": "sha256",
@@ -36,7 +36,7 @@
   "confirmation": {
     "confirmation_id": "CONFIRM-BATCH-001",
     "session_id": "SESSION-001",
-    "package_digest": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
+    "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
     "confirmed_action_ids": [
       "BATCH-001-A01"
     ],
@@ -48,28 +48,28 @@
   "bindings": {
     "initial_session": {
       "session_id": "SESSION-001",
-      "package_digest": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
-      "carrier_sha256": "74e92e7a44ba64b884d1e289f1b9bd61df9fffa543a3c431a212c37ae025fd03"
+      "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
+      "carrier_sha256": "05dc1eadfb592ebbc39dc091925239943c1efdc747261360fa27af387e3ca7e5"
     },
     "final_session": {
       "session_id": "SESSION-001",
-      "package_digest": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
-      "carrier_sha256": "15f2ea09425ee81a3639e92f983e8cf552dbc20af43f13fed4c77d4e94e5a3f9"
+      "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
+      "carrier_sha256": "eb2c90f6dd713783ad534d7e92ba78ff5f88ced295fac229f451306cf50359e1"
     },
     "initial_checkpoint": {
       "session_id": "SESSION-001",
       "action_set_digest": "ebe8b7b413779bd447ef36c0b84651e08eb6ca4d4e03544dde3b47457fb1baea",
-      "carrier_sha256": "e6a1a4bff3b8b6edb61f55628c740384385202c52f3087c749740e5e61149e11"
+      "carrier_sha256": "cf2693255b1fbd5327ca9fcf31e1965d3ad685d8ec1db1857ffdc6db90da082e"
     },
     "final_checkpoint": {
       "session_id": "SESSION-001",
       "action_set_digest": "ebe8b7b413779bd447ef36c0b84651e08eb6ca4d4e03544dde3b47457fb1baea",
-      "carrier_sha256": "00606abfda5045fc56b063e152203858d40dcb89cb6d63628bbfead96e26f4b9"
+      "carrier_sha256": "ba32b654958168f8ab14bbd7017d4e0912e02958e10e9688eea51148278b352c"
     },
     "completion": {
       "session_id": "SESSION-001",
-      "package_digest": "a42483f4ae69c113ecd7cdf7504c67dcea988b973051479956d0c9bd31cbced7",
-      "final_session_sha256": "15f2ea09425ee81a3639e92f983e8cf552dbc20af43f13fed4c77d4e94e5a3f9",
+      "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
+      "final_session_sha256": "eb2c90f6dd713783ad534d7e92ba78ff5f88ced295fac229f451306cf50359e1",
       "final_checkpoint_id": "BUILDER-TRX-CP-001",
       "session_complete": true,
       "builder_build_complete": true
