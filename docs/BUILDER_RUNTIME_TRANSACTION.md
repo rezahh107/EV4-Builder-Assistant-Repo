@@ -9,28 +9,28 @@ Canonical transaction input: `tests/valid/runtime-transaction/complete-transacti
 
 This layer composes existing Builder contracts. It does not define replacement Builder Context, Action Batch, Session State, Checkpoint, evidence, completion, or publication carriers.
 
-Each transaction envelope contains only immutable repository references and cross-carrier bindings. The referenced artifacts must independently pass their existing JSON Schema and semantic validators before composite validation begins.
+Each transaction envelope contains immutable repository-relative references and cross-carrier bindings. Every referenced carrier must independently pass its existing JSON Schema and semantic validator before composite validation begins.
 
-The supported source paths remain:
+The supported semantic paths remain:
 
 ```text
 Project Gate builder-input.json
   -> exact source-byte parsing
   -> canonical Builder Context validation
-  -> canonical package digest
+  -> canonical full-package digest
 
 controlled CE package
   -> CE-to-Builder Contract Gate
   -> independently executed Builder adapter
   -> exact comparison with consumed Builder Context Package
-  -> canonical package digest
+  -> canonical full-package digest
 ```
 
-`project-gate-c2b-receipt.json` remains separate audit evidence and cannot become semantic Builder input. Caller-provided `verified=true`, provenance-looking JSON, path-equivalence pass strings, or workflow labels are not accepted as capabilities.
+`project-gate-c2b-receipt.json` remains separate audit evidence and cannot become semantic Builder input. Caller-provided `verified=true`, provenance-looking JSON, path-equivalence pass strings, or workflow labels are not capabilities.
 
 ## Canonical transaction members
 
-The positive transaction uses actual canonical carriers:
+The positive fixture references actual canonical carriers:
 
 - `ev4-builder-context-package@1.0.0`
 - `ev4-action-batch@1.0.0`
@@ -40,7 +40,9 @@ The positive transaction uses actual canonical carriers:
 - `ev4-completion-gate@0.1.0`
 - retained machine-readable execution evidence
 
-The source artifact is parsed from its exact bytes. The same artifact is the consumed Builder package on the Project Gate path. The canonical package identity is SHA-256 over `canonical_package_without_digest`, matching the existing Builder package validator.
+Unsafe, absolute, non-canonical, or repository-escaping references fail before child validators are invoked. The source artifact is parsed from exact bytes. On the Project Gate-shaped fixture path, the same bytes are the consumed Builder package.
+
+The canonical package identity is SHA-256 over `canonical_package_without_digest`. The composite digest must match both its own recomputation and `input_authorization.package_digest`, which is independently enforced by the existing Builder package validator.
 
 ## Cross-carrier identity
 
@@ -51,8 +53,8 @@ One transaction binds:
 - full ordered canonical action-set digest;
 - per-action canonical digests;
 - confirmation ID, user token, action IDs, and action bodies;
-- initial and final Session State carrier byte hashes;
-- initial and final Checkpoint carrier byte hashes;
+- initial and final Session State byte hashes;
+- initial and final Checkpoint byte hashes;
 - session ID and selected candidate;
 - retained evidence bytes;
 - completion to the exact final Session State and final Checkpoint.
@@ -76,20 +78,24 @@ A detached completion string or field cannot compensate for a stale Session Stat
 
 ## Provenance and equivalence boundary
 
-Canonical validation derives evidence rather than trusting envelope assertions:
+The fixture is explicitly `synthetic_validation_only`. It proves contract composition and mutation resistance, not a real Project Gate handoff, real CE handoff, or real Elementor execution.
 
-- `git ls-files --error-unmatch` proves that the captured source fixture is part of the checked-out exact Head;
+Validation derives evidence instead of trusting envelope assertions:
+
+- `git ls-files --error-unmatch` proves that the synthetic source fixture belongs to the exact checked-out Head;
 - the source byte hash is recomputed;
-- the Builder package schema and semantic validator execute as child processes;
-- each canonical downstream carrier executes its existing schema and semantic validator;
-- the direct CE path executes the actual CE-to-Builder normalizer and compares its output with the consumed Builder package;
-- no equivalence claim is accepted unless the relevant executable path is actually run.
+- every canonical carrier executes its existing schema and semantic validator;
+- the direct CE mutation executes the actual CE-to-Builder normalizer and compares its complete output;
+- self-asserted equivalence or provenance fields are rejected;
+- `runtime_evidence` fails closed until an independently verified producer-provenance capability is implemented.
+
+Therefore no repository-local label is treated as proof that an artifact was actually emitted by Project Gate or CE.
 
 ## Enforced invariants
 
 - `BUILDER-TRX-001` — exact semantic source isolation
-- `BUILDER-TRX-002` — independently executed CE path verification
-- `BUILDER-TRX-003` — full canonical package identity
+- `BUILDER-TRX-002` — independently executed CE-path comparison and fail-closed runtime provenance
+- `BUILDER-TRX-003` — canonical full-package identity
 - `BUILDER-TRX-004` — package prose remains non-executable
 - `BUILDER-TRX-005` — exact decision-lineage preservation
 - `BUILDER-TRX-006` — no mixed-lineage success
@@ -98,45 +104,48 @@ Canonical validation derives evidence rather than trusting envelope assertions:
 - `BUILDER-TRX-009` — exact retained machine-evidence binding
 - `BUILDER-TRX-010` — fail-closed fallback and Repair Packet behavior remains preserved
 - `BUILDER-TRX-011` — canonical completion hierarchy and Session State transition
-- `BUILDER-TRX-012` — deterministic structural failure
+- `BUILDER-TRX-012` — deterministic structural and reference failure
 - `BUILDER-TRX-013` — source/output isolation and safe atomic publication
-- `BUILDER-TRX-014` — central enforcement truthfulness
+- `BUILDER-TRX-014` — central and independent workflow enforcement truthfulness
 
 ## Mutation coverage
 
-The focused registry contains 23 negative cross-carrier mutations and one exact positive control. It covers:
+The focused registry contains 26 negative cross-carrier mutations and one exact positive control. It covers:
 
 - missing required canonical Action Batch, Session State, and Checkpoint fields;
 - shadow carrier substitution;
 - source/package substitution;
-- stale full-package identity;
+- stale or divergent canonical package identity;
 - unchanged action IDs with changed target, class scope, value, or evidence requirements;
 - fabricated provenance and self-asserted path-equivalence fields;
+- actual CE adapter-output mismatch;
 - confirmation replay after semantic mutation;
 - stale checkpoint action-set binding;
-- incomplete final Session State;
-- detached completion compensation;
+- incomplete final Session State and detached completion compensation;
 - session/package identity mismatch;
 - evidence/action digest mismatch;
 - source-byte digest mismatch;
+- unsafe carrier references;
+- unverified runtime provenance;
 - central validator bypass.
 
 ## Central enforcement
 
-`scripts/validate.mjs` explicitly executes:
+`scripts/validate.mjs` explicitly executes the canonical transaction and state validators. The `Schema validation` workflow independently repeats syntax checks, the full canonical transaction validation with mutation self-test, and final-state validation after `npm run validate`.
 
 ```text
+node --check scripts/validate-builder-runtime-transaction.mjs
+node --check scripts/validate-builder-runtime-transaction-state.mjs
 node scripts/validate-builder-runtime-transaction.mjs tests/valid/runtime-transaction/complete-transaction.json --self-test
 node scripts/validate-builder-runtime-transaction-state.mjs tests/valid/runtime-transaction/complete-transaction.json
 ```
-
-The existing `Schema validation` workflow runs `npm run validate`, so exact-head CI exercises the actual transaction input rather than a validator-owned shadow object.
 
 ## Compatibility and limits
 
 - Existing public schemas and package version `0.3.6` remain unchanged.
 - Builder receives no architecture, design-decision, Responsive, deployment, or production authority.
 - `production_ready` remains false.
-- No real CE-to-Builder handoff or Elementor execution is claimed by the synthetic validation fixture.
+- No real non-synthetic Project Gate or CE handoff is claimed.
+- No real Elementor execution is claimed.
 - Formal Builder-to-Responsive export remains unimplemented.
 - Fresh independent PR Inspector review is required for every resulting Head.
