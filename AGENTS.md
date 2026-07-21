@@ -26,12 +26,25 @@ Current executable contracts take precedence over historical patch notes or prop
 
 ## Project Gate Handoff
 
+The external `rezahh107/EV4-Project-Gate` repository currently provides a reusable deterministic verifier, guarded CE→Builder orchestration, standalone `builder-input.json` publication, a separate `project-gate-c2b-receipt.json`, and an initial local operator UI at its documented pinned scopes.
+
+The normal personal operator path is:
+
 ```text
-CE output → EV4 Project Gate → Builder Input Package
-Builder output and evidence → EV4 Project Gate → Responsive Input Package
+CE output
+→ ce-project-gate.json
+→ EV4-Project-Gate / ce-to-builder
+→ builder-input.json
+→ Builder Assistant
 ```
 
-Project Gate (as an external integration) provides a verifier, guarded transition CLI paths, and an initial local operator UI at its documented pinned scopes. CE → Builder direct controlled use is also supported by the Builder-owned Contract Gate and Adapter. These capabilities do not establish compatibility with the current live heads, a real non-synthetic handoff, real Elementor execution, complete end-to-end readiness, or a formal Builder → Responsive export. Project Gate must not replace Builder contracts, invent execution evidence, or redesign upstream work.
+Only `builder-input.json` is Builder semantic input. `project-gate-c2b-receipt.json` remains separate Project Gate audit evidence.
+
+This repository remains authoritative for the Builder Context contract, CE→Builder Contract Gate, CE→Builder Adapter, package normalization, semantic validation, Builder runtime protocols, and build evidence. Project Gate may execute these official Builder-owned tools, but it must not replace, copy, reinterpret, weaken, or silently repair Builder contracts.
+
+External Project Gate implementation does not imply a native Project Gate runtime, embedded verifier, or operator UI in this repository. Builder-local Project Gate runtime integration remains not implemented here. The direct controlled CE→Builder path through the Builder-owned Contract Gate and Adapter remains technically supported by the current contracts; it is distinct from the canonical personal operator path and is not an unvalidated bypass.
+
+These capabilities do not establish compatibility with moving live heads, a real non-synthetic CE→Builder handoff, real Elementor execution, complete end-to-end readiness, a formal Builder→Responsive export, or production readiness.
 
 ## Hard Boundaries
 
