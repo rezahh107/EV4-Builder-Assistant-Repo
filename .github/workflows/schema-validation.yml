@@ -91,15 +91,12 @@ jobs:
           PY
 
       - name: Run immutable official PR Inspector verifier integration
-        id: inspector_integration
         if: github.event_name == 'pull_request'
-        continue-on-error: true
         shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          set +e
-          log="$RUNNER_TEMP/pr-inspector-v1-11-1-integration.log"
+          set -euo pipefail
           python scripts/test-pr-inspector-official-integration-v1-11-1.py \
             --inspector-root "$GITHUB_WORKSPACE/.pr-inspector" \
             --expected-inspector-commit 273ba7d4a6930015eb07c32c5de7210fa4692b1c \
@@ -107,26 +104,7 @@ jobs:
             --pr-number "${{ github.event.pull_request.number }}" \
             --base-sha "${{ github.event.pull_request.base.sha }}" \
             --head-sha "${{ github.event.pull_request.head.sha }}" \
-            --adapter scripts/verify-pr-inspector-bundle.py \
-            >"$log" 2>&1
-          status=$?
-          cat "$log"
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-          exit "$status"
-
-      - name: Upload PR Inspector integration failure diagnostic
-        if: github.event_name == 'pull_request' && steps.inspector_integration.outcome == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: pr-inspector-v1-11-1-integration-failure-${{ github.event.pull_request.head.sha }}
-          path: ${{ runner.temp }}/pr-inspector-v1-11-1-integration.log
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Fail on PR Inspector integration error
-        if: github.event_name == 'pull_request' && steps.inspector_integration.outcome == 'failure'
-        shell: bash
-        run: exit 1
+            --adapter scripts/verify-pr-inspector-bundle.py
 
       - name: Assert GitHub-source review path fails closed
         if: github.event_name == 'pull_request'
