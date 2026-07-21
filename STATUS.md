@@ -1,8 +1,8 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
-Status: deterministic_governance_enforcement_merged
-Date: 2026-07-14
+Status: project_gate_authority_reconciliation_on_branch
+Date: 2026-07-21
 
 ---
 
@@ -39,16 +39,29 @@ project_status:
   ce_to_builder_contract_gate: active
   ce_builder_executable_schema_alignment: completed_in_ce_pr_24
   ce_connector_layer_projection: node_model_compact_id_enforced
+  project_gate_external_verifier: implemented_elsewhere_at_documented_scope
+  project_gate_external_ce_to_builder_orchestration: implemented_elsewhere_guarded
+  project_gate_external_operator_ui: implemented_elsewhere_initial
+  project_gate_standalone_builder_input: implemented_elsewhere
+  project_gate_standalone_builder_input_filename: builder-input.json
+  project_gate_separate_receipt_filename: project-gate-c2b-receipt.json
+  project_gate_receipt_is_builder_semantic_input: false
+  builder_local_project_gate_runtime: not_implemented
+  builder_ce_to_builder_contract_gate: active
+  builder_ce_to_builder_adapter: active
+  canonical_personal_handoff_source: project_gate_builder_input
+  direct_controlled_ce_to_builder_path: supported
+  real_non_synthetic_ce_to_builder_handoff: insufficient_evidence
   builder_to_responsive_handoff_boundary: documented_not_implemented
   kernel_decision_receipts_wave_5: presentation_layer_merged
   ai_governance_policy: deterministic_enforcement_implemented_on_main
   ai_governance_adoption_plan: GOV-ADOPTION-EV4-BUILDER-ASSISTANT-747B4EFA-V1
-  ai_governance_current_increment: GOV-003-004-COMPLETE-GOVERNANCE-ENFORCEMENT
-  ai_governance_scope_revision: GOV-004-v6
-  ai_governance_enforcement: implemented_on_main
+  ai_governance_current_increment: BUILDER_PROJECT_GATE_AUTHORITY_RECONCILIATION
+  ai_governance_scope_revision: GOV-004-v8
+  ai_governance_enforcement: implemented_on_main_with_v8_reconciliation_pending
   ai_governance_review_lifecycle: immutable_official_pr_inspector_integrated_fail_closed_live_boundary
-  ai_governance_post_merge_verification: repository_confirmed
-  ai_governance_independent_review_evidence: insufficient_evidence_recorded
+  ai_governance_post_merge_verification: prior_increment_repository_confirmed
+  ai_governance_independent_review_evidence: fresh_v8_rereview_required
   ai_governance_merge_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
   action_batch_contract: active
   class_application_safety: elementor_local_global_scope_required
@@ -202,6 +215,20 @@ patches:
       - official_external_pr_inspector_bundle_accessor_unavailable
       - historical_independent_review_evidence_gap_recorded
       - production_ready_false_preserved
+  Project_Gate_Authority_Reconciliation:
+    status: implemented_on_branch_pending_external_exact_head_ci_and_fresh_rereview
+    scope_revision: GOV-004-v8
+    starting_builder_main_sha: a0ad601fc2dfcc69c38604d9ca53482403f4089a
+    observed_project_gate_main_sha: d0d90165980c087b6e9b3d7af0aac7933fe22ec9
+    capability_resolution:
+      PROD-CAP-003: builder_local_project_gate_runtime_integration_deferred_not_deleted
+      PROD-CAP-005: external_project_gate_ce_to_builder_orchestration_implemented_elsewhere
+    notes:
+      - External Project Gate bounded capability is distinguished from Builder-local runtime integration.
+      - Builder-owned Contract Gate, Adapter, normalization, validation, runtime, and evidence authority are preserved.
+      - The canonical personal path publishes builder-input.json and a separate receipt.
+      - Real non-synthetic handoff and production readiness remain unproven.
+      - Prior exact-head review evidence is stale for GOV-004-v8.
 ```
 
 ---
@@ -210,17 +237,20 @@ patches:
 
 ```yaml
 integration_sync:
-  status: completed_for_ce_builder_contract_gate_and_governance_enforcement
-  docs_status_changelog: synced_for_ce_builder_gate_and_governance_closure
+  status: completed_for_ce_builder_contract_gate_governance_enforcement_and_authority_reconciliation_on_branch
+  docs_status_changelog: status_agents_readme_synced_for_project_gate_authority
   package_version: 0.3.6
   smart_home_architecture_mutation: none_intended
   selected_candidate_id: ARCH-FAM-C_preserved
   approved_class_mutation: none_intended
   production_ready_allowed_default: false_preserved
-  ce_to_builder_transform_mutation: explicit_registry_ir_and_gate_only
+  ce_to_builder_transform_mutation: none
   ce_producer_schema_alignment: completed_in_constructability_engineer_pr_24
+  project_gate_external_capability_mutation: none_external_repository_read_only
+  project_gate_pin_mutation: none_documentation_and_governance_only
+  builder_local_runtime_mutation: none
   wave_5_mutation: receipt_presentation_layer_only
-  governance_runtime_mutation: none
+  governance_runtime_mutation: authority_correspondence_validation_only
 ```
 
 ---
@@ -229,13 +259,17 @@ integration_sync:
 
 ```yaml
 validation_state:
-  local_validation: not_claimed_from_connector_environment
+  local_validation: unavailable_no_local_checkout_or_gh_cli
   central_validation_entrypoint: npm run validate
   ce_to_builder_transformation_registry_validator: scripts/validate-ce-builder-transformation-registry.mjs
   ce_to_builder_contract_gate_validator: scripts/validate-ce-to-builder-contract-gate.mjs
   kernel_decision_receipt_validator: scripts/validate-kernel-decision-receipts.mjs
   kernel_decision_receipt_schema: schemas/kernel-decision-receipt.schema.json
   builder_to_responsive_boundary_doc: docs/BUILDER_TO_RESPONSIVE_HANDOFF_BOUNDARY.md
+  governance_authority_correspondence_validator: scripts/validate-governance-authorities.mjs
+  governance_scope_revision: GOV-004-v8
+  exact_head_ci: pending_current_pr_head
+  fresh_independent_review: required_current_pr_head_and_scope
   ce_reference_ir_preservation_check: added
   ce_connector_layer_node_model_projection_check: added
   class_scope_regressions_added: true
@@ -266,9 +300,14 @@ first_batch_structure_intent is the decisive first-batch structural source when 
 Raw CE structured objects must pass the formal CE→Builder transformation layer and CE→Builder Contract Gate before Builder runtime intake.
 No CE→Builder field transform may run unless declared in the mapping registry.
 CE connector_layer {node, model} projects to Builder connector_layer as node:model.
+The external Project Gate may execute pinned official Builder-owned tools and publish builder-input.json, but it does not replace Builder contracts or implement Builder runtime authority.
+project-gate-c2b-receipt.json is separate audit evidence and is not Builder semantic input.
+External Project Gate implementation does not imply a Builder-local Project Gate runtime.
+The direct controlled Builder-owned Contract Gate and Adapter path remains technically supported.
 Kernel decision receipts are presentation-layer text only and must not replace machine-readable decision trace.
 Green Builder receipt wording requires complete validated decision trace with decision_family, decision_card_ref, selected_option, rejected_options, evidence_refs, evidence_state, and consumer_stage.
 Fallback receipt wording must not create a new Builder design decision.
+Real non-synthetic CE→Builder handoff evidence remains insufficient_evidence.
 Real Elementor execution evidence is required before any production-readiness claim.
 Execution-affecting behavior must be contract-driven and pass the relevant behavioral contract.
 After repeated failure, Escape Hatch or repair packet replaces repeated instructions.
@@ -280,10 +319,11 @@ Production ready remains false unless completion-gate evidence proves otherwise.
 ## Pending Next Work
 
 ```text
-Governance enforcement is merged and post-merge verified; the unavailable official external PR Inspector bundle accessor and historical independent-review evidence gap remain explicitly recorded.
+Project Gate authority reconciliation is implemented on branch and requires exact-head CI plus a fresh independent review bound to GOV-004-v8.
+The external Project Gate verifier, guarded CE→Builder orchestration, standalone builder-input.json publication, separate receipt, and initial operator UI exist at documented pinned scopes.
+Builder-local Project Gate runtime integration remains not implemented in this repository.
 Continue real Elementor UI evidence collection using examples/smart-home-connector/real_elementor_execution_evidence.template.json.
-Do not claim production readiness until real execution evidence and completion gate proofs are confirmed.
+Do not claim real non-synthetic handoff or production readiness until direct retained evidence and completion-gate proofs are confirmed.
 Formal Builder→Responsive export schema remains not implemented.
-Project Gate verifier/runtime remains a separate future integration, not implemented here.
 Recommended next Wave 5 repository: rezahh107/EV4-Responsive-Architect.
 ```
