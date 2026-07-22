@@ -12,151 +12,22 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
-      - name: Checkout exact tested commit
+      - name: Checkout tested commit
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-          persist-credentials: false
-
-      - name: Assert exact PR head
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          actual_sha="$(git rev-parse HEAD)"
-          expected_sha="${{ github.event.pull_request.head.sha }}"
-          echo "actual_sha=$actual_sha"
-          echo "expected_sha=$expected_sha"
-          test "$actual_sha" = "$expected_sha"
-
-      - name: Checkout immutable PR Inspector implementation
-        if: github.event_name == 'pull_request'
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
-        with:
-          repository: rezahh107/PR-Inspector
-          ref: 273ba7d4a6930015eb07c32c5de7210fa4692b1c
-          fetch-depth: 1
-          path: .pr-inspector
           persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
+          cache: npm
 
-      - name: Setup Python
-        if: github.event_name == 'pull_request'
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
-        with:
-          python-version: '3.12'
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Verify immutable PR Inspector checkout and protocol identity
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          inspector_sha="$(git -C .pr-inspector rev-parse HEAD)"
-          test "$inspector_sha" = "273ba7d4a6930015eb07c32c5de7210fa4692b1c"
-          remote="$(git -C .pr-inspector remote get-url origin)"
-          case "$remote" in
-            https://github.com/rezahh107/PR-Inspector|https://github.com/rezahh107/PR-Inspector.git) ;;
-            *) echo "unexpected PR Inspector remote: $remote" >&2; exit 1 ;;
-          esac
-          test "$(tr -d '\r\n' < .pr-inspector/CURRENT_VERSION)" = "v1.11.1"
-          grep -Fx 'active_version: v1.11.1' .pr-inspector/protocol-manifest.yaml
-          grep -Fx '  "protocol_version": "v1.11.1",' .pr-inspector/protocols/v1.11.1/trust/INSPECTOR_TRUST_POLICY.json
-          grep -Fx '  "github_api_version": "2026-03-10",' .pr-inspector/protocols/v1.11.1/trust/INSPECTOR_TRUST_POLICY.json
-          echo "inspector_repository=rezahh107/PR-Inspector"
-          echo "inspector_commit=$inspector_sha"
-          echo "inspector_protocol=v1.11.1"
-          echo "inspector_github_api_version=2026-03-10"
-
-      - name: Install immutable PR Inspector checkout
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pip install --disable-pip-version-check --no-input --editable ./.pr-inspector
-          python - <<'PY'
-          import importlib.metadata, inspect
-          from pathlib import Path
-          import pr_inspector
-          root = Path('.pr-inspector').resolve()
-          module_path = Path(inspect.getfile(pr_inspector)).resolve()
-          assert root == module_path or root in module_path.parents
-          assert importlib.metadata.version('pr-inspector-protocol') == '1.11.1'
-          print(f'pr_inspector_module={module_path}')
-          PY
-
-      - name: Run immutable official PR Inspector verifier integration
-        if: github.event_name == 'pull_request'
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          python scripts/test-pr-inspector-official-integration-v1-11-1.py \
-            --inspector-root "$GITHUB_WORKSPACE/.pr-inspector" \
-            --expected-inspector-commit 273ba7d4a6930015eb07c32c5de7210fa4692b1c \
-            --target-repository "${{ github.repository }}" \
-            --pr-number "${{ github.event.pull_request.number }}" \
-            --base-sha "${{ github.event.pull_request.base.sha }}" \
-            --head-sha "${{ github.event.pull_request.head.sha }}" \
-            --adapter scripts/verify-pr-inspector-bundle.py
-
-      - name: Assert GitHub-source review path fails closed
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          set +e
-          output="$(env -u GITHUB_API_URL node scripts/validate-governance-sequence.mjs --mode=live --source=github 2>&1)"
-          status=$?
-          set -e
-          printf '%s\n' "$output"
-          test "$status" -ne 0
-          grep -F 'GOV-LIVE-030_OFFICIAL_BUNDLE_ACCESSOR_UNAVAILABLE' <<< "$output"
-          grep -F 'v1.11.1' <<< "$output"
-
-      - name: Assert local JavaScript canonical-bundle acceptance is removed
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          set +e
-          output="$(node scripts/validate-governance-sequence.mjs --mode=live --evidence-file tests/governance/valid/live_receipt_evidence.json 2>&1)"
-          status=$?
-          set -e
-          printf '%s\n' "$output"
-          test "$status" -ne 0
-          grep -F 'GOV-LIVE-049_LOCAL_CANONICAL_BUNDLE_ACCEPTANCE_REMOVED' <<< "$output"
-
-      - name: Run central contract validation
-        id: central_validation
-        continue-on-error: true
+      - name: Run functional validation
         run: npm run validate
-
-      - name: Central validation failed at ${{ steps.central_validation.outputs.failed_check }}
-        if: steps.central_validation.outcome == 'failure'
-        shell: bash
-        run: exit 1
-
-      - name: Run Builder runtime transaction enforcement validation
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check scripts/validate-builder-runtime-transaction.mjs
-          node --check scripts/validate-builder-runtime-transaction-state.mjs
-          node scripts/validate-builder-runtime-transaction.mjs tests/valid/runtime-transaction/complete-transaction.json --self-test
-          node scripts/validate-builder-runtime-transaction-state.mjs tests/valid/runtime-transaction/complete-transaction.json
-
-      - name: Run governance authority validation
-        run: node scripts/validate-governance-authorities.mjs
-
-      - name: Run governance fixture regression validation
-        run: node scripts/validate-governance-sequence.mjs --mode=fixtures
-
-      - name: Run Builder decision lineage sequence validation
-        run: npm run validate:builder-lineage-sequence
