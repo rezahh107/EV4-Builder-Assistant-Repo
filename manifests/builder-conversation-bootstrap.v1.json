@@ -18,6 +18,10 @@
   "receipt_may_complete_or_modify_semantic_input": false,
   "canonical_personal_acquisition_mode": "project_gate_standalone_builder_input",
   "canonical_personal_source": "EV4-Project-Gate / ce-to-builder",
+  "personal_intake_authorization_schema": "ev4-builder-intake-authorization@1.0.0",
+  "personal_intake_authorization_filename_hint": "builder-intake-authorization.json",
+  "personal_intake_authorization_required_for_build_active": true,
+  "personal_intake_inspector": "scripts/builder-inspector.mjs",
   "first_authorized_operation": "builder_context_package_validation",
   "pre_validation_workflow_mode": "START_INTAKE_MODE",
   "pre_validation_runtime_state": "INTAKE_WAITING",
@@ -55,14 +59,28 @@
       "normal_builder_batch_allowed": false
     },
     "valid_builder_input_only": {
-      "route": "validate_builder_context_package",
+      "route": "waiting_for_matching_intake_authorization",
       "receipt_required": false,
-      "semantic_input_source": "builder_input_only"
+      "semantic_input_source": "builder_input_only",
+      "personal_authorization_required": true,
+      "normal_builder_batch_allowed": false
     },
     "valid_builder_input_plus_receipt": {
-      "route": "validate_builder_context_package",
+      "route": "waiting_for_matching_intake_authorization",
       "semantic_input_source": "builder_input_only",
-      "receipt_may_affect_semantic_input": false
+      "receipt_may_affect_semantic_input": false,
+      "personal_authorization_required": true,
+      "normal_builder_batch_allowed": false
+    },
+    "valid_builder_input_plus_authorization": {
+      "route": "validate_matching_intake_authorization",
+      "required_authorization_schema": "ev4-builder-intake-authorization@1.0.0",
+      "accepted_status_required": true,
+      "exact_source_byte_binding_required": true,
+      "canonical_package_digest_binding_required": true,
+      "selected_candidate_binding_required": true,
+      "approved_workflow_mode": "APPROVED_HANDOFF_MODE",
+      "approved_runtime_state": "BUILD_ACTIVE"
     },
     "receipt_only": {
       "route": "waiting_for_builder_input",
