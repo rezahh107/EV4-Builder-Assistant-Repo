@@ -6,27 +6,23 @@ Canonical modes:
 - `APPROVED_HANDOFF_MODE`
 - `FRESH_IMAGE_MODE_LIMITED`
 
-`COMPLETED` is legal only in `APPROVED_HANDOFF_MODE`.
+`COMPLETED` is legal only in `APPROVED_HANDOFF_MODE` and is generated only by the bounded Completion transition.
 
-`شروع` initializes intake only when no active Run exists. Repeated `شروع` is idempotent and must preserve the current session, Checkpoint, candidate, package identity, confirmed work, and unresolved blockers.
+`شروع` initializes intake only when no active Run exists. Repeated `شروع` is idempotent and preserves the current session, Checkpoint, candidate, package identity, confirmed work, and unresolved blockers.
 
 `استارت` does not create a Run. It resumes only from a valid `PAUSED` Session State with a prior legal target state.
 
-Resume requires:
-
-```yaml
-session_id_matches: true
-package_digest_matches: true
-selected_candidate_matches: true
-checkpoint_valid: true
-session_state_valid: true
-checkpoint_and_state_consistent: true
-unresolved_blockers_preserved: true
-transition_is_legal: true
-```
+Resume uses the same shared identity boundary as Completion. It must revalidate actual `builder-input.json`, recompute source SHA-256 and package digest, verify the derived Intake Capsule, and reconcile session ID, candidate, Checkpoint and unresolved blockers.
 
 Canonical command:
 
 ```bash
-node scripts/builder-inspector.mjs resume builder-intake-result.json session-state.json checkpoint.json resume-result.json
+node scripts/builder-inspector.mjs resume \
+  builder-input.json \
+  builder-intake-result.json \
+  session-state.json \
+  checkpoint.json \
+  resume-output-directory
 ```
+
+The output directory is published atomically and contains the restored `session-state.json`, the verified `checkpoint.json`, and `resume-result.json`. Resume rejects Capsule-only authorization, non-PAUSED state, missing or terminal targets, foreign identity, stale Checkpoints, or disappeared blockers.
