@@ -6,6 +6,8 @@ runtime_goal: functional_correctness
 industrial_governance: removed_from_active_system
 security_posture: minimal_nonblocking
 production_ready: false
+canonical_builder_input: builder-input.json
+canonical_builder_input_schema: ev4-builder-context-package@1.0.0
 canonical_transition_table: runtime/state-transitions.v1.json
 canonical_transition_engine: scripts/lib/runtime-transaction-engine.mjs
 ```
@@ -14,7 +16,7 @@ This document is an operator summary, not a second transition specification. Leg
 
 ## Operational Invariants
 
-- `builder-input.json` is canonical; an intake Capsule is derived evidence.
+- `builder-input.json` parsed as `ev4-builder-context-package@1.0.0` is canonical; an intake Capsule is derived evidence.
 - `شروع` initializes only when no Run exists; repeated `شروع` preserves the same Run.
 - `استارت` resumes only from a valid `PAUSED` predecessor and cannot target `COMPLETED`.
 - Completion starts only from `APPROVED_HANDOFF_MODE / BUILD_ACTIVE`.
