@@ -1,1 +1,127 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/session-state.schema.json","title":"EV4 Builder Session State","description":"Session carrier integrity. Legal mode/state transitions are defined only by runtime/state-transitions.v1.json and executed by the canonical Runtime Transaction Engine.","type":"object","required":["schema","current_state","selected_candidate_id","last_verified_checkpoint","max_actions_per_turn"],"properties":{"schema":{"const":"ev4-builder-session-state@0.1.0"},"session_id":{"type":"string","minLength":1},"package_digest":{"type":"string","pattern":"^[a-fA-F0-9]{64}$"},"source_file_sha256":{"type":"string","pattern":"^[a-fA-F0-9]{64}$"},"workflow_mode":{"enum":["START_INTAKE_MODE","APPROVED_HANDOFF_MODE","FRESH_IMAGE_MODE_LIMITED"]},"runtime_state":{"enum":["INTAKE_WAITING","INTAKE_VALIDATING","BUILD_ACTIVE","WAITING_FOR_CONFIRMATION","EVIDENCE_REQUIRED","CORRECTION","REVIEW_ONLY","PAUSED","COMPLETED"]},"state_capsule":{"type":"string","maxLength":180,"pattern":"^\\[STATE workflow=(START_INTAKE_MODE|APPROVED_HANDOFF_MODE|FRESH_IMAGE_MODE_LIMITED) state=(INTAKE_WAITING|INTAKE_VALIDATING|BUILD_ACTIVE|WAITING_FOR_CONFIRMATION|EVIDENCE_REQUIRED|CORRECTION|REVIEW_ONLY|PAUSED|COMPLETED)( cp=[A-Za-z0-9._:-]+)?( batch=[A-Za-z0-9._:-]+)? risk=(low|medium|high|blocked)\\]$"},"current_state":{"enum":["INTAKE_WAITING","INTAKE_VALIDATING","BUILD_ACTIVE","WAITING_FOR_CONFIRMATION","EVIDENCE_REQUIRED","CORRECTION","REVIEW_ONLY","PAUSED","COMPLETED"]},"selected_candidate_id":{"type":["string","null"]},"last_verified_checkpoint":{"$ref":"./checkpoint.schema.json"},"resume_target":{"type":"object","required":["workflow_mode","runtime_state"],"properties":{"workflow_mode":{"enum":["START_INTAKE_MODE","APPROVED_HANDOFF_MODE","FRESH_IMAGE_MODE_LIMITED"]},"runtime_state":{"enum":["INTAKE_WAITING","INTAKE_VALIDATING","BUILD_ACTIVE","WAITING_FOR_CONFIRMATION","EVIDENCE_REQUIRED","CORRECTION","REVIEW_ONLY","PAUSED","COMPLETED"]}},"additionalProperties":false},"max_actions_per_turn":{"type":"integer","minimum":1,"maximum":5},"known_control_map":{"type":"array","items":{"$ref":"#/$defs/known_control_entry"}},"ui_vocabulary_map":{"type":"array","items":{"$ref":"#/$defs/ui_vocabulary_entry"}},"recovery_state":{"$ref":"#/$defs/recovery_state"},"repair_packet":{"$ref":"./repair-packet.schema.json"},"active_warnings":{"type":"array","items":{"type":"string"}},"unresolved_evidence":{"type":"array","items":{"type":"string"},"uniqueItems":true}},"$defs":{"known_control_entry":{"type":"object","required":["control_name","status"],"properties":{"control_name":{"type":"string","minLength":1},"panel_name":{"type":["string","null"]},"element_generation":{"type":["string","null"]},"confirmed_by":{"enum":["user_statement","screenshot","documentation","installed_version",null]},"evidence_ref":{"type":["string","null"]},"status":{"enum":["confirmed","missing","version_sensitive","insufficient_evidence"]},"session_confirmed_at":{"type":["string","null"]}},"additionalProperties":false},"ui_vocabulary_entry":{"type":"object","required":["vocabulary_key","architecture_term","status"],"properties":{"vocabulary_key":{"type":"string","minLength":1},"architecture_term":{"type":"string","minLength":1},"user_ui_label":{"type":["string","null"]},"confirmed_by":{"enum":["user_statement","screenshot","documentation","installed_version",null]},"confirmed_at_checkpoint":{"type":["string","null"]},"status":{"enum":["confirmed","unknown","changed","insufficient_evidence"]}},"additionalProperties":false},"recovery_state":{"type":"object","required":["max_repeat_before_escape","retry_count","escape_hatch_required"],"properties":{"last_safe_checkpoint":{"type":["string","null"]},"active_action_id":{"type":["string","null"]},"retry_count":{"type":"integer","minimum":0},"max_repeat_before_escape":{"const":2},"escape_hatch_required":{"type":"boolean"},"still_valid_work":{"type":"array","items":{"type":"string"}},"invalid_or_unverified_work":{"type":"array","items":{"type":"string"}}},"additionalProperties":false}},"dependentRequired":{"workflow_mode":["runtime_state"],"runtime_state":["workflow_mode"]},"allOf":[{"if":{"properties":{"runtime_state":{"const":"CORRECTION"}},"required":["runtime_state"]},"then":{"required":["repair_packet"],"properties":{"current_state":{"const":"CORRECTION"}}}},{"if":{"properties":{"runtime_state":{"const":"REVIEW_ONLY"}},"required":["runtime_state"]},"then":{"properties":{"current_state":{"const":"REVIEW_ONLY"}}}},{"if":{"properties":{"runtime_state":{"const":"PAUSED"}},"required":["runtime_state"]},"then":{"required":["session_id","package_digest","resume_target"],"properties":{"current_state":{"const":"PAUSED"}}}}],"additionalProperties":false}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/session-state.schema.json",
+  "title": "EV4 Builder Session State",
+  "description": "Session state for the lean personal Builder runtime. Resume and Completion bind to one session, package digest, candidate, and checkpoint.",
+  "type": "object",
+  "required": ["schema", "current_state", "selected_candidate_id", "last_verified_checkpoint", "max_actions_per_turn"],
+  "properties": {
+    "schema": { "const": "ev4-builder-session-state@0.1.0" },
+    "session_id": { "type": "string", "minLength": 1 },
+    "package_digest": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+    "workflow_mode": { "enum": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"] },
+    "runtime_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"] },
+    "state_capsule": {
+      "type": "string",
+      "maxLength": 180,
+      "pattern": "^\\[STATE workflow=(START_INTAKE_MODE|APPROVED_HANDOFF_MODE|FRESH_IMAGE_MODE_LIMITED) state=(INTAKE_WAITING|INTAKE_VALIDATING|BUILD_ACTIVE|WAITING_FOR_CONFIRMATION|EVIDENCE_REQUIRED|CORRECTION|REVIEW_ONLY|PAUSED|COMPLETED)( cp=[A-Za-z0-9._:-]+)?( batch=[A-Za-z0-9._:-]+)? risk=(low|medium|high|blocked)\\]$"
+    },
+    "current_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"] },
+    "selected_candidate_id": { "type": ["string", "null"] },
+    "last_verified_checkpoint": { "$ref": "./checkpoint.schema.json" },
+    "resume_target": {
+      "type": "object",
+      "required": ["workflow_mode", "runtime_state"],
+      "properties": {
+        "workflow_mode": { "enum": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"] },
+        "runtime_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY"] }
+      },
+      "additionalProperties": false
+    },
+    "max_actions_per_turn": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "known_control_map": { "type": "array", "items": { "$ref": "#/$defs/known_control_entry" } },
+    "ui_vocabulary_map": { "type": "array", "items": { "$ref": "#/$defs/ui_vocabulary_entry" } },
+    "recovery_state": { "$ref": "#/$defs/recovery_state" },
+    "repair_packet": { "$ref": "./repair-packet.schema.json" },
+    "active_warnings": { "type": "array", "items": { "type": "string" } },
+    "unresolved_evidence": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "known_control_entry": {
+      "type": "object",
+      "required": ["control_name", "status"],
+      "properties": {
+        "control_name": { "type": "string", "minLength": 1 },
+        "panel_name": { "type": ["string", "null"] },
+        "element_generation": { "type": ["string", "null"] },
+        "confirmed_by": { "enum": ["user_statement", "screenshot", "documentation", "installed_version", null] },
+        "evidence_ref": { "type": ["string", "null"] },
+        "status": { "enum": ["confirmed", "missing", "version_sensitive", "insufficient_evidence"] },
+        "session_confirmed_at": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "ui_vocabulary_entry": {
+      "type": "object",
+      "required": ["vocabulary_key", "architecture_term", "status"],
+      "properties": {
+        "vocabulary_key": { "type": "string", "minLength": 1 },
+        "architecture_term": { "type": "string", "minLength": 1 },
+        "user_ui_label": { "type": ["string", "null"] },
+        "confirmed_by": { "enum": ["user_statement", "screenshot", "documentation", "installed_version", null] },
+        "confirmed_at_checkpoint": { "type": ["string", "null"] },
+        "status": { "enum": ["confirmed", "unknown", "changed", "insufficient_evidence"] }
+      },
+      "additionalProperties": false
+    },
+    "recovery_state": {
+      "type": "object",
+      "required": ["max_repeat_before_escape", "retry_count", "escape_hatch_required"],
+      "properties": {
+        "last_safe_checkpoint": { "type": ["string", "null"] },
+        "active_action_id": { "type": ["string", "null"] },
+        "retry_count": { "type": "integer", "minimum": 0 },
+        "max_repeat_before_escape": { "const": 2 },
+        "escape_hatch_required": { "type": "boolean" },
+        "still_valid_work": { "type": "array", "items": { "type": "string" } },
+        "invalid_or_unverified_work": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "dependentRequired": {
+    "workflow_mode": ["runtime_state"],
+    "runtime_state": ["workflow_mode"]
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "workflow_mode": { "const": "START_INTAKE_MODE" } }, "required": ["workflow_mode"] },
+      "then": { "properties": { "runtime_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "EVIDENCE_REQUIRED", "REVIEW_ONLY", "CORRECTION", "PAUSED"] } } }
+    },
+    {
+      "if": { "properties": { "workflow_mode": { "const": "APPROVED_HANDOFF_MODE" } }, "required": ["workflow_mode"] },
+      "then": { "properties": { "runtime_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"] } } }
+    },
+    {
+      "if": { "properties": { "workflow_mode": { "const": "FRESH_IMAGE_MODE_LIMITED" } }, "required": ["workflow_mode"] },
+      "then": { "properties": { "runtime_state": { "enum": ["INTAKE_WAITING", "EVIDENCE_REQUIRED", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "CORRECTION", "REVIEW_ONLY", "PAUSED"] } } }
+    },
+    {
+      "if": { "properties": { "runtime_state": { "const": "CORRECTION" } }, "required": ["runtime_state"] },
+      "then": { "required": ["repair_packet"], "properties": { "current_state": { "const": "CORRECTION" } } }
+    },
+    {
+      "if": { "properties": { "runtime_state": { "const": "REVIEW_ONLY" } }, "required": ["runtime_state"] },
+      "then": { "properties": { "current_state": { "const": "REVIEW_ONLY" } } }
+    },
+    {
+      "if": { "properties": { "runtime_state": { "const": "PAUSED" } }, "required": ["runtime_state"] },
+      "then": { "required": ["session_id", "package_digest", "resume_target"], "properties": { "current_state": { "const": "PAUSED" } } }
+    },
+    {
+      "if": { "properties": { "runtime_state": { "const": "COMPLETED" } }, "required": ["runtime_state"] },
+      "then": {
+        "required": ["session_id", "package_digest", "workflow_mode"],
+        "properties": {
+          "workflow_mode": { "const": "APPROVED_HANDOFF_MODE" },
+          "current_state": { "const": "COMPLETED" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "runtime_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "PAUSED", "COMPLETED", "INTAKE_WAITING", "INTAKE_VALIDATING"] } }, "required": ["runtime_state"] },
+      "then": { "properties": { "current_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "PAUSED", "COMPLETED", "INTAKE_WAITING", "INTAKE_VALIDATING"] } } }
+    }
+  ],
+  "additionalProperties": false
+}
