@@ -20,6 +20,15 @@ production_ready: false
 6. relevant semantic validators and fixtures
 7. `scripts/validate.mjs`
 
+## Startup Boundary
+
+The canonical personal input is `builder-input.json` parsed as `ev4-builder-context-package@1.0.0`.
+
+- `شروع` begins fresh intake only when no active Run exists.
+- repeated `شروع` preserves the current session, checkpoint and unresolved blockers.
+- `استارت` resumes only a real prior PAUSED state and cannot fabricate a Run.
+- receipt-only input and raw Project Gate envelopes remain non-semantic.
+
 ## Active Runtime Authority
 
 A normal Builder Run may depend only on:
