@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/checkpoint.schema.json",
   "title": "EV4 Builder Checkpoint",
-  "description": "Backward-compatible carrier Schema. Critical transition legality and Action completeness are evaluated only by the Canonical Runtime Transaction Engine.",
+  "description": "Backward-compatible checkpoint schema. The v0.2 carrier may bind a lean personal runtime session, canonical package digest, and unresolved blockers.",
   "$defs": {
     "workflow_mode": {
       "enum": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"]
@@ -130,7 +130,6 @@
         "package_id": { "type": "string", "minLength": 1 },
         "package_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
         "package_digest": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
-        "source_file_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
         "selected_candidate_id": { "type": "string", "minLength": 1 },
         "workflow_mode": { "$ref": "#/$defs/workflow_mode" },
         "runtime_state": { "$ref": "#/$defs/runtime_state" },
@@ -138,10 +137,6 @@
         "confirmed_action_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
         "unconfirmed_action_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
         "unresolved_blockers": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
-        "action_ledger_id": { "type": "string", "minLength": 1 },
-        "action_ledger_sequence": { "type": "integer", "minimum": 1 },
-        "action_ledger_digest": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
-        "evidence_ledger_digest": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
         "known_control_map": { "type": "array", "items": { "$ref": "#/$defs/known_control_entry" } },
         "ui_vocabulary_map": { "type": "array", "items": { "$ref": "#/$defs/ui_vocabulary_entry" } },
         "assertions": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/assertion" } },
@@ -152,13 +147,9 @@
       },
       "allOf": [
         {
-          "if": { "required": ["action_ledger_id"] },
-          "then": { "required": ["action_ledger_sequence", "action_ledger_digest"] }
-        },
-        {
           "if": { "properties": { "runtime_state": { "const": "COMPLETED" } }, "required": ["runtime_state"] },
           "then": {
-            "required": ["session_id", "package_digest", "source_file_sha256", "action_ledger_id", "action_ledger_sequence", "action_ledger_digest", "evidence_ledger_digest"],
+            "required": ["session_id", "package_digest"],
             "properties": { "workflow_mode": { "const": "APPROVED_HANDOFF_MODE" } }
           }
         }
