@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { requireCanonicalTransition } from './lib/builder-runtime-transition.mjs';
 
 const root = process.cwd();
 const errors = [];
@@ -36,14 +37,7 @@ for (const item of requiredRuntimeAuthorities) {
   if (!authority.runtime_authorities.includes(item)) fail(`Missing runtime authority: ${item}`);
 }
 
-const requiredNonRuntime = [
-  'exact_head_ci',
-  'pr_inspector',
-  'independent_review',
-  'review_receipt',
-  'owner_merge_receipt',
-  'repository_commit_identity'
-];
+const requiredNonRuntime = ['exact_head_ci', 'pr_inspector', 'independent_review', 'review_receipt', 'owner_merge_receipt', 'repository_commit_identity'];
 for (const item of requiredNonRuntime) {
   if (!authority.non_runtime_authorities.includes(item)) fail(`Missing non-runtime authority classification: ${item}`);
 }
@@ -53,20 +47,54 @@ if ((allowed.START_INTAKE_MODE || []).includes('COMPLETED')) fail('START_INTAKE_
 if ((allowed.FRESH_IMAGE_MODE_LIMITED || []).includes('COMPLETED')) fail('FRESH_IMAGE_MODE_LIMITED must not allow COMPLETED.');
 if (!(allowed.APPROVED_HANDOFF_MODE || []).includes('COMPLETED')) fail('APPROVED_HANDOFF_MODE must allow bounded Builder completion.');
 
-const completionTransitions = (transitions.transitions || []).filter((entry) => entry?.to?.runtime_state === 'COMPLETED');
-if (completionTransitions.length !== 1) fail(`Expected exactly one transition to COMPLETED; found ${completionTransitions.length}.`);
-const completion = completionTransitions[0];
-if (completion?.from?.workflow_mode !== 'APPROVED_HANDOFF_MODE' || completion?.from?.runtime_state !== 'BUILD_ACTIVE') {
-  fail('COMPLETED transition must start from APPROVED_HANDOFF_MODE / BUILD_ACTIVE.');
-}
-if (completion?.trigger !== 'completion_validation_passed') fail('COMPLETED transition must require completion_validation_passed.');
-for (const guard of ['final_checkpoint_valid', 'package_digest_matches', 'candidate_matches', 'required_actions_complete', 'unresolved_blocking_evidence_count_zero', 'completion_status_valid', 'completion_gate_valid']) {
-  if (!(completion.guards || []).includes(guard)) fail(`Completion transition missing guard: ${guard}`);
+try {
+  requireCanonicalTransition('resume');
+  requireCanonicalTransition('complete-builder');
+} catch (error) {
+  fail(error.message);
 }
 
-for (const forbidden of ['fresh_intake_to_completed', 'fresh_image_to_completed', 'completion_report_request_to_completed', 'resume_without_prior_initialized_state', 'start_command_fabricates_run', 'unresolved_blocker_disappears']) {
+const completionTransitions = (transitions.transitions || []).filter((entry) => entry?.to?.runtime_state === 'COMPLETED');
+if (completionTransitions.length !== 1) fail(`Expected exactly one transition to COMPLETED; found ${completionTransitions.length}.`);
+
+for (const forbidden of [
+  'fresh_intake_to_completed',
+  'fresh_image_to_completed',
+  'completion_report_request_to_completed',
+  'resume_without_prior_initialized_state',
+  'start_command_fabricates_run',
+  'unresolved_blocker_disappears',
+  'caller_authored_completed_carrier_as_transition_input',
+  'capsule_only_resume_or_completion_authorization',
+  'required_action_disappears_by_omission'
+]) {
   if (!(transitions.forbidden || []).includes(forbidden)) fail(`Missing forbidden transition invariant: ${forbidden}`);
 }
+
+const transitionModule = readText('scripts/lib/builder-runtime-transition.mjs');
+for (const symbol of [
+  'verifyBuilderInput',
+  'verifyIntakeCapsule',
+  'verifyRuntimeIdentity',
+  'validateResumeTransition',
+  'validateCompletionTransition',
+  'reconcileRequiredActions',
+  'publishDirectoryAtomically'
+]) {
+  if (!transitionModule.includes(`function ${symbol}`)) fail(`Shared bounded transition module is missing ${symbol}.`);
+}
+for (const forbiddenPlatformTerm of ['event bus', 'plugin guard registry', 'database adapter', 'service layer']) {
+  if (transitionModule.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Generalized runtime platform term appears in bounded transition module: ${forbiddenPlatformTerm}.`);
+}
+
+const sessionValidator = readText('scripts/validate-session-state.mjs');
+if (sessionValidator.includes('const ALLOWED_BY_MODE = {')) fail('Session validator still maintains a competing hard-coded transition matrix.');
+if (!sessionValidator.includes('runtime/state-transitions.v1.json')) fail('Session validator must derive allowed combinations from canonical transition data.');
+
+const inspector = readText('scripts/builder-inspector.mjs');
+if (!inspector.includes("from './lib/builder-runtime-transition.mjs'")) fail('Builder Inspector must delegate to the shared bounded transition module.');
+if (!inspector.includes('completion <builder-input.json>')) fail('Completion CLI must require actual Builder Input.');
+if (!inspector.includes('resume <builder-input.json>')) fail('Resume CLI must require actual Builder Input.');
 
 const centralValidation = readText('scripts/validate.mjs');
 for (const removed of [
@@ -97,5 +125,4 @@ if (errors.length > 0) {
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-
-console.log('Lean runtime authority and transition validation passed.');
+console.log('Lean runtime authority, bounded transition module, and canonical transition consistency passed.');
