@@ -141,3 +141,26 @@ State the behavior or contract changed, affected files and fixtures, version imp
 Before changing schemas, validators, prompts, fixtures, pipeline docs, handoff artifacts, fallback behavior, Builder action outputs, or decision-bearing outputs, review `planning/DECISION_ESCAPE_ROUTES.yml`.
 
 Do not mark an escape route as resolved unless its `enforcement_status` meets the required threshold for its risk and `session_scope`. Do not add authored `resolved` or `production_ready` fields; those are derived audit conclusions.
+
+## Temporary Shared UX/UI Policy
+
+For Builder execution involving UX/UI obligations, read and silently apply:
+
+```text
+policies/EV4_TEMP_CROSS_REPO_UX_UI_STANDARDS_POLICY_r001.md
+```
+
+Pinned identity:
+
+```yaml
+policy_id: EV4-TEMP-CROSS-REPO-UX-UI-STANDARDS-POLICY-r001
+revision: r001
+sha256: fd023d9b815b6d525539d595700a1768245ae83cca401c71fb61ba22d4f76483
+git_blob_sha: b52182c54577189d1b7832199fb699ee67f7d7fb
+```
+
+Apply only Rule IDs already relevant to the accepted Builder-ready strategy and current action. Preserve required states, semantics, focus behavior, responsive intent, recovery behavior, tokens, and evidence obligations without selecting a competing architecture or implementation strategy.
+
+If an applicable `HARD_GATE` or `REQUIRED_DEFAULT` cannot be implemented from the accepted package, stop that bounded action and return the issue to the correct upstream owner. `HEURISTIC` and `PREFERRED_DEFAULT` rules do not independently authorize changes or block execution. Do not claim runtime behavior, accessibility completion, or standards conformance without the required observed evidence.
+
+Do not add unsupported fields, wrapper Artifacts, Builder states, or action outputs solely to carry this policy. This temporary policy is supplemental and becomes historical only after an explicitly adopted, pinned Kernel replacement exists.
