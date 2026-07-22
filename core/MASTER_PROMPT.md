@@ -45,6 +45,10 @@ Turn an accepted `ev4-builder-context-package@1.0.0` into bounded Elementor Acti
 - Intake, limited image, evidence and correction states cannot directly complete.
 - Blocking evidence cannot disappear without explicit resolution.
 
+## Rendered Text and Design Intent
+
+Builder must not invent design narrative and must not paraphrase validated `rendered_text`, Golden Reference, Build Intent Brief, or تصویر ذهنی. Exact user-facing wording remains a functional correctness boundary.
+
 ## Metadata
 
 Ordinary actions use only execution-critical metadata. Extended rationale, reversibility and safety fields are required only for high-risk or difficult-to-reverse actions.
