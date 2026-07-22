@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/builder-completion-authorization.schema.json",
+  "title": "EV4 Builder Personal Completion Authorization",
+  "type": "object",
+  "required": ["schema", "status", "completion_scope", "session_id", "canonical_package_digest", "selected_candidate_id", "final_state_capsule_sha256", "final_checkpoint_sha256", "blocking_diagnostics", "responsive_complete", "production_ready"],
+  "properties": {
+    "schema": {"const": "ev4-builder-completion-authorization@1.0.0"},
+    "status": {"enum": ["accepted", "blocked"]},
+    "completion_scope": {"const": "builder_completion_only"},
+    "session_id": {"type": ["string", "null"]},
+    "canonical_package_digest": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "selected_candidate_id": {"type": ["string", "null"]},
+    "final_state_capsule_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "final_checkpoint_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "blocking_diagnostics": {"type": "array", "items": {"$ref": "builder-intake-authorization.schema.json#/$defs/diagnostic"}},
+    "responsive_complete": {"const": false},
+    "production_ready": {"const": false}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "accepted"}}, "required": ["status"]}, "then": {"properties": {"session_id": {"type": "string", "minLength": 1}, "canonical_package_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "selected_candidate_id": {"type": "string", "minLength": 1}, "final_state_capsule_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "final_checkpoint_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "blocking_diagnostics": {"maxItems": 0}}}},
+    {"if": {"properties": {"status": {"const": "blocked"}}, "required": ["status"]}, "then": {"properties": {"blocking_diagnostics": {"minItems": 1}}}}
+  ],
+  "additionalProperties": false
+}
