@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/builder-runtime-transition-result.v1.schema.json",
+  "title": "EV4 Builder Runtime Transition Result",
+  "type": "object",
+  "required": [
+    "schema",
+    "transition_id",
+    "status",
+    "source",
+    "target",
+    "identity",
+    "builder_build_complete",
+    "responsive_complete",
+    "production_ready",
+    "publication",
+    "blocking_diagnostics"
+  ],
+  "properties": {
+    "schema": { "const": "ev4-builder-runtime-transition-result@1.0.0" },
+    "transition_id": { "enum": ["resume", "complete-builder"] },
+    "status": { "const": "accepted" },
+    "source": { "$ref": "#/$defs/state" },
+    "target": { "$ref": "#/$defs/state" },
+    "identity": {
+      "type": "object",
+      "required": ["session_id", "package_digest", "selected_candidate_id", "checkpoint_id", "checkpoint_sequence"],
+      "properties": {
+        "session_id": { "type": "string", "minLength": 1 },
+        "package_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "selected_candidate_id": { "type": "string", "minLength": 1 },
+        "checkpoint_id": { "type": "string", "minLength": 1 },
+        "checkpoint_sequence": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "resulting_checkpoint": {
+      "type": "object",
+      "required": ["checkpoint_id", "checkpoint_sequence", "parent_checkpoint_id"],
+      "properties": {
+        "checkpoint_id": { "type": "string", "minLength": 1 },
+        "checkpoint_sequence": { "type": "integer", "minimum": 2 },
+        "parent_checkpoint_id": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "action_reconciliation": {
+      "type": "object",
+      "required": ["expected_action_ids", "confirmed_action_ids", "batch_id"],
+      "properties": {
+        "expected_action_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "confirmed_action_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "batch_id": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "completion_scope": { "const": "desktop" },
+    "unresolved_blockers_preserved": { "type": "boolean" },
+    "builder_build_complete": { "type": "boolean" },
+    "responsive_complete": { "const": false },
+    "production_ready": { "const": false },
+    "publication": {
+      "type": "object",
+      "required": ["atomic", "output_directory", "files"],
+      "properties": {
+        "atomic": { "const": true },
+        "output_directory": { "type": "string", "minLength": 1 },
+        "files": { "type": "array", "minItems": 3, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      },
+      "additionalProperties": false
+    },
+    "blocking_diagnostics": { "type": "array", "maxItems": 0 }
+  },
+  "$defs": {
+    "state": {
+      "type": "object",
+      "required": ["workflow_mode", "runtime_state"],
+      "properties": {
+        "workflow_mode": { "enum": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"] },
+        "runtime_state": { "enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "transition_id": { "const": "resume" } }, "required": ["transition_id"] },
+      "then": {
+        "required": ["unresolved_blockers_preserved"],
+        "properties": {
+          "builder_build_complete": { "const": false },
+          "source": { "properties": { "runtime_state": { "const": "PAUSED" } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "transition_id": { "const": "complete-builder" } }, "required": ["transition_id"] },
+      "then": {
+        "required": ["resulting_checkpoint", "action_reconciliation", "completion_scope"],
+        "properties": {
+          "builder_build_complete": { "const": true },
+          "source": {
+            "properties": {
+              "workflow_mode": { "const": "APPROVED_HANDOFF_MODE" },
+              "runtime_state": { "const": "BUILD_ACTIVE" }
+            }
+          },
+          "target": {
+            "properties": {
+              "workflow_mode": { "const": "APPROVED_HANDOFF_MODE" },
+              "runtime_state": { "const": "COMPLETED" }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
