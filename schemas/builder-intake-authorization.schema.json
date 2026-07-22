@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/builder-intake-authorization.schema.json",
+  "title": "EV4 Builder Personal Intake Authorization",
+  "type": "object",
+  "required": ["schema", "status", "validation_profile", "validator_version", "session_id", "source_file_sha256", "canonical_package_digest", "builder_context_schema", "selected_candidate_id", "authorization_basis", "builder_repository_commit", "blocking_diagnostics", "warnings"],
+  "properties": {
+    "schema": {"const": "ev4-builder-intake-authorization@1.0.0"},
+    "status": {"enum": ["accepted", "blocked"]},
+    "validation_profile": {"const": "personal_correctness"},
+    "validator_version": {"const": "builder-inspector@1.0.0"},
+    "session_id": {"type": ["string", "null"], "minLength": 1},
+    "source_file_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "canonical_package_digest": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "builder_context_schema": {"type": ["string", "null"]},
+    "selected_candidate_id": {"type": ["string", "null"]},
+    "authorization_basis": {"enum": ["verified_embedded_input_authorization", "derived_by_official_validators", "official_validators_failed"]},
+    "builder_repository_commit": {"type": ["string", "null"], "pattern": "^[a-f0-9]{40}$"},
+    "blocking_diagnostics": {"type": "array", "items": {"$ref": "#/$defs/diagnostic"}},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "accepted"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "session_id": {"type": "string", "minLength": 1},
+          "source_file_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "canonical_package_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "builder_context_schema": {"const": "ev4-builder-context-package@1.0.0"},
+          "selected_candidate_id": {"type": "string", "minLength": 1},
+          "authorization_basis": {"enum": ["verified_embedded_input_authorization", "derived_by_official_validators"]},
+          "blocking_diagnostics": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "blocked"}}, "required": ["status"]},
+      "then": {"properties": {"authorization_basis": {"const": "official_validators_failed"}, "blocking_diagnostics": {"minItems": 1}}}
+    }
+  ],
+  "$defs": {
+    "diagnostic": {
+      "type": "object",
+      "required": ["code", "message", "field_or_path", "next_action"],
+      "properties": {
+        "code": {"type": "string", "minLength": 1},
+        "message": {"type": "string", "minLength": 1},
+        "field_or_path": {"type": ["string", "null"]},
+        "next_action": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
