@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/builder-conversation-bootstrap.v1.schema.json",
+  "title": "EV4 Builder Conversation Bootstrap v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema","contract_id","contract_version","owner_repository","activation_mode",
+    "canonical_fresh_intake_trigger","canonical_resume_trigger","trigger_delimiter",
+    "canonical_input_schema","canonical_input_filename_hint","filename_is_operator_hint_only",
+    "filename_matching_is_sufficient_for_acceptance","canonical_receipt_filename_hint",
+    "receipt_role","receipt_required","receipt_is_semantic_input",
+    "receipt_may_complete_or_modify_semantic_input","canonical_personal_acquisition_mode",
+    "canonical_personal_source","first_authorized_operation","pre_validation_workflow_mode",
+    "pre_validation_runtime_state","validation_runtime_state","blocked_runtime_state",
+    "approved_workflow_mode","approved_runtime_state","exact_bare_start_response",
+    "trigger_policy","routing_cases","attachment_first","repository_maintenance_exception",
+    "active_startup_routes","forbidden_active_routes","pre_validation_forbidden_operations"
+  ],
+  "properties": {
+    "$schema": {"const":"../schemas/builder-conversation-bootstrap.v1.schema.json"},
+    "contract_id": {"const":"ev4-builder-conversation-bootstrap"},
+    "contract_version": {"const":"1.0.0"},
+    "owner_repository": {"const":"rezahh107/EV4-Builder-Assistant-Repo"},
+    "activation_mode": {"const":"user_facing_builder_session"},
+    "canonical_fresh_intake_trigger": {"const":"شروع"},
+    "canonical_resume_trigger": {"const":"استارت"},
+    "trigger_delimiter": {"const":":"},
+    "canonical_input_schema": {"const":"ev4-builder-context-package@1.0.0"},
+    "canonical_input_filename_hint": {"const":"builder-input.json"},
+    "filename_is_operator_hint_only": {"const":true},
+    "filename_matching_is_sufficient_for_acceptance": {"const":false},
+    "canonical_receipt_filename_hint": {"const":"project-gate-c2b-receipt.json"},
+    "receipt_role": {"const":"optional_project_gate_audit_evidence"},
+    "receipt_required": {"const":false},
+    "receipt_is_semantic_input": {"const":false},
+    "receipt_may_complete_or_modify_semantic_input": {"const":false},
+    "canonical_personal_acquisition_mode": {"const":"project_gate_standalone_builder_input"},
+    "canonical_personal_source": {"const":"EV4-Project-Gate / ce-to-builder"},
+    "first_authorized_operation": {"const":"builder_context_package_validation"},
+    "pre_validation_workflow_mode": {"const":"START_INTAKE_MODE"},
+    "pre_validation_runtime_state": {"const":"INTAKE_WAITING"},
+    "validation_runtime_state": {"const":"INTAKE_VALIDATING"},
+    "blocked_runtime_state": {"const":"EVIDENCE_REQUIRED"},
+    "approved_workflow_mode": {"const":"APPROVED_HANDOFF_MODE"},
+    "approved_runtime_state": {"const":"BUILD_ACTIVE"},
+    "exact_bare_start_response": {"type":"string","minLength":100},
+    "trigger_policy": {
+      "type":"object","additionalProperties":false,
+      "required":["fresh_intake","resume","repeated_fresh_intake"],
+      "properties":{
+        "fresh_intake":{"$ref":"#/$defs/freshTrigger"},
+        "resume":{"$ref":"#/$defs/resumeTrigger"},
+        "repeated_fresh_intake":{"$ref":"#/$defs/repeatedStart"}
+      }
+    },
+    "routing_cases": {
+      "type":"object","additionalProperties":false,
+      "required":["bare_start_no_input","valid_builder_input_only","valid_builder_input_plus_receipt","receipt_only","invalid_or_wrong_schema","blocked_status_or_authorization","valid_optional_gaps","multiple_candidates","raw_project_gate_envelope","raw_ce_or_ce_builder_executable","screenshot_only","valid_continuation_checkpoint"],
+      "properties":{
+        "bare_start_no_input":{"type":"object"},
+        "valid_builder_input_only":{"type":"object"},
+        "valid_builder_input_plus_receipt":{"type":"object"},
+        "receipt_only":{"type":"object"},
+        "invalid_or_wrong_schema":{"type":"object"},
+        "blocked_status_or_authorization":{"type":"object"},
+        "valid_optional_gaps":{"type":"object"},
+        "multiple_candidates":{"type":"object"},
+        "raw_project_gate_envelope":{"type":"object"},
+        "raw_ce_or_ce_builder_executable":{"type":"object"},
+        "screenshot_only":{"type":"object"},
+        "valid_continuation_checkpoint":{"type":"object"}
+      }
+    },
+    "attachment_first": {
+      "type":"object","additionalProperties":false,
+      "required":["inspect_current_message_inputs_before_requesting","identify_candidates_by_parsed_content","depend_on_filename","request_valid_present_input_again","optional_screenshot_absence_blocks"],
+      "properties":{
+        "inspect_current_message_inputs_before_requesting":{"const":true},
+        "identify_candidates_by_parsed_content":{"const":true},
+        "depend_on_filename":{"const":false},
+        "request_valid_present_input_again":{"const":false},
+        "optional_screenshot_absence_blocks":{"const":false}
+      }
+    },
+    "repository_maintenance_exception": {
+      "type":"object","additionalProperties":false,
+      "required":["enabled","intents","start_token_activates_builder_session"],
+      "properties":{
+        "enabled":{"const":true},
+        "intents":{"type":"array","minItems":9,"uniqueItems":true,"items":{"type":"string"}},
+        "start_token_activates_builder_session":{"const":false}
+      }
+    },
+    "active_startup_routes": {
+      "type":"array","const":["project_gate_standalone_builder_input","explicit_technical_direct_path"]
+    },
+    "forbidden_active_routes": {
+      "type":"array","const":["/builder-feed-export","manual_nested_project_gate_output_extraction"]
+    },
+    "pre_validation_forbidden_operations": {
+      "type":"array","minItems":20,"maxItems":20,"uniqueItems":true,
+      "items":{
+        "type":"object","additionalProperties":false,
+        "required":["id","meaning","operation"],
+        "properties":{
+          "id":{"type":"string","pattern":"^BBOOT-FORBID-[0-9]{3}$"},
+          "meaning":{"type":"string","minLength":5},
+          "operation":{"type":"string","minLength":5}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "freshTrigger": {
+      "type":"object","additionalProperties":false,
+      "required":["complete_trimmed_message","command_prefix_with_delimiter","repository_maintenance_exception"],
+      "properties":{
+        "complete_trimmed_message":{"const":true},
+        "command_prefix_with_delimiter":{"const":true},
+        "repository_maintenance_exception":{"const":true}
+      }
+    },
+    "resumeTrigger": {
+      "type":"object","additionalProperties":false,
+      "required":["requires_valid_checkpoint_or_state_capsule","fresh_intake_fallback_when_uninitialized","fabricate_continuation_evidence"],
+      "properties":{
+        "requires_valid_checkpoint_or_state_capsule":{"const":true},
+        "fresh_intake_fallback_when_uninitialized":{"const":true},
+        "fabricate_continuation_evidence":{"const":false}
+      }
+    },
+    "repeatedStart": {
+      "type":"object","additionalProperties":false,
+      "required":["idempotent","preserve_confirmed_checkpoints","preserve_initialized_state","preserve_unresolved_evidence","create_second_active_run","rerun_only_necessary_intake_checks"],
+      "properties":{
+        "idempotent":{"const":true},
+        "preserve_confirmed_checkpoints":{"const":true},
+        "preserve_initialized_state":{"const":true},
+        "preserve_unresolved_evidence":{"const":true},
+        "create_second_active_run":{"const":false},
+        "rerun_only_necessary_intake_checks":{"const":true}
+      }
+    }
+  }
+}

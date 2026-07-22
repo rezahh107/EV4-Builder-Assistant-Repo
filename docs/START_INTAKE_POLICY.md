@@ -1,170 +1,102 @@
 # START_INTAKE_POLICY
 
 Version: 0.3.0
-Status: mode_state_intake_foundation_added
-Purpose: fresh-chat intake rules for `START_INTAKE_MODE`.
+Status: subordinate_to_builder_conversation_bootstrap_v1
+Purpose: deterministic fresh intake and continuation routing.
 
----
-
-## Trigger
-
-Start word:
+Canonical machine authority:
 
 ```text
-شروع
+manifests/builder-conversation-bootstrap.v1.json
 ```
 
-Encoded form when needed:
+## Triggers
 
 ```text
-&#x0634;&#x0631;&#x0648;&#x0639;
+شروع = fresh intake or safe idempotent intake rerun
+استارت = resume a valid initialized checkpoint/state capsule
 ```
 
-`شروع` starts or safely reruns intake.
+Recognize `شروع` when it is the complete trimmed message or begins the message followed by the approved `:` delimiter and current-message input. Do not add broad aliases.
 
-Repeated `شروع` must not delete initialized state, confirmed checkpoints, or unresolved evidence. It may refresh the intake checklist and re-check newly provided inputs.
+Repository inspection, coding, tests, CI, audit, documentation, governance, PR work, and repair remain repository-maintenance mode; `شروع` inside such a request does not activate a user-facing Builder session.
 
----
+Repeated `شروع` preserves confirmed checkpoints, initialized state, unresolved evidence, and the current run. It inspects newly supplied input and reruns only necessary checks.
 
-## Required Behavior
+`استارت` never fabricates continuation evidence. Without a valid initialized session, it routes to fresh intake.
 
-Before asking for anything, inspect attachments, pasted JSON, copied package text, and visible file references already provided in the current user message.
+## Attachment-First Intake
 
-Do not re-request a valid item already provided.
+Before requesting data, inspect all current-message attachments, pasted JSON, copied package content, and visible file references.
 
-Ask only for blocking missing items.
+Identify Builder input by parsed content and semantics. Filename is only a hint. Do not request a valid item already present. Optional screenshot absence is not a blocker unless a specific contract requires it.
 
-Do not silently resolve unknowns.
+Two or more candidate Builder inputs produce `blocked_ambiguous_builder_input`; automatic selection is forbidden.
 
-Do not start building from image-only input unless the user explicitly accepts `FRESH_IMAGE_MODE_LIMITED`.
-
----
-
-## Intake Data List
+## Canonical Input
 
 ```yaml
-intake_inputs:
-  Builder_Context_Package:
-    required: true
-    blocks_if_missing: true
-
-  reference_screenshot:
-    required: false
-    blocks_if_missing: false
-    use: visual_reference_only
-
-  checkpoint_or_status_summary:
-    required: conditional
-    blocks_if_missing: only_when_continuation_is_claimed
-
-  elementor_structure_or_editor_screenshot:
-    required: false
-    blocks_if_missing: false
-    use: current UI evidence when provided
+schema: ev4-builder-context-package@1.0.0
+filename_hint: builder-input.json
+source: EV4-Project-Gate / ce-to-builder
+filename_only_acceptance: false
 ```
 
-Screenshot is optional unless a specific input contract requires it.
+Validate against the Builder Context schema, input contract, package/cross-field validators, decision-lineage rules, and `input_authorization`.
 
-If continuing previous work and no checkpoint/status is provided, classify it as blocking only when continuation is actually claimed.
+`project-gate-c2b-receipt.json` is optional Project Gate audit evidence only. It is not Builder semantic input, is not required, and may not supply, alter, complete, or substitute package fields.
 
----
+Receipt-only input stays blocked and asks for the standalone Builder input.
 
-## Short intake_checklist Output
+Raw `ce-project-gate.json` is not runtime input. Do not manually extract nested `result.output`, `downstream_artifact`, or fields to reconstruct Builder input.
 
-When inputs are partial, output a compact checklist instead of a broad request.
+The Builder-owned CE→Builder Contract Gate and Adapter remain available only as an explicit technical direct path, with no silent fallback and mandatory post-adapter Builder Context validation.
 
-Recommended shape:
+## Routing
 
 ```yaml
-intake_checklist:
+bare_start_no_input:
+  route: waiting_for_builder_input
   workflow_mode: START_INTAKE_MODE
-  runtime_state: EVIDENCE_REQUIRED
-  present_inputs: []
-  blocking_missing_inputs:
-    - Builder_Context_Package
-  optional_missing_inputs:
-    - reference_screenshot
-    - elementor_structure_or_editor_screenshot
-  next_needed: Builder_Context_Package
-```
+  runtime_state: INTAKE_WAITING
+  normal_builder_batch_allowed: false
 
-Rules:
+package_present:
+  route: validate_builder_context_package
+  workflow_mode: START_INTAKE_MODE
+  runtime_state: INTAKE_VALIDATING
 
-```text
-- Keep it short.
-- Include only relevant missing items.
-- Separate blocking from optional inputs.
-- If Builder_Context_Package is valid, do not ask for it again.
-- Optional screenshot absence must not automatically block intake.
-```
-
----
-
-## Structured intake_result
-
-When intake is evaluated, the structured result should follow:
-
-```text
-schemas/intake-result.schema.json
-```
-
-Decision routing:
-
-```yaml
 approved:
-  eligible_workflow_mode: APPROVED_HANDOFF_MODE
-  eligible_runtime_state: BUILD_ACTIVE
+  workflow_mode: APPROVED_HANDOFF_MODE
+  runtime_state: BUILD_ACTIVE
 
 approved_with_optional_gaps:
-  eligible_workflow_mode: APPROVED_HANDOFF_MODE
-  eligible_runtime_state: BUILD_ACTIVE
-  rule: continue with visible optional gaps
+  workflow_mode: APPROVED_HANDOFF_MODE
+  runtime_state: BUILD_ACTIVE
 
-blocked_missing_input:
-  eligible_workflow_mode: START_INTAKE_MODE
-  eligible_runtime_state: EVIDENCE_REQUIRED
+invalid_wrong_schema_blocked_status_failed_authorization:
+  workflow_mode: START_INTAKE_MODE
+  runtime_state: EVIDENCE_REQUIRED
+  normal_builder_batch_allowed: false
 
-blocked_invalid_package:
-  eligible_workflow_mode: START_INTAKE_MODE
-  eligible_runtime_state: EVIDENCE_REQUIRED
-
-blocked_conflict:
-  eligible_workflow_mode: START_INTAKE_MODE
-  eligible_runtime_state: EVIDENCE_REQUIRED
-
-blocked_package_status:
-  eligible_workflow_mode: START_INTAKE_MODE
-  eligible_runtime_state: EVIDENCE_REQUIRED
+multiple_candidates:
+  route: blocked_ambiguous_builder_input
+  automatic_selection: false
 ```
 
----
+Do not conversationally repair, coerce, normalize, or reinterpret invalid runtime input.
 
-## Validation File
+## Screenshot Fallback
 
-```text
-input-contracts/BUILDER_CONTEXT_INPUT_CONTRACT.md
-```
-
-After receiving `Builder_Context_Package`, run the input contract.
-
-If valid, enter:
+Screenshot-only input cannot enter approved mode. `FRESH_IMAGE_MODE_LIMITED` requires explicit user acceptance and states:
 
 ```yaml
-workflow_mode: APPROVED_HANDOFF_MODE
-runtime_state: BUILD_ACTIVE
+audited_upstream_architecture: false
+ce_constructability_proven: false
+canonical_project_gate_handoff_present: false
+production_ready: false
 ```
 
-If blocked, stay in:
+## Pre-Validation Rule
 
-```yaml
-workflow_mode: START_INTAKE_MODE
-runtime_state: EVIDENCE_REQUIRED
-```
-
----
-
-## Runtime Action Cap
-
-```text
-5 actions or fewer
-```
+Before validation and authorization pass, no `BATCH-001`, Builder batch, Elementor instruction, class application, architecture/strategy/lineage/class-scope inference, package-prose execution, prompt-seed execution, confirmation-text execution, Receipt promotion, manual nested extraction, silent direct Adapter invocation, readiness claim, visual-parity claim, Responsive-completion claim, or production-readiness claim is allowed.

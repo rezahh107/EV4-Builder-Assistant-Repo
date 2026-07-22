@@ -1,5 +1,32 @@
 # CHANGELOG — EV4 Builder Assistant Repo
 
+## Unreleased — 2026-07-21
+
+### Added
+
+- Added canonical `ev4-builder-conversation-bootstrap@1.0.0` manifest and Draft 2020-12 schema.
+- Added fail-closed semantic validation with one canonical positive case and 35 isolated semantic mutations.
+- Added exact-byte controlled `شروع` response enforcement across active runtime instruction carriers.
+
+### Changed
+
+- Bound fresh intake to `شروع` and checkpoint continuation to `استارت` without conflating their semantics.
+- Made intake attachment-first and content-validated; filenames remain operator hints only.
+- Defined `builder-input.json` from `EV4-Project-Gate / ce-to-builder` as the canonical personal input route.
+- Kept `project-gate-c2b-receipt.json` optional and separate from Builder semantic input.
+- Removed the obsolete active startup route for the historical Builder feed export command.
+- Preserved the Builder-owned CE→Builder Contract Gate and Adapter as an explicit technical direct path, never a silent fallback.
+- Synchronized source and deployable Project Instructions and registered bootstrap validation in `scripts/validate.mjs`.
+
+### Compatibility
+
+- `ev4-builder-context-package@1.0.0` remains unchanged.
+- CE→Builder mapping, Action Batch semantics, Builder→Responsive scope, and external Project Gate authority evidence remain unchanged.
+- Repository package version remains `0.3.6`; the active version-consistency policy requires synchronized markers but does not mandate a semantic-version increment for this non-schema startup hardening.
+- External ChatGPT Project instruction loading, a real non-synthetic Builder session, real Elementor execution, and production readiness remain unverified.
+
+---
+
 ## Unreleased — 2026-07-14
 
 ### Changed
@@ -70,8 +97,6 @@
 - Hardened CE reference map normalization so CE `connector_layer: { node, model }` projects to Builder `connector_layer: "node:model"` without inserted whitespace.
 - Updated CE reference map adapter contract and CE Builder package adapter contract to require declared transformation mappings and explicit data-loss policy.
 - Updated CE reference map fixture expectations for the exact `node:model` connector projection.
-- Updated `STATUS.md` with CE→Builder transformation IR, registry, validator, and contract gate state.
-- Addressed Gemini review feedback by removing redundant region node validation and caching transformation mappings by ID.
 - Hardened Builder normalization so CE packages must pass the CE→Builder Contract Gate before Builder-side projection or runtime intake.
 - Hardened gate error reporting so failing CE gate paths remain visible to downstream validation checks.
 - Synced downstream CE producer expectations through `rezahh107/EV4-Constructability-Engineer-Repo#24` so CE emits `schema: ev4-builder-executable-package@1.0.0`.

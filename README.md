@@ -1,33 +1,34 @@
 # EV4 Builder Assistant Repo
 
-Status: Builder runtime active. External Project Gate capability is available at bounded documented scopes. Builder-local Project Gate runtime integration is not implemented.
+Status: Builder runtime active. Deterministic Builder conversation bootstrap is implemented on a feature branch pending exact-head CI and fresh independent review. Production readiness remains false.
 
 ## Role
 
 Builder executes proven Elementor actions. Architect owns architecture. CE owns implementation-strategy proof. Responsive owns post-build responsive validation.
 
-## Governance Authorities
+## Quick Start
 
-Repository governance adoption is defined by these non-overlapping authorities:
+```text
+شروع
+→ upload `builder-input.json`
+→ validate parsed content as `ev4-builder-context-package@1.0.0`
+→ enter `APPROVED_HANDOFF_MODE / BUILD_ACTIVE` only when approved
+→ emit the first authorized Builder batch
+```
 
-- `governance/AI_AUTHORITY_POLICY.yml` — AI technical authority, evidence authority, security profile, and prohibited human technical gates.
-- `planning/CAPABILITY_MEMORY.yml` — canonical capability IDs and lifecycle memory, including deferred capabilities that must not be silently deleted.
-- `planning/GOVERNANCE_ADOPTION_PLAN.yml` — current scope revision, committed scope, dependencies, completion evidence, and progress gates.
-- `STATUS.md` — concise mutable repository status; it must not duplicate detailed capability lifecycle or scope calculations.
+The filename is only an operator hint; semantic acceptance depends on parsed content, official schema/cross-field validation, decision lineage, and `input_authorization`. `project-gate-c2b-receipt.json` is optional Project Gate audit evidence, not Builder semantic input. Screenshot-only fallback is not the canonical path. No Builder batch or Elementor instruction is permitted before validation and authorization.
 
-Live `main`, exact commit/PR evidence, validators, tests, CI, and independent exact-head review remain the evidence sources for implementation claims. These authority files do not prove their own enforcement.
+Fresh intake uses `شروع`. Resume uses `استارت` and requires a valid initialized checkpoint or state capsule. Repeated `شروع` preserves checkpoints, initialized state, and unresolved evidence. Repository-maintenance requests do not activate a user-facing Builder session merely because they contain `شروع`.
 
-## Current Project Gate Boundary
+## Canonical Bootstrap Contract
 
-The external `rezahh107/EV4-Project-Gate` repository currently provides, at documented pinned scopes:
+```text
+manifests/builder-conversation-bootstrap.v1.json
+schemas/builder-conversation-bootstrap.v1.schema.json
+scripts/validate-builder-bootstrap.mjs
+```
 
-- a reusable deterministic verifier;
-- guarded CE→Builder orchestration;
-- standalone `builder-input.json` publication;
-- a separate `project-gate-c2b-receipt.json` audit artifact;
-- an initial local operator UI.
-
-The intended personal operator flow is:
+The canonical personal operator flow is:
 
 ```text
 CE output
@@ -37,18 +38,45 @@ CE output
 → Builder Assistant
 ```
 
-After an accepted transition, only `builder-input.json` is supplied as Builder semantic input. `project-gate-c2b-receipt.json` remains separate Project Gate audit evidence and must not be merged into Builder input.
+Do not manually extract nested `result.output`, `downstream_artifact`, or Builder fields from `ce-project-gate.json`. The Builder-owned CE→Builder Contract Gate and Adapter remain preserved as an explicit technical direct path; they are not a silent default.
 
-Builder receives only executable-ready input with a locked selected candidate, explicit implementation strategy, structured confirmation, a safe first batch, explicit class scope, and no blocking dependency.
+## Governance Authorities
 
-Builder does not choose geometry, anchors, connector strategy, overlay policy, responsive strategy, interaction, Dynamic Loop, accessibility completion, or production readiness.
+Repository governance adoption is defined by these non-overlapping authorities:
 
-This repository remains authoritative for the Builder Context contract, CE→Builder Contract Gate, CE→Builder Adapter, package normalization, semantic validation, runtime protocols, fixtures, execution behavior, and build evidence. Project Gate may execute those official Builder-owned tools; it does not replace Builder contracts, silently repair upstream data, or invent build evidence.
+- `governance/AI_AUTHORITY_POLICY.yml` — AI technical authority, evidence authority, security profile, and prohibited human technical gates.
+- `planning/CAPABILITY_MEMORY.yml` — canonical capability IDs and lifecycle memory.
+- `planning/GOVERNANCE_ADOPTION_PLAN.yml` — current scope revision, committed scope, dependencies, completion evidence, and progress gates.
+- `STATUS.md` — concise mutable repository status.
 
-The current Builder-owned Contract Gate and Adapter also support a direct controlled CE→Builder path. That path is technically supported but distinct from the canonical personal operator path through the external Project Gate. External Project Gate implementation does not imply that this repository contains a native Project Gate runtime, embedded verifier, or operator UI.
+Live `main`, exact commit/PR evidence, validators, tests, CI, and independent exact-head review remain the evidence sources for implementation claims.
+
+## Current Project Gate Boundary
+
+The external `rezahh107/EV4-Project-Gate` repository provides, at documented pinned scopes:
+
+- a reusable deterministic verifier;
+- guarded CE→Builder orchestration;
+- standalone `builder-input.json` publication;
+- a separate `project-gate-c2b-receipt.json` audit artifact;
+- an initial local operator UI.
+
+Builder remains authoritative for the Builder Context contract, CE→Builder Contract Gate, CE→Builder Adapter, package normalization, semantic validation, runtime protocols, fixtures, execution behavior, and build evidence.
+
+The current Builder-owned Contract Gate and Adapter support a direct controlled CE→Builder path. That path is distinct from the canonical personal operator path and must never be silently invoked.
 
 ```yaml
 version: 0.3.6
+builder_conversation_bootstrap:
+  contract: ev4-builder-conversation-bootstrap@1.0.0
+  fresh_trigger: شروع
+  resume_trigger: استارت
+  canonical_input_schema: ev4-builder-context-package@1.0.0
+  filename_hint: builder-input.json
+  receipt_is_semantic_input: false
+  attachment_first: true
+  filename_only_acceptance: false
+  production_ready: false
 external_project_gate:
   verifier: implemented_at_documented_scope
   ce_to_builder_transition: implemented_guarded
@@ -66,6 +94,14 @@ evidence:
   real_elementor_execution: insufficient_evidence
   builder_to_responsive_formal_export: not_implemented
   production_ready: false
+```
+
+## Validation
+
+```bash
+node scripts/validate-builder-bootstrap.mjs
+npm run build:project-pack
+npm run validate
 ```
 
 ## Related Repositories
