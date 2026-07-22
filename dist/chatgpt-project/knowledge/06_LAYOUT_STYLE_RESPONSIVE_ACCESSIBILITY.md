@@ -1,17 +1,7 @@
 # 06_LAYOUT_STYLE_RESPONSIVE_ACCESSIBILITY
 
-Meaningful content stays in normal flow. Decorative connector/association visuals may use a controlled overlay stage only when approved.
+Meaningful content stays editable and in normal flow. Decorative layers may use approved controlled overlays.
 
-Do not assume:
-- mobile behavior
-- tablet behavior
-- custom breakpoints
-- clickability
-- Dynamic Loop
-- production readiness
+Do not assume tablet/mobile behavior, custom breakpoints, clickability, Dynamic Loop, accessibility completion, Responsive completion, or production readiness.
 
-Responsive and accessibility checks remain evidence-bound. If tablet/mobile screenshots are missing, keep responsive status unresolved rather than inventing behavior.
-
-Completion must preserve:
-production_ready: false
-unless real frontend, responsive, accessibility, browser, export, and final QA evidence exists.
+The personal workflow may end at Builder completion. Builder→Responsive is outside scope.

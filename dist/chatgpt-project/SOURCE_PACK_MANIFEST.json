@@ -1,93 +1,132 @@
 {
-  "schema": "ev4-chatgpt-project-source-pack-manifest@1.0.0",
+  "schema": "ev4-chatgpt-project-source-pack-manifest@2.0.0",
   "pack_root": "dist/chatgpt-project",
-  "generated_at": "2026-06-30T00:00:00Z",
+  "generated_outputs_authoritative": false,
+  "source_map_path": "project-pack/source-map.v2.json",
+  "source_map_sha256": "25557808d3aed1ab17e7e3b5b22cac59914baa4437db3d6e2e4756a5ac119fb0",
+  "source_fingerprint_sha256": "65f66958bb11394c795743072d43a981331623fa2d2f34cd1e544466eede2136",
   "limits": {
     "project_instructions_max_chars": 8000,
     "project_instructions_warning_chars": 7800,
     "knowledge_file_max_count": 25
   },
-  "project_instructions_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-  "knowledge_dir": "dist/chatgpt-project/knowledge",
-  "duplicate_project_instructions_in_knowledge_allowed": false,
   "files": [
     {
-      "path": "dist/chatgpt-project/BUILD_REPORT.json",
-      "sha256": "70080647cc7cd430444c6953e29392eb14910e586975a49f8b04945ca18d42a9",
-      "bytes": 400,
-      "chars": 400
+      "role": "build_report",
+      "source_path": "generated:BUILD_REPORT",
+      "source_sha256": "65f66958bb11394c795743072d43a981331623fa2d2f34cd1e544466eede2136",
+      "output_path": "dist/chatgpt-project/BUILD_REPORT.json",
+      "output_sha256": "bf17032950078b34dec63e5fa7920e9b4a877fa03d52b263a664b24dfb96a63b",
+      "bytes": 583,
+      "chars": 583
     },
     {
-      "path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "sha256": "a52e5014343b75281c222bc408fe46eeaf9cfa5aba7bb62c108dc7daab639eb4",
-      "bytes": 7670,
-      "chars": 7309
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#01_RUNTIME_CORE.md",
+      "source_sha256": "9de00e60666d6bc6e19c4d0e4e0aed0fa0da37941d133a97c56b32cf3a00908a",
+      "output_path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
+      "output_sha256": "9de00e60666d6bc6e19c4d0e4e0aed0fa0da37941d133a97c56b32cf3a00908a",
+      "bytes": 795,
+      "chars": 795
     },
     {
-      "path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
-      "sha256": "d919b6cf0559a3376282e42a811f9f4eb7cad8d3405afb035f21e718ad774cb6",
-      "bytes": 948,
-      "chars": 929
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#02_INPUT_AUTHORIZATION.md",
+      "source_sha256": "67cfdd79ffa7201c1dab6deae2edb61b0a13ec7f0ecfc5b2ccba67a3b16de364",
+      "output_path": "dist/chatgpt-project/knowledge/02_INPUT_AUTHORIZATION.md",
+      "output_sha256": "67cfdd79ffa7201c1dab6deae2edb61b0a13ec7f0ecfc5b2ccba67a3b16de364",
+      "bytes": 810,
+      "chars": 810
     },
     {
-      "path": "dist/chatgpt-project/knowledge/02_INPUT_AUTHORIZATION.md",
-      "sha256": "0235406fefe3455786e741a565b18244d5febb28c3febf354908c43c87434547",
-      "bytes": 1161,
-      "chars": 1161
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#03_MODE_STATE_COMMANDS.md",
+      "source_sha256": "e8c0ff81b92277f40408d9ef048196aeece92e4020fc2f28ba0ff6c877d12ff3",
+      "output_path": "dist/chatgpt-project/knowledge/03_MODE_STATE_COMMANDS.md",
+      "output_sha256": "e8c0ff81b92277f40408d9ef048196aeece92e4020fc2f28ba0ff6c877d12ff3",
+      "bytes": 867,
+      "chars": 813
     },
     {
-      "path": "dist/chatgpt-project/knowledge/03_MODE_STATE_COMMANDS.md",
-      "sha256": "1685b2346c12e9793f3dda77234d5f7bfe2ec9b8ebd6b159a721a82b2b134ac1",
-      "bytes": 1124,
-      "chars": 1026
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#04_ACTION_BATCH_AND_CLASS_SAFETY.md",
+      "source_sha256": "59a305cfdfc08a6d8e64f0b627d10f50d27fc7a7576ff6b94d7d82d7d204fcaf",
+      "output_path": "dist/chatgpt-project/knowledge/04_ACTION_BATCH_AND_CLASS_SAFETY.md",
+      "output_sha256": "59a305cfdfc08a6d8e64f0b627d10f50d27fc7a7576ff6b94d7d82d7d204fcaf",
+      "bytes": 490,
+      "chars": 427
     },
     {
-      "path": "dist/chatgpt-project/knowledge/04_ACTION_BATCH_AND_CLASS_SAFETY.md",
-      "sha256": "1b272f3fe60573db7b83207d0f9a1153d2cceba205400315bcdeeb28f8e383f9",
-      "bytes": 1264,
-      "chars": 1189
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#05_UI_EVIDENCE_AND_CORRECTION.md",
+      "source_sha256": "7471beca5ea2195629c2c4040dab799c335d4cfb19d854d7eb83ab20104ea844",
+      "output_path": "dist/chatgpt-project/knowledge/05_UI_EVIDENCE_AND_CORRECTION.md",
+      "output_sha256": "7471beca5ea2195629c2c4040dab799c335d4cfb19d854d7eb83ab20104ea844",
+      "bytes": 433,
+      "chars": 433
     },
     {
-      "path": "dist/chatgpt-project/knowledge/05_UI_EVIDENCE_AND_CORRECTION.md",
-      "sha256": "aff7e837330cf77d3b383f6d9d7c5cd7f3a8f4983027b5c35d8f7a97db535713",
-      "bytes": 2217,
-      "chars": 2217
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#06_LAYOUT_STYLE_RESPONSIVE_ACCESSIBILITY.md",
+      "source_sha256": "e5d7221ebcc7e1aec5fa5b999bddb80fd6c5bf820af2bc3e0bb17fd648439014",
+      "output_path": "dist/chatgpt-project/knowledge/06_LAYOUT_STYLE_RESPONSIVE_ACCESSIBILITY.md",
+      "output_sha256": "e5d7221ebcc7e1aec5fa5b999bddb80fd6c5bf820af2bc3e0bb17fd648439014",
+      "bytes": 408,
+      "chars": 406
     },
     {
-      "path": "dist/chatgpt-project/knowledge/06_LAYOUT_STYLE_RESPONSIVE_ACCESSIBILITY.md",
-      "sha256": "e17bacb27ce341b531394940c7990d345be4bfeb69ab053dd6f29c1707717a15",
-      "bytes": 622,
-      "chars": 622
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#07_CHECKPOINT_EVIDENCE_COMPLETION.md",
+      "source_sha256": "69ff2d9183113e60b665df78817e344c15a5fb4d4dc9980aca746c076d6441b1",
+      "output_path": "dist/chatgpt-project/knowledge/07_CHECKPOINT_EVIDENCE_COMPLETION.md",
+      "output_sha256": "69ff2d9183113e60b665df78817e344c15a5fb4d4dc9980aca746c076d6441b1",
+      "bytes": 762,
+      "chars": 762
     },
     {
-      "path": "dist/chatgpt-project/knowledge/07_CHECKPOINT_EVIDENCE_COMPLETION.md",
-      "sha256": "fc0a625d4589a6a20ca315ff890efa8518201e5204c29512f6be54bc13d02b06",
-      "bytes": 966,
-      "chars": 957
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#08_OFFICIAL_ELEMENTOR_CAPABILITY_INDEX.md",
+      "source_sha256": "5a51dcb8e6703e9562df366eee8096702722ac73058bc16bbfbe646def37b848",
+      "output_path": "dist/chatgpt-project/knowledge/08_OFFICIAL_ELEMENTOR_CAPABILITY_INDEX.md",
+      "output_sha256": "5a51dcb8e6703e9562df366eee8096702722ac73058bc16bbfbe646def37b848",
+      "bytes": 285,
+      "chars": 285
     },
     {
-      "path": "dist/chatgpt-project/knowledge/08_OFFICIAL_ELEMENTOR_CAPABILITY_INDEX.md",
-      "sha256": "5e764a600eba1832eed1a2619cb61fc0fe8aafe33841510659b23a78efc7e685",
-      "bytes": 562,
-      "chars": 562
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#09_REFERENCE_METHODS_BOUNDARY.md",
+      "source_sha256": "99f37648cc7a1a2c2cbffc1d052c6fe39ccafc4c0290863eda7526523a86522a",
+      "output_path": "dist/chatgpt-project/knowledge/09_REFERENCE_METHODS_BOUNDARY.md",
+      "output_sha256": "99f37648cc7a1a2c2cbffc1d052c6fe39ccafc4c0290863eda7526523a86522a",
+      "bytes": 403,
+      "chars": 403
     },
     {
-      "path": "dist/chatgpt-project/knowledge/09_REFERENCE_METHODS_BOUNDARY.md",
-      "sha256": "8646fa3dcb6298ea4d307c37971b57cac9441d72f3ac7287204dd9c081afc711",
-      "bytes": 1983,
-      "chars": 1983
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#10_USER_FACING_UX_RECOVERY.md",
+      "source_sha256": "63aae94b6b011c8944203ef279374f40116adc086203aa18a11d7a97cdd4d5d8",
+      "output_path": "dist/chatgpt-project/knowledge/10_USER_FACING_UX_RECOVERY.md",
+      "output_sha256": "63aae94b6b011c8944203ef279374f40116adc086203aa18a11d7a97cdd4d5d8",
+      "bytes": 432,
+      "chars": 432
     },
     {
-      "path": "dist/chatgpt-project/knowledge/10_USER_FACING_UX_RECOVERY.md",
-      "sha256": "08a5f69f3f40a24aa0f2c416d5cc77066a4d93cf0a824bfed0154455723a980d",
-      "bytes": 1096,
-      "chars": 1081
+      "role": "knowledge",
+      "source_path": "project-pack/source-map.v2.json#smart-home-connector.compact.md",
+      "source_sha256": "8fb4db77cbd0b05aaaad8fdc8197f02e9d41179343f5614c1a716b639e64ff00",
+      "output_path": "dist/chatgpt-project/knowledge/smart-home-connector.compact.md",
+      "output_sha256": "8fb4db77cbd0b05aaaad8fdc8197f02e9d41179343f5614c1a716b639e64ff00",
+      "bytes": 444,
+      "chars": 439
     },
     {
-      "path": "dist/chatgpt-project/knowledge/smart-home-connector.compact.md",
-      "sha256": "b2ab3191548e58ec0b921839ec3a75f76949f2e3159e534864ca6281d5651ee5",
-      "bytes": 1226,
-      "chars": 1221
+      "role": "project_instructions",
+      "source_path": "project-pack/source-map.v2.json#PROJECT_INSTRUCTIONS.txt",
+      "source_sha256": "c6e32513813a3bc0b76dcf2d2c8259aac999361878da90f8a1b69581feff0b6d",
+      "output_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
+      "output_sha256": "c6e32513813a3bc0b76dcf2d2c8259aac999361878da90f8a1b69581feff0b6d",
+      "bytes": 5596,
+      "chars": 5265
     }
   ]
 }

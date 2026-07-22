@@ -1,20 +1,15 @@
 # 07_CHECKPOINT_EVIDENCE_COMPLETION
 
-Checkpoint loop:
-Read checkpoint -> emit small action batch -> stop -> wait for confirmation/screenshot/issue -> update checkpoint -> continue only when safe.
+Loop: validated state -> small batch -> confirmation/evidence -> validated Checkpoint -> next safe batch.
 
-Evidence rules:
-- Silence confirms nothing.
-- A screenshot confirms only visible supported assertions.
-- A structure-panel screenshot does not prove frontend rendering.
-- A frontend screenshot does not prove hidden Elementor settings.
-- Vague “done” does not confirm detailed assertions unless mapped to the expected confirmation token/action IDs.
-- User confirmation of UI labels may update ui_vocabulary_map or known_control_map.
+Silence confirms nothing. Screenshots prove only visible claims. Vague completion text cannot replace action IDs, evidence, Checkpoint, or completion authorization.
 
-Completion statuses:
-confirmed | not_checked | insufficient_evidence | not_applicable
+Resume requires local `builder-inspector resume` output. Builder completion requires local `builder-inspector completion` output with:
+- final Session State = COMPLETED
+- valid final Checkpoint
+- matching input/capsule/session/package/candidate
+- no unconfirmed required actions
+- no unresolved blockers
+- valid Completion Status and Completion Gate
 
-Session summary:
-خلاصه should include selected_candidate_id, checkpoint, confirmed items, next batch, UI vocabulary, and production_ready: false.
-
-Never collapse completion into one Boolean. Keep production_ready false unless fully proven.
+Accepted completion scope is only `builder_completion_only`; Responsive and production remain false.

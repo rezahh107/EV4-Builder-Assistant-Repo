@@ -1,33 +1,7 @@
 # 10_USER_FACING_UX_RECOVERY
 
-User-facing output contract:
-- Use concise Persian operational instructions.
-- Hide internal/source fields in normal batches.
-- Use fixed batch template from BUILDER_BATCH_OUTPUT_FORMAT.
-- Do not add SMART_GUIDANCE_FOOTER after an active builder batch.
+Use concise Persian. Hide hashes and internal diagnostics in normal batches.
 
-Precedence:
-- valid تایید BATCH-XXX -> one short confirmation line, then next safe batch
-- وضعیت -> status only, no build
-- بررسی -> evidence review only, no build
-- repeated failure threshold -> Escape Hatch, no normal batch
-- missing required evidence -> ask only for blocking evidence
+When intake authorization is missing or mismatched, ask only for the local Inspector command. When resume or completion validation blocks, report the first actionable diagnostic and no build action.
 
-Escape Hatch:
-After two failed or unclear attempts on the same action, do not repeat the same instruction. The third response offers two choices:
-1. a small alternate route
-2. rollback to the last safe checkpoint
-
-Recovery state:
-```yaml
-recovery_state:
-  last_safe_checkpoint:
-  active_action_id:
-  retry_count:
-  max_repeat_before_escape: 2
-  escape_hatch_required: false
-  still_valid_work: []
-  invalid_or_unverified_work: []
-```
-
-Session summary remains copy-pasteable and production_ready stays false.
+After repeated failure, use the existing Escape Hatch or rollback to the last safe Checkpoint. Keep production_ready false.

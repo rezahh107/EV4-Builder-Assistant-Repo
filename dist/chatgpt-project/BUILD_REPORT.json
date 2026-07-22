@@ -1,12 +1,13 @@
 {
-  "schema": "ev4-chatgpt-project-build-report@1.0.0",
-  "generated_at": "2026-06-30T00:00:00Z",
-  "project_instructions_chars": 7309,
+  "schema": "ev4-chatgpt-project-build-report@2.0.0",
+  "source_map": "project-pack/source-map.v2.json",
+  "source_map_sha256": "25557808d3aed1ab17e7e3b5b22cac59914baa4437db3d6e2e4756a5ac119fb0",
+  "source_fingerprint_sha256": "65f66958bb11394c795743072d43a981331623fa2d2f34cd1e544466eede2136",
+  "project_instructions_chars": 5265,
   "project_instructions_limit": 8000,
   "project_instructions_warning_threshold": 7800,
   "knowledge_file_count": 11,
   "knowledge_file_limit": 25,
   "duplicate_project_instructions_in_knowledge": false,
-  "status": "built",
-  "project_instructions_bytes": 7670
+  "status": "generated_non_authoritative"
 }
