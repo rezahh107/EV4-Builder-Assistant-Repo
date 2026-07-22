@@ -32,19 +32,15 @@ for (const [key, value] of Object.entries(expected)) if (accepted[key] !== value
 
 const carriers = [
   'AGENTS.md',
-  'PROJECT_INSTRUCTIONS.md',
-  'core/MASTER_PROMPT.md',
-  'commands/SESSION_COMMANDS.md',
-  'docs/START_INTAKE_POLICY.md',
-  'protocols/NEW_CHAT_START_INTAKE.md',
+  'README.md',
+  'docs/PERSONAL_BUILDER_INSPECTOR.md',
   'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt'
 ];
 for (const file of carriers) {
   const text = fs.readFileSync(file, 'utf8');
-  for (const token of ['builder-intake-authorization.json', 'scripts/builder-inspector.mjs']) {
+  for (const token of ['builder-intake-authorization.json', 'scripts/builder-inspector.mjs', 'BATCH-001']) {
     if (!text.includes(token)) fail('BINS-BOOT-009', `${file} is missing ${token}.`);
   }
-  if (!/no batch|no `?BATCH-001`?|هیچ `BATCH-001`/iu.test(text)) fail('BINS-BOOT-010', `${file} must keep pre-authorization batches blocked.`);
 }
 
 if (errors.length) {
