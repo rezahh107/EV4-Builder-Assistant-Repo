@@ -1,82 +1,164 @@
 #!/usr/bin/env node
-import fs from 'node:fs';
-import path from 'node:path';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 const root = process.cwd();
-const packDir = path.join(root, 'dist', 'chatgpt-project');
-const manifestPath = path.join(packDir, 'SOURCE_PACK_MANIFEST.json');
-const reportPath = path.join(packDir, 'BUILD_REPORT.json');
-const CRLF = String.fromCharCode(13, 10);
-const LF = String.fromCharCode(10);
+const mapPath = path.join(root, 'runtime', 'project-pack-source-map.v1.json');
+const mode = process.argv.includes('--write') ? 'write' : 'verify';
 
 function fail(message) {
-  console.error(`Project pack validation failed: ${message}`);
+  console.error(`Project pack ${mode} failed: ${message}`);
   process.exit(1);
 }
 
-function readText(filePath) {
-  return fs.readFileSync(filePath, 'utf8').split(CRLF).join(LF);
+function normalizeText(value) {
+  return value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 }
 
-function sha256(content) {
-  return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+function readText(file) {
+  return normalizeText(fs.readFileSync(file, 'utf8'));
 }
 
-if (!fs.existsSync(manifestPath)) fail('missing SOURCE_PACK_MANIFEST.json');
-if (!fs.existsSync(reportPath)) fail('missing BUILD_REPORT.json');
-
-const manifest = JSON.parse(readText(manifestPath));
-const report = JSON.parse(readText(reportPath));
-
-const instructionRel = 'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt';
-const instructionPath = path.join(root, instructionRel);
-if (!fs.existsSync(instructionPath)) fail('missing PROJECT_INSTRUCTIONS.txt');
-
-const projectInstructions = readText(instructionPath);
-const instructionLimit = manifest.limits?.project_instructions_max_chars ?? 8000;
-const warningLimit = manifest.limits?.project_instructions_warning_chars ?? 7800;
-
-if (projectInstructions.length > instructionLimit) {
-  fail(`PROJECT_INSTRUCTIONS.txt has ${projectInstructions.length} chars, limit is ${instructionLimit}`);
-}
-if (projectInstructions.length > warningLimit) {
-  console.warn(`PROJECT_INSTRUCTIONS.txt is above warning threshold: ${projectInstructions.length}/${warningLimit}`);
+function sha256Bytes(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
 }
 
-const knowledgeDir = path.join(packDir, 'knowledge');
-if (!fs.existsSync(knowledgeDir)) fail('missing knowledge directory');
-
-const knowledgeFiles = fs.readdirSync(knowledgeDir)
-  .filter((name) => fs.statSync(path.join(knowledgeDir, name)).isFile())
-  .sort();
-
-const maxKnowledgeFiles = manifest.limits?.knowledge_file_max_count ?? 25;
-if (knowledgeFiles.length > maxKnowledgeFiles) {
-  fail(`knowledge file count ${knowledgeFiles.length} exceeds ${maxKnowledgeFiles}`);
+function stableJson(value) {
+  return `${JSON.stringify(value, null, 2)}\n`;
 }
 
-for (const name of knowledgeFiles) {
-  if (/project[_-]?instructions/i.test(name)) {
-    fail(`Project Instructions duplicated inside knowledge: ${name}`);
+function listFiles(directory, prefix = '') {
+  if (!fs.existsSync(directory)) return [];
+  const result = [];
+  for (const name of fs.readdirSync(directory).sort()) {
+    const absolute = path.join(directory, name);
+    const relative = prefix ? `${prefix}/${name}` : name;
+    if (fs.statSync(absolute).isDirectory()) result.push(...listFiles(absolute, relative));
+    else result.push(relative);
+  }
+  return result;
+}
+
+function compareDirectories(expected, actual) {
+  const expectedFiles = listFiles(expected);
+  const actualFiles = listFiles(actual);
+  if (JSON.stringify(expectedFiles) !== JSON.stringify(actualFiles)) {
+    fail(`generated file list differs. expected=${JSON.stringify(expectedFiles)} actual=${JSON.stringify(actualFiles)}`);
+  }
+  for (const relative of expectedFiles) {
+    const left = fs.readFileSync(path.join(expected, relative));
+    const right = fs.readFileSync(path.join(actual, relative));
+    if (!left.equals(right)) fail(`hand-edited or stale generated file: ${relative}`);
   }
 }
 
-for (const entry of manifest.files || []) {
-  const abs = path.join(root, entry.path);
-  if (!fs.existsSync(abs)) fail(`manifest path missing: ${entry.path}`);
-  const content = readText(abs);
-  const actual = sha256(content);
-  if (actual !== entry.sha256) {
-    fail(`hash mismatch for ${entry.path}: expected ${entry.sha256}, got ${actual}`);
+if (!fs.existsSync(mapPath)) fail('missing runtime/project-pack-source-map.v1.json');
+const mapBytes = Buffer.from(readText(mapPath), 'utf8');
+const sourceMap = JSON.parse(mapBytes.toString('utf8'));
+if (sourceMap.schema !== 'ev4-builder-project-pack-source-map@1.0.0') fail('unsupported source map schema');
+
+const packDir = path.join(root, sourceMap.pack_root);
+const stageRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ev4-builder-project-pack-'));
+const stagePack = path.join(stageRoot, 'chatgpt-project');
+fs.mkdirSync(stagePack, { recursive: true });
+
+try {
+  const entries = [];
+  let projectInstructionsChars = 0;
+  let knowledgeFileCount = 0;
+
+  for (const mapping of sourceMap.files || []) {
+    const source = path.join(root, mapping.source);
+    if (!fs.existsSync(source)) fail(`missing canonical source: ${mapping.source}`);
+    if (path.isAbsolute(mapping.output) || mapping.output.includes('..') || mapping.output.includes('\\')) {
+      fail(`unsafe output path: ${mapping.output}`);
+    }
+
+    const text = readText(source);
+    const bytes = Buffer.from(text, 'utf8');
+    const output = path.join(stagePack, mapping.output);
+    fs.mkdirSync(path.dirname(output), { recursive: true });
+    fs.writeFileSync(output, bytes);
+
+    for (const pattern of sourceMap.forbidden_generated_runtime_patterns || []) {
+      if (text.toLowerCase().includes(String(pattern).toLowerCase())) {
+        fail(`removed governance pattern reappeared in ${mapping.output}: ${pattern}`);
+      }
+    }
+
+    if (mapping.role === 'project_instructions') projectInstructionsChars = text.length;
+    if (mapping.role === 'knowledge') knowledgeFileCount += 1;
+    entries.push({
+      source_path: mapping.source,
+      source_sha256: sha256Bytes(bytes),
+      output_path: `${sourceMap.pack_root}/${mapping.output}`,
+      output_sha256: sha256Bytes(bytes),
+      bytes: bytes.length,
+      chars: text.length,
+      role: mapping.role
+    });
   }
-}
 
-if (report.project_instructions_chars !== projectInstructions.length) {
-  fail(`BUILD_REPORT project_instructions_chars mismatch: expected ${projectInstructions.length}, got ${report.project_instructions_chars}`);
-}
-if (report.knowledge_file_count !== knowledgeFiles.length) {
-  fail(`BUILD_REPORT knowledge_file_count mismatch: expected ${knowledgeFiles.length}, got ${report.knowledge_file_count}`);
-}
+  const instructionLimit = sourceMap.limits?.project_instructions_max_chars ?? 8000;
+  const warningLimit = sourceMap.limits?.project_instructions_warning_chars ?? 7600;
+  const knowledgeLimit = sourceMap.limits?.knowledge_file_max_count ?? 10;
+  if (projectInstructionsChars === 0) fail('project instructions source missing');
+  if (projectInstructionsChars > instructionLimit) fail(`Project Instructions exceed ${instructionLimit} characters`);
+  if (projectInstructionsChars > warningLimit) console.warn(`Project Instructions warning: ${projectInstructionsChars}/${instructionLimit}`);
+  if (knowledgeFileCount > knowledgeLimit) fail(`knowledge file count ${knowledgeFileCount} exceeds ${knowledgeLimit}`);
 
-console.log(`Project pack verified: ${projectInstructions.length} instruction chars, ${knowledgeFiles.length} knowledge files.`);
+  entries.sort((left, right) => left.output_path.localeCompare(right.output_path));
+  const manifest = {
+    schema: 'ev4-chatgpt-project-source-pack-manifest@2.0.0',
+    source_map_path: 'runtime/project-pack-source-map.v1.json',
+    source_map_sha256: sha256Bytes(mapBytes),
+    pack_root: sourceMap.pack_root,
+    limits: sourceMap.limits,
+    deterministic: true,
+    files: entries
+  };
+  fs.writeFileSync(path.join(stagePack, 'SOURCE_PACK_MANIFEST.json'), stableJson(manifest));
+
+  const report = {
+    schema: 'ev4-chatgpt-project-build-report@2.0.0',
+    source_map_sha256: manifest.source_map_sha256,
+    project_instructions_chars: projectInstructionsChars,
+    knowledge_file_count: knowledgeFileCount,
+    manifest_file_count: entries.length,
+    generated_file_count: entries.length + 2,
+    deterministic: true,
+    validated_before_publish: true,
+    atomic_publication: true
+  };
+  fs.writeFileSync(path.join(stagePack, 'BUILD_REPORT.json'), stableJson(report));
+
+  const stagedFiles = listFiles(stagePack);
+  if (stagedFiles.length !== report.generated_file_count) {
+    fail(`generated file count mismatch: ${stagedFiles.length} != ${report.generated_file_count}`);
+  }
+
+  if (mode === 'verify') {
+    if (!fs.existsSync(packDir)) fail('generated dist/chatgpt-project is missing; run with --write');
+    compareDirectories(stagePack, packDir);
+    console.log(`Deterministic Project Pack verified: ${entries.length} mapped files, ${knowledgeFileCount} knowledge files.`);
+  } else {
+    const parent = path.dirname(packDir);
+    fs.mkdirSync(parent, { recursive: true });
+    const backup = `${packDir}.backup-${process.pid}`;
+    if (fs.existsSync(backup)) fs.rmSync(backup, { recursive: true, force: true });
+    if (fs.existsSync(packDir)) fs.renameSync(packDir, backup);
+    try {
+      fs.renameSync(stagePack, packDir);
+      if (fs.existsSync(backup)) fs.rmSync(backup, { recursive: true, force: true });
+    } catch (error) {
+      if (fs.existsSync(packDir)) fs.rmSync(packDir, { recursive: true, force: true });
+      if (fs.existsSync(backup)) fs.renameSync(backup, packDir);
+      throw error;
+    }
+    console.log(`Deterministic Project Pack published atomically: ${entries.length} mapped files.`);
+  }
+} finally {
+  if (fs.existsSync(stageRoot)) fs.rmSync(stageRoot, { recursive: true, force: true });
+}

@@ -29,6 +29,9 @@ parsed('scripts/validate-builder-producer-adoption.mjs', 'BUILDER_P03_GUARD_SELF
 if (!guardProbe.some((e) => e.code === 'BUILDER_P03_GUARD_SELFTEST_MISSING')) fail('BUILDER_P03_GUARD_SELFTEST_FAILED', 'validator.guards');
 if (!guardProbe.some((e) => e.code === 'BUILDER_P03_GUARD_SELFTEST_JSON')) fail('BUILDER_P03_GUARD_SELFTEST_FAILED', 'validator.guards');
 
+// Local vendored-contract compatibility remains a maintenance correctness check.
+// No GitHub workflow, moving branch, external review, or Exact-Head evidence is
+// required to authorize an ordinary Builder Run.
 const producerHash = hash('contracts/project-gate/producer-gate-export.v1.schema.json', 'BUILDER_P03_PRODUCER_SCHEMA_UNREADABLE');
 if (producerHash !== null && producerHash !== PRODUCER_SHA) fail('BUILDER_P03_PRODUCER_SCHEMA_HASH_MISMATCH', 'contracts/project-gate/producer-gate-export.v1.schema.json');
 const stageHash = hash('contracts/project-gate/stage-bundle.v1.schema.json', 'BUILDER_P03_STAGE_BUNDLE_UNREADABLE');
@@ -43,14 +46,6 @@ if (lock) {
   if (lock.vendored?.file_sha256 !== PRODUCER_SHA) fail('BUILDER_P03_LOCK_VENDOR_HASH_MISMATCH', 'vendored.file_sha256');
   if (lock.verification?.byte_equality_required !== true) fail('BUILDER_P03_BYTE_EQUALITY_NOT_REQUIRED', 'verification.byte_equality_required');
   if (lock.verification?.compare_against_moving_default_branch !== false) fail('BUILDER_P03_MOVING_DEFAULT_ALLOWED', 'verification.compare_against_moving_default_branch');
-}
-
-const workflow = text('.github/workflows/verify-project-gate-contract.yml', 'BUILDER_P03_WORKFLOW_UNREADABLE');
-if (workflow) {
-  const usesRefs = [...workflow.matchAll(/^\s*uses:\s*([^\s#]+)\s*$/gm)].map((m) => m[1]);
-  if (!usesRefs.includes(`rezahh107/EV4-Project-Gate/.github/workflows/verify-vendored-common-contract.yml@${PG_COMMIT}`)) fail('BUILDER_P03_WORKFLOW_NOT_PINNED', 'workflow.uses');
-  if (usesRefs.some((ref) => /@(?:main|master)$/.test(ref))) fail('BUILDER_P03_WORKFLOW_USES_MOVING_REF', 'workflow.uses');
-  if (!/^\s*contents:\s*read\s*$/m.test(workflow)) fail('BUILDER_P03_WORKFLOW_NOT_READ_ONLY', 'workflow.permissions');
 }
 
 const manifest = parsed('data/builder-pipeline-manifest.v1.json', 'BUILDER_P03_MANIFEST_UNREADABLE_OR_MALFORMED');
@@ -86,4 +81,4 @@ if (errors.length) {
   for (const e of errors) console.error(`${e.code}: ${e.path}`);
   process.exit(1);
 }
-console.log('Builder producer adoption validation passed.');
+console.log('Builder local producer compatibility validation passed without external workflow authority.');

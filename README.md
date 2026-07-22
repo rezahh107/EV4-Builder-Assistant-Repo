@@ -1,112 +1,116 @@
 # EV4 Builder Assistant Repo
 
-Status: Builder runtime active. Deterministic Builder conversation bootstrap is implemented on a feature branch pending exact-head CI and fresh independent review. Production readiness remains false.
-
-## Role
-
-Builder executes proven Elementor actions. Architect owns architecture. CE owns implementation-strategy proof. Responsive owns post-build responsive validation.
-
-## Quick Start
-
-```text
-شروع
-→ upload `builder-input.json`
-→ validate parsed content as `ev4-builder-context-package@1.0.0`
-→ enter `APPROVED_HANDOFF_MODE / BUILD_ACTIVE` only when approved
-→ emit the first authorized Builder batch
-```
-
-The filename is only an operator hint; semantic acceptance depends on parsed content, official schema/cross-field validation, decision lineage, and `input_authorization`. `project-gate-c2b-receipt.json` is optional Project Gate audit evidence, not Builder semantic input. Screenshot-only fallback is not the canonical path. No Builder batch or Elementor instruction is permitted before validation and authorization.
-
-Fresh intake uses `شروع`. Resume uses `استارت` and requires a valid initialized checkpoint or state capsule. Repeated `شروع` preserves checkpoints, initialized state, and unresolved evidence. Repository-maintenance requests do not activate a user-facing Builder session merely because they contain `شروع`.
-
-## Canonical Bootstrap Contract
-
-```text
-manifests/builder-conversation-bootstrap.v1.json
-schemas/builder-conversation-bootstrap.v1.schema.json
-scripts/validate-builder-bootstrap.mjs
-```
-
-The canonical personal operator flow is:
-
-```text
-CE output
-→ ce-project-gate.json
-→ EV4-Project-Gate / ce-to-builder
-→ builder-input.json
-→ Builder Assistant
-```
-
-Do not manually extract nested `result.output`, `downstream_artifact`, or Builder fields from `ce-project-gate.json`. The Builder-owned CE→Builder Contract Gate and Adapter remain preserved as an explicit technical direct path; they are not a silent default.
-
-## Governance Authorities
-
-Repository governance adoption is defined by these non-overlapping authorities:
-
-- `governance/AI_AUTHORITY_POLICY.yml` — AI technical authority, evidence authority, security profile, and prohibited human technical gates.
-- `planning/CAPABILITY_MEMORY.yml` — canonical capability IDs and lifecycle memory.
-- `planning/GOVERNANCE_ADOPTION_PLAN.yml` — current scope revision, committed scope, dependencies, completion evidence, and progress gates.
-- `STATUS.md` — concise mutable repository status.
-
-Live `main`, exact commit/PR evidence, validators, tests, CI, and independent exact-head review remain the evidence sources for implementation claims.
-
-## Current Project Gate Boundary
-
-The external `rezahh107/EV4-Project-Gate` repository provides, at documented pinned scopes:
-
-- a reusable deterministic verifier;
-- guarded CE→Builder orchestration;
-- standalone `builder-input.json` publication;
-- a separate `project-gate-c2b-receipt.json` audit artifact;
-- an initial local operator UI.
-
-Builder remains authoritative for the Builder Context contract, CE→Builder Contract Gate, CE→Builder Adapter, package normalization, semantic validation, runtime protocols, fixtures, execution behavior, and build evidence.
-
-The current Builder-owned Contract Gate and Adapter support a direct controlled CE→Builder path. That path is distinct from the canonical personal operator path and must never be silently invoked.
-
 ```yaml
 version: 0.3.6
-builder_conversation_bootstrap:
-  contract: ev4-builder-conversation-bootstrap@1.0.0
-  fresh_trigger: شروع
-  resume_trigger: استارت
-  canonical_input_schema: ev4-builder-context-package@1.0.0
-  filename_hint: builder-input.json
-  receipt_is_semantic_input: false
-  attachment_first: true
-  filename_only_acceptance: false
-  production_ready: false
-external_project_gate:
-  verifier: implemented_at_documented_scope
-  ce_to_builder_transition: implemented_guarded
-  standalone_builder_input: implemented
-  operator_ui: implemented_initial
-builder_repository:
-  ce_to_builder_contract_gate: active
-  ce_to_builder_adapter: active
-  local_project_gate_runtime: not_implemented
-operator_path:
-  canonical_personal_handoff_source: project_gate_builder_input
-  direct_builder_owned_path: technically_supported_controlled_path
-evidence:
-  real_non_synthetic_ce_to_builder_handoff: insufficient_evidence
-  real_elementor_execution: insufficient_evidence
-  builder_to_responsive_formal_export: not_implemented
-  production_ready: false
+repository_profile: personal_single_operator
+runtime_goal: functional_correctness
+industrial_governance: removed_from_active_system
+security_posture: minimal_nonblocking
+independent_review_required: false
+pr_inspector_required: false
+exact_head_runtime_authority: false
+builder_to_responsive: out_of_scope
+production_ready: false
 ```
 
-## Validation
+این ریپو runtime شخصی Builder برای تبدیل یک `builder-input.json` معتبر با Schema `ev4-builder-context-package@1.0.0` به Action Batchهای کوچک، تأییدشده، checkpointed و قابل Resume است.
+
+## Active Runtime
+
+```text
+builder-input.json
+→ Lightweight Intake Inspector
+→ accepted | blocked
+→ Builder Action Batch
+→ explicit user confirmation
+→ Checkpoint + Session State
+→ Resume validation when needed
+→ Completion validation
+→ Builder completion
+```
+
+`شروع` یک intake جدید را فقط در نبود Run فعال آغاز می‌کند. `شروع` تکراری state را حفظ می‌کند. `استارت` فقط Session واقعی و PAUSED را Resume می‌کند و نمی‌تواند Run بسازد.
+
+Builder completion فقط پایان محدوده Builder است و Responsive completion یا production readiness را اثبات نمی‌کند.
+
+## Lightweight Builder Inspector
 
 ```bash
-node scripts/validate-builder-bootstrap.mjs
+node scripts/builder-inspector.mjs intake builder-input.json builder-intake-result.json
+node scripts/builder-inspector.mjs verify-capsule builder-input.json builder-intake-result.json
+node scripts/builder-inspector.mjs resume builder-intake-result.json session-state.json checkpoint.json resume-result.json
+node scripts/builder-inspector.mjs completion builder-intake-result.json session-state.json checkpoint.json completion-status.json completion-gate.json completion-result.json
+```
+
+Inspector از canonical digest implementation در `scripts/lib/canonical-builder-package.mjs` استفاده می‌کند، source input را تغییر نمی‌دهد و output را atomically منتشر می‌کند.
+
+## Runtime Authorities
+
+فقط این کنترل‌ها Run را authorize یا block می‌کنند:
+
+- Builder Context Schema و semantic validation؛
+- `selected_candidate_id` continuity؛
+- decision lineage continuity؛
+- Action Batch semantics و class scope؛
+- confirmation binding؛
+- Session State و Checkpoint consistency؛
+- unresolved blocker preservation؛
+- valid Completion conditions.
+
+PR status، PR Inspector، independent review، Exact-Head evidence، governance receipts، merge evidence و repository commit identity runtime authority نیستند.
+
+## Repository Maintenance
+
+```bash
+npm ci
+npm run validate:version-consistency
+npm run validate:schema-registry
+npm run validate:builder-context-package
+npm run validate:cross-field
+npm run validate:builder-lineage-sequence
 npm run build:project-pack
 npm run validate
 ```
 
-## Related Repositories
+Normal CI فقط functional correctness، deterministic packaging و regressionها را می‌سنجد.
 
-- `rezahh107/EV4-Project-Gate`
-- `rezahh107/EV4-Architect-Repo`
-- `rezahh107/EV4-Constructability-Engineer-Repo`
-- `rezahh107/EV4-Responsive-Architect`
+## Deterministic Project Pack
+
+Canonical source map:
+
+```text
+runtime/project-pack-source-map.v1.json
+```
+
+Build verification:
+
+```bash
+node scripts/build-project-pack.mjs --verify
+```
+
+Regeneration:
+
+```bash
+node scripts/build-project-pack.mjs --write
+```
+
+Generated files در `dist/chatgpt-project` authoritative نیستند. Hand edit یا stale file باعث failure می‌شود.
+
+## Out of Scope
+
+- Builder → Responsive runtime handoff
+- Responsive completion
+- production deployment
+- real Elementor automation
+- production readiness claim
+
+## Owner Local Pilot
+
+1. از Project Gate یک `builder-input.json` بگیر.
+2. Inspector intake را اجرا کن.
+3. input و accepted capsule را در ChatGPT Project بارگذاری کن.
+4. یک Action Batch کوچک واقعی اجرا کن.
+5. آن را صریحاً تأیید کن.
+6. Checkpoint بساز.
+7. یک بار Pause/Resume را تست کن.
+8. فقط پس از پایان bounded build، Completion validation را اجرا کن.

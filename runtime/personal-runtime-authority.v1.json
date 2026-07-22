@@ -1,0 +1,52 @@
+{
+  "schema": "ev4-builder-personal-runtime-authority@1.0.0",
+  "repository_profile": "personal_single_operator",
+  "runtime_goal": "functional_correctness",
+  "active": true,
+  "runtime_authorities": [
+    "valid_builder_context_input",
+    "selected_candidate_id_continuity",
+    "decision_lineage_continuity",
+    "allowed_action_batch_semantics",
+    "active_confirmation_binding",
+    "session_state_consistency",
+    "checkpoint_consistency",
+    "unresolved_blocker_preservation",
+    "valid_completion_conditions"
+  ],
+  "maintenance_authorities": [
+    "schemas",
+    "semantic_validators",
+    "fixtures",
+    "regression_tests",
+    "normal_ci",
+    "owner_review_and_merge"
+  ],
+  "non_runtime_authorities": [
+    "exact_head_ci",
+    "pr_inspector",
+    "independent_review",
+    "immutable_review_bundle",
+    "review_receipt",
+    "scope_disclosure",
+    "progress_gate",
+    "merge_recommendation_evidence",
+    "external_producer_attestation",
+    "governance_activation_trigger",
+    "owner_merge_receipt",
+    "repository_commit_identity"
+  ],
+  "security_posture": "minimal_nonblocking",
+  "industrial_governance": "removed_from_active_system",
+  "independent_review_required": false,
+  "pr_inspector_required": false,
+  "exact_head_runtime_authority": false,
+  "runtime_transaction_per_message_required": false,
+  "deep_runtime_transaction_purpose": [
+    "ci_regression",
+    "deep_consistency_diagnosis",
+    "fixture_mutation_testing"
+  ],
+  "builder_to_responsive": "out_of_scope",
+  "production_ready": false
+}

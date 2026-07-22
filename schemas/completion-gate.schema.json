@@ -19,6 +19,10 @@
     "schema": { "const": "ev4-completion-gate@0.1.0" },
     "gate_id": { "type": "string", "minLength": 1 },
     "selected_candidate_id": { "type": "string", "minLength": 1 },
+    "package_digest": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+    "session_id": { "type": "string", "minLength": 1 },
+    "checkpoint_id": { "type": "string", "minLength": 1 },
+    "checkpoint_sequence": { "type": "integer", "minimum": 1 },
     "source_package_ref": { "type": "string", "minLength": 1 },
     "layout_check_ref": { "type": "string", "minLength": 1 },
     "production_ready_allowed": { "type": "boolean" },
@@ -45,7 +49,15 @@
       },
       "additionalProperties": false
     },
-    "required_next_action": { "enum": ["claim_production_ready", "keep_production_ready_false", "ask_missing_evidence", "create_repair_packet", "review_only"] },
+    "required_next_action": {
+      "enum": [
+        "claim_production_ready",
+        "keep_production_ready_false",
+        "ask_missing_evidence",
+        "create_repair_packet",
+        "review_only"
+      ]
+    },
     "reason": { "type": "string", "minLength": 1 }
   },
   "$defs": {
@@ -54,7 +66,10 @@
       "required": ["status", "evidence_refs"],
       "properties": {
         "status": { "enum": ["confirmed", "missing", "unverified", "not_applicable"] },
-        "evidence_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
         "notes": { "type": "string" }
       },
       "additionalProperties": false
@@ -62,32 +77,86 @@
   },
   "allOf": [
     {
-      "if": { "properties": { "production_ready_allowed": { "const": true } }, "required": ["production_ready_allowed"] },
+      "if": {
+        "properties": { "production_ready_allowed": { "const": true } },
+        "required": ["production_ready_allowed"]
+      },
       "then": {
         "properties": {
           "production_ready_claim": { "const": true },
           "required_next_action": { "const": "claim_production_ready" },
           "proofs": {
             "properties": {
-              "layout_verified": { "properties": { "status": { "const": "confirmed" }, "evidence_refs": { "minItems": 1 } } },
-              "frontend_verified": { "properties": { "status": { "const": "confirmed" }, "evidence_refs": { "minItems": 1 } } },
-              "responsive_verified": { "properties": { "status": { "const": "confirmed" }, "evidence_refs": { "minItems": 1 } } },
-              "accessibility_verified": { "properties": { "status": { "const": "confirmed" }, "evidence_refs": { "minItems": 1 } } },
-              "browser_verified": { "properties": { "status": { "const": "confirmed" }, "evidence_refs": { "minItems": 1 } } },
-              "export_verified": { "properties": { "status": { "const": "confirmed" }, "evidence_refs": { "minItems": 1 } } },
-              "final_qa_verified": { "properties": { "status": { "const": "confirmed" }, "evidence_refs": { "minItems": 1 } } }
+              "layout_verified": {
+                "properties": {
+                  "status": { "const": "confirmed" },
+                  "evidence_refs": { "minItems": 1 }
+                }
+              },
+              "frontend_verified": {
+                "properties": {
+                  "status": { "const": "confirmed" },
+                  "evidence_refs": { "minItems": 1 }
+                }
+              },
+              "responsive_verified": {
+                "properties": {
+                  "status": { "const": "confirmed" },
+                  "evidence_refs": { "minItems": 1 }
+                }
+              },
+              "accessibility_verified": {
+                "properties": {
+                  "status": { "const": "confirmed" },
+                  "evidence_refs": { "minItems": 1 }
+                }
+              },
+              "browser_verified": {
+                "properties": {
+                  "status": { "const": "confirmed" },
+                  "evidence_refs": { "minItems": 1 }
+                }
+              },
+              "export_verified": {
+                "properties": {
+                  "status": { "const": "confirmed" },
+                  "evidence_refs": { "minItems": 1 }
+                }
+              },
+              "final_qa_verified": {
+                "properties": {
+                  "status": { "const": "confirmed" },
+                  "evidence_refs": { "minItems": 1 }
+                }
+              }
             }
           }
         }
       }
     },
     {
-      "if": { "properties": { "production_ready_claim": { "const": true } }, "required": ["production_ready_claim"] },
-      "then": { "properties": { "production_ready_allowed": { "const": true }, "required_next_action": { "const": "claim_production_ready" } } }
+      "if": {
+        "properties": { "production_ready_claim": { "const": true } },
+        "required": ["production_ready_claim"]
+      },
+      "then": {
+        "properties": {
+          "production_ready_allowed": { "const": true },
+          "required_next_action": { "const": "claim_production_ready" }
+        }
+      }
     },
     {
-      "if": { "properties": { "production_ready_allowed": { "const": false } }, "required": ["production_ready_allowed"] },
-      "then": { "properties": { "production_ready_claim": { "const": false }, "required_next_action": { "not": { "const": "claim_production_ready" } } } }
+      "if": {
+        "properties": { "production_ready_allowed": { "const": false } },
+        "required": ["production_ready_allowed"]
+      },
+      "then": {
+        "properties": {
+          "production_ready_claim": { "const": false },
+          "required_next_action": { "not": { "const": "claim_production_ready" } }
+        }
+      }
     }
   ],
   "additionalProperties": false

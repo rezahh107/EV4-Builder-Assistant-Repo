@@ -47,10 +47,10 @@ const nodeChecks = [
   'scripts/validate-builder-context-decision-lineage.mjs',
   'scripts/validate-decision-escape-routes.mjs',
   'scripts/validate-kernel-decision-receipts.mjs',
-  'scripts/validate-pr-template-hygiene.mjs',
-  'scripts/validate-governance-progress-evidence.mjs',
-  'scripts/validate-governance-authorities.mjs',
-  'scripts/validate-governance-sequence.mjs',
+  'scripts/validate-lean-runtime.mjs',
+  'scripts/test-builder-inspector.mjs',
+  'scripts/test-project-pack-determinism.mjs',
+  'scripts/smoke-ce-project-gate-builder.mjs',
   'scripts/validate-builder-runtime-transaction.mjs',
   'scripts/validate-builder-runtime-transaction-state.mjs'
 ];
@@ -106,11 +106,6 @@ for (const check of nodeChecks) {
     args = [check, transactionFixture, '--self-test'];
   } else if (check === 'scripts/validate-builder-runtime-transaction-state.mjs') {
     args = [check, transactionFixture];
-  } else if (
-    check === 'scripts/validate-governance-sequence.mjs'
-    || check === 'scripts/validate-governance-progress-evidence.mjs'
-  ) {
-    args = [check, '--mode=fixtures'];
   } else {
     args = [check];
   }

@@ -35,6 +35,7 @@ const assertions = Array.isArray(checkpoint.assertions) ? checkpoint.assertions 
 const evidenceLedger = Array.isArray(checkpoint.evidence_ledger) ? checkpoint.evidence_ledger : [];
 const confirmedActionIds = Array.isArray(checkpoint.confirmed_action_ids) ? checkpoint.confirmed_action_ids : [];
 const unconfirmedActionIds = Array.isArray(checkpoint.unconfirmed_action_ids) ? checkpoint.unconfirmed_action_ids : [];
+const unresolvedBlockers = Array.isArray(checkpoint.unresolved_blockers) ? checkpoint.unresolved_blockers : [];
 
 const assertionIds = assertions.map((assertion) => assertion.assertion_id).filter(Boolean);
 const evidenceIds = evidenceLedger.map((evidence) => evidence.evidence_id).filter(Boolean);
@@ -43,6 +44,7 @@ const evidenceById = new Map(evidenceLedger.map((evidence) => [evidence.evidence
 
 for (const duplicate of duplicates(assertionIds)) fail(`Duplicate assertion_id: ${duplicate}`);
 for (const duplicate of duplicates(evidenceIds)) fail(`Duplicate evidence_id: ${duplicate}`);
+for (const duplicate of duplicates(unresolvedBlockers)) fail(`Duplicate unresolved blocker: ${duplicate}`);
 
 for (const actionId of confirmedActionIds) {
   if (unconfirmedActionIds.includes(actionId)) {
@@ -75,6 +77,29 @@ for (const assertion of assertions) {
 
   if (assertion.status === 'confirmed' && (!Array.isArray(assertion.evidence_refs) || assertion.evidence_refs.length === 0)) {
     fail(`Confirmed assertion ${assertion.assertion_id} must include evidence_refs.`);
+  }
+}
+
+if (checkpoint.runtime_state === 'COMPLETED') {
+  if (checkpoint.workflow_mode !== 'APPROVED_HANDOFF_MODE') {
+    fail('COMPLETED checkpoint requires workflow_mode APPROVED_HANDOFF_MODE.');
+  }
+  if (!checkpoint.session_id || !checkpoint.package_digest) {
+    fail('COMPLETED checkpoint requires session_id and package_digest.');
+  }
+  if (confirmedActionIds.length === 0) {
+    fail('COMPLETED checkpoint requires at least one confirmed action.');
+  }
+  if (unconfirmedActionIds.length > 0) {
+    fail('COMPLETED checkpoint cannot contain unconfirmed actions.');
+  }
+  if (unresolvedBlockers.length > 0) {
+    fail('COMPLETED checkpoint cannot contain unresolved blockers.');
+  }
+  for (const assertion of assertions) {
+    if (['not_checked', 'insufficient_evidence'].includes(assertion.status)) {
+      fail(`COMPLETED checkpoint contains unresolved assertion ${assertion.assertion_id}.`);
+    }
   }
 }
 

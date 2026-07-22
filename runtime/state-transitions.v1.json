@@ -1,0 +1,161 @@
+{
+  "schema": "ev4-builder-state-transitions@1.0.0",
+  "workflow_modes": [
+    "START_INTAKE_MODE",
+    "APPROVED_HANDOFF_MODE",
+    "FRESH_IMAGE_MODE_LIMITED"
+  ],
+  "runtime_states": [
+    "INTAKE_WAITING",
+    "INTAKE_VALIDATING",
+    "BUILD_ACTIVE",
+    "WAITING_FOR_CONFIRMATION",
+    "EVIDENCE_REQUIRED",
+    "CORRECTION",
+    "REVIEW_ONLY",
+    "PAUSED",
+    "COMPLETED"
+  ],
+  "allowed_combinations": {
+    "START_INTAKE_MODE": [
+      "INTAKE_WAITING",
+      "INTAKE_VALIDATING",
+      "EVIDENCE_REQUIRED",
+      "REVIEW_ONLY",
+      "CORRECTION",
+      "PAUSED"
+    ],
+    "APPROVED_HANDOFF_MODE": [
+      "BUILD_ACTIVE",
+      "WAITING_FOR_CONFIRMATION",
+      "EVIDENCE_REQUIRED",
+      "CORRECTION",
+      "REVIEW_ONLY",
+      "PAUSED",
+      "COMPLETED"
+    ],
+    "FRESH_IMAGE_MODE_LIMITED": [
+      "INTAKE_WAITING",
+      "EVIDENCE_REQUIRED",
+      "BUILD_ACTIVE",
+      "WAITING_FOR_CONFIRMATION",
+      "CORRECTION",
+      "REVIEW_ONLY",
+      "PAUSED"
+    ]
+  },
+  "transitions": [
+    {
+      "id": "fresh-intake",
+      "from": null,
+      "trigger": "شروع",
+      "guards": ["no_initialized_session"],
+      "to": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_WAITING"}
+    },
+    {
+      "id": "repeated-start",
+      "from": "ANY_INITIALIZED_STATE",
+      "trigger": "شروع",
+      "guards": ["preserve_session_id", "preserve_checkpoint", "preserve_unresolved_blockers"],
+      "to": "SAME_STATE"
+    },
+    {
+      "id": "intake-validate",
+      "from": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_WAITING"},
+      "trigger": "builder_input_received",
+      "guards": ["candidate_is_unambiguous"],
+      "to": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_VALIDATING"}
+    },
+    {
+      "id": "intake-accepted",
+      "from": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_VALIDATING"},
+      "trigger": "intake_accepted",
+      "guards": ["schema_valid", "semantic_valid", "lineage_valid", "input_authorization_valid"],
+      "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"}
+    },
+    {
+      "id": "intake-blocked",
+      "from": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_VALIDATING"},
+      "trigger": "intake_blocked",
+      "guards": ["blocking_diagnostic_present"],
+      "to": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "EVIDENCE_REQUIRED"}
+    },
+    {
+      "id": "pause",
+      "from": "ANY_INITIALIZED_NON_COMPLETED_STATE",
+      "trigger": "توقف",
+      "guards": ["session_exists", "resumable_state_recorded"],
+      "to": {"workflow_mode": "SAME", "runtime_state": "PAUSED"}
+    },
+    {
+      "id": "resume",
+      "from": {"workflow_mode": "ANY", "runtime_state": "PAUSED"},
+      "trigger": "استارت",
+      "guards": [
+        "builder_input_verified",
+        "intake_capsule_verified",
+        "prior_initialized_state_exists",
+        "session_id_matches",
+        "package_digest_matches",
+        "candidate_matches",
+        "checkpoint_valid",
+        "checkpoint_and_state_consistent",
+        "unresolved_blockers_preserved",
+        "resume_target_legal"
+      ],
+      "to": "PREVIOUS_RESUMABLE_STATE"
+    },
+    {
+      "id": "emit-batch",
+      "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"},
+      "trigger": "action_batch_emitted",
+      "guards": ["action_batch_valid", "no_blocker", "confirmation_binding_created"],
+      "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "WAITING_FOR_CONFIRMATION"}
+    },
+    {
+      "id": "confirm-batch",
+      "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "WAITING_FOR_CONFIRMATION"},
+      "trigger": "confirmation_accepted",
+      "guards": ["active_confirmation_matches", "checkpoint_updated", "unresolved_blockers_preserved"],
+      "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"}
+    },
+    {
+      "id": "enter-correction",
+      "from": "ANY_INITIALIZED_NON_COMPLETED_STATE",
+      "trigger": "blocking_error",
+      "guards": ["repair_packet_created_or_updated"],
+      "to": {"workflow_mode": "SAME", "runtime_state": "CORRECTION"}
+    },
+    {
+      "id": "complete-builder",
+      "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"},
+      "trigger": "completion_validation_passed",
+      "guards": [
+        "builder_input_verified",
+        "intake_capsule_verified",
+        "predecessor_checkpoint_valid",
+        "package_digest_matches",
+        "candidate_matches",
+        "session_id_matches",
+        "checkpoint_sequence_valid",
+        "required_actions_reconciled",
+        "unresolved_blocking_evidence_count_zero",
+        "completion_status_valid",
+        "completion_gate_bound"
+      ],
+      "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "COMPLETED"}
+    }
+  ],
+  "forbidden": [
+    "fresh_intake_to_completed",
+    "fresh_image_to_completed",
+    "completion_report_request_to_completed",
+    "resume_without_prior_initialized_state",
+    "start_command_fabricates_run",
+    "unresolved_blocker_disappears",
+    "intake_or_correction_direct_jump_to_completed",
+    "caller_authored_completed_carrier_as_transition_input",
+    "capsule_only_resume_or_completion_authorization",
+    "required_action_disappears_by_omission"
+  ]
+}

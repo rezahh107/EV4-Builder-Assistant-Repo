@@ -1,5 +1,7 @@
 {
   "schema": "ev4-builder-session-state@0.1.0",
+  "session_id": "SESSION-001",
+  "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
   "workflow_mode": "APPROVED_HANDOFF_MODE",
   "runtime_state": "WAITING_FOR_CONFIRMATION",
   "current_state": "WAITING_FOR_CONFIRMATION",
@@ -9,8 +11,10 @@
     "checkpoint_id": "BUILDER-TRX-CP-000",
     "checkpoint_sequence": 1,
     "parent_checkpoint_id": null,
+    "session_id": "SESSION-001",
     "package_id": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
     "package_sha256": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
+    "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
     "selected_candidate_id": "ARCH-FAM-C",
     "workflow_mode": "APPROVED_HANDOFF_MODE",
     "runtime_state": "WAITING_FOR_CONFIRMATION",
@@ -18,6 +22,9 @@
     "confirmed_action_ids": [],
     "unconfirmed_action_ids": [
       "BATCH-001-A01"
+    ],
+    "unresolved_blockers": [
+      "ASSERT-BATCH-001-A01"
     ],
     "assertions": [
       {
@@ -38,5 +45,8 @@
     "created_at": "2026-07-22T00:00:00Z",
     "created_from": "initial"
   },
-  "max_actions_per_turn": 5
+  "max_actions_per_turn": 5,
+  "unresolved_evidence": [
+    "ASSERT-BATCH-001-A01"
+  ]
 }

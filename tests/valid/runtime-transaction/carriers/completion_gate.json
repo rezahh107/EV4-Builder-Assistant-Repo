@@ -2,6 +2,10 @@
   "schema": "ev4-completion-gate@0.1.0",
   "gate_id": "BUILDER-TRX-COMPLETE-001",
   "selected_candidate_id": "ARCH-FAM-C",
+  "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
+  "session_id": "SESSION-001",
+  "checkpoint_id": "BUILDER-TRX-CP-001",
+  "checkpoint_sequence": 2,
   "source_package_ref": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
   "layout_check_ref": "not_applicable_builder_transaction_fixture",
   "production_ready_allowed": false,
@@ -9,36 +13,17 @@
   "proofs": {
     "layout_verified": {
       "status": "confirmed",
-      "evidence_refs": [
-        "EV-BATCH-001-A01"
-      ]
+      "evidence_refs": ["EV-BATCH-001-A01"]
     },
-    "frontend_verified": {
-      "status": "unverified",
-      "evidence_refs": []
-    },
-    "responsive_verified": {
-      "status": "unverified",
-      "evidence_refs": []
-    },
-    "accessibility_verified": {
-      "status": "unverified",
-      "evidence_refs": []
-    },
-    "browser_verified": {
-      "status": "unverified",
-      "evidence_refs": []
-    },
+    "frontend_verified": { "status": "unverified", "evidence_refs": [] },
+    "responsive_verified": { "status": "unverified", "evidence_refs": [] },
+    "accessibility_verified": { "status": "unverified", "evidence_refs": [] },
+    "browser_verified": { "status": "unverified", "evidence_refs": [] },
     "export_verified": {
       "status": "confirmed",
-      "evidence_refs": [
-        "EV-BATCH-001-A01"
-      ]
+      "evidence_refs": ["EV-BATCH-001-A01"]
     },
-    "final_qa_verified": {
-      "status": "unverified",
-      "evidence_refs": []
-    }
+    "final_qa_verified": { "status": "unverified", "evidence_refs": [] }
   },
   "required_next_action": "keep_production_ready_false",
   "reason": "Builder transaction fixture proves bounded Builder completion only; Responsive and production authority remain absent."
