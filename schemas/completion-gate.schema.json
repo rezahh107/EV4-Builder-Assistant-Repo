@@ -66,17 +66,6 @@
   },
   "allOf": [
     {
-      "if": {
-        "anyOf": [
-          { "required": ["package_digest"] },
-          { "required": ["session_id"] },
-          { "required": ["checkpoint_id"] },
-          { "required": ["checkpoint_sequence"] }
-        ]
-      },
-      "then": { "required": ["package_digest", "session_id", "checkpoint_id", "checkpoint_sequence"] }
-    },
-    {
       "if": { "properties": { "production_ready_allowed": { "const": true } }, "required": ["production_ready_allowed"] },
       "then": {
         "properties": {
