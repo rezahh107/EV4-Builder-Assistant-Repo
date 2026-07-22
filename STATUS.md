@@ -1,8 +1,8 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
-Status: builder_conversation_bootstrap_implemented_pending_fresh_independent_rereview
-Date: 2026-07-21
+Status: personal_correctness_inspector_implemented_pending_exact_head_ci_and_owner_pilot
+Date: 2026-07-22
 
 ---
 
@@ -11,171 +11,86 @@ Date: 2026-07-21
 ```yaml
 repository:
   default_branch: main
-  verified_starting_main_sha: a99ac58ef09c0b4b479c96236c82426ad979c5c7
-  active_implementation_branch: feature/builder-conversation-bootstrap
-  active_pull_request: 60
+  verified_baseline_main_sha: e43879f3a30a59921da70964a530ef5617791d7f
+  baseline_bootstrap_merge_pr: 60
+  baseline_runtime_transaction_merge_pr: 61
+  active_implementation_branch: agent/builder-personal-correctness-inspector
+  active_pull_request: pending_draft_pr_creation
   package_version: 0.3.6
-  ai_governance_scope_revision: GOV-004-v9
-  ai_governance_pr_inspector_protocol: v1.11.1
-  ai_governance_required_check_set: three_exact_head_workflows
-  project_gate_external_authority_evidence: github_api_commit_blob_verified_on_ci
 
-previous_authority_reconciliation:
-  pull_request: 59
-  merged: true
-  final_pr_head: b8f41c317e991c1fd67c6e530192fa288b397e64
-  merge_commit: a99ac58ef09c0b4b479c96236c82426ad979c5c7
-  scope_revision: GOV-004-v9
-  historical_independent_review_limitations_preserved: true
+personal_correctness:
+  operating_model: external_lightweight_local_inspector
+  inspector: scripts/builder-inspector.mjs
+  validation_profile: personal_correctness
+  canonical_input: ev4-builder-context-package@1.0.0
+  intake_authorization: ev4-builder-intake-authorization@1.0.0
+  personal_state_capsule: ev4-builder-personal-state-capsule@1.0.0
+  resume_authorization: ev4-builder-resume-authorization@1.0.0
+  completion_authorization: ev4-builder-completion-authorization@1.0.0
+  accepted_capsule_required_for_build_active: true
+  exact_input_byte_binding: true
+  canonical_package_digest_binding: true
+  selected_candidate_binding: true
+  static_transition_validation: implemented
+  full_runtime_transaction: preserved_for_ci_and_deep_diagnosis
+  per_message_transaction_required: false
 
-builder_conversation_bootstrap:
-  contract: ev4-builder-conversation-bootstrap@1.0.0
-  manifest: manifests/builder-conversation-bootstrap.v1.json
-  schema: schemas/builder-conversation-bootstrap.v1.schema.json
-  validator: scripts/validate-builder-bootstrap.mjs
-  package_command: npm run validate:builder-bootstrap
-  implementation_state: implemented_pending_fresh_independent_rereview
-  canonical_fresh_trigger: شروع
-  canonical_resume_trigger: استارت
-  canonical_personal_input: ev4-builder-context-package@1.0.0
-  canonical_filename_hint: builder-input.json
-  canonical_personal_source: EV4-Project-Gate / ce-to-builder
-  receipt_filename_hint: project-gate-c2b-receipt.json
-  receipt_required: false
-  receipt_is_semantic_input: false
-  attachment_first: enforced_by_contract_and_validator
-  filename_only_acceptance: false
-  stale_builder_feed_export_route: removed_from_active_startup_carriers
-  deployable_project_instructions: synchronized
-  exact_bare_start_response: controlled_and_byte_bound
-  semantic_validator: implemented
-  positive_cases: 1
-  negative_semantic_mutations: 35
-  mutations_use_isolated_temporary_copies: true
-  project_pack_verification_passes_required: 2
-  central_validation_registration: scripts/validate.mjs
-  external_model_host_instruction_loading: unverified
-  real_non_synthetic_builder_session: insufficient_evidence
-  real_elementor_execution: insufficient_evidence
-  production_ready: false
-
-startup_routing:
-  bare_start:
-    workflow_mode: START_INTAKE_MODE
-    runtime_state: INTAKE_WAITING
-    normal_builder_batch_allowed: false
-  package_validation:
-    workflow_mode: START_INTAKE_MODE
-    runtime_state: INTAKE_VALIDATING
-  approved:
-    workflow_mode: APPROVED_HANDOFF_MODE
-    runtime_state: BUILD_ACTIVE
-  blocked:
-    workflow_mode: START_INTAKE_MODE
-    runtime_state: EVIDENCE_REQUIRED
-  multiple_candidates:
-    automatic_selection: false
-  screenshot_only:
-    approved_handoff_allowed: false
-    fallback_mode: FRESH_IMAGE_MODE_LIMITED
-    explicit_user_acceptance_required: true
+project_pack:
+  source_map: project-pack/source-map.v2.json
+  canonical_source_dir: embedded source sections in project-pack/source-map.v2.json
+  deterministic_generation: scripts/build-project-pack.mjs
+  temporary_build_and_atomic_publication: true
+  clean_double_render_required: true
+  hand_edited_dist_rejected: true
+  generated_outputs_authoritative: false
+  knowledge_file_count: 11
 
 project_gate_boundary:
   standalone_builder_input: implemented_elsewhere
-  builder_input_filename: builder-input.json
-  separate_receipt_filename: project-gate-c2b-receipt.json
   receipt_is_builder_semantic_input: false
   manual_nested_extraction: false
-  builder_owned_contract_gate: active
-  builder_owned_adapter: active
-  direct_controlled_path: preserved_explicit_only
-  direct_controlled_path_is_silent_default: false
-  builder_local_project_gate_runtime: not_implemented
+  current_project_gate_main_observed: 4259f3edccb05bc0c2a271825eb6b87647fbda5b
+  current_project_gate_adopted_ce_pin: 6650c31304e5a0472b276c36018c1df8f42ac983
+  current_project_gate_adopted_builder_pin: b599c000118dcbe77572d6f387da5da0f46d1f91
+  current_ce_main_observed: a711787ed12b4501f8af66389be7270a961b8d04
+  moving_head_compatibility: unverified_external_dependency
+  strongest_local_smoke: official_nontrivial_builder_fixture
+  real_non_synthetic_handoff: insufficient_evidence
 
-execution_boundary:
-  pre_validation_batch_allowed: false
-  pre_validation_elementor_instruction_allowed: false
-  first_batch_requires_validated_input_authorization: true
-  package_prose_is_instruction: false
-  builder_assistant_prompt_seed_is_executable: false
-  confirmation_sentence_is_runtime_command: false
-
-validation_state:
-  focused_bootstrap_validation: required_on_exact_current_pr_head
-  project_pack_reproducibility: two_verification_passes_required_on_exact_current_pr_head
-  central_validation: required_on_exact_current_pr_head
-  required_exact_head_workflows:
-    - Schema validation
-    - Verify Project Gate Contract Pin
-    - Verify Governance Exact-Head Evidence
-  exact_head_evidence_authority: live_github_actions_for_current_pr_head
-  fresh_independent_review: requested_for_exact_final_head_and_GOV-004-v9
-
-remaining_evidence_limits:
+readiness:
+  controlled_personal_use: pending_exact_head_ci_and_owner_local_pilot
   external_chatgpt_project_loading: unverified
-  real_non_synthetic_ce_to_builder_handoff: insufficient_evidence
   real_non_synthetic_builder_session: insufficient_evidence
   real_elementor_execution: insufficient_evidence
-  visual_parity: insufficient_evidence
-  responsive_completion: not_implemented
-  builder_to_responsive_formal_export: not_implemented
+  builder_to_responsive_formal_export: not_implemented_out_of_scope
+  responsive_completion: not_implemented_out_of_scope
   production_ready: false
 ```
 
----
-
-## Preserved Historical Milestones
+## Prior Finding Reconciliation
 
 ```yaml
-historical_milestones:
-  structured_reference_intent:
-    pr: 27
-    merge_commit: 267a21ea0ccb8cb22fdf558d80f34982618a1000
-  real_execution_evidence_pack:
-    pr: 31
-    merge_commit: 16e1c479ef077541a71f247f988cf9db84c93bee
-  ce_to_builder_contract_gate:
-    pr: 42
-    status: merged
-  kernel_decision_receipts_wave_5:
-    pr: 52
-    merge_commit: 747b4efa71bf2f12b63a5b6a7673f50fb7b80c0c
-    boundary: presentation_layer_only
-  ai_governance_enforcement:
-    pr: 55
-    merge_commit: 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-    historical_scope_revision: GOV-004-v6
-  project_gate_authority_reconciliation:
-    pr: 59
-    final_head: b8f41c317e991c1fd67c6e530192fa288b397e64
-    merge_commit: a99ac58ef09c0b4b479c96236c82426ad979c5c7
-    scope_revision: GOV-004-v9
+findings:
+  official_validators_not_connected_to_deployed_chatgpt_path: confirmed_current_issue_repaired_by_external_inspector_capsule
+  runtime_transaction_fixture_only_for_personal_turns: confirmed_but_not_required_per_message_preserved_as_deep_control
+  optional_input_authorization: confirmed_compatibility_behavior_personal_path_repaired_by_required_capsule
+  state_transition_sequence_not_machine_enforced: confirmed_current_issue_repaired_for_active_personal_flow
+  project_pack_verify_only: confirmed_current_issue_repaired_with_deterministic_generation
+  stale_status_and_setup_docs: confirmed_current_issue_reconciled_in_this_branch
+  moving_head_cross_repo_compatibility: unverified_external_dependency_not_weakened
 ```
-
-Historical review evidence remains bound to its original head and scope. No historical record is upgraded to prove the current startup implementation.
-
----
 
 ## Boundary
 
-```text
-Builder executes locked decisions; it does not choose architecture or implementation strategy.
-Only a validated ev4-builder-context-package@1.0.0 can authorize normal Builder execution.
-Filename matching cannot authorize intake.
-The Project Gate Receipt is audit evidence, not semantic input.
-Raw Project Gate envelopes are not manually unpacked by the standard personal workflow.
-The controlled Builder-owned CE→Builder direct path remains available only when explicitly selected.
-No Builder batch or Elementor instruction is emitted before validation and authorization.
-Real Elementor and production-readiness claims require retained execution evidence.
-```
+Only a valid Builder input plus its matching accepted Inspector capsule may authorize normal personal Builder execution. Resume and completion require their matching accepted local authorization outputs. Prompt-level comparison never substitutes for system-level validation.
 
----
+Builder completion is scoped to controlled personal Builder work. It does not authorize Responsive completion, deployment, or production readiness.
 
 ## Pending Next Work
 
 ```text
-Inspect all three required exact-head workflows on the current final PR head.
-Keep the draft PR open for fresh independent PR Inspector review.
-Treat any new head or scope revision as invalidating prior exact-head review evidence.
-Do not merge, approve, enable auto-merge, deploy, or claim real Builder/Elementor execution.
+1. Run exact-head CI on the Draft PR.
+2. Resolve any deterministic validation failures without weakening gates.
+3. Owner performs one local non-synthetic Project Gate → Inspector → ChatGPT Project pilot.
+4. Keep production_ready false and keep Builder→Responsive out of this repair.
 ```

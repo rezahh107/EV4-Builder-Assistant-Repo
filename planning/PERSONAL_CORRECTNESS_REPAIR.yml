@@ -1,0 +1,32 @@
+schema: ev4-builder-personal-correctness-repair@1.0.0
+baseline_main_sha: e43879f3a30a59921da70964a530ef5617791d7f
+branch: agent/builder-personal-correctness-inspector
+repository_type: personal_single_operator
+priority:
+  functional_correctness: 100
+  workflow_correctness: 100
+  state_integrity: 100
+  input_output_consistency: 100
+  implementation_simplicity: 90
+operating_model:
+  input: builder-input.json
+  system_validation: scripts/builder-inspector.mjs
+  authorization: builder-intake-authorization.json
+  conversation_validation: visible_artifact_identity_comparison_only
+lightweight_checks:
+  - intake
+  - resume
+  - completion
+deep_checks:
+  - scripts/validate-builder-runtime-transaction.mjs
+  - scripts/validate-builder-runtime-transaction-state.mjs
+out_of_scope:
+  builder_to_responsive_export: true
+  responsive_runtime_handoff: true
+  production_readiness: true
+non_goals:
+  - cryptographic_signatures
+  - database_state
+  - remote_service_dependency
+  - multi_user_authorization
+  - per_message_transaction_envelope

@@ -1,7 +1,7 @@
 schema_version: 2
 repository: rezahh107/EV4-Builder-Assistant-Repo
 source_default_branch: main
-source_commit: 7b7272e08da8dfebb5dbaa15a821d67783173bed
+source_commit: e43879f3a30a59921da70964a530ef5617791d7f
 scope_revision: GOV-004-v9
 
 lifecycle_states:
@@ -44,19 +44,13 @@ capabilities:
       - scripts/validate-governance-authorities.mjs
       - scripts/validate-governance-sequence.mjs
       - scripts/validate-governance-progress-evidence.mjs
-      - scripts/validate-pr-template-hygiene.mjs
-      - tests/governance/progress-evidence-cases.json
-      - tests/governance/pr-template-hygiene-cases.json
-      - tests/governance/valid
-      - tests/governance/invalid
-      - tests/governance/invalid-yaml
       - .github/workflows/schema-validation.yml
       - .github/workflows/governance-exact-head-evidence.yml
     implementation_evidence:
       - PR-55
       - 064805f59762e191ae386423b07d73bcf5cae7be
       - 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-    rationale: deterministic governance validation is merged on main; the v9 repair adds GitHub-API-backed Project Gate repository, commit, blob, and semantic-content evidence and makes that evidence workflow a canonical exact-head check pending fresh CI and rereview
+    rationale: deterministic governance validation remains merged and unchanged by the personal correctness repair
   - capability_id: GOV-CAP-004
     name: exact_head_independent_review_lifecycle
     lifecycle: implemented
@@ -65,20 +59,14 @@ capabilities:
       - governance/schemas/review-lifecycle.schema.json
       - governance/schemas/review-receipt.schema.json
       - scripts/verify-pr-inspector-bundle.py
-      - scripts/test-pr-inspector-official-integration.py
-      - scripts/test-pr-inspector-official-integration-v1-11-1.py
       - scripts/validate-governance-sequence.mjs
-      - tests/governance/pr-inspector-projection-cases.json
-      - tests/governance/scenario-base.json
-      - tests/governance/invalid/merge_failures.json
       - .github/workflows/schema-validation.yml
       - .github/workflows/governance-exact-head-evidence.yml
-      - .github/pull_request_template.md
     implementation_evidence:
       - PR-55
       - 064805f59762e191ae386423b07d73bcf5cae7be
       - 65450bc5a4d19edf66098669a6fd48bdcda3ed70
-    rationale: the immutable official integration is repinned to live PR Inspector v1.11.1 at 273ba7d4a6930015eb07c32c5de7210fa4692b1c; the receipt now binds exactly three run IDs to workflow name, producer repository identity, pull request, exact head, API URL, event, status, and conclusion; all earlier review evidence is stale
+    rationale: existing exact-head review lifecycle remains preserved
   - capability_id: GOV-CAP-005
     name: post_merge_governance_verification
     lifecycle: implemented
@@ -90,27 +78,27 @@ capabilities:
       - PR-55
       - 65450bc5a4d19edf66098669a6fd48bdcda3ed70
       - reviewed_head_tree_preserved_on_main
-    rationale: PR 55 post-merge evidence remains preserved; v9 repair evidence and post-merge verification remain pending
+    rationale: historical governance post-merge evidence remains preserved
   - capability_id: PROD-CAP-001
     name: real_elementor_execution_evidence
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
-    rationale: real user-provided Elementor UI evidence remains pending and is unrelated to governance adoption
+    rationale: real user-provided Elementor execution evidence remains pending
   - capability_id: PROD-CAP-002
     name: builder_to_responsive_formal_export
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
-    rationale: formal Builder-to-Responsive export remains documented but not implemented
+    rationale: explicitly outside the personal correctness repair
   - capability_id: PROD-CAP-003
     name: builder_local_project_gate_runtime_integration
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
-    rationale: this capability tracks only a native or embedded Project Gate verifier runtime or operator UI inside the Builder repository, which is not implemented here
+    rationale: the lightweight Builder Inspector is not an embedded Project Gate runtime
   - capability_id: PROD-CAP-004
     name: production_readiness
     lifecycle: deferred_not_deleted
     source_authority: STATUS.md
-    rationale: production readiness remains false until real execution and completion evidence exist
+    rationale: personal Builder completion does not establish production readiness
   - capability_id: PROD-CAP-005
     name: external_project_gate_ce_to_builder_orchestration
     lifecycle: implemented_elsewhere
@@ -123,10 +111,9 @@ capabilities:
       - EV4-Project-Gate-repository-id-1286355650
       - EV4-Project-Gate-PR-55
       - external_main_d0d90165980c087b6e9b3d7af0aac7933fe22ec9
-      - github_api_exact_commit_and_blob_evidence_required
       - standalone_builder_input_builder-input.json
       - separate_receipt_project-gate-c2b-receipt.json
-    rationale: external Project Gate provides guarded CE-to-Builder orchestration, official Builder-owned tool execution, standalone Builder input publication, a separate receipt, a reusable verifier, and an initial operator UI at documented pinned scopes; repository ID, exact commit, exact blob identities, and required semantics are verified by the v9 external-evidence workflow; real non-synthetic handoff remains insufficient_evidence and Builder-local Project Gate runtime is not implemented
+    rationale: external Project Gate remains the canonical CE-to-Builder publisher at its adopted immutable scope; moving-head compatibility remains unverified
 
 rejected_ids: []
 superseded_ids: []
@@ -140,4 +127,4 @@ integrity_rules:
   - capability_removal_requires_decision_provenance
   - granularity_changes_require_explicit_mapping
 
-current_enforcement_status: mixed_sequence_ci_and_fail_closed_validator_backed
+current_enforcement_status: governance_preserved_plus_personal_inspector_fail_closed_validation

@@ -1,98 +1,62 @@
 # CHATGPT_PROJECT_SETUP_GUIDE — EV4 Builder Assistant
 
-Version: 0.3.2
-Status: package_trust_and_guidance_sync_added
-Date: 2026-06-28
-
----
+Version: 0.3.6
+Status: personal_correctness_inspector_pack
+Date: 2026-07-22
 
 ## Purpose
 
-This guide explains how to create a ChatGPT Project for `EV4 Builder Assistant` using the compact deployable source pack in:
+Use the deterministic deployable pack in `dist/chatgpt-project/`. The modular repository and embedded source sections in `project-pack/source-map.v2.json` remain authoritative; generated `dist` is non-authoritative.
 
-```text
-dist/chatgpt-project/
-```
-
-The modular repository remains the source of truth for development. The `dist/chatgpt-project` folder is the compact deployment artifact for ChatGPT Project setup.
-
----
-
-## Recommended Upload Method
-
-Use the generated pack:
-
-```text
-dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt
-dist/chatgpt-project/knowledge/
-dist/chatgpt-project/SOURCE_PACK_MANIFEST.json
-dist/chatgpt-project/BUILD_REPORT.json
-```
-
-### Project Instructions
-
-Paste this file into the ChatGPT Project Instructions field:
-
-```text
-dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt
-```
-
-Do not also upload this file into Knowledge unless a future pack manifest explicitly allows duplication.
-
-### Knowledge files
-
-Upload the files inside:
-
-```text
-dist/chatgpt-project/knowledge/
-```
-
-Current pack target:
-
-```yaml
-knowledge_file_count: 10
-knowledge_file_limit: 25
-```
-
-The compact pack includes the Patch C trust boundary, `SMART_GUIDANCE_FOOTER v0.2`, and a compact summary of `UI_INSTRUCTION_CONFIDENCE_GATE` inside the existing knowledge set. It does not duplicate Project Instructions inside Knowledge.
-
----
-
-## Pack Verification
-
-Before uploading, verify the pack:
+## Generate and Verify
 
 ```bash
+node scripts/build-project-pack.mjs --write
 npm run build:project-pack
 ```
 
-The verification checks:
+Generation uses `project-pack/source-map.v2.json`, a temporary build directory, two byte-identical renders, validation before publication, and atomic replacement. Verification rejects hand-edited or stale dist bytes.
 
-```text
-- Project Instructions character count is below the configured limit.
-- Knowledge file count is <= 25.
-- Every SOURCE_PACK_MANIFEST.json path exists.
-- Manifest SHA-256 hashes match file contents.
-- PROJECT_INSTRUCTIONS.txt is not duplicated inside Knowledge.
-- BUILD_REPORT.json counts match the actual pack.
-```
+## ChatGPT Project Setup
 
----
-
-## Existing Project Role
-
-Use the project behavior and session-start rules already encoded in:
+Paste:
 
 ```text
 dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt
+```
+
+Upload the 11 files inside:
+
+```text
 dist/chatgpt-project/knowledge/
 ```
 
-For the Smart Home test seed, use:
+Retain `SOURCE_PACK_MANIFEST.json` and `BUILD_REPORT.json` for local verification; do not upload Project Instructions into Knowledge.
 
-```text
-examples/smart-home-connector/start_session_prompt.md
-examples/smart-home-connector/expected_first_response.md
+## Personal Intake
+
+Project Gate publishes `builder-input.json`. Before sending it to the ChatGPT Project, run:
+
+```bash
+node scripts/builder-inspector.mjs intake \
+  --input builder-input.json \
+  --output builder-intake-authorization.json
 ```
 
-The Smart Home package example now uses structured `confirmation_request`. Legacy `builder_assistant_prompt_seed` and `confirmation_sentence` must not be used as executable runtime instructions.
+Send both files. `project-gate-c2b-receipt.json` remains separate audit evidence and is not required by Builder.
+
+If the Project reports a missing/stale/mismatched capsule, run:
+
+```bash
+node scripts/builder-inspector.mjs verify-capsule \
+  --input builder-input.json \
+  --capsule builder-intake-authorization.json
+```
+
+The ChatGPT Project compares visible identities only. It does not run local validators or recompute hashes.
+
+## Resume and Completion
+
+Use `builder-inspector resume` before `استارت` in another chat. Use `builder-inspector completion` before claiming Builder completion. These authorize only the personal Builder workflow.
+
+Builder→Responsive and production readiness are not implemented by this setup. Keep `production_ready: false`.
