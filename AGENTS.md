@@ -82,25 +82,29 @@ Deep runtime transaction validation remains a CI regression/diagnostic tool; it 
 
 Use a feature branch and one focused PR. Do not merge or deploy without owner action. Do not claim validation or CI success without evidence.
 
-## Temporary Shared UX/UI Policy
+## Temporary Shared UX/UI Policy Adapter
 
-For Builder execution involving UX/UI obligations, read and silently apply:
-
-```text
-policies/EV4_TEMP_CROSS_REPO_UX_UI_STANDARDS_POLICY_r001.md
-```
-
-Pinned identity:
+Use `policies/EV4_TEMP_CROSS_REPO_UX_UI_STANDARDS_POLICY_r002.md` only as a supplemental policy below repository authority.
 
 ```yaml
-policy_id: EV4-TEMP-CROSS-REPO-UX-UI-STANDARDS-POLICY-r001
-revision: r001
-sha256: fd023d9b815b6d525539d595700a1768245ae83cca401c71fb61ba22d4f76483
-git_blob_sha: b52182c54577189d1b7832199fb699ee67f7d7fb
+policy_id: EV4-TEMP-CROSS-REPO-UX-UI-STANDARDS-POLICY-r002
+revision: r002
+filename: EV4_TEMP_CROSS_REPO_UX_UI_STANDARDS_POLICY_r002.md
+sha256: f09b6978e10833c1ab3c3e35a9128db894684c5ed9cd876fa87699016b6def95
+repository_role: builder
+local_consumption_scope: accepted Builder-ready strategy and the current bounded implementation action
+role_must:
+  - implement the accepted strategy
+  - preserve applicable semantics, states, focus, responsive and recovery behavior
+  - report implementation blockers with evidence
+  - use accepted tokens and mechanisms where available
+role_must_not:
+  - select a competing architecture
+  - reinterpret locked intent
+  - claim runtime behavior without observation
+  - let aesthetic preference override accessibility or content requirements
 ```
 
-Apply only Rule IDs already relevant to the accepted Builder-ready strategy and current action. Preserve required states, semantics, focus behavior, responsive intent, recovery behavior, tokens, and evidence obligations without selecting a competing architecture or implementation strategy.
+Keep nonmaterial routing internal. Represent material implementation blockers, evidence gaps, and downstream obligations through existing Builder-supported fields or a concise visible status when continuation or owner action is affected. Do not add unsupported Builder states, outputs, wrapper Artifacts, or hidden-storage claims.
 
-If an applicable `HARD_GATE` or `REQUIRED_DEFAULT` cannot be implemented from the accepted package, stop that bounded action and return the issue to the correct upstream owner. `HEURISTIC` and `PREFERRED_DEFAULT` rules do not independently authorize changes or block execution. Do not claim runtime behavior, accessibility completion, or standards conformance without the required observed evidence.
-
-Do not add unsupported fields, wrapper Artifacts, Builder states, or action outputs solely to carry this policy. This temporary policy is supplemental and becomes historical only after an explicitly adopted, pinned Kernel replacement exists.
+`r001` remains an immutable historical revision. A filename, ID, revision, byte, or digest mismatch is `TEMP_UX_UI_POLICY_IDENTITY_MISMATCH`. This adapter does not create Kernel adoption, Builder→Responsive implementation, or a parallel approval path.
