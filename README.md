@@ -26,7 +26,7 @@ Builder executes proven Elementor actions. Architect owns architecture. CE owns 
 → emit the first authorized Builder batch
 ```
 
-The filename is only an operator hint. Semantic acceptance depends on parsed content, official Schema/cross-field/lineage validation, exact byte identity, canonical package digest, selected candidate, and the accepted personal intake capsule.
+The filename is only an operator hint. Semantic acceptance depends on parsed content, official Schema/cross-field/lineage validation, exact byte identity, canonical package digest, selected candidate, and the accepted personal intake capsule. Before that accepted match, `BATCH-001` and all normal Builder actions remain blocked.
 
 Create the capsule:
 
