@@ -1,6 +1,7 @@
 # EV4 Builder Assistant Repo
 
 ```yaml
+version: 0.3.6
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
 industrial_governance: removed_from_active_system
