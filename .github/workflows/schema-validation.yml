@@ -25,7 +25,22 @@ jobs:
       - name: Checkout tested commit
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+
+      - name: Report and verify tested object
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          ACTUAL_SHA="$(git rev-parse HEAD)"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            echo "tested_object_type=pull_request_head"
+          else
+            echo "tested_object_type=push_commit"
+          fi
+          echo "tested_sha=$ACTUAL_SHA"
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
