@@ -9,6 +9,8 @@ production_ready: false
 canonical_transition_table: runtime/state-transitions.v1.json
 ```
 
+Canonical intake is `builder-input.json` parsed as `ev4-builder-context-package@1.0.0`. `شروع` enters intake only when no Run exists; `استارت` only resumes a real PAUSED Session State.
+
 ## Legal Mode / State Combinations
 
 | workflow_mode | Legal runtime_state values |
