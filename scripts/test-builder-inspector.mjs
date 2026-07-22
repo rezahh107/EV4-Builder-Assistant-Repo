@@ -6,191 +6,253 @@ import { spawnSync } from 'node:child_process';
 
 const ROOT = process.cwd();
 const INSPECTOR = path.join(ROOT, 'scripts', 'builder-inspector.mjs');
-const VALID_SOURCE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'builder_context_package.json');
-const VALID_INITIAL_SESSION = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'session_state_initial.json');
-const VALID_INITIAL_CHECKPOINT = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'checkpoint_initial.json');
-const VALID_FINAL_SESSION = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'session_state_final.json');
-const VALID_FINAL_CHECKPOINT = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'checkpoint_final.json');
-const VALID_COMPLETION_STATUS = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'completion_status.json');
-const VALID_COMPLETION_GATE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'completion_gate.json');
-const NPX = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'ev4-builder-inspector-'));
+const SOURCE_FIXTURE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'builder_context_package.json');
+const INITIAL_SESSION_FIXTURE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'session_state_initial.json');
+const INITIAL_CHECKPOINT_FIXTURE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'checkpoint_initial.json');
+const FINAL_SESSION_FIXTURE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'session_state_final.json');
+const FINAL_CHECKPOINT_FIXTURE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'checkpoint_final.json');
+const COMPLETION_STATUS_FIXTURE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'completion_status.json');
+const COMPLETION_GATE_FIXTURE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'completion_gate.json');
+const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'ev4-builder-transition-'));
 const failures = [];
 
-function fail(message) {
-  failures.push(message);
-}
-
-function writeJson(name, value) {
+const fail = (message) => failures.push(message);
+const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
+const writeJson = (name, value) => {
   const file = path.join(temp, name);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
   return file;
-}
-
-function readJson(file) {
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
-}
-
-function copy(name, source) {
+};
+const copy = (name, source) => {
   const target = path.join(temp, name);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.copyFileSync(source, target);
   return target;
-}
+};
+const run = (args) => spawnSync(process.execPath, [INSPECTOR, ...args], {
+  cwd: ROOT,
+  encoding: 'utf8',
+  maxBuffer: 32 * 1024 * 1024,
+  shell: false
+});
+const parseStdout = (result) => {
+  try { return JSON.parse(result.stdout); } catch { return null; }
+};
 
-function run(args) {
-  return spawnSync(process.execPath, [INSPECTOR, ...args], {
-    cwd: ROOT,
-    encoding: 'utf8',
-    maxBuffer: 32 * 1024 * 1024,
-    shell: false
-  });
-}
-
-function expectStatus(label, result, expectedExit, outputFile, expectedStatus) {
+function expect(label, result, expectedExit, expectedStatus) {
   if (result.status !== expectedExit) {
     fail(`${label}: expected exit ${expectedExit}, received ${result.status}. ${result.stderr || result.stdout}`);
     return null;
   }
-  const output = outputFile ? readJson(outputFile) : JSON.parse(result.stdout);
-  if (output.status !== expectedStatus) fail(`${label}: expected status ${expectedStatus}, received ${output.status}.`);
+  const output = parseStdout(result);
+  if (!output) fail(`${label}: stdout was not machine-readable JSON.`);
+  else if (output.status !== expectedStatus) fail(`${label}: expected status ${expectedStatus}, received ${output.status}.`);
   return output;
 }
 
-function validateIntakeSchema(file, label) {
-  const result = spawnSync(NPX, [
-    '--yes', 'ajv-cli@5', 'validate', '--spec=draft2020', '--strict=false',
-    '-s', 'schemas/builder-intake-result.v1.schema.json', '-d', file
-  ], { cwd: ROOT, encoding: 'utf8', shell: false });
-  if (result.status !== 0) fail(`${label}: intake result schema validation failed. ${result.stderr || result.stdout}`);
+function expectBlockedNoPublication(label, args, outputDirectory) {
+  const result = expect(label, run(args), 1, 'blocked');
+  if (fs.existsSync(outputDirectory)) fail(`${label}: failed transition published an output directory.`);
+  const prefix = `${path.basename(outputDirectory)}.tmp-`;
+  if (fs.readdirSync(path.dirname(outputDirectory)).some((name) => name.startsWith(prefix))) {
+    fail(`${label}: failed transition left a temporary directory.`);
+  }
+  return result;
+}
+
+function prepareBuildActivePredecessor() {
+  const checkpoint = readJson(FINAL_CHECKPOINT_FIXTURE);
+  checkpoint.runtime_state = 'BUILD_ACTIVE';
+  checkpoint.checkpoint_id = 'BUILDER-TRX-CP-001';
+  checkpoint.checkpoint_sequence = 2;
+  checkpoint.parent_checkpoint_id = 'BUILDER-TRX-CP-000';
+  checkpoint.confirmed_action_ids = ['BATCH-001-A01'];
+  checkpoint.unconfirmed_action_ids = [];
+  checkpoint.unresolved_blockers = [];
+
+  const session = readJson(FINAL_SESSION_FIXTURE);
+  session.workflow_mode = 'APPROVED_HANDOFF_MODE';
+  session.runtime_state = 'BUILD_ACTIVE';
+  session.current_state = 'BUILD_ACTIVE';
+  session.last_verified_checkpoint = checkpoint;
+  session.unresolved_evidence = [];
+  delete session.resume_target;
+  return { session, checkpoint };
+}
+
+function boundGate(checkpoint, session) {
+  const gate = readJson(COMPLETION_GATE_FIXTURE);
+  gate.package_digest = session.package_digest;
+  gate.session_id = session.session_id;
+  gate.checkpoint_id = checkpoint.checkpoint_id;
+  gate.checkpoint_sequence = checkpoint.checkpoint_sequence;
+  return gate;
+}
+
+function completionArgs(source, capsule, sessionFile, checkpointFile, statusFile, gateFile, outputDirectory) {
+  return ['completion', source, capsule, sessionFile, checkpointFile, statusFile, gateFile, outputDirectory];
 }
 
 try {
-  const source = copy('builder-input.json', VALID_SOURCE);
-  const sourceBefore = fs.readFileSync(source);
-  const capsule = path.join(temp, 'intake-result.json');
-  const validIntake = expectStatus('valid intake', run(['intake', source, capsule]), 0, capsule, 'accepted');
-  validateIntakeSchema(capsule, 'valid intake');
-  if (!Buffer.from(sourceBefore).equals(fs.readFileSync(source))) fail('valid intake modified source bytes.');
-  if (fs.readdirSync(temp).some((name) => name.includes('.tmp-'))) fail('atomic publication left a temporary output behind.');
-  if (validIntake?.source_file_unchanged !== true || validIntake?.publication?.atomic !== true) fail('valid intake did not report immutable source and atomic publication.');
+  const source = copy('builder-input.json', SOURCE_FIXTURE);
+  const capsule = path.join(temp, 'builder-intake-result.json');
+  expect('valid intake', run(['intake', source, capsule]), 0, 'accepted');
+  expect('valid capsule verification', run(['verify-capsule', source, capsule]), 0, 'accepted');
 
-  expectStatus('valid capsule', run(['verify-capsule', source, capsule]), 0, null, 'accepted');
+  const { session, checkpoint } = prepareBuildActivePredecessor();
+  const sessionFile = writeJson('completion/session-active.json', session);
+  const checkpointFile = writeJson('completion/checkpoint-active.json', checkpoint);
+  const gateFile = writeJson('completion/gate-bound.json', boundGate(checkpoint, session));
+  const completionOutput = path.join(temp, 'completion-success');
+  const completion = expect('BUILD_ACTIVE completion', run(completionArgs(source, capsule, sessionFile, checkpointFile, COMPLETION_STATUS_FIXTURE, gateFile, completionOutput)), 0, 'accepted');
+  if (completion?.source?.runtime_state !== 'BUILD_ACTIVE' || completion?.target?.runtime_state !== 'COMPLETED') fail('Completion did not prove BUILD_ACTIVE → COMPLETED.');
+  const completedSession = readJson(path.join(completionOutput, 'session-state.json'));
+  const completedCheckpoint = readJson(path.join(completionOutput, 'checkpoint.json'));
+  if (completedSession.runtime_state !== 'COMPLETED' || completedCheckpoint.runtime_state !== 'COMPLETED') fail('Completion did not generate terminal carriers.');
+  if (completedCheckpoint.parent_checkpoint_id !== checkpoint.checkpoint_id || completedCheckpoint.checkpoint_sequence !== checkpoint.checkpoint_sequence + 1) fail('Generated Completion Checkpoint does not preserve parent/sequence continuity.');
+  if (completion?.responsive_complete !== false || completion?.production_ready !== false) fail('Completion overclaimed Responsive or production authority.');
+  if (fs.readdirSync(temp).some((name) => name.includes('.tmp-'))) fail('Successful publication left a temporary directory.');
 
-  const malformed = path.join(temp, 'malformed.json');
-  fs.writeFileSync(malformed, '{bad json\n');
-  const malformedResult = path.join(temp, 'malformed-result.json');
-  expectStatus('malformed JSON', run(['intake', malformed, malformedResult]), 1, malformedResult, 'blocked');
-  validateIntakeSchema(malformedResult, 'malformed JSON');
-
-  const original = readJson(VALID_SOURCE);
-  const wrongSchema = writeJson('wrong-schema.json', { schema: 'ev4-project-gate-result@1.0.0', result: original });
-  expectStatus('raw Project Gate envelope', run(['intake', wrongSchema, path.join(temp, 'wrong-schema-result.json')]), 1, path.join(temp, 'wrong-schema-result.json'), 'blocked');
-
-  const receiptOnly = writeJson('receipt-only.json', { schema: 'ev4-project-gate-c2b-receipt@1.0.0', package_digest: original.input_authorization.package_digest.value });
-  expectStatus('receipt-only intake', run(['intake', receiptOnly, path.join(temp, 'receipt-result.json')]), 1, path.join(temp, 'receipt-result.json'), 'blocked');
-
-  const candidateMismatch = structuredClone(original);
-  candidateMismatch.selected_candidate_id = 'MISMATCHED-CANDIDATE';
-  expectStatus('candidate mismatch', run(['intake', writeJson('candidate-mismatch.json', candidateMismatch), path.join(temp, 'candidate-result.json')]), 1, path.join(temp, 'candidate-result.json'), 'blocked');
-
-  const lineageMismatch = structuredClone(original);
-  lineageMismatch.decision_lineage = [];
-  expectStatus('lineage mismatch', run(['intake', writeJson('lineage-mismatch.json', lineageMismatch), path.join(temp, 'lineage-result.json')]), 1, path.join(temp, 'lineage-result.json'), 'blocked');
-
-  const mutatedSource = copy('mutated-source.json', VALID_SOURCE);
-  const mutatedCapsule = path.join(temp, 'mutated-capsule.json');
-  expectStatus('mutated source initial intake', run(['intake', mutatedSource, mutatedCapsule]), 0, mutatedCapsule, 'accepted');
-  fs.appendFileSync(mutatedSource, ' ');
-  expectStatus('stale capsule after source-byte mutation', run(['verify-capsule', mutatedSource, mutatedCapsule]), 1, null, 'blocked');
-
-  const checkpointInitial = readJson(VALID_INITIAL_CHECKPOINT);
-  const pausedSession = readJson(VALID_INITIAL_SESSION);
+  const pausedSession = readJson(INITIAL_SESSION_FIXTURE);
+  const pausedCheckpoint = readJson(INITIAL_CHECKPOINT_FIXTURE);
   pausedSession.runtime_state = 'PAUSED';
   pausedSession.current_state = 'PAUSED';
-  pausedSession.resume_target = {
-    workflow_mode: 'APPROVED_HANDOFF_MODE',
-    runtime_state: 'WAITING_FOR_CONFIRMATION'
-  };
-  const pausedFile = writeJson('paused-session.json', pausedSession);
-  const checkpointInitialFile = writeJson('checkpoint-initial.json', checkpointInitial);
-  expectStatus('valid resume', run(['resume', capsule, pausedFile, checkpointInitialFile, path.join(temp, 'resume-result.json')]), 0, path.join(temp, 'resume-result.json'), 'accepted');
+  pausedSession.resume_target = { workflow_mode: pausedCheckpoint.workflow_mode, runtime_state: pausedCheckpoint.runtime_state };
+  pausedSession.last_verified_checkpoint = pausedCheckpoint;
+  const pausedFile = writeJson('resume/session-paused.json', pausedSession);
+  const pausedCheckpointFile = writeJson('resume/checkpoint.json', pausedCheckpoint);
+  const resumeOutput = path.join(temp, 'resume-success');
+  const resume = expect('valid Resume', run(['resume', source, capsule, pausedFile, pausedCheckpointFile, resumeOutput]), 0, 'accepted');
+  if (resume?.source?.runtime_state !== 'PAUSED' || resume?.target?.runtime_state !== pausedCheckpoint.runtime_state) fail('Resume did not restore the recorded target.');
+  if (readJson(path.join(resumeOutput, 'session-state.json')).runtime_state !== pausedCheckpoint.runtime_state) fail('Resume did not generate the restored Session State.');
 
-  const noPriorState = structuredClone(pausedSession);
-  delete noPriorState.session_id;
-  delete noPriorState.resume_target;
-  expectStatus('resume without prior state', run(['resume', capsule, writeJson('no-prior-state.json', noPriorState), checkpointInitialFile, path.join(temp, 'no-prior-result.json')]), 1, path.join(temp, 'no-prior-result.json'), 'blocked');
+  const fabricatedCapsule = writeJson('mutations/fabricated-capsule.json', {
+    schema: 'ev4-builder-intake-result@1.0.0',
+    status: 'accepted',
+    source_file_sha256: '0'.repeat(64),
+    canonical_package_digest: session.package_digest,
+    selected_candidate_id: session.selected_candidate_id,
+    builder_context_schema: 'ev4-builder-context-package@1.0.0'
+  });
+  expectBlockedNoPublication('fabricated Capsule', completionArgs(source, fabricatedCapsule, sessionFile, checkpointFile, COMPLETION_STATUS_FIXTURE, gateFile, path.join(temp, 'blocked-fabricated')), path.join(temp, 'blocked-fabricated'));
 
-  const wrongPackage = structuredClone(pausedSession);
-  wrongPackage.package_digest = '0'.repeat(64);
-  expectStatus('resume package mismatch', run(['resume', capsule, writeJson('wrong-package-session.json', wrongPackage), checkpointInitialFile, path.join(temp, 'wrong-package-result.json')]), 1, path.join(temp, 'wrong-package-result.json'), 'blocked');
+  const editedCapsule = readJson(capsule);
+  editedCapsule.selected_candidate_id = 'FOREIGN-CANDIDATE';
+  const editedCapsuleFile = writeJson('mutations/edited-capsule.json', editedCapsule);
+  expectBlockedNoPublication('edited Capsule', completionArgs(source, editedCapsuleFile, sessionFile, checkpointFile, COMPLETION_STATUS_FIXTURE, gateFile, path.join(temp, 'blocked-edited')), path.join(temp, 'blocked-edited'));
 
-  const droppedBlocker = structuredClone(pausedSession);
-  droppedBlocker.unresolved_evidence = [];
-  expectStatus('resume dropped blocker', run(['resume', capsule, writeJson('dropped-blocker-session.json', droppedBlocker), checkpointInitialFile, path.join(temp, 'dropped-blocker-result.json')]), 1, path.join(temp, 'dropped-blocker-result.json'), 'blocked');
+  const whitespaceSource = copy('mutations/whitespace-builder-input.json', SOURCE_FIXTURE);
+  const whitespaceCapsule = path.join(temp, 'mutations/whitespace-capsule.json');
+  fs.appendFileSync(whitespaceSource, ' ');
+  expect('foreign byte-equivalent intake', run(['intake', whitespaceSource, whitespaceCapsule]), 0, 'accepted');
+  expectBlockedNoPublication('foreign source-byte Capsule', completionArgs(source, whitespaceCapsule, sessionFile, checkpointFile, COMPLETION_STATUS_FIXTURE, gateFile, path.join(temp, 'blocked-foreign-capsule')), path.join(temp, 'blocked-foreign-capsule'));
 
-  const finalSession = copy('session-final.json', VALID_FINAL_SESSION);
-  const finalCheckpoint = copy('checkpoint-final.json', VALID_FINAL_CHECKPOINT);
-  const completionOutput = path.join(temp, 'completion-result.json');
-  const completion = expectStatus(
-    'valid completion',
-    run(['completion', capsule, finalSession, finalCheckpoint, VALID_COMPLETION_STATUS, VALID_COMPLETION_GATE, completionOutput]),
-    0,
-    completionOutput,
-    'accepted'
-  );
-  if (completion?.builder_build_complete !== true || completion?.responsive_complete !== false || completion?.production_ready !== false) {
-    fail('valid completion did not preserve Builder-only scope.');
+  const staleSource = copy('mutations/stale-source.json', SOURCE_FIXTURE);
+  const staleCapsule = path.join(temp, 'mutations/stale-capsule.json');
+  expect('stale source initial intake', run(['intake', staleSource, staleCapsule]), 0, 'accepted');
+  fs.appendFileSync(staleSource, '\n');
+  expectBlockedNoPublication('stale Capsule after source mutation', completionArgs(staleSource, staleCapsule, sessionFile, checkpointFile, COMPLETION_STATUS_FIXTURE, gateFile, path.join(temp, 'blocked-stale')), path.join(temp, 'blocked-stale'));
+
+  for (const [label, mutate] of [
+    ['already COMPLETED Session State', (s) => { s.runtime_state = 'COMPLETED'; s.current_state = 'COMPLETED'; }],
+    ['already COMPLETED Checkpoint', (s, c) => { c.runtime_state = 'COMPLETED'; s.last_verified_checkpoint = c; }],
+    ['WAITING_FOR_CONFIRMATION source', (s, c) => { s.runtime_state = s.current_state = c.runtime_state = 'WAITING_FOR_CONFIRMATION'; }],
+    ['PAUSED source', (s) => { s.runtime_state = s.current_state = 'PAUSED'; s.resume_target = { workflow_mode: 'APPROVED_HANDOFF_MODE', runtime_state: 'BUILD_ACTIVE' }; }],
+    ['EVIDENCE_REQUIRED source', (s, c) => { s.runtime_state = s.current_state = c.runtime_state = 'EVIDENCE_REQUIRED'; }],
+    ['REVIEW_ONLY source', (s, c) => { s.runtime_state = s.current_state = c.runtime_state = 'REVIEW_ONLY'; }],
+    ['intake source', (s, c) => { s.workflow_mode = c.workflow_mode = 'START_INTAKE_MODE'; s.runtime_state = s.current_state = c.runtime_state = 'INTAKE_WAITING'; }],
+    ['fresh-image source', (s, c) => { s.workflow_mode = c.workflow_mode = 'FRESH_IMAGE_MODE_LIMITED'; }]
+  ]) {
+    const current = prepareBuildActivePredecessor();
+    mutate(current.session, current.checkpoint);
+    current.session.last_verified_checkpoint = current.checkpoint;
+    const slug = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    expectBlockedNoPublication(label, completionArgs(
+      source,
+      capsule,
+      writeJson(`mutations/${slug}-session.json`, current.session),
+      writeJson(`mutations/${slug}-checkpoint.json`, current.checkpoint),
+      COMPLETION_STATUS_FIXTURE,
+      writeJson(`mutations/${slug}-gate.json`, boundGate(current.checkpoint, current.session)),
+      path.join(temp, `blocked-${slug}`)
+    ), path.join(temp, `blocked-${slug}`));
   }
 
-  const incompleteCheckpoint = readJson(VALID_FINAL_CHECKPOINT);
-  incompleteCheckpoint.confirmed_action_ids = [];
-  incompleteCheckpoint.unconfirmed_action_ids = ['BATCH-001-A01'];
-  const incompleteSession = readJson(VALID_FINAL_SESSION);
-  incompleteSession.last_verified_checkpoint = incompleteCheckpoint;
-  expectStatus(
-    'incomplete actions block completion',
-    run(['completion', capsule, writeJson('incomplete-session.json', incompleteSession), writeJson('incomplete-checkpoint.json', incompleteCheckpoint), VALID_COMPLETION_STATUS, VALID_COMPLETION_GATE, path.join(temp, 'incomplete-completion.json')]),
-    1,
-    path.join(temp, 'incomplete-completion.json'),
-    'blocked'
-  );
+  const correction = prepareBuildActivePredecessor();
+  correction.session.runtime_state = correction.session.current_state = correction.checkpoint.runtime_state = 'CORRECTION';
+  correction.session.last_verified_checkpoint = correction.checkpoint;
+  expectBlockedNoPublication('CORRECTION source', completionArgs(source, capsule, writeJson('mutations/correction-session.json', correction.session), writeJson('mutations/correction-checkpoint.json', correction.checkpoint), COMPLETION_STATUS_FIXTURE, writeJson('mutations/correction-gate.json', boundGate(correction.checkpoint, correction.session)), path.join(temp, 'blocked-correction')), path.join(temp, 'blocked-correction'));
 
-  const unresolvedCheckpoint = readJson(VALID_FINAL_CHECKPOINT);
-  unresolvedCheckpoint.unresolved_blockers = ['BLOCKER-001'];
-  const unresolvedSession = readJson(VALID_FINAL_SESSION);
-  unresolvedSession.last_verified_checkpoint = unresolvedCheckpoint;
-  unresolvedSession.unresolved_evidence = ['BLOCKER-001'];
-  expectStatus(
-    'unresolved blocker blocks completion',
-    run(['completion', capsule, writeJson('unresolved-session.json', unresolvedSession), writeJson('unresolved-checkpoint.json', unresolvedCheckpoint), VALID_COMPLETION_STATUS, VALID_COMPLETION_GATE, path.join(temp, 'unresolved-completion.json')]),
-    1,
-    path.join(temp, 'unresolved-completion.json'),
-    'blocked'
-  );
+  const badSequence = prepareBuildActivePredecessor();
+  badSequence.checkpoint.parent_checkpoint_id = null;
+  badSequence.session.last_verified_checkpoint = badSequence.checkpoint;
+  expectBlockedNoPublication('invalid Checkpoint parent/sequence', completionArgs(source, capsule, writeJson('mutations/bad-sequence-session.json', badSequence.session), writeJson('mutations/bad-sequence-checkpoint.json', badSequence.checkpoint), COMPLETION_STATUS_FIXTURE, writeJson('mutations/bad-sequence-gate.json', boundGate(badSequence.checkpoint, badSequence.session)), path.join(temp, 'blocked-sequence')), path.join(temp, 'blocked-sequence'));
 
-  const nonCompletedSession = readJson(VALID_FINAL_SESSION);
-  nonCompletedSession.runtime_state = 'BUILD_ACTIVE';
-  nonCompletedSession.current_state = 'BUILD_ACTIVE';
-  nonCompletedSession.last_verified_checkpoint.runtime_state = 'BUILD_ACTIVE';
-  const nonCompletedCheckpoint = structuredClone(nonCompletedSession.last_verified_checkpoint);
-  expectStatus(
-    'non-COMPLETED state blocks completion',
-    run(['completion', capsule, writeJson('non-completed-session.json', nonCompletedSession), writeJson('non-completed-checkpoint.json', nonCompletedCheckpoint), VALID_COMPLETION_STATUS, VALID_COMPLETION_GATE, path.join(temp, 'non-completed-result.json')]),
-    1,
-    path.join(temp, 'non-completed-result.json'),
-    'blocked'
-  );
+  for (const [label, mutate] of [
+    ['required Action deleted', (c) => { c.confirmed_action_ids = []; c.unconfirmed_action_ids = []; }],
+    ['required Action Batch omitted', (c) => { c.batch_id = 'BATCH-FOREIGN'; }],
+    ['foreign Action ID', (c) => { c.confirmed_action_ids = ['BATCH-FOREIGN-A01']; }],
+    ['conflicting Action disposition', (c) => { c.unconfirmed_action_ids = ['BATCH-001-A01']; }],
+    ['duplicate Action disposition', (c) => { c.confirmed_action_ids = ['BATCH-001-A01', 'BATCH-001-A01']; }]
+  ]) {
+    const current = prepareBuildActivePredecessor();
+    mutate(current.checkpoint);
+    current.session.last_verified_checkpoint = current.checkpoint;
+    const slug = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    expectBlockedNoPublication(label, completionArgs(source, capsule, writeJson(`mutations/${slug}-session.json`, current.session), writeJson(`mutations/${slug}-checkpoint.json`, current.checkpoint), COMPLETION_STATUS_FIXTURE, writeJson(`mutations/${slug}-gate.json`, boundGate(current.checkpoint, current.session)), path.join(temp, `blocked-${slug}`)), path.join(temp, `blocked-${slug}`));
+  }
 
-  const detachedText = writeJson('detached-success-text.json', { success: true, message: 'Builder completed' });
-  expectStatus('detached success text cannot complete', run(['completion', capsule, detachedText, finalCheckpoint, VALID_COMPLETION_STATUS, VALID_COMPLETION_GATE, path.join(temp, 'detached-result.json')]), 1, path.join(temp, 'detached-result.json'), 'blocked');
+  for (const [label, field, value] of [
+    ['Gate wrong candidate', 'selected_candidate_id', 'FOREIGN-CANDIDATE'],
+    ['Gate wrong package', 'package_digest', '0'.repeat(64)],
+    ['Gate wrong Session', 'session_id', 'SESSION-FOREIGN'],
+    ['Gate stale Checkpoint', 'checkpoint_id', 'CHECKPOINT-FOREIGN'],
+    ['Gate stale sequence', 'checkpoint_sequence', 999]
+  ]) {
+    const gate = boundGate(checkpoint, session);
+    gate[field] = value;
+    const slug = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    expectBlockedNoPublication(label, completionArgs(source, capsule, sessionFile, checkpointFile, COMPLETION_STATUS_FIXTURE, writeJson(`mutations/${slug}.json`, gate), path.join(temp, `blocked-${slug}`)), path.join(temp, `blocked-${slug}`));
+  }
+
+  const incompleteStatus = readJson(COMPLETION_STATUS_FIXTURE);
+  incompleteStatus.states.structure_built = false;
+  expectBlockedNoPublication('Schema-valid semantically incomplete Completion Status', completionArgs(source, capsule, sessionFile, checkpointFile, writeJson('mutations/incomplete-status.json', incompleteStatus), gateFile, path.join(temp, 'blocked-status')), path.join(temp, 'blocked-status'));
+
+  const wrongPackageSession = structuredClone(pausedSession);
+  wrongPackageSession.package_digest = '0'.repeat(64);
+  expectBlockedNoPublication('Resume package mismatch', ['resume', source, capsule, writeJson('mutations/resume-wrong-package.json', wrongPackageSession), pausedCheckpointFile, path.join(temp, 'blocked-resume-package')], path.join(temp, 'blocked-resume-package'));
+
+  const droppedBlockerSession = structuredClone(pausedSession);
+  droppedBlockerSession.unresolved_evidence = [];
+  expectBlockedNoPublication('Resume disappeared blocker', ['resume', source, capsule, writeJson('mutations/resume-dropped-blocker.json', droppedBlockerSession), pausedCheckpointFile, path.join(temp, 'blocked-resume-blocker')], path.join(temp, 'blocked-resume-blocker'));
+
+  const nonPaused = structuredClone(pausedSession);
+  nonPaused.runtime_state = nonPaused.current_state = 'BUILD_ACTIVE';
+  delete nonPaused.resume_target;
+  expectBlockedNoPublication('Resume non-PAUSED source', ['resume', source, capsule, writeJson('mutations/resume-non-paused.json', nonPaused), pausedCheckpointFile, path.join(temp, 'blocked-resume-non-paused')], path.join(temp, 'blocked-resume-non-paused'));
+
+  const noTarget = structuredClone(pausedSession);
+  delete noTarget.resume_target;
+  expectBlockedNoPublication('Resume missing target', ['resume', source, capsule, writeJson('mutations/resume-no-target.json', noTarget), pausedCheckpointFile, path.join(temp, 'blocked-resume-no-target')], path.join(temp, 'blocked-resume-no-target'));
+
+  const resumeCompleted = structuredClone(pausedSession);
+  resumeCompleted.resume_target = { workflow_mode: 'APPROVED_HANDOFF_MODE', runtime_state: 'COMPLETED' };
+  expectBlockedNoPublication('Resume to COMPLETED', ['resume', source, capsule, writeJson('mutations/resume-completed.json', resumeCompleted), pausedCheckpointFile, path.join(temp, 'blocked-resume-completed')], path.join(temp, 'blocked-resume-completed'));
+
+  const oldResumeInvocation = run(['resume', capsule, pausedFile, pausedCheckpointFile, path.join(temp, 'blocked-resume-no-input')]);
+  if (oldResumeInvocation.status === 0) fail('Resume without actual Builder Input unexpectedly succeeded.');
+
+  const replayOutput = path.join(temp, 'completion-replay');
+  expectBlockedNoPublication('terminal carrier cannot replay Completion', completionArgs(source, capsule, path.join(completionOutput, 'session-state.json'), path.join(completionOutput, 'checkpoint.json'), COMPLETION_STATUS_FIXTURE, gateFile, replayOutput), replayOutput);
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
 
 if (failures.length > 0) {
-  console.error('Builder Inspector tests failed:');
+  console.error('Builder Inspector bounded transition tests failed:');
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
-
-console.log('Builder Inspector intake, capsule, resume, and completion tests passed.');
+console.log('Builder Inspector bounded Resume/Completion transition and mutation tests passed.');
