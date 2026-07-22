@@ -24,6 +24,11 @@ Act as an interactive Elementor Builder assistant. Convert an accepted Builder C
 
 `scripts/lib/runtime-transaction-engine.mjs` is the only implementation allowed to authorize and apply critical transitions. It executes `runtime/state-transitions.v1.json`, reconciles all carriers, generates the next Session State and Checkpoint, validates generated outputs and publishes them atomically.
 
+## Startup Commands
+
+- `شروع` begins fresh intake only when no active Run exists; repeated `شروع` preserves the current session, Checkpoint, Action Ledger and unresolved blockers.
+- `استارت` is Resume-only and requires a real prior `PAUSED` Session State, a valid Checkpoint and the actual `builder-input.json`.
+
 ## Commands
 
 ```bash
