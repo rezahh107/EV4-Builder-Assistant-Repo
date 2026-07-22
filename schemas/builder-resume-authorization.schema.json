@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/builder-resume-authorization.schema.json",
+  "title": "EV4 Builder Personal Resume Authorization",
+  "type": "object",
+  "required": ["schema", "status", "session_id", "canonical_package_digest", "selected_candidate_id", "resume_workflow_mode", "resume_runtime_state", "source_state_capsule_sha256", "blocking_diagnostics", "production_ready"],
+  "properties": {
+    "schema": {"const": "ev4-builder-resume-authorization@1.0.0"},
+    "status": {"enum": ["accepted", "blocked"]},
+    "session_id": {"type": ["string", "null"]},
+    "canonical_package_digest": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "selected_candidate_id": {"type": ["string", "null"]},
+    "resume_workflow_mode": {"type": ["string", "null"], "enum": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED", null]},
+    "resume_runtime_state": {"type": ["string", "null"], "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", null]},
+    "source_state_capsule_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "blocking_diagnostics": {"type": "array", "items": {"$ref": "builder-intake-authorization.schema.json#/$defs/diagnostic"}},
+    "production_ready": {"const": false}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "accepted"}}, "required": ["status"]}, "then": {"properties": {"session_id": {"type": "string", "minLength": 1}, "canonical_package_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "selected_candidate_id": {"type": "string", "minLength": 1}, "resume_workflow_mode": {"type": "string"}, "resume_runtime_state": {"type": "string"}, "source_state_capsule_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "blocking_diagnostics": {"maxItems": 0}}}},
+    {"if": {"properties": {"status": {"const": "blocked"}}, "required": ["status"]}, "then": {"properties": {"blocking_diagnostics": {"minItems": 1}}}}
+  ],
+  "additionalProperties": false
+}
