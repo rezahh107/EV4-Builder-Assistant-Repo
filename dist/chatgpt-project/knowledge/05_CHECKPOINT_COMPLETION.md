@@ -5,33 +5,42 @@ Checkpoint identity binds:
 - `session_id`;
 - canonical `package_digest`;
 - `selected_candidate_id`;
-- `batch_id` and action IDs;
+- `batch_id` and Action IDs;
 - assertions and retained evidence;
 - unresolved blockers;
 - legal workflow mode and runtime state.
 
-Completion is valid only after `completion_validation_passed` from `APPROVED_HANDOFF_MODE / BUILD_ACTIVE`.
+Completion is a bounded transition from `APPROVED_HANDOFF_MODE / BUILD_ACTIVE` to `APPROVED_HANDOFF_MODE / COMPLETED`. Caller-authored `COMPLETED` Session State or Checkpoint input is rejected.
 
-Required conditions:
+Before transition, the shared module must:
 
-```yaml
-workflow_mode: APPROVED_HANDOFF_MODE
-runtime_state: COMPLETED
-final_checkpoint_valid: true
-package_digest_matches: true
-selected_candidate_matches: true
-required_actions_complete: true
-unresolved_blocking_evidence_count: 0
-completion_status_valid: true
-completion_gate_valid: true
-```
+- revalidate actual `builder-input.json` and its derived Intake Capsule;
+- verify exact session, package, candidate and predecessor Checkpoint identity;
+- reconcile every required Action in `builder-input.json:first_builder_batch.actions` with the final Checkpoint;
+- reject omitted, foreign, duplicate, conflicting or unconfirmed Action IDs;
+- enforce the active desktop Builder Completion Status semantics;
+- bind Completion Gate to candidate, package digest, session ID, Checkpoint ID and Checkpoint sequence;
+- require zero unresolved blocking evidence.
 
 Canonical command:
 
 ```bash
-node scripts/builder-inspector.mjs completion builder-intake-result.json session-state.json checkpoint.json completion-status.json completion-gate.json completion-result.json
+node scripts/builder-inspector.mjs completion \
+  builder-input.json \
+  builder-intake-result.json \
+  session-state.json \
+  checkpoint.json \
+  completion-status.json \
+  completion-gate.json \
+  completion-output-directory
 ```
 
-A completion report request, detached success text, incomplete actions, stale Checkpoint, candidate mismatch, package mismatch, or unresolved blocker cannot produce Completion.
+After every guard passes, the Inspector derives the next `COMPLETED` Session State and Checkpoint, validates generated carriers, and atomically publishes them with `completion-result.json`. A failed transition publishes no terminal carrier and removes temporary output.
 
-Builder completion never implies Responsive completion or production readiness.
+Builder completion never implies Responsive completion or production readiness:
+
+```yaml
+builder_build_complete: true
+responsive_complete: false
+production_ready: false
+```
