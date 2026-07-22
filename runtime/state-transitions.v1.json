@@ -91,7 +91,18 @@
       "id": "resume",
       "from": {"workflow_mode": "ANY", "runtime_state": "PAUSED"},
       "trigger": "استارت",
-      "guards": ["prior_initialized_state_exists", "session_id_matches", "package_digest_matches", "candidate_matches", "checkpoint_valid", "unresolved_blockers_preserved"],
+      "guards": [
+        "builder_input_verified",
+        "intake_capsule_verified",
+        "prior_initialized_state_exists",
+        "session_id_matches",
+        "package_digest_matches",
+        "candidate_matches",
+        "checkpoint_valid",
+        "checkpoint_and_state_consistent",
+        "unresolved_blockers_preserved",
+        "resume_target_legal"
+      ],
       "to": "PREVIOUS_RESUMABLE_STATE"
     },
     {
@@ -119,7 +130,19 @@
       "id": "complete-builder",
       "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"},
       "trigger": "completion_validation_passed",
-      "guards": ["final_checkpoint_valid", "package_digest_matches", "candidate_matches", "required_actions_complete", "unresolved_blocking_evidence_count_zero", "completion_status_valid", "completion_gate_valid"],
+      "guards": [
+        "builder_input_verified",
+        "intake_capsule_verified",
+        "predecessor_checkpoint_valid",
+        "package_digest_matches",
+        "candidate_matches",
+        "session_id_matches",
+        "checkpoint_sequence_valid",
+        "required_actions_reconciled",
+        "unresolved_blocking_evidence_count_zero",
+        "completion_status_valid",
+        "completion_gate_bound"
+      ],
       "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "COMPLETED"}
     }
   ],
@@ -130,6 +153,9 @@
     "resume_without_prior_initialized_state",
     "start_command_fabricates_run",
     "unresolved_blocker_disappears",
-    "intake_or_correction_direct_jump_to_completed"
+    "intake_or_correction_direct_jump_to_completed",
+    "caller_authored_completed_carrier_as_transition_input",
+    "capsule_only_resume_or_completion_authorization",
+    "required_action_disappears_by_omission"
   ]
 }
