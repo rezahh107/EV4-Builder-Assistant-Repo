@@ -11,7 +11,9 @@
     "filename_matching_is_sufficient_for_acceptance","canonical_receipt_filename_hint",
     "receipt_role","receipt_required","receipt_is_semantic_input",
     "receipt_may_complete_or_modify_semantic_input","canonical_personal_acquisition_mode",
-    "canonical_personal_source","first_authorized_operation","pre_validation_workflow_mode",
+    "canonical_personal_source","personal_intake_authorization_schema",
+    "personal_intake_authorization_filename_hint","personal_intake_authorization_required_for_build_active",
+    "personal_intake_inspector","first_authorized_operation","pre_validation_workflow_mode",
     "pre_validation_runtime_state","validation_runtime_state","blocked_runtime_state",
     "approved_workflow_mode","approved_runtime_state","exact_bare_start_response",
     "trigger_policy","routing_cases","attachment_first","repository_maintenance_exception",
@@ -37,6 +39,10 @@
     "receipt_may_complete_or_modify_semantic_input": {"const":false},
     "canonical_personal_acquisition_mode": {"const":"project_gate_standalone_builder_input"},
     "canonical_personal_source": {"const":"EV4-Project-Gate / ce-to-builder"},
+    "personal_intake_authorization_schema": {"const":"ev4-builder-intake-authorization@1.0.0"},
+    "personal_intake_authorization_filename_hint": {"const":"builder-intake-authorization.json"},
+    "personal_intake_authorization_required_for_build_active": {"const":true},
+    "personal_intake_inspector": {"const":"scripts/builder-inspector.mjs"},
     "first_authorized_operation": {"const":"builder_context_package_validation"},
     "pre_validation_workflow_mode": {"const":"START_INTAKE_MODE"},
     "pre_validation_runtime_state": {"const":"INTAKE_WAITING"},
@@ -56,11 +62,25 @@
     },
     "routing_cases": {
       "type":"object","additionalProperties":false,
-      "required":["bare_start_no_input","valid_builder_input_only","valid_builder_input_plus_receipt","receipt_only","invalid_or_wrong_schema","blocked_status_or_authorization","valid_optional_gaps","multiple_candidates","raw_project_gate_envelope","raw_ce_or_ce_builder_executable","screenshot_only","valid_continuation_checkpoint"],
+      "required":["bare_start_no_input","valid_builder_input_only","valid_builder_input_plus_receipt","valid_builder_input_plus_authorization","receipt_only","invalid_or_wrong_schema","blocked_status_or_authorization","valid_optional_gaps","multiple_candidates","raw_project_gate_envelope","raw_ce_or_ce_builder_executable","screenshot_only","valid_continuation_checkpoint"],
       "properties":{
         "bare_start_no_input":{"type":"object"},
         "valid_builder_input_only":{"type":"object"},
         "valid_builder_input_plus_receipt":{"type":"object"},
+        "valid_builder_input_plus_authorization":{
+          "type":"object","additionalProperties":false,
+          "required":["route","required_authorization_schema","accepted_status_required","exact_source_byte_binding_required","canonical_package_digest_binding_required","selected_candidate_binding_required","approved_workflow_mode","approved_runtime_state"],
+          "properties":{
+            "route":{"const":"validate_matching_intake_authorization"},
+            "required_authorization_schema":{"const":"ev4-builder-intake-authorization@1.0.0"},
+            "accepted_status_required":{"const":true},
+            "exact_source_byte_binding_required":{"const":true},
+            "canonical_package_digest_binding_required":{"const":true},
+            "selected_candidate_binding_required":{"const":true},
+            "approved_workflow_mode":{"const":"APPROVED_HANDOFF_MODE"},
+            "approved_runtime_state":{"const":"BUILD_ACTIVE"}
+          }
+        },
         "receipt_only":{"type":"object"},
         "invalid_or_wrong_schema":{"type":"object"},
         "blocked_status_or_authorization":{"type":"object"},
@@ -92,12 +112,8 @@
         "start_token_activates_builder_session":{"const":false}
       }
     },
-    "active_startup_routes": {
-      "type":"array","const":["project_gate_standalone_builder_input","explicit_technical_direct_path"]
-    },
-    "forbidden_active_routes": {
-      "type":"array","const":["/builder-feed-export","manual_nested_project_gate_output_extraction"]
-    },
+    "active_startup_routes": {"type":"array","const":["project_gate_standalone_builder_input","explicit_technical_direct_path"]},
+    "forbidden_active_routes": {"type":"array","const":["/builder-feed-export","manual_nested_project_gate_output_extraction"]},
     "pre_validation_forbidden_operations": {
       "type":"array","minItems":20,"maxItems":20,"uniqueItems":true,
       "items":{
