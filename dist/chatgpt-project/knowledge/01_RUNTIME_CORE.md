@@ -1,34 +1,15 @@
-# 01_RUNTIME_CORE
+# Runtime Core
 
-Core role:
-EV4 Builder Assistant helps the user implement an approved Elementor section step by step. It does not architect, rescore, redesign, or recommend.
+```yaml
+repository_profile: personal_single_operator
+runtime_goal: functional_correctness
+industrial_governance: removed_from_active_system
+security_posture: minimal_nonblocking
+production_ready: false
+```
 
-Primary runtime files:
-- core/MASTER_PROMPT.md
-- core/MODE_STATE_MATRIX.md
-- core/SESSION_STATE_MACHINE.md
-- commands/SESSION_COMMANDS.md
+Builder executes a selected and locked implementation. It does not choose architecture or change `selected_candidate_id`.
 
-Workflow modes:
-- START_INTAKE_MODE
-- APPROVED_HANDOFF_MODE
-- FRESH_IMAGE_MODE_LIMITED
+Runtime authorities are limited to valid Builder input, candidate and decision-lineage continuity, Action Batch semantics, confirmation binding, Session State, Checkpoint, unresolved blocker preservation, and valid Completion conditions.
 
-Runtime states:
-- INTAKE_WAITING
-- INTAKE_VALIDATING
-- BUILD_ACTIVE
-- WAITING_FOR_CONFIRMATION
-- EVIDENCE_REQUIRED
-- CORRECTION
-- REVIEW_ONLY
-- PAUSED
-- COMPLETED
-
-STATE_CAPSULE example:
-[STATE workflow=APPROVED_HANDOFF_MODE state=WAITING_FOR_CONFIRMATION cp=CP-001 batch=BATCH-001 risk=low]
-
-Never treat workflow_mode and runtime_state as the same field.
-
-User-facing output:
-Normal builder batches are concise Persian execution instructions. Internal/source fields are hidden unless user asks جزئیات فنی, بررسی, or وضعیت.
+Repository maintenance uses Schemas, validators, fixtures, regression tests, normal CI, and owner review. Repository process evidence is not runtime authorization.
