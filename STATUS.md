@@ -20,6 +20,7 @@ production_ready: false
 base_branch: main
 starting_main_sha: e43879f3a30a59921da70964a530ef5617791d7f
 feature_branch: feat/lean-personal-runtime
+pull_request: 64
 delivery_model: one_consolidated_pull_request
 merge_performed: false
 deployment_performed: false
@@ -51,14 +52,18 @@ Repository CI, PR review state, independent review, governance receipts, merge e
 ```yaml
 connector_write_evidence: confirmed
 local_validation_environment: unavailable
-normal_ci_status: pending_pull_request_run
-fixture_smoke_status: pending_ci_execution
+normal_ci_status: passing_on_pull_request
+last_confirmed_passing_head: 1d489bded43014b7fd02353c0a36c4356009cb33
+last_confirmed_workflow_run: 29930951595
+validated_command: npm run validate
+fixture_smoke_status: passed_in_central_validation
 real_elementor_execution: not_verified
 owner_local_pilot_required: true
+current_head_rule: use_live_PR_64_checks_as_final_authority
 ```
 
-No validation success is claimed until GitHub Actions evidence is available.
+The passing run included checkout, `npm ci`, and the complete central functional validation suite. This mutable Status file is not runtime authorization; the live PR check on the current Head is the final repository-validation evidence.
 
 ## Remaining Functional Work
 
-No known Builder-repository architecture work is intentionally deferred. Any CI failure or external contract incompatibility discovered by the PR remains a real blocker until repaired.
+No known Builder-repository architecture work is intentionally deferred. Project Gate currently pins an older Builder commit and requires a separate post-Merge pin update outside this repository. Real Elementor use still requires the Owner Local Pilot.
