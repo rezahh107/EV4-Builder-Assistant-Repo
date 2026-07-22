@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "EV4 Action Batch Contract",
+  "description": "Lean personal runtime Action Batch. Ordinary actions carry execution-critical metadata only; extended rationale and reversibility fields are conditional for high-risk or difficult-to-reverse actions.",
   "type": "object",
   "required": [
     "schema",
@@ -22,7 +23,8 @@
       "items": {
         "type": "string",
         "minLength": 1
-      }
+      },
+      "uniqueItems": true
     },
     "max_normal_actions": {
       "type": "integer",
@@ -49,112 +51,63 @@
           "control_family",
           "control_name",
           "responsive_scope",
-          "risk_level",
-          "evidence_required",
-          "confirmation_scope",
-          "allowed_class_source",
-          "forbidden_changes",
           "expected_result"
         ],
         "properties": {
-          "action_id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "target_node": {
-            "type": "string",
-            "minLength": 1
-          },
-          "element_type": {
-            "type": "string",
-            "minLength": 1
-          },
-          "class_name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "class_scope": {
-            "enum": [
-              "Local Classes",
-              "Global Classes"
-            ],
-            "description": "Elementor UI placement for class_name. Required whenever class_name is present so user-facing output can say Local Classes or Global Classes."
-          },
-          "class_operation": {
-            "enum": [
-              "none",
-              "add",
-              "remove",
-              "preserve"
-            ]
-          },
-          "control_family": {
-            "type": "string",
-            "minLength": 1
-          },
-          "control_name": {
-            "type": "string",
-            "minLength": 1
-          },
+          "action_id": { "type": "string", "minLength": 1 },
+          "target_node": { "type": "string", "minLength": 1 },
+          "element_type": { "type": "string", "minLength": 1 },
+          "class_name": { "type": "string", "minLength": 1 },
+          "class_scope": { "enum": ["Local Classes", "Global Classes"] },
+          "class_operation": { "enum": ["none", "add", "remove", "preserve"] },
+          "control_family": { "type": "string", "minLength": 1 },
+          "control_name": { "type": "string", "minLength": 1 },
           "value": {},
-          "unit": {
-            "type": "string"
-          },
-          "unit_policy_id": {
-            "type": "string"
-          },
-          "responsive_scope": {
-            "enum": [
-              "desktop",
-              "tablet",
-              "mobile",
-              "global"
-            ]
-          },
-          "risk_level": {
-            "enum": [
-              "low",
-              "medium",
-              "high"
-            ]
-          },
-          "evidence_required": {
-            "type": "array"
-          },
-          "confirmation_scope": {
-            "type": "string"
-          },
-          "allowed_class_source": {
-            "enum": [
-              "approved_class_map",
-              "none"
-            ]
-          },
-          "forbidden_changes": {
-            "type": "array"
-          },
-          "expected_result": {
-            "type": "string",
-            "minLength": 1
-          },
-          "claims_responsive_behavior": {
-            "type": "boolean"
-          },
+          "value_source": { "type": "string", "minLength": 1 },
+          "unit": { "type": "string", "minLength": 1 },
+          "unit_policy_id": { "type": "string" },
+          "responsive_scope": { "enum": ["desktop", "tablet", "mobile", "global"] },
+          "risk_level": { "enum": ["low", "medium", "high"] },
+          "difficult_to_reverse": { "type": "boolean" },
+          "evidence_required": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "confirmation_scope": { "type": "string", "minLength": 1 },
+          "allowed_class_source": { "enum": ["approved_class_map", "none"] },
+          "forbidden_changes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "rationale": { "type": "string", "minLength": 1 },
+          "reversibility_analysis": { "type": "string", "minLength": 1 },
+          "safety_decision": { "enum": ["proceed", "proceed_with_checkpoint", "block"] },
+          "expected_result": { "type": "string", "minLength": 1 },
+          "claims_responsive_behavior": { "type": "boolean" },
           "decision_lineage_ref": {
             "$ref": "#/$defs/decision_lineage_ref",
-            "description": "Optional Kernel-governed decision lineage carried by actions that execute a locked upstream decision. Non-Kernel-governed mechanical actions may omit it."
+            "description": "Optional Kernel-governed decision lineage carried by actions that execute a locked upstream decision."
           }
         },
         "allOf": [
           {
+            "if": { "required": ["class_name"] },
+            "then": { "required": ["class_scope"] }
+          },
+          {
+            "if": { "properties": { "value": { "type": "number" } }, "required": ["value"] },
+            "then": { "required": ["unit", "value_source"] }
+          },
+          {
             "if": {
-              "required": [
-                "class_name"
+              "anyOf": [
+                { "properties": { "risk_level": { "const": "high" } }, "required": ["risk_level"] },
+                { "properties": { "difficult_to_reverse": { "const": true } }, "required": ["difficult_to_reverse"] }
               ]
             },
             "then": {
               "required": [
-                "class_scope"
+                "risk_level",
+                "rationale",
+                "reversibility_analysis",
+                "safety_decision",
+                "evidence_required",
+                "confirmation_scope",
+                "forbidden_changes"
               ]
             }
           }
@@ -177,44 +130,13 @@
         "consumer_stage"
       ],
       "properties": {
-        "decision_family": {
-          "type": "string",
-          "minLength": 1
-        },
-        "decision_card_ref": {
-          "type": "string",
-          "minLength": 1
-        },
-        "selected_option": {
-          "type": "string",
-          "minLength": 1
-        },
-        "rejected_options": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "evidence_refs": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "evidence_state": {
-          "enum": [
-            "validated",
-            "insufficient_evidence",
-            "pending_correction"
-          ]
-        },
-        "consumer_stage": {
-          "const": "builder"
-        }
+        "decision_family": { "type": "string", "minLength": 1 },
+        "decision_card_ref": { "type": "string", "minLength": 1 },
+        "selected_option": { "type": "string", "minLength": 1 },
+        "rejected_options": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "evidence_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "evidence_state": { "enum": ["validated", "insufficient_evidence", "pending_correction"] },
+        "consumer_stage": { "const": "builder" }
       },
       "additionalProperties": false
     }
