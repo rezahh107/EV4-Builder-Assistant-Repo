@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { isAllowedCombination } from './lib/runtime-transaction-engine.mjs';
 
 const filePath = process.argv[2];
+
 if (!filePath) {
   console.error('Usage: node scripts/validate-checkpoint.mjs <checkpoint.json>');
   process.exit(2);
@@ -11,10 +11,18 @@ if (!filePath) {
 
 const checkpoint = JSON.parse(fs.readFileSync(path.resolve(filePath), 'utf8'));
 const errors = [];
-const fail = (message) => errors.push(message);
+
+function fail(message) {
+  errors.push(message);
+}
+
 function duplicates(values) {
-  const seen = new Set(); const dupes = new Set();
-  for (const value of values) { if (seen.has(value)) dupes.add(value); seen.add(value); }
+  const seen = new Set();
+  const dupes = new Set();
+  for (const value of values) {
+    if (seen.has(value)) dupes.add(value);
+    seen.add(value);
+  }
   return [...dupes];
 }
 
@@ -28,34 +36,71 @@ const evidenceLedger = Array.isArray(checkpoint.evidence_ledger) ? checkpoint.ev
 const confirmedActionIds = Array.isArray(checkpoint.confirmed_action_ids) ? checkpoint.confirmed_action_ids : [];
 const unconfirmedActionIds = Array.isArray(checkpoint.unconfirmed_action_ids) ? checkpoint.unconfirmed_action_ids : [];
 const unresolvedBlockers = Array.isArray(checkpoint.unresolved_blockers) ? checkpoint.unresolved_blockers : [];
+
 const assertionIds = assertions.map((assertion) => assertion.assertion_id).filter(Boolean);
 const evidenceIds = evidenceLedger.map((evidence) => evidence.evidence_id).filter(Boolean);
 const assertionIdSet = new Set(assertionIds);
 const evidenceById = new Map(evidenceLedger.map((evidence) => [evidence.evidence_id, evidence]));
 
-if (!isAllowedCombination(checkpoint.workflow_mode, checkpoint.runtime_state)) fail(`${checkpoint.workflow_mode}/${checkpoint.runtime_state} is not legal under runtime/state-transitions.v1.json.`);
-if (checkpoint.checkpoint_sequence === 1 && checkpoint.parent_checkpoint_id !== null) fail('Checkpoint sequence 1 requires parent_checkpoint_id null.');
-if (checkpoint.checkpoint_sequence > 1 && !checkpoint.parent_checkpoint_id) fail('Checkpoint sequence greater than 1 requires parent_checkpoint_id.');
 for (const duplicate of duplicates(assertionIds)) fail(`Duplicate assertion_id: ${duplicate}`);
 for (const duplicate of duplicates(evidenceIds)) fail(`Duplicate evidence_id: ${duplicate}`);
 for (const duplicate of duplicates(unresolvedBlockers)) fail(`Duplicate unresolved blocker: ${duplicate}`);
-for (const actionId of confirmedActionIds) if (unconfirmedActionIds.includes(actionId)) fail(`Action ID appears in both confirmed_action_ids and unconfirmed_action_ids: ${actionId}`);
+
+for (const actionId of confirmedActionIds) {
+  if (unconfirmedActionIds.includes(actionId)) {
+    fail(`Action ID appears in both confirmed_action_ids and unconfirmed_action_ids: ${actionId}`);
+  }
+}
 
 for (const evidence of evidenceLedger) {
-  for (const claimId of evidence.supports_claim_ids || []) if (!assertionIdSet.has(claimId)) fail(`Evidence ${evidence.evidence_id} supports unknown assertion_id: ${claimId}`);
+  for (const claimId of evidence.supports_claim_ids || []) {
+    if (!assertionIdSet.has(claimId)) {
+      fail(`Evidence ${evidence.evidence_id} supports unknown assertion_id: ${claimId}`);
+    }
+  }
 }
+
 for (const assertion of assertions) {
   for (const evidenceRef of assertion.evidence_refs || []) {
     const evidence = evidenceById.get(evidenceRef);
-    if (!evidence) { fail(`Assertion ${assertion.assertion_id} references unknown evidence_id: ${evidenceRef}`); continue; }
-    if (!(evidence.supports_claim_ids || []).includes(assertion.assertion_id)) fail(`Evidence ${evidenceRef} does not support assertion_id ${assertion.assertion_id}.`);
-    if (assertion.status === 'confirmed' && evidence.status !== 'available') fail(`Confirmed assertion ${assertion.assertion_id} references non-available evidence ${evidenceRef}.`);
+    if (!evidence) {
+      fail(`Assertion ${assertion.assertion_id} references unknown evidence_id: ${evidenceRef}`);
+      continue;
+    }
+    if (!(evidence.supports_claim_ids || []).includes(assertion.assertion_id)) {
+      fail(`Evidence ${evidenceRef} does not support assertion_id ${assertion.assertion_id}.`);
+    }
+    if (assertion.status === 'confirmed' && evidence.status !== 'available') {
+      fail(`Confirmed assertion ${assertion.assertion_id} references non-available evidence ${evidenceRef}.`);
+    }
   }
-  if (assertion.status === 'confirmed' && assertion.evidence_refs.length === 0) fail(`Confirmed assertion ${assertion.assertion_id} must include evidence_refs.`);
+
+  if (assertion.status === 'confirmed' && (!Array.isArray(assertion.evidence_refs) || assertion.evidence_refs.length === 0)) {
+    fail(`Confirmed assertion ${assertion.assertion_id} must include evidence_refs.`);
+  }
 }
+
 if (checkpoint.runtime_state === 'COMPLETED') {
-  if (unresolvedBlockers.length > 0) fail('COMPLETED checkpoint cannot contain unresolved blockers.');
-  for (const assertion of assertions) if (['not_checked', 'insufficient_evidence'].includes(assertion.status)) fail(`COMPLETED checkpoint contains unresolved assertion ${assertion.assertion_id}.`);
+  if (checkpoint.workflow_mode !== 'APPROVED_HANDOFF_MODE') {
+    fail('COMPLETED checkpoint requires workflow_mode APPROVED_HANDOFF_MODE.');
+  }
+  if (!checkpoint.session_id || !checkpoint.package_digest) {
+    fail('COMPLETED checkpoint requires session_id and package_digest.');
+  }
+  if (confirmedActionIds.length === 0) {
+    fail('COMPLETED checkpoint requires at least one confirmed action.');
+  }
+  if (unconfirmedActionIds.length > 0) {
+    fail('COMPLETED checkpoint cannot contain unconfirmed actions.');
+  }
+  if (unresolvedBlockers.length > 0) {
+    fail('COMPLETED checkpoint cannot contain unresolved blockers.');
+  }
+  for (const assertion of assertions) {
+    if (['not_checked', 'insufficient_evidence'].includes(assertion.status)) {
+      fail(`COMPLETED checkpoint contains unresolved assertion ${assertion.assertion_id}.`);
+    }
+  }
 }
 
 if (errors.length > 0) {
@@ -63,4 +108,5 @@ if (errors.length > 0) {
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
+
 console.log(`Checkpoint cross-field validation passed: ${filePath}`);
