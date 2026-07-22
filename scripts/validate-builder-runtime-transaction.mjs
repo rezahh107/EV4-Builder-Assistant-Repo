@@ -1,0 +1,989 @@
+#!/usr/bin/env node
+import fs from "node:fs";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import {
+  computeCanonicalDigest,
+  computePackageDigest,
+  sha256Bytes,
+  sortedCanonicalJson,
+} from "./lib/canonical-builder-package.mjs";
+
+const ROOT = process.cwd();
+const DEFAULT = "tests/valid/runtime-transaction/complete-transaction.json";
+const MUTATIONS = "tests/invalid/runtime-transaction/mutations.json";
+const HASH = /^[a-f0-9]{64}$/;
+const NPX = process.platform === "win32" ? "npx.cmd" : "npx";
+const keys = {
+  envelope: [
+    "schema",
+    "fixture_classification",
+    "transaction_id",
+    "source",
+    "carriers",
+    "identity",
+    "confirmation",
+    "bindings",
+    "publication",
+  ],
+  source: [
+    "source_kind",
+    "captured_artifact_ref",
+    "captured_file_sha256",
+    "audit_receipt_paths",
+  ],
+  carriers: [
+    "builder_package_ref",
+    "action_batch_ref",
+    "initial_session_state_ref",
+    "final_session_state_ref",
+    "initial_checkpoint_ref",
+    "final_checkpoint_ref",
+    "completion_status_ref",
+    "completion_gate_ref",
+  ],
+  identity: ["session_id", "package_digest", "action_set_digest"],
+  digest: ["algorithm", "scope", "value"],
+  confirmation: [
+    "confirmation_id",
+    "session_id",
+    "package_digest",
+    "confirmed_action_ids",
+    "confirmed_action_digests",
+    "user_token",
+  ],
+  bindings: [
+    "initial_session",
+    "final_session",
+    "initial_checkpoint",
+    "final_checkpoint",
+    "completion",
+  ],
+  session: ["session_id", "package_digest", "carrier_sha256"],
+  checkpoint: ["session_id", "action_set_digest", "carrier_sha256"],
+  completion: [
+    "session_id",
+    "package_digest",
+    "final_session_sha256",
+    "final_checkpoint_id",
+    "session_complete",
+    "builder_build_complete",
+  ],
+  publication: [
+    "source_path",
+    "output_path",
+    "temporary_path",
+    "construction_complete",
+    "validation_passed",
+    "structural_failure",
+    "validated_before_publish",
+    "atomic_publish",
+    "artifact_published",
+    "artifact_must_not_be_consumed",
+    "prior_valid_output_preserved",
+  ],
+};
+const actionFields = [
+  "action_id",
+  "target_node",
+  "element_type",
+  "control_family",
+  "control_name",
+  "responsive_scope",
+  "risk_level",
+  "evidence_required",
+  "confirmation_scope",
+  "allowed_class_source",
+  "forbidden_changes",
+  "expected_result",
+];
+const sessionFields = [
+  "schema",
+  "current_state",
+  "selected_candidate_id",
+  "last_verified_checkpoint",
+  "max_actions_per_turn",
+];
+const checkpointFields = [
+  "schema",
+  "checkpoint_id",
+  "checkpoint_sequence",
+  "parent_checkpoint_id",
+  "package_id",
+  "package_sha256",
+  "selected_candidate_id",
+  "workflow_mode",
+  "runtime_state",
+  "batch_id",
+  "confirmed_action_ids",
+  "unconfirmed_action_ids",
+  "assertions",
+  "evidence_ledger",
+  "retry_policy",
+  "created_at",
+  "created_from",
+];
+const add = (e, code, message) => e.push({ code, message });
+const clone = (v) => JSON.parse(JSON.stringify(v));
+const equal = (a, b) => sortedCanonicalJson(a) === sortedCanonicalJson(b);
+function exact(o, w, e, loc, code = "BUILDER-TRX-012") {
+  if (!o || typeof o !== "object" || Array.isArray(o)) {
+    add(e, code, `${loc} must be an object.`);
+    return;
+  }
+  if (!equal(Object.keys(o).sort(), [...w].sort()))
+    add(e, code, `${loc} contains substitute or additional fields.`);
+}
+function required(o, w, e, loc, code) {
+  if (!o || typeof o !== "object" || Array.isArray(o)) {
+    add(e, code, `${loc} must be a canonical object.`);
+    return;
+  }
+  for (const k of w)
+    if (!(k in o))
+      add(e, code, `${loc}.${k} is required by the canonical carrier.`);
+}
+function resolveRef(ref) {
+  if (
+    typeof ref !== "string" ||
+    !ref ||
+    path.isAbsolute(ref) ||
+    ref.includes("\\") ||
+    !/^[A-Za-z0-9._/-]+$/.test(ref)
+  )
+    throw new Error(`Unsafe artifact reference: ${ref}`);
+  if (
+    path.posix.normalize(ref) !== ref ||
+    ref === ".." ||
+    ref.startsWith("../")
+  )
+    throw new Error(`Non-canonical artifact reference: ${ref}`);
+  const r = path.resolve(ROOT, ref),
+    p = `${path.resolve(ROOT)}${path.sep}`;
+  if (!r.startsWith(p))
+    throw new Error(`Artifact escapes repository root: ${ref}`);
+  return r;
+}
+function referencedPaths(x) {
+  return [
+    x?.source?.captured_artifact_ref,
+    ...Object.values(x?.carriers || {}),
+  ];
+}
+function preflightReferences(x, e = null) {
+  for (const ref of referencedPaths(x)) {
+    try {
+      resolveRef(ref);
+    } catch (err) {
+      if (e) add(e, "BUILDER-TRX-012", err.message);
+      else throw err;
+    }
+  }
+}
+function artifact(ref) {
+  const bytes = fs.readFileSync(resolveRef(ref));
+  return {
+    ref,
+    sha256: sha256Bytes(bytes),
+    json: JSON.parse(bytes.toString("utf8")),
+  };
+}
+function run(cmd, args, label) {
+  const r = spawnSync(cmd, args, {
+    cwd: ROOT,
+    encoding: "utf8",
+    maxBuffer: 32 * 1024 * 1024,
+    shell: false,
+  });
+  if (r.error || r.status !== 0)
+    throw new Error(
+      `${label} failed (${r.status ?? 1}).\n${r.stderr || r.stdout || ""}`,
+    );
+}
+function ajv(schema, data, refs = []) {
+  const a = [
+    "--yes",
+    "ajv-cli@5",
+    "validate",
+    "--spec=draft2020",
+    "--strict=false",
+    "-s",
+    schema,
+  ];
+  for (const r of refs) a.push("-r", r);
+  a.push("-d", data);
+  run(NPX, a, `AJV ${data}`);
+}
+function canonical(envelope) {
+  preflightReferences(envelope);
+  const c = envelope.carriers;
+  run(
+    "git",
+    ["ls-files", "--error-unmatch", envelope.source.captured_artifact_ref],
+    "tracked source verifier",
+  );
+  ajv("schemas/builder-context-package.schema.json", c.builder_package_ref);
+  run(
+    process.execPath,
+    ["scripts/validate-package.mjs", c.builder_package_ref],
+    "Builder package validator",
+  );
+  ajv("schemas/action-batch.schema.json", c.action_batch_ref);
+  run(
+    process.execPath,
+    ["scripts/validate-action-batch.mjs", c.action_batch_ref],
+    "Action Batch validator",
+  );
+  for (const f of [c.initial_session_state_ref, c.final_session_state_ref]) {
+    ajv("schemas/session-state.schema.json", f, [
+      "schemas/checkpoint.schema.json",
+      "schemas/evidence-record.schema.json",
+      "schemas/repair-packet.schema.json",
+    ]);
+    run(
+      process.execPath,
+      ["scripts/validate-session-state.mjs", f],
+      "Session State validator",
+    );
+  }
+  for (const f of [c.initial_checkpoint_ref, c.final_checkpoint_ref]) {
+    ajv("schemas/checkpoint.schema.json", f, [
+      "schemas/evidence-record.schema.json",
+    ]);
+    run(
+      process.execPath,
+      ["scripts/validate-checkpoint.mjs", f],
+      "Checkpoint validator",
+    );
+  }
+  ajv("schemas/completion-status.schema.json", c.completion_status_ref);
+  run(
+    process.execPath,
+    ["scripts/validate-completion-status.mjs", c.completion_status_ref],
+    "Completion Status validator",
+  );
+  ajv("schemas/completion-gate.schema.json", c.completion_gate_ref);
+  run(
+    process.execPath,
+    ["scripts/validate-completion-gate.mjs", c.completion_gate_ref],
+    "Completion Gate validator",
+  );
+}
+function load(file, { canonicalTools = true } = {}) {
+  const envelope = JSON.parse(fs.readFileSync(resolveRef(file), "utf8"));
+  if (canonicalTools) canonical(envelope);
+  const c = envelope.carriers;
+  return {
+    envelope,
+    source: artifact(envelope.source.captured_artifact_ref),
+    pkg: artifact(c.builder_package_ref),
+    batch: artifact(c.action_batch_ref),
+    si: artifact(c.initial_session_state_ref),
+    sf: artifact(c.final_session_state_ref),
+    ci: artifact(c.initial_checkpoint_ref),
+    cf: artifact(c.final_checkpoint_ref),
+    status: artifact(c.completion_status_ref),
+    gate: artifact(c.completion_gate_ref),
+    overrides: {},
+  };
+}
+function shape(x, e) {
+  exact(x, keys.envelope, e, "transaction");
+  preflightReferences(x, e);
+  exact(x.source, keys.source, e, "source", "BUILDER-TRX-001");
+  exact(x.carriers, keys.carriers, e, "carriers");
+  exact(x.identity, keys.identity, e, "identity");
+  exact(
+    x.identity?.package_digest,
+    keys.digest,
+    e,
+    "package_digest",
+    "BUILDER-TRX-003",
+  );
+  exact(
+    x.identity?.action_set_digest,
+    keys.digest,
+    e,
+    "action_set_digest",
+    "BUILDER-TRX-007",
+  );
+  exact(
+    x.confirmation,
+    keys.confirmation,
+    e,
+    "confirmation",
+    "BUILDER-TRX-007",
+  );
+  exact(x.bindings, keys.bindings, e, "bindings");
+  exact(
+    x.bindings?.initial_session,
+    keys.session,
+    e,
+    "initial_session binding",
+    "BUILDER-TRX-008",
+  );
+  exact(
+    x.bindings?.final_session,
+    keys.session,
+    e,
+    "final_session binding",
+    "BUILDER-TRX-008",
+  );
+  exact(
+    x.bindings?.initial_checkpoint,
+    keys.checkpoint,
+    e,
+    "initial_checkpoint binding",
+    "BUILDER-TRX-008",
+  );
+  exact(
+    x.bindings?.final_checkpoint,
+    keys.checkpoint,
+    e,
+    "final_checkpoint binding",
+    "BUILDER-TRX-008",
+  );
+  exact(
+    x.bindings?.completion,
+    keys.completion,
+    e,
+    "completion binding",
+    "BUILDER-TRX-011",
+  );
+  exact(x.publication, keys.publication, e, "publication", "BUILDER-TRX-013");
+  if (x.schema !== "ev4-builder-runtime-transaction-evidence@1.0.0")
+    add(e, "BUILDER-TRX-012", "Unsupported internal transaction envelope.");
+  if (
+    !["synthetic_validation_only", "runtime_evidence"].includes(
+      x.fixture_classification,
+    )
+  )
+    add(e, "BUILDER-TRX-014", "Invalid fixture classification.");
+}
+async function sourceAndPackage(b, e) {
+  const x = b.envelope,
+    s = b.source,
+    p = b.pkg;
+  if (
+    !HASH.test(x.source.captured_file_sha256) ||
+    x.source.captured_file_sha256 !== s.sha256
+  )
+    add(
+      e,
+      "BUILDER-TRX-001",
+      "Source hash must derive from exact captured bytes.",
+    );
+  if (
+    (x.source.audit_receipt_paths || []).includes(
+      x.source.captured_artifact_ref,
+    )
+  )
+    add(e, "BUILDER-TRX-001", "Audit receipt cannot be semantic input.");
+  if (x.fixture_classification === "runtime_evidence")
+    add(
+      e,
+      "BUILDER-TRX-002",
+      "Runtime provenance is blocked until an independently verified producer capability is available.",
+    );
+  if (
+    x.fixture_classification === "synthetic_validation_only" &&
+    !x.source.captured_artifact_ref.startsWith("tests/valid/")
+  )
+    add(
+      e,
+      "BUILDER-TRX-002",
+      "Synthetic source must remain inside the canonical valid-fixture tree.",
+    );
+  if (x.source.source_kind === "project_gate_builder_input") {
+    if (
+      x.source.captured_artifact_ref !== x.carriers.builder_package_ref ||
+      !equal(s.json, p.json)
+    )
+      add(
+        e,
+        "BUILDER-TRX-001",
+        "Consumed package must be the exact parsed Project Gate source bytes.",
+      );
+    if (s.json?.schema !== "ev4-builder-context-package@1.0.0")
+      add(
+        e,
+        "BUILDER-TRX-001",
+        "Project Gate source is not a canonical Builder package.",
+      );
+  } else if (x.source.source_kind === "direct_ce_builder") {
+    try {
+      const { normalizeCeBuilderExecutablePackage } =
+        await import("./normalize-ce-builder-executable-package.mjs");
+      const ceSource = s.json?.ce_builder_executable_package ?? s.json;
+      if (!equal(normalizeCeBuilderExecutablePackage(ceSource), p.json))
+        add(
+          e,
+          "BUILDER-TRX-002",
+          "Independent CE adapter output differs from consumed package.",
+        );
+    } catch (err) {
+      add(e, "BUILDER-TRX-002", `Direct CE verifier failed: ${err.message}`);
+    }
+  } else add(e, "BUILDER-TRX-001", "Unsupported source kind.");
+  const d = computePackageDigest(p.json),
+    id = x.identity.package_digest || {},
+    embedded = p.json.input_authorization?.package_digest;
+  if (
+    id.algorithm !== "sha256" ||
+    id.scope !== "canonical_package_without_digest" ||
+    id.value !== d
+  )
+    add(
+      e,
+      "BUILDER-TRX-003",
+      "Package identity must use the full canonical package digest.",
+    );
+  if (
+    !embedded ||
+    embedded.algorithm !== "sha256" ||
+    embedded.scope !== "canonical_package_without_digest" ||
+    embedded.value !== d
+  )
+    add(
+      e,
+      "BUILDER-TRX-003",
+      "Composite identity must match the package digest independently checked by the canonical package validator.",
+    );
+}
+function actions(b, e) {
+  const x = b.envelope,
+    p = b.pkg.json,
+    a = b.batch.json;
+  required(
+    a,
+    [
+      "schema",
+      "selected_candidate_id",
+      "approved_class_map",
+      "max_normal_actions",
+      "actions",
+    ],
+    e,
+    "action_batch",
+    "BUILDER-TRX-008",
+  );
+  for (const [i, v] of (a.actions || []).entries())
+    required(v, actionFields, e, `actions[${i}]`, "BUILDER-TRX-008");
+  const pa = p.first_builder_batch?.actions || [],
+    ba = a.actions || [],
+    ids = ba.map((v) => v.action_id);
+  if (
+    !equal(
+      pa.map((v) => v.action_id),
+      ids,
+    ) ||
+    !equal(p.confirmation_request?.confirmed_action_ids, ids)
+  )
+    add(
+      e,
+      "BUILDER-TRX-007",
+      "Package, confirmation request, and Action Batch must share one ordered action set.",
+    );
+  if (a.selected_candidate_id !== p.selected_candidate_id)
+    add(e, "BUILDER-TRX-008", "Action Batch candidate mismatch.");
+  if (
+    !equal(
+      a.approved_class_map,
+      (p.class_creation_application_map || []).map((v) => v.class_name),
+    )
+  )
+    add(e, "BUILDER-TRX-008", "Action Batch class map mismatch.");
+  for (const q of pa) {
+    const v = ba.find((z) => z.action_id === q.action_id),
+      n = (p.approved_structure_tree || []).find(
+        (z) =>
+          z.node_id === q.target_element ||
+          z.structure_label === q.target_element,
+      );
+    if (!v) continue;
+    if (
+      !n ||
+      v.target_node !== n.node_id ||
+      v.element_type !== q.element_type ||
+      (v.class_name || null) !== (q.active_class || null) ||
+      v.expected_result !== q.expected_result ||
+      v.value?.parent !== q.parent ||
+      v.value?.instruction !== q.instruction
+    )
+      add(
+        e,
+        "BUILDER-TRX-008",
+        `Action ${q.action_id} semantic body differs from package.`,
+      );
+    const l = (p.decision_lineage || []).find(
+      (z) => z.decision_card_ref === v.decision_lineage_ref?.decision_card_ref,
+    );
+    if (!l || !equal(l, v.decision_lineage_ref))
+      add(e, "BUILDER-TRX-005", `Action ${q.action_id} lineage mismatch.`);
+  }
+  const digs = ba.map(computeCanonicalDigest),
+    set = computeCanonicalDigest(ba),
+    did = x.identity.action_set_digest || {};
+  if (
+    did.algorithm !== "sha256" ||
+    did.scope !== "ordered_canonical_action_set" ||
+    did.value !== set
+  )
+    add(
+      e,
+      "BUILDER-TRX-007",
+      "Action-set digest must cover canonical action bodies.",
+    );
+  const c = x.confirmation;
+  if (
+    c.confirmation_id !== p.confirmation_request?.confirmation_id ||
+    c.user_token !== p.confirmation_request?.expected_user_token ||
+    c.session_id !== x.identity.session_id ||
+    c.package_digest !== x.identity.package_digest?.value ||
+    !equal(c.confirmed_action_ids, ids) ||
+    !equal(c.confirmed_action_digests, digs)
+  )
+    add(
+      e,
+      "BUILDER-TRX-007",
+      "Confirmation is not bound to full package and action semantics.",
+    );
+}
+function sessions(b, e) {
+  const x = b.envelope,
+    p = b.pkg.json,
+    a = b.batch.json,
+    si = b.si.json,
+    sf = b.sf.json,
+    ci = b.ci.json,
+    cf = b.cf.json,
+    pd = x.identity.package_digest?.value,
+    ad = x.identity.action_set_digest?.value,
+    ids = (a.actions || []).map((v) => v.action_id);
+  required(si, sessionFields, e, "initial session", "BUILDER-TRX-008");
+  required(sf, sessionFields, e, "final session", "BUILDER-TRX-011");
+  required(ci, checkpointFields, e, "initial checkpoint", "BUILDER-TRX-008");
+  required(cf, checkpointFields, e, "final checkpoint", "BUILDER-TRX-008");
+  for (const [n, s, f, z] of [
+    ["initial", si, b.si, x.bindings.initial_session],
+    ["final", sf, b.sf, x.bindings.final_session],
+  ]) {
+    if (
+      z.session_id !== x.identity.session_id ||
+      z.package_digest !== pd ||
+      z.carrier_sha256 !== f.sha256 ||
+      s.selected_candidate_id !== p.selected_candidate_id ||
+      s.current_state !== s.runtime_state
+    )
+      add(e, "BUILDER-TRX-008", `${n} Session State identity mismatch.`);
+  }
+  if (!equal(si.last_verified_checkpoint, ci))
+    add(
+      e,
+      "BUILDER-TRX-008",
+      "Initial Session State does not embed initial checkpoint.",
+    );
+  if (!equal(sf.last_verified_checkpoint, cf))
+    add(
+      e,
+      "BUILDER-TRX-011",
+      "Final Session State does not embed final checkpoint.",
+    );
+  if (si.runtime_state !== "WAITING_FOR_CONFIRMATION")
+    add(
+      e,
+      "BUILDER-TRX-008",
+      "Initial state must be WAITING_FOR_CONFIRMATION.",
+    );
+  for (const [n, c, f, z] of [
+    ["initial", ci, b.ci, x.bindings.initial_checkpoint],
+    ["final", cf, b.cf, x.bindings.final_checkpoint],
+  ])
+    if (
+      z.session_id !== x.identity.session_id ||
+      z.action_set_digest !== ad ||
+      z.carrier_sha256 !== f.sha256 ||
+      c.package_sha256 !== pd ||
+      c.selected_candidate_id !== p.selected_candidate_id
+    )
+      add(e, "BUILDER-TRX-008", `${n} checkpoint identity mismatch.`);
+  if (
+    ci.runtime_state !== si.runtime_state ||
+    cf.runtime_state !== sf.runtime_state
+  )
+    add(
+      e,
+      "BUILDER-TRX-008",
+      "Checkpoint and Session State runtime states differ.",
+    );
+  if (
+    cf.parent_checkpoint_id !== ci.checkpoint_id ||
+    cf.checkpoint_sequence <= ci.checkpoint_sequence
+  )
+    add(
+      e,
+      "BUILDER-TRX-011",
+      "Invalid Session State transition checkpoint ancestry.",
+    );
+  if (!equal(ci.unconfirmed_action_ids, ids) || ci.confirmed_action_ids.length)
+    add(e, "BUILDER-TRX-008", "Initial checkpoint action set mismatch.");
+  if (!equal(cf.confirmed_action_ids, ids) || cf.unconfirmed_action_ids.length)
+    add(
+      e,
+      "BUILDER-TRX-011",
+      "Final checkpoint does not confirm complete action set.",
+    );
+  const c = x.bindings.completion;
+  if (
+    c.session_id !== x.identity.session_id ||
+    c.package_digest !== pd ||
+    c.final_session_sha256 !== b.sf.sha256 ||
+    c.final_checkpoint_id !== cf.checkpoint_id
+  )
+    add(
+      e,
+      "BUILDER-TRX-011",
+      "Completion is detached from final Session State.",
+    );
+  if (
+    (c.session_complete || c.builder_build_complete) &&
+    sf.runtime_state !== "COMPLETED"
+  )
+    add(
+      e,
+      "BUILDER-TRX-011",
+      "Completion requires canonical final Session State COMPLETED.",
+    );
+  if (c.builder_build_complete && !c.session_complete)
+    add(e, "BUILDER-TRX-011", "Build completion requires session completion.");
+}
+function evidenceAndCompletion(b, e) {
+  const x = b.envelope,
+    cf = b.cf.json,
+    actionDigests = new Map(
+      (b.batch.json.actions || []).map((v) => [
+        v.action_id,
+        computeCanonicalDigest(v),
+      ]),
+    );
+  for (const a of cf.assertions || []) {
+    if (a.status !== "confirmed") continue;
+    const rows = (cf.evidence_ledger || []).filter(
+      (v) =>
+        (a.evidence_refs || []).includes(v.evidence_id) &&
+        v.status === "available",
+    );
+    if (!rows.length)
+      add(
+        e,
+        "BUILDER-TRX-009",
+        `Confirmed assertion ${a.assertion_id} lacks evidence.`,
+      );
+    for (const r of rows) {
+      try {
+        const t = artifact(r.source_ref);
+        if (
+          t.sha256 !== r.content_sha256 ||
+          !["export_json", "diagnostic"].includes(r.evidence_type) ||
+          t.json.transaction_id !== x.transaction_id ||
+          t.json.session_id !== x.identity.session_id ||
+          t.json.package_digest !== x.identity.package_digest.value ||
+          t.json.action_digest !== actionDigests.get(t.json.action_id) ||
+          t.json.status !== "executed"
+        )
+          add(
+            e,
+            "BUILDER-TRX-009",
+            `Evidence ${r.evidence_id} is not bound to this transaction.`,
+          );
+      } catch (err) {
+        add(
+          e,
+          "BUILDER-TRX-009",
+          `Evidence ${r.evidence_id} cannot be verified: ${err.message}`,
+        );
+      }
+    }
+  }
+  const s = b.status.json,
+    g = b.gate.json;
+  if (
+    g.selected_candidate_id !== b.pkg.json.selected_candidate_id ||
+    g.source_package_ref !== x.carriers.builder_package_ref
+  )
+    add(e, "BUILDER-TRX-011", "Completion gate package mismatch.");
+  if (
+    s.production_ready !== false ||
+    g.production_ready_allowed !== false ||
+    g.production_ready_claim !== false
+  )
+    add(
+      e,
+      "BUILDER-TRX-011",
+      "Builder cannot claim Responsive or production readiness.",
+    );
+  if (
+    x.bindings.completion.builder_build_complete &&
+    (!s.states?.scaffold_built || !s.states?.structure_built)
+  )
+    add(
+      e,
+      "BUILDER-TRX-011",
+      "Canonical Builder completion state is incomplete.",
+    );
+  const q = x.publication,
+    bad =
+      q.structural_failure || !q.construction_complete || !q.validation_passed;
+  if (
+    q.source_path !== x.source.captured_artifact_ref ||
+    q.output_path === q.source_path ||
+    q.temporary_path === q.source_path
+  )
+    add(e, "BUILDER-TRX-013", "Unsafe publication path binding.");
+  if (
+    q.artifact_published &&
+    (!q.validated_before_publish || !q.atomic_publish)
+  )
+    add(e, "BUILDER-TRX-013", "Publication must be validated and atomic.");
+  if (bad && q.artifact_published)
+    add(e, "BUILDER-TRX-012", "Invalid transaction published output.");
+  if (bad && !q.artifact_must_not_be_consumed)
+    add(e, "BUILDER-TRX-012", "Invalid output not marked non-consumable.");
+  if (bad && !q.prior_valid_output_preserved)
+    add(e, "BUILDER-TRX-013", "Prior valid output not preserved.");
+}
+function wiring(b, e) {
+  const v =
+      b.overrides.validateText ??
+      fs.readFileSync(path.resolve(ROOT, "scripts/validate.mjs"), "utf8"),
+    w =
+      b.overrides.workflowText ??
+      fs.readFileSync(
+        path.resolve(ROOT, ".github/workflows/schema-validation.yml"),
+        "utf8",
+      ),
+    main =
+      "node scripts/validate-builder-runtime-transaction.mjs tests/valid/runtime-transaction/complete-transaction.json --self-test",
+    state =
+      "node scripts/validate-builder-runtime-transaction-state.mjs tests/valid/runtime-transaction/complete-transaction.json";
+  if (
+    !/validate-builder-runtime-transaction\.mjs[\s\S]{0,240}tests\/valid\/runtime-transaction\/complete-transaction\.json/.test(
+      v,
+    ) ||
+    !/validate-builder-runtime-transaction-state\.mjs[\s\S]{0,240}tests\/valid\/runtime-transaction\/complete-transaction\.json/.test(
+      v,
+    ) ||
+    !w.includes("npm run validate") ||
+    !w.includes("Run Builder runtime transaction enforcement validation") ||
+    !w.includes(main) ||
+    !w.includes(state)
+  )
+    add(
+      e,
+      "BUILDER-TRX-014",
+      "Central runner or independent exact-head workflow step bypasses real transaction input.",
+    );
+}
+export async function validateBuilderRuntimeTransactionBundle(b) {
+  const e = [];
+  shape(b.envelope, e);
+  await sourceAndPackage(b, e);
+  actions(b, e);
+  sessions(b, e);
+  evidenceAndCompletion(b, e);
+  wiring(b, e);
+  return e.sort(
+    (a, z) =>
+      a.code.localeCompare(z.code) || a.message.localeCompare(z.message),
+  );
+}
+export async function validateBuilderRuntimeTransactionFile(
+  file,
+  options = {},
+) {
+  const bundle = load(file, options),
+    errors = await validateBuilderRuntimeTransactionBundle(bundle);
+  return { bundle, errors };
+}
+async function mutate(b, op) {
+  switch (op) {
+    case "positive_control":
+      return;
+    case "remove_action_required_field":
+      delete b.batch.json.actions[0].control_name;
+      return;
+    case "remove_session_required_field":
+      delete b.sf.json.current_state;
+      return;
+    case "remove_checkpoint_required_field":
+      delete b.cf.json.package_sha256;
+      return;
+    case "shadow_action_batch_shape":
+      b.batch.json = { action_id: "BATCH-001-A01", target_node: "n-001" };
+      return;
+    case "source_package_mismatch":
+      b.source.json.selected_candidate_id = "MUTATED";
+      return;
+    case "package_semantics_changed":
+      b.pkg.json.approved_structure_tree[0].role = "mutated";
+      return;
+    case "action_target_changed":
+      b.batch.json.actions[0].target_node = "n-002";
+      return;
+    case "action_class_scope_changed":
+      b.batch.json.actions[0].class_scope = "Global Classes";
+      return;
+    case "action_value_changed":
+      b.batch.json.actions[0].value.instruction = "mutated";
+      return;
+    case "action_evidence_requirement_changed":
+      b.batch.json.actions[0].evidence_required = ["screenshot"];
+      return;
+    case "fabricated_provenance_assertion":
+      b.envelope.source.provenance = { verified: true };
+      return;
+    case "self_asserted_path_equivalence":
+      b.envelope.source.equivalence_probe = {
+        project_gate_result: "pass",
+        direct_builder_gate_result: "pass",
+      };
+      return;
+    case "confirmation_replay_after_package_change":
+      b.pkg.json.unknowns_to_preserve.push("mutated");
+      return;
+    case "checkpoint_action_set_changed":
+      b.envelope.bindings.final_checkpoint.action_set_digest = "0".repeat(64);
+      return;
+    case "final_session_waiting":
+      b.sf.json.runtime_state = b.sf.json.current_state =
+        "WAITING_FOR_CONFIRMATION";
+      return;
+    case "build_complete_without_completed_session":
+      b.sf.json.runtime_state = b.sf.json.current_state = "BUILD_ACTIVE";
+      return;
+    case "detached_completion_state_compensation":
+      b.envelope.bindings.completion.final_session_runtime_state = "COMPLETED";
+      return;
+    case "mismatched_session_ids":
+      b.envelope.bindings.final_session.session_id = "SESSION-MUTATED";
+      return;
+    case "mismatched_package_digest":
+      b.envelope.bindings.final_session.package_digest = "0".repeat(64);
+      return;
+    case "trace_action_digest_changed":
+      b.cf.json.evidence_ledger[0].content_sha256 = "0".repeat(64);
+      return;
+    case "captured_source_hash_changed":
+      b.envelope.source.captured_file_sha256 = "0".repeat(64);
+      return;
+    case "central_validator_bypassed":
+      b.overrides.validateText = fs
+        .readFileSync(path.resolve(ROOT, "scripts/validate.mjs"), "utf8")
+        .replace(
+          /[^\n]*validate-builder-runtime-transaction\.mjs[^\n]*\n?/g,
+          "",
+        );
+      return;
+    case "direct_adapter_output_mismatch": {
+      const source = artifact(
+        "tests/valid/ce_builder_package_adapter_valid.json",
+      );
+      const { normalizeCeBuilderExecutablePackage } =
+        await import("./normalize-ce-builder-executable-package.mjs");
+      const normalized = normalizeCeBuilderExecutablePackage(
+        source.json.ce_builder_executable_package,
+      );
+      normalized.first_builder_batch.actions[0].instruction =
+        "mutated after adapter";
+      b.source = source;
+      b.pkg = {
+        ref: "in-memory-direct-output",
+        sha256: sha256Bytes(Buffer.from(sortedCanonicalJson(normalized))),
+        json: normalized,
+      };
+      b.envelope.source.source_kind = "direct_ce_builder";
+      b.envelope.source.captured_artifact_ref = source.ref;
+      b.envelope.source.captured_file_sha256 = source.sha256;
+      b.envelope.source.equivalence_probe = {
+        project_gate_result: "pass",
+        direct_builder_gate_result: "pass",
+      };
+      b.envelope.identity.package_digest.value =
+        computePackageDigest(normalized);
+      return;
+    }
+    case "runtime_provenance_not_verified":
+      b.envelope.fixture_classification = "runtime_evidence";
+      return;
+    case "unsafe_carrier_reference":
+      b.envelope.carriers.builder_package_ref = "../../etc/passwd";
+      return;
+    case "canonical_digest_drift":
+      b.pkg.json.input_authorization.package_digest.value = "0".repeat(64);
+      return;
+    default:
+      throw new Error(`Unknown mutation: ${op}`);
+  }
+}
+async function selfTest(file) {
+  const registry = JSON.parse(fs.readFileSync(resolveRef(MUTATIONS), "utf8")),
+    base = load(file, { canonicalTools: false }),
+    first = await validateBuilderRuntimeTransactionBundle(base);
+  if (first.length)
+    throw new Error(
+      `Positive transaction failed:\n${JSON.stringify(first, null, 2)}`,
+    );
+  console.log(`Canonical transaction positive fixture passed: ${file}`);
+  let neg = 0,
+    pos = 0;
+  for (const t of registry.cases || []) {
+    const b = clone(base);
+    b.overrides = {};
+    await mutate(b, t.operation);
+    const e = await validateBuilderRuntimeTransactionBundle(b);
+    if (t.expected_result === "pass") {
+      pos++;
+      if (e.length)
+        throw new Error(
+          `${t.id} positive failed:\n${JSON.stringify(e, null, 2)}`,
+        );
+    } else {
+      neg++;
+      if (!e.some((v) => v.code === t.expected_code))
+        throw new Error(
+          `${t.id} missing ${t.expected_code}:\n${JSON.stringify(e, null, 2)}`,
+        );
+    }
+    console.log(
+      `${t.id} ${t.expected_result === "pass" ? "passed" : `correctly failed with ${t.expected_code}`}.`,
+    );
+  }
+  console.log(
+    `Builder runtime transaction mutation suite passed: ${neg} negative mutations + ${pos} positive control(s).`,
+  );
+}
+async function main() {
+  const a = process.argv.slice(2),
+    file = a.find((v) => !v.startsWith("--")) || DEFAULT,
+    canonicalTools = !a.includes("--skip-canonical-tools"),
+    tests = a.includes("--self-test") || a.length === 0,
+    { errors } = await validateBuilderRuntimeTransactionFile(file, {
+      canonicalTools,
+    });
+  if (errors.length) {
+    for (const v of errors) console.error(`- ${v.code}: ${v.message}`);
+    process.exit(1);
+  }
+  console.log(`Builder runtime transaction validation passed: ${file}`);
+  if (tests) await selfTest(file);
+}
+const isMain =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) ===
+    path.resolve(fileURLToPath(import.meta.url));
+if (isMain)
+  main().catch((e) => {
+    console.error(e.stack || e.message);
+    process.exit(1);
+  });

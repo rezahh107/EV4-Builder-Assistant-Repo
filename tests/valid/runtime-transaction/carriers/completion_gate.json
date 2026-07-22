@@ -1,0 +1,45 @@
+{
+  "schema": "ev4-completion-gate@0.1.0",
+  "gate_id": "BUILDER-TRX-COMPLETE-001",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "source_package_ref": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
+  "layout_check_ref": "not_applicable_builder_transaction_fixture",
+  "production_ready_allowed": false,
+  "production_ready_claim": false,
+  "proofs": {
+    "layout_verified": {
+      "status": "confirmed",
+      "evidence_refs": [
+        "EV-BATCH-001-A01"
+      ]
+    },
+    "frontend_verified": {
+      "status": "unverified",
+      "evidence_refs": []
+    },
+    "responsive_verified": {
+      "status": "unverified",
+      "evidence_refs": []
+    },
+    "accessibility_verified": {
+      "status": "unverified",
+      "evidence_refs": []
+    },
+    "browser_verified": {
+      "status": "unverified",
+      "evidence_refs": []
+    },
+    "export_verified": {
+      "status": "confirmed",
+      "evidence_refs": [
+        "EV-BATCH-001-A01"
+      ]
+    },
+    "final_qa_verified": {
+      "status": "unverified",
+      "evidence_refs": []
+    }
+  },
+  "required_next_action": "keep_production_ready_false",
+  "reason": "Builder transaction fixture proves bounded Builder completion only; Responsive and production authority remain absent."
+}

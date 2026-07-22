@@ -1,0 +1,193 @@
+{
+  "schema": "ev4-builder-runtime-transaction-mutations@1",
+  "cases": [
+    {
+      "id": "MUT-001",
+      "operation": "remove_action_required_field",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-008",
+      "description": "Canonical Action Batch required field is missing."
+    },
+    {
+      "id": "MUT-002",
+      "operation": "remove_session_required_field",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-011",
+      "description": "Canonical final Session State required field is missing."
+    },
+    {
+      "id": "MUT-003",
+      "operation": "remove_checkpoint_required_field",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-008",
+      "description": "Canonical final checkpoint required field is missing."
+    },
+    {
+      "id": "MUT-004",
+      "operation": "shadow_action_batch_shape",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-008",
+      "description": "A shadow Action Batch object cannot substitute for the canonical carrier."
+    },
+    {
+      "id": "MUT-005",
+      "operation": "source_package_mismatch",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-001",
+      "description": "Parsed source bytes differ from the consumed Builder package."
+    },
+    {
+      "id": "MUT-006",
+      "operation": "package_semantics_changed",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-003",
+      "description": "Full package semantics change while stale identity remains."
+    },
+    {
+      "id": "MUT-007",
+      "operation": "action_target_changed",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-008",
+      "description": "Action ID is retained while target changes."
+    },
+    {
+      "id": "MUT-008",
+      "operation": "action_class_scope_changed",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-007",
+      "description": "Action ID is retained while class scope changes."
+    },
+    {
+      "id": "MUT-009",
+      "operation": "action_value_changed",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-008",
+      "description": "Action ID is retained while executable value changes."
+    },
+    {
+      "id": "MUT-010",
+      "operation": "action_evidence_requirement_changed",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-007",
+      "description": "Action ID is retained while evidence requirement changes."
+    },
+    {
+      "id": "MUT-011",
+      "operation": "fabricated_provenance_assertion",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-001",
+      "description": "Caller-created verified provenance is rejected as an extra authority field."
+    },
+    {
+      "id": "MUT-012",
+      "operation": "self_asserted_path_equivalence",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-001",
+      "description": "Self-asserted path equivalence is rejected."
+    },
+    {
+      "id": "MUT-013",
+      "operation": "confirmation_replay_after_package_change",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-003",
+      "description": "Confirmation cannot be replayed after package semantics change."
+    },
+    {
+      "id": "MUT-014",
+      "operation": "checkpoint_action_set_changed",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-008",
+      "description": "Checkpoint cannot retain IDs while binding a different canonical action set."
+    },
+    {
+      "id": "MUT-015",
+      "operation": "final_session_waiting",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-011",
+      "description": "session_complete cannot coexist with final WAITING_FOR_CONFIRMATION."
+    },
+    {
+      "id": "MUT-016",
+      "operation": "build_complete_without_completed_session",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-011",
+      "description": "builder_build_complete requires actual canonical Session State COMPLETED."
+    },
+    {
+      "id": "MUT-017",
+      "operation": "detached_completion_state_compensation",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-011",
+      "description": "Detached completion state text cannot compensate for a stale Session State carrier."
+    },
+    {
+      "id": "MUT-018",
+      "operation": "mismatched_session_ids",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-008",
+      "description": "Initial and final snapshots must share one session ID."
+    },
+    {
+      "id": "MUT-019",
+      "operation": "mismatched_package_digest",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-008",
+      "description": "Initial and final snapshots must share one full package digest."
+    },
+    {
+      "id": "MUT-020",
+      "operation": "trace_action_digest_changed",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-009",
+      "description": "Evidence bytes must bind the exact canonical action body."
+    },
+    {
+      "id": "MUT-021",
+      "operation": "captured_source_hash_changed",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-001",
+      "description": "Captured source digest must match exact bytes."
+    },
+    {
+      "id": "MUT-022",
+      "operation": "central_validator_bypassed",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-014",
+      "description": "Central runner must explicitly consume the real transaction envelope."
+    },
+    {
+      "id": "MUT-023",
+      "operation": "direct_adapter_output_mismatch",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-002",
+      "description": "Actual CE adapter output mismatch is rejected despite self-asserted pass values."
+    },
+    {
+      "id": "MUT-024",
+      "operation": "runtime_provenance_not_verified",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-002",
+      "description": "runtime_evidence is blocked without an independent producer provenance capability."
+    },
+    {
+      "id": "MUT-025",
+      "operation": "unsafe_carrier_reference",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-012",
+      "description": "Unsafe or non-canonical carrier references are rejected before child validators run."
+    },
+    {
+      "id": "MUT-026",
+      "operation": "canonical_digest_drift",
+      "expected_result": "fail",
+      "expected_code": "BUILDER-TRX-003",
+      "description": "Composite identity cannot diverge from the digest independently enforced by the canonical package validator."
+    },
+    {
+      "id": "MUT-027",
+      "operation": "positive_control",
+      "expected_result": "pass",
+      "description": "Exact canonical transaction remains valid."
+    }
+  ]
+}

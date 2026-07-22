@@ -1,0 +1,91 @@
+{
+  "schema": "ev4-builder-runtime-transaction-evidence@1.0.0",
+  "fixture_classification": "synthetic_validation_only",
+  "transaction_id": "BUILDER-TRX-FIXTURE-001",
+  "source": {
+    "source_kind": "project_gate_builder_input",
+    "captured_artifact_ref": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
+    "captured_file_sha256": "f6135dc5767dd0ceb4e2e51cebdf5221cac05b7b89888f628a25fce7d525b9f6",
+    "audit_receipt_paths": [
+      "project-gate-c2b-receipt.json"
+    ]
+  },
+  "carriers": {
+    "builder_package_ref": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
+    "action_batch_ref": "tests/valid/runtime-transaction/carriers/action_batch.json",
+    "initial_session_state_ref": "tests/valid/runtime-transaction/carriers/session_state_initial.json",
+    "final_session_state_ref": "tests/valid/runtime-transaction/carriers/session_state_final.json",
+    "initial_checkpoint_ref": "tests/valid/runtime-transaction/carriers/checkpoint_initial.json",
+    "final_checkpoint_ref": "tests/valid/runtime-transaction/carriers/checkpoint_final.json",
+    "completion_status_ref": "tests/valid/runtime-transaction/carriers/completion_status.json",
+    "completion_gate_ref": "tests/valid/runtime-transaction/carriers/completion_gate.json"
+  },
+  "identity": {
+    "session_id": "SESSION-001",
+    "package_digest": {
+      "algorithm": "sha256",
+      "scope": "canonical_package_without_digest",
+      "value": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22"
+    },
+    "action_set_digest": {
+      "algorithm": "sha256",
+      "scope": "ordered_canonical_action_set",
+      "value": "ebe8b7b413779bd447ef36c0b84651e08eb6ca4d4e03544dde3b47457fb1baea"
+    }
+  },
+  "confirmation": {
+    "confirmation_id": "CONFIRM-BATCH-001",
+    "session_id": "SESSION-001",
+    "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
+    "confirmed_action_ids": [
+      "BATCH-001-A01"
+    ],
+    "confirmed_action_digests": [
+      "8376fabf3d358799361ba95923470253c310e87a6a9ee5ded5f1d10a2c97f88c"
+    ],
+    "user_token": "تایید BATCH-001"
+  },
+  "bindings": {
+    "initial_session": {
+      "session_id": "SESSION-001",
+      "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
+      "carrier_sha256": "05dc1eadfb592ebbc39dc091925239943c1efdc747261360fa27af387e3ca7e5"
+    },
+    "final_session": {
+      "session_id": "SESSION-001",
+      "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
+      "carrier_sha256": "eb2c90f6dd713783ad534d7e92ba78ff5f88ced295fac229f451306cf50359e1"
+    },
+    "initial_checkpoint": {
+      "session_id": "SESSION-001",
+      "action_set_digest": "ebe8b7b413779bd447ef36c0b84651e08eb6ca4d4e03544dde3b47457fb1baea",
+      "carrier_sha256": "cf2693255b1fbd5327ca9fcf31e1965d3ad685d8ec1db1857ffdc6db90da082e"
+    },
+    "final_checkpoint": {
+      "session_id": "SESSION-001",
+      "action_set_digest": "ebe8b7b413779bd447ef36c0b84651e08eb6ca4d4e03544dde3b47457fb1baea",
+      "carrier_sha256": "ba32b654958168f8ab14bbd7017d4e0912e02958e10e9688eea51148278b352c"
+    },
+    "completion": {
+      "session_id": "SESSION-001",
+      "package_digest": "8f1c6b234f57848a75fe56cae3ef718c595acb3951bae995dd908e8701653d22",
+      "final_session_sha256": "eb2c90f6dd713783ad534d7e92ba78ff5f88ced295fac229f451306cf50359e1",
+      "final_checkpoint_id": "BUILDER-TRX-CP-001",
+      "session_complete": true,
+      "builder_build_complete": true
+    }
+  },
+  "publication": {
+    "source_path": "tests/valid/runtime-transaction/carriers/builder_context_package.json",
+    "output_path": "out/action-batch.json",
+    "temporary_path": "out/.action-batch.json.tmp",
+    "construction_complete": true,
+    "validation_passed": true,
+    "structural_failure": false,
+    "validated_before_publish": true,
+    "atomic_publish": true,
+    "artifact_published": true,
+    "artifact_must_not_be_consumed": false,
+    "prior_valid_output_preserved": true
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "ev4-action-batch@1.0.0",
+  "selected_candidate_id": "ARCH-FAM-C",
+  "approved_class_map": ["smart-home__section--root", "smart-home__stage--relative"],
+  "max_normal_actions": 5,
+  "allow_multiple_high_risk": false,
+  "checkpointed": true,
+  "evidence": {"desktop": true, "responsive": false},
+  "actions": [
+    {
+      "action_id": "BATCH-001-A01",
+      "target_node": "n-001",
+      "element_type": "Container",
+      "class_name": "smart-home__section--root",
+      "class_scope": "Local Classes",
+      "class_operation": "add",
+      "control_family": "structure",
+      "control_name": "create_element",
+      "value": {
+        "parent": "page root",
+        "instruction": "Create the root Container and apply class smart-home__section--root without a leading dot."
+      },
+      "responsive_scope": "desktop",
+      "risk_level": "low",
+      "evidence_required": ["structure_panel", "user_confirmation"],
+      "confirmation_scope": "BATCH-001-A01 structure",
+      "allowed_class_source": "approved_class_map",
+      "forbidden_changes": ["selected_candidate_id_change", "approved_architecture_change"],
+      "expected_result": "Root Container exists with approved label and class.",
+      "decision_lineage_ref": {
+        "decision_family": "widget_mapping",
+        "decision_card_ref": "KERNEL-CARD-WIDGET-MAPPING-001",
+        "selected_option": "container",
+        "rejected_options": ["section", "custom_html"],
+        "evidence_refs": ["ce-builder-package:widget_mapping_table[0]", "architect-export:approved_structure_tree[0]"],
+        "evidence_state": "validated",
+        "consumer_stage": "builder"
+      }
+    }
+  ]
+}
