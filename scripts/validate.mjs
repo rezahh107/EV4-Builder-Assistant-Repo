@@ -49,6 +49,7 @@ const nodeChecks = [
   'scripts/validate-kernel-decision-receipts.mjs',
   'scripts/validate-lean-runtime.mjs',
   'scripts/test-builder-inspector.mjs',
+  'scripts/test-project-pack-determinism.mjs',
   'scripts/smoke-ce-project-gate-builder.mjs',
   'scripts/validate-builder-runtime-transaction.mjs',
   'scripts/validate-builder-runtime-transaction-state.mjs'
