@@ -30,4 +30,10 @@ jobs:
         run: npm ci
 
       - name: Run functional validation
+        id: functional_validation
+        continue-on-error: true
         run: npm run validate
+
+      - name: Functional validation failed at ${{ steps.functional_validation.outputs.failed_check }}
+        if: steps.functional_validation.outcome == 'failure'
+        run: exit 1
