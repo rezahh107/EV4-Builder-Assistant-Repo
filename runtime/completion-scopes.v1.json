@@ -1,0 +1,29 @@
+{
+  "schema": "ev4-builder-completion-scopes@1.0.0",
+  "active_scope": "desktop_builder_complete",
+  "scopes": {
+    "desktop_builder_complete": {
+      "claim_scope_values": ["desktop"],
+      "required_states": [
+        "scaffold_built",
+        "structure_built",
+        "content_filled",
+        "desktop_layout_established"
+      ],
+      "required_evidence_categories": ["layout"],
+      "evidence_proof_map": {
+        "layout": "layout_verified"
+      },
+      "permitted_exclusions": ["responsive", "production"],
+      "required_top_level": {
+        "scope_excludes_responsive": true,
+        "responsive_complete": false,
+        "production_ready": false
+      },
+      "forbidden_true_claims": [
+        "responsive_complete",
+        "production_ready"
+      ]
+    }
+  }
+}

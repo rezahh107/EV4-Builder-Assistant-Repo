@@ -7,36 +7,12 @@
     "knowledge_file_max_count": 10
   },
   "files": [
-    {
-      "source": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt",
-      "output": "PROJECT_INSTRUCTIONS.txt",
-      "role": "project_instructions"
-    },
-    {
-      "source": "runtime/project-pack/01_RUNTIME_CORE.md",
-      "output": "knowledge/01_RUNTIME_CORE.md",
-      "role": "knowledge"
-    },
-    {
-      "source": "runtime/project-pack/02_INTAKE_INSPECTOR.md",
-      "output": "knowledge/02_INTAKE_INSPECTOR.md",
-      "role": "knowledge"
-    },
-    {
-      "source": "runtime/project-pack/03_STATE_RESUME.md",
-      "output": "knowledge/03_STATE_RESUME.md",
-      "role": "knowledge"
-    },
-    {
-      "source": "runtime/project-pack/04_ACTION_CONFIRMATION.md",
-      "output": "knowledge/04_ACTION_CONFIRMATION.md",
-      "role": "knowledge"
-    },
-    {
-      "source": "runtime/project-pack/05_CHECKPOINT_COMPLETION.md",
-      "output": "knowledge/05_CHECKPOINT_COMPLETION.md",
-      "role": "knowledge"
-    }
+    { "source": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt", "output": "PROJECT_INSTRUCTIONS.txt", "role": "project_instructions" },
+    { "source": "runtime/project-pack/01_RUNTIME_CORE.md", "output": "knowledge/01_RUNTIME_CORE.md", "role": "knowledge" },
+    { "source": "runtime/project-pack/02_INTAKE_INSPECTOR.md", "output": "knowledge/02_INTAKE_INSPECTOR.md", "role": "knowledge" },
+    { "source": "runtime/project-pack/03_STATE_RESUME.md", "output": "knowledge/03_STATE_RESUME.md", "role": "knowledge" },
+    { "source": "runtime/project-pack/04_ACTION_CONFIRMATION.md", "output": "knowledge/04_ACTION_CONFIRMATION.md", "role": "knowledge" },
+    { "source": "runtime/project-pack/05_CHECKPOINT_COMPLETION.md", "output": "knowledge/05_CHECKPOINT_COMPLETION.md", "role": "knowledge" }
   ],
   "forbidden_generated_runtime_patterns": [
     "fresh independent review required",

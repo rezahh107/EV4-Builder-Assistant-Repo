@@ -1,28 +1,13 @@
-# State and Resume
+# State Transitions and Resume
 
-Canonical modes:
+`runtime/state-transitions.v1.json` is the only transition definition. `scripts/lib/runtime-transaction-engine.mjs` loads it, verifies every registered guard, rejects registry drift and generates the next carriers.
 
-- `START_INTAKE_MODE`
-- `APPROVED_HANDOFF_MODE`
-- `FRESH_IMAGE_MODE_LIMITED`
-
-`COMPLETED` is legal only in `APPROVED_HANDOFF_MODE` and is generated only by the bounded Completion transition.
-
-`شروع` initializes intake only when no active Run exists. Repeated `شروع` is idempotent and preserves the current session, Checkpoint, candidate, package identity, confirmed work, and unresolved blockers.
-
-`استارت` does not create a Run. It resumes only from a valid `PAUSED` Session State with a prior legal target state.
-
-Resume uses the same shared identity boundary as Completion. It must revalidate actual `builder-input.json`, recompute source SHA-256 and package digest, verify the derived Intake Capsule, and reconcile session ID, candidate, Checkpoint and unresolved blockers.
-
-Canonical command:
+`استارت` requires actual Builder Input and this CLI:
 
 ```bash
-node scripts/builder-inspector.mjs resume \
-  builder-input.json \
-  builder-intake-result.json \
-  session-state.json \
-  checkpoint.json \
-  resume-output-directory
+node scripts/builder-inspector.mjs resume builder-input.json builder-intake-result.json session-state.json checkpoint.json resume-output-directory
 ```
 
-The output directory is published atomically and contains the restored `session-state.json`, the verified `checkpoint.json`, and `resume-result.json`. Resume rejects Capsule-only authorization, non-PAUSED state, missing or terminal targets, foreign identity, stale Checkpoints, or disappeared blockers.
+Resume is allowed only from a real `PAUSED` Session State. It verifies source SHA-256, package digest, selected candidate, session ID, exact Checkpoint, legal resume target and unresolved blocker preservation. Resume to `COMPLETED`, fabricated initialization, stale Checkpoint or Capsule-only authorization is forbidden.
+
+Accepted output is generated atomically as transition result, next Session State, next Checkpoint and Resume result.

@@ -1,7 +1,7 @@
 {
   "schema": "ev4-chatgpt-project-source-pack-manifest@2.0.0",
   "source_map_path": "runtime/project-pack-source-map.v1.json",
-  "source_map_sha256": "95cd79f1c917ac2a3294fb5d84678d20ab4dff2a9f984df84aa9039b8dc208a8",
+  "source_map_sha256": "4c2986a920e1c868dca1e791bb1e40fc56c552d172d57868ce45c547e229b927",
   "pack_root": "dist/chatgpt-project",
   "limits": {
     "project_instructions_max_chars": 8000,
@@ -12,56 +12,56 @@
   "files": [
     {
       "source_path": "runtime/project-pack/01_RUNTIME_CORE.md",
-      "source_sha256": "021fb279f8522021f1bd2e952b96db9c1647effe83b3d670dcc9f3ba235e18a4",
+      "source_sha256": "f009b50f57dcd68ceb7143b0b81c3dd962adb3cd2061bfa381fa6d9dd61ecc27",
       "output_path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
-      "output_sha256": "021fb279f8522021f1bd2e952b96db9c1647effe83b3d670dcc9f3ba235e18a4",
-      "bytes": 749,
-      "chars": 749,
+      "output_sha256": "f009b50f57dcd68ceb7143b0b81c3dd962adb3cd2061bfa381fa6d9dd61ecc27",
+      "bytes": 956,
+      "chars": 956,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/02_INTAKE_INSPECTOR.md",
-      "source_sha256": "8efc82659f9b52d0cb507ec70f3e32dcd7534e1cc1d313fcc67a4c49fa74a5b7",
+      "source_sha256": "2677f94bd21ce5cfe23daf1cf7145551e50cb1e7bee68f41eabaf3d80007406a",
       "output_path": "dist/chatgpt-project/knowledge/02_INTAKE_INSPECTOR.md",
-      "output_sha256": "8efc82659f9b52d0cb507ec70f3e32dcd7534e1cc1d313fcc67a4c49fa74a5b7",
-      "bytes": 958,
-      "chars": 958,
+      "output_sha256": "2677f94bd21ce5cfe23daf1cf7145551e50cb1e7bee68f41eabaf3d80007406a",
+      "bytes": 854,
+      "chars": 854,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/03_STATE_RESUME.md",
-      "source_sha256": "9f52efcb38fcc48ceee9936eb14e87998c52837638d2e3292c8feee9ade2a6af",
+      "source_sha256": "aa27663e569f00166bc52c2a5905e5f2ba769859e53def2de171ea225b084bb6",
       "output_path": "dist/chatgpt-project/knowledge/03_STATE_RESUME.md",
-      "output_sha256": "9f52efcb38fcc48ceee9936eb14e87998c52837638d2e3292c8feee9ade2a6af",
-      "bytes": 1334,
-      "chars": 1320,
+      "output_sha256": "aa27663e569f00166bc52c2a5905e5f2ba769859e53def2de171ea225b084bb6",
+      "bytes": 907,
+      "chars": 901,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/04_ACTION_CONFIRMATION.md",
-      "source_sha256": "036120103ee792fefa7925cc181eb597dea4ca11a13b190250e39229017a4c28",
+      "source_sha256": "7e146b41a7a5a7e2d310f5d8aad567655da96a61d95c5fb4555e9963339e08cc",
       "output_path": "dist/chatgpt-project/knowledge/04_ACTION_CONFIRMATION.md",
-      "output_sha256": "036120103ee792fefa7925cc181eb597dea4ca11a13b190250e39229017a4c28",
-      "bytes": 877,
-      "chars": 877,
+      "output_sha256": "7e146b41a7a5a7e2d310f5d8aad567655da96a61d95c5fb4555e9963339e08cc",
+      "bytes": 836,
+      "chars": 836,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/05_CHECKPOINT_COMPLETION.md",
-      "source_sha256": "20af3d3993077468dc535eed3a431c644c4088e70322906e13840498fd121907",
+      "source_sha256": "552c51b76fbf4c3180b0b32de75d11800e5d497127728b4d985729859d6af876",
       "output_path": "dist/chatgpt-project/knowledge/05_CHECKPOINT_COMPLETION.md",
-      "output_sha256": "20af3d3993077468dc535eed3a431c644c4088e70322906e13840498fd121907",
-      "bytes": 1762,
-      "chars": 1762,
+      "output_sha256": "552c51b76fbf4c3180b0b32de75d11800e5d497127728b4d985729859d6af876",
+      "bytes": 1271,
+      "chars": 1271,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt",
-      "source_sha256": "fd6ddd3f26642e7dbc043d69416fce95b195912940ba86183e72c493a7efbc8d",
+      "source_sha256": "cdd8b1782685802c7c3ee69392419578f74761038031c27731957cc0769456a4",
       "output_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "output_sha256": "fd6ddd3f26642e7dbc043d69416fce95b195912940ba86183e72c493a7efbc8d",
-      "bytes": 4845,
-      "chars": 3725,
+      "output_sha256": "cdd8b1782685802c7c3ee69392419578f74761038031c27731957cc0769456a4",
+      "bytes": 4599,
+      "chars": 3697,
       "role": "project_instructions"
     }
   ]

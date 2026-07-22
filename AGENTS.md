@@ -14,44 +14,38 @@ production_ready: false
 
 1. `runtime/personal-runtime-authority.v1.json`
 2. `runtime/state-transitions.v1.json`
-3. `PROJECT_INSTRUCTIONS.md`
-4. `core/MODE_STATE_MATRIX.md`
-5. `schemas/**`
-6. relevant semantic validators and fixtures
+3. `scripts/lib/runtime-transaction-engine.mjs`
+4. `runtime/completion-scopes.v1.json`
+5. `PROJECT_INSTRUCTIONS.md`
+6. affected Schemas, semantic validators and fixtures
 7. `scripts/validate.mjs`
 
-## Startup Boundary
+## Canonical Runtime Transaction Authority
 
-The canonical personal input is `builder-input.json` parsed as `ev4-builder-context-package@1.0.0`.
+`builder-input.json` parsed as `ev4-builder-context-package@1.0.0` is the canonical semantic and identity source. `builder-intake-result.json` is derived evidence and is never sufficient without re-verifying the actual Builder Input.
+
+Critical Resume and Completion transitions are authorized and applied only by `scripts/lib/runtime-transaction-engine.mjs`. The Engine interprets `runtime/state-transitions.v1.json`; validators may check carrier integrity but must not maintain a competing transition matrix.
 
 - `شروع` begins fresh intake only when no active Run exists.
-- repeated `شروع` preserves the current session, checkpoint and unresolved blockers.
-- `استارت` resumes only a real prior PAUSED state and cannot fabricate a Run.
-- receipt-only input and raw Project Gate envelopes remain non-semantic.
+- repeated `شروع` preserves the current session, checkpoint, Ledger and unresolved blockers.
+- `استارت` resumes only a real prior `PAUSED` state after Builder Input re-verification.
+- Completion starts only from `APPROVED_HANDOFF_MODE / BUILD_ACTIVE`; the Engine generates terminal carriers.
+- caller-authored `COMPLETED` Session State or Checkpoint is not a valid Completion input.
 
-## Active Runtime Authority
+## Action and Completion Authority
 
-A normal Builder Run may depend only on:
+- `ev4-builder-action-ledger@1.0.0` owns the complete Action universe for the bounded Run.
+- `expected_batch_ids` and `expected_required_action_ids` prevent omission from satisfying Completion.
+- Checkpoint action summaries must reconcile exactly with the Ledger and its digest.
+- `runtime/completion-scopes.v1.json` defines supported Builder completion scopes.
+- Completion Gate v0.2 binds session, Builder Input, candidate, predecessor Checkpoint, Action Ledger, Completion Scope and evidence ledger.
+- accepted transition outputs publish atomically as one directory transaction.
 
-- valid Builder Context input;
-- selected candidate continuity;
-- decision lineage continuity;
-- allowed Action Batch semantics;
-- active confirmation binding;
-- Session State and Checkpoint consistency;
-- unresolved blocker preservation;
-- valid Completion conditions.
+## Active Runtime Boundary
 
-Do not add PR status, Exact-Head evidence, PR Inspector, independent review, governance receipts, merge evidence, reviewer identity, external attestation, or repository commit identity as runtime authorization.
+A normal Builder Run may depend only on valid Builder Input, candidate and decision-lineage continuity, Action semantics, confirmation binding, Session State, Checkpoint, Action Ledger, blocker preservation, Completion Scope and Completion Gate correctness.
 
-## State Rules
-
-- `COMPLETED` is legal only in `APPROVED_HANDOFF_MODE`.
-- A completion report request is not a completion trigger.
-- `شروع` is idempotent when a Run already exists.
-- `استارت` resumes only a real prior PAUSED Session State.
-- Intake, evidence, correction, or fresh-image states cannot jump directly to Completion.
-- Unresolved blockers may not disappear silently.
+Do not add PR status, Exact-Head evidence, PR Inspector, independent review, governance receipts, merge evidence, reviewer identity, external attestation or repository commit identity as runtime authorization.
 
 ## Change Policy
 
@@ -62,8 +56,6 @@ Do not add PR status, Exact-Head evidence, PR Inspector, independent review, gov
 - Historical governance material is non-authoritative and must not enter `dist/chatgpt-project`.
 
 ## Validation
-
-Run applicable checks before PR readiness:
 
 ```bash
 npm ci
@@ -80,4 +72,4 @@ Deep runtime transaction validation remains a CI regression/diagnostic tool; it 
 
 ## Delivery
 
-Use a feature branch and one focused PR. Do not merge or deploy without owner action. Do not claim validation or CI success without evidence.
+Use one feature branch and one focused PR. Do not merge or deploy without owner action. Do not claim validation or CI success without evidence.

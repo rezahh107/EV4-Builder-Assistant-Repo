@@ -1,34 +1,15 @@
-# Action Batch and Confirmation
+# Action Ledger and Confirmation
 
-Ordinary actions carry only execution-critical metadata:
+Ordinary Action metadata remains execution-focused. Candidate identity, decision lineage, target identity, class scope and active confirmation binding are never weakened.
 
-```yaml
-required_for_normal_action:
-  - target_node
-  - element_type
-  - control_family
-  - control_name
-  - value when applicable
-  - unit and value_source for numeric values
-  - responsive_scope
-  - class_scope when class_name is present
-  - expected_result
-```
+The authoritative machine-readable Ledger uses Schema `ev4-builder-action-ledger@1.0.0` and binds:
 
-Extended metadata is conditional:
+- `session_id`;
+- Builder Input source SHA-256 and package digest;
+- `selected_candidate_id`;
+- Ledger and Checkpoint sequence;
+- complete expected Batch IDs;
+- complete expected required Action IDs;
+- exactly one disposition for every required Action.
 
-```yaml
-risk_conditioned:
-  - rationale
-  - reversibility_analysis
-  - safety_decision
-  - evidence_required
-  - confirmation_scope
-  - forbidden_changes
-```
-
-It is required for `risk_level: high` or `difficult_to_reverse: true`.
-
-Never weaken target identity, `selected_candidate_id`, decision lineage, class scope, or active confirmation binding.
-
-A checkpointed action must carry a non-empty `confirmation_scope`. Only the active structured confirmation token can advance the state.
+Checkpoint confirmed/pending summaries must reconcile exactly with the Ledger digest. Confirmed Actions require `confirmation_ref`. Cancelled or not-applicable Actions require explicit reason and authorization. Omitting an Action or an entire Batch cannot satisfy Completion.
