@@ -13,7 +13,7 @@ builder_to_responsive: out_of_scope
 production_ready: false
 ```
 
-این ریپو runtime شخصی Builder برای تبدیل یک `builder-input.json` معتبر به Action Batchهای کوچک، تأییدشده، checkpointed و قابل Resume است.
+این ریپو runtime شخصی Builder برای تبدیل یک `builder-input.json` معتبر با Schema `ev4-builder-context-package@1.0.0` به Action Batchهای کوچک، تأییدشده، checkpointed و قابل Resume است.
 
 ## Active Runtime
 
@@ -28,6 +28,8 @@ builder-input.json
 → Completion validation
 → Builder completion
 ```
+
+`شروع` یک intake جدید را فقط در نبود Run فعال آغاز می‌کند. `شروع` تکراری state را حفظ می‌کند. `استارت` فقط Session واقعی و PAUSED را Resume می‌کند و نمی‌تواند Run بسازد.
 
 Builder completion فقط پایان محدوده Builder است و Responsive completion یا production readiness را اثبات نمی‌کند.
 
