@@ -10,12 +10,15 @@ if (!filePath) {
 
 const gate = JSON.parse(fs.readFileSync(path.resolve(filePath), 'utf8'));
 const errors = [];
-
-function fail(id, message) {
-  errors.push({ id, message });
-}
+const fail = (id, message) => errors.push({ id, message });
 
 if (gate.schema !== 'ev4-completion-gate@0.1.0') fail('EV4-COMPLETE-001', 'schema must be ev4-completion-gate@0.1.0.');
+
+const identityFields = ['package_digest', 'session_id', 'checkpoint_id', 'checkpoint_sequence'];
+const presentIdentityFields = identityFields.filter((field) => gate[field] !== undefined);
+if (presentIdentityFields.length > 0 && presentIdentityFields.length !== identityFields.length) {
+  fail('EV4-COMPLETE-011', 'Runtime identity binding must include package_digest, session_id, checkpoint_id, and checkpoint_sequence together.');
+}
 
 const requiredProofNames = [
   'layout_verified',
@@ -26,10 +29,8 @@ const requiredProofNames = [
   'export_verified',
   'final_qa_verified'
 ];
-
 const proofs = gate.proofs || {};
 const incompleteProofs = [];
-
 for (const proofName of requiredProofNames) {
   const proof = proofs[proofName];
   if (!proof) {
@@ -45,18 +46,15 @@ if (gate.production_ready_allowed === true) {
   if (gate.required_next_action !== 'claim_production_ready') fail('EV4-COMPLETE-003', 'production_ready_allowed true requires required_next_action claim_production_ready.');
   if (incompleteProofs.length > 0) fail('EV4-COMPLETE-004', `production_ready_allowed true requires confirmed proof evidence for: ${incompleteProofs.join(', ')}.`);
 }
-
 if (gate.production_ready_claim === true) {
   if (gate.production_ready_allowed !== true) fail('EV4-COMPLETE-005', 'production_ready_claim true requires production_ready_allowed true.');
   if (gate.required_next_action !== 'claim_production_ready') fail('EV4-COMPLETE-006', 'production_ready_claim true requires required_next_action claim_production_ready.');
   if (incompleteProofs.length > 0) fail('EV4-COMPLETE-007', `production_ready_claim true requires all proof categories confirmed with evidence: ${incompleteProofs.join(', ')}.`);
 }
-
 if (gate.production_ready_allowed === false) {
   if (gate.production_ready_claim !== false) fail('EV4-COMPLETE-008', 'production_ready_allowed false requires production_ready_claim false.');
   if (gate.required_next_action === 'claim_production_ready') fail('EV4-COMPLETE-009', 'production_ready_allowed false must not claim production ready.');
 }
-
 if (incompleteProofs.length > 0 && gate.required_next_action === 'claim_production_ready') {
   fail('EV4-COMPLETE-010', 'Missing or unverified proof categories must not claim production ready.');
 }
@@ -66,5 +64,4 @@ if (errors.length > 0) {
   for (const error of errors) console.error(`- ${error.id}: ${error.message}`);
   process.exit(1);
 }
-
 console.log(`Completion gate validation passed: ${filePath}`);
