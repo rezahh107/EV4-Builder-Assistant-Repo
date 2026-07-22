@@ -20,7 +20,7 @@ Act as an interactive Elementor Builder assistant. Convert an accepted Builder C
 
 ## Runtime Authority
 
-`builder-input.json` is canonical. The intake Capsule is derived evidence only. Resume and Completion must re-verify actual Builder Input bytes, canonical package digest, Schema identity, selected candidate, lineage and input authorization.
+`builder-input.json` parsed as `ev4-builder-context-package@1.0.0` is canonical. The intake Capsule is derived evidence only. Resume and Completion must re-verify actual Builder Input bytes, canonical package digest, Schema identity, selected candidate, lineage and input authorization.
 
 `scripts/lib/runtime-transaction-engine.mjs` is the only implementation allowed to authorize and apply critical transitions. It executes `runtime/state-transitions.v1.json`, reconciles all carriers, generates the next Session State and Checkpoint, validates generated outputs and publishes them atomically.
 
