@@ -19,6 +19,10 @@
     "schema": { "const": "ev4-completion-gate@0.1.0" },
     "gate_id": { "type": "string", "minLength": 1 },
     "selected_candidate_id": { "type": "string", "minLength": 1 },
+    "package_digest": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+    "session_id": { "type": "string", "minLength": 1 },
+    "checkpoint_id": { "type": "string", "minLength": 1 },
+    "checkpoint_sequence": { "type": "integer", "minimum": 1 },
     "source_package_ref": { "type": "string", "minLength": 1 },
     "layout_check_ref": { "type": "string", "minLength": 1 },
     "production_ready_allowed": { "type": "boolean" },
@@ -62,6 +66,17 @@
   },
   "allOf": [
     {
+      "if": {
+        "anyOf": [
+          { "required": ["package_digest"] },
+          { "required": ["session_id"] },
+          { "required": ["checkpoint_id"] },
+          { "required": ["checkpoint_sequence"] }
+        ]
+      },
+      "then": { "required": ["package_digest", "session_id", "checkpoint_id", "checkpoint_sequence"] }
+    },
+    {
       "if": { "properties": { "production_ready_allowed": { "const": true } }, "required": ["production_ready_allowed"] },
       "then": {
         "properties": {
@@ -87,7 +102,7 @@
     },
     {
       "if": { "properties": { "production_ready_allowed": { "const": false } }, "required": ["production_ready_allowed"] },
-      "then": { "properties": { "production_ready_claim": { "const": false }, "required_next_action": { "not": { "const": "claim_production_ready" } } } }
+      "then": { "properties": { "production_ready_claim": { "const": false }, "required_next_action": { "not": { "const": "claim_production_ready" } } }
     }
   ],
   "additionalProperties": false
