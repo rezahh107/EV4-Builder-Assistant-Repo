@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/builder-personal-state-capsule.schema.json",
+  "title": "EV4 Builder Personal State Capsule",
+  "type": "object",
+  "required": ["schema", "session_id", "source_file_sha256", "canonical_package_digest", "selected_candidate_id", "intake_capsule_sha256", "session_state_sha256", "checkpoint_sha256", "workflow_mode", "runtime_state", "previous_resumable_state", "unresolved_blocking_evidence", "parent_state_capsule_sha256", "source_input_path_hint", "checkpoint_id", "event"],
+  "properties": {
+    "schema": {"const": "ev4-builder-personal-state-capsule@1.0.0"},
+    "session_id": {"type": "string", "minLength": 1},
+    "source_file_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "canonical_package_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "selected_candidate_id": {"type": "string", "minLength": 1},
+    "intake_capsule_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "session_state_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "checkpoint_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "workflow_mode": {"enum": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"]},
+    "runtime_state": {"enum": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"]},
+    "previous_resumable_state": {"type": ["string", "null"], "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", null]},
+    "unresolved_blocking_evidence": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "parent_state_capsule_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "source_input_path_hint": {"type": "string", "minLength": 1},
+    "checkpoint_id": {"type": "string", "minLength": 1},
+    "event": {"enum": ["start_intake", "input_received", "intake_authorized", "batch_emitted", "confirmation_accepted", "pause", "resume", "correction_required", "repair_resolved", "review_requested", "review_completed", "evidence_resolved", "completion_accepted", "repeated_start"]}
+  },
+  "additionalProperties": false
+}
