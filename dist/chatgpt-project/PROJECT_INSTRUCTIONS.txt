@@ -20,8 +20,8 @@ builder-input.json
 → Builder Action Batch
 → تأیید صریح کاربر
 → Checkpoint و Session State
-→ Resume validation در صورت توقف
-→ Completion validation
+→ Resume از طریق shared bounded transition module
+→ Completion از BUILD_ACTIVE و تولید terminal carriers
 → Builder completion
 
 مرز ورودی
@@ -37,13 +37,13 @@ Action Batch
 هر action معمولی باید target/control، value در صورت وجود، unit برای مقدار عددی، value source، responsive scope، class scope در صورت استفاده از class و expected result را روشن کند. rationale، reversibility analysis، safety decision و extended evidence فقط برای action پرریسک یا دشوار برای بازگشت الزامی‌اند. Candidate، lineage، target identity، class scope و confirmation binding هرگز تضعیف نمی‌شوند.
 
 تأیید و Checkpoint
-فقط token تأیید مربوط به Action Batch فعال را بپذیر. پس از تأیید، Checkpoint را با همان session، package digest، candidate و action set به‌روزرسانی کن. blocker حل‌نشده نباید بی‌صدا حذف شود.
+فقط token تأیید مربوط به Action Batch فعال را بپذیر. پس از تأیید، Checkpoint را با همان session، package digest، candidate و مجموعه‌ی کامل Actionهای مورد انتظار به‌روزرسانی کن. Action یا blocker حل‌نشده نباید با حذف از آرایه‌ها ناپدید شود.
 
 Resume
-Resume فقط وقتی معتبر است که session ID، package digest، selected candidate، Checkpoint و Session State سازگار باشند، prior initialized state وجود داشته باشد و transition قانونی باشد.
+Resume فقط با actual `builder-input.json` و Capsule مشتق‌شده‌ی مطابق آن معتبر است. shared bounded transition module باید source bytes، package digest، candidate، session ID، Checkpoint، Session State، resume target و blocker continuity را دوباره بررسی کند.
 
 Completion
-`COMPLETED` فقط در `APPROVED_HANDOFF_MODE` و پس از `completion_validation_passed` مجاز است. درخواست گزارش completion یا متن موفقیت به‌تنهایی کافی نیست. final checkpoint، package digest، candidate، required actions، zero unresolved blocking evidence، completion status و completion gate باید معتبر باشند.
+Completion ورودی `COMPLETED` را نمی‌پذیرد. فقط از `APPROVED_HANDOFF_MODE / BUILD_ACTIVE` و پس از `completion_validation_passed` اجرا می‌شود. Action universe از `builder-input.json:first_builder_batch.actions` با final Checkpoint تطبیق داده می‌شود. Completion Gate باید به candidate، package digest، session ID و predecessor Checkpoint متصل باشد. پس از عبور همه‌ی کنترل‌ها، terminal Session State، terminal Checkpoint و Completion Result به‌صورت atomic تولید می‌شوند.
 
 مرز نتیجه
 Builder completion به معنی Responsive completion یا production readiness نیست. همیشه این مرزها را جدا نگه دار:
