@@ -1,5 +1,7 @@
 # core/MASTER_PROMPT — EV4 Builder Assistant
 
+Version: 0.3.6
+
 ```yaml
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
