@@ -81,3 +81,30 @@ Deep runtime transaction validation remains a CI regression/diagnostic tool; it 
 ## Delivery
 
 Use a feature branch and one focused PR. Do not merge or deploy without owner action. Do not claim validation or CI success without evidence.
+
+## Temporary Shared UX/UI Policy Adapter
+
+Use `policies/EV4_TEMP_CROSS_REPO_UX_UI_STANDARDS_POLICY_r002.md` only as a supplemental policy below repository authority.
+
+```yaml
+policy_id: EV4-TEMP-CROSS-REPO-UX-UI-STANDARDS-POLICY-r002
+revision: r002
+filename: EV4_TEMP_CROSS_REPO_UX_UI_STANDARDS_POLICY_r002.md
+sha256: f09b6978e10833c1ab3c3e35a9128db894684c5ed9cd876fa87699016b6def95
+repository_role: builder
+local_consumption_scope: accepted Builder-ready strategy and the current bounded implementation action
+role_must:
+  - implement the accepted strategy
+  - preserve applicable semantics, states, focus, responsive and recovery behavior
+  - report implementation blockers with evidence
+  - use accepted tokens and mechanisms where available
+role_must_not:
+  - select a competing architecture
+  - reinterpret locked intent
+  - claim runtime behavior without observation
+  - let aesthetic preference override accessibility or content requirements
+```
+
+Keep nonmaterial routing internal. Represent material implementation blockers, evidence gaps, and downstream obligations through existing Builder-supported fields or a concise visible status when continuation or owner action is affected. Do not add unsupported Builder states, outputs, wrapper Artifacts, or hidden-storage claims.
+
+`r001` remains an immutable historical revision. A filename, ID, revision, byte, or digest mismatch is `TEMP_UX_UI_POLICY_IDENTITY_MISMATCH`. This adapter does not create Kernel adoption, Builder→Responsive implementation, or a parallel approval path.
