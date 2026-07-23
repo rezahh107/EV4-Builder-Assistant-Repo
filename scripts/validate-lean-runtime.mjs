@@ -87,28 +87,48 @@ for (const symbol of [
 const truthSpine = readText('scripts/lib/builder-truth-spine.mjs');
 for (const symbol of [
   'fixtureValidateBuilderInput',
-  'resolveRealBuilderSource',
-  'verifyDerivedContext',
   'createConfirmationReceipt',
   'validateConfirmationReceipt',
-  'verifyEvidenceLedger',
+  'verifyEvidenceLedger'
+]) {
+  if (!truthSpine.includes(`function ${symbol}`)) fail(`Shared Builder truth-spine control is missing ${symbol}.`);
+}
+
+const explicitSource = readText('scripts/lib/builder-explicit-source-runtime.mjs');
+for (const symbol of [
+  'resolveExplicitBuilderSource',
+  'resolveRealBuilderSource',
+  'verifyDerivedContext',
+  'writeRealIntake',
   'validateRealCompletion',
   'publishRealCompletion'
 ]) {
-  if (!truthSpine.includes(`function ${symbol}`)) fail(`Builder truth spine is missing ${symbol}.`);
+  if (!explicitSource.includes(`function ${symbol}`)) fail(`Explicit source Runtime is missing ${symbol}.`);
 }
 for (const requiredTerm of [
-  "FIXTURE: 'fixture-validation'",
-  "REAL: 'real-builder-run'",
-  'ev4-builder-confirmation-receipt@1.0.0',
-  'ev4-builder-evidence-source@1.0.0',
-  'builder_build_complete: false',
-  "runtime_state: 'NOT_A_REAL_RUN'"
+  "PROJECT_GATE: 'project-gate'",
+  "DIRECT_CE: 'direct-ce'",
+  "MANUAL_BUILDER_INPUT: 'manual-builder-input'",
+  "content_binding_status: 'verified'",
+  "source_selection: 'operator_explicit'",
+  "origin_assurance: 'not_independently_verified'",
+  "origin_assurance: 'manual_operator_supplied'",
+  "receipt_binding_status: 'matched'",
+  'BUILDER-CONTEXT-113'
 ]) {
-  if (!truthSpine.includes(requiredTerm)) fail(`Builder truth spine is missing required mode/contract term: ${requiredTerm}`);
+  if (!explicitSource.includes(requiredTerm)) fail(`Explicit source Runtime is missing required invariant: ${requiredTerm}`);
 }
-for (const forbiddenPlatformTerm of ['event bus', 'plugin guard registry', 'database adapter', 'service layer']) {
-  if (`${transitionModule}\n${truthSpine}`.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Generalized runtime platform term appears in bounded runtime modules: ${forbiddenPlatformTerm}`);
+for (const forbiddenOriginClaim of [
+  "verification_status: 'verified_source_bound'",
+  'producer_repository: sourceArtifact',
+  'producer_commit_sha: sourceArtifact',
+  'producer_artifact_id:',
+  'producer_artifact_sha256:'
+]) {
+  if (explicitSource.includes(forbiddenOriginClaim)) fail(`Explicit source Runtime retains origin-overclaiming code: ${forbiddenOriginClaim}`);
+}
+for (const forbiddenPlatformTerm of ['event bus', 'plugin guard registry', 'database adapter', 'service layer', 'public key infrastructure', 'signed receipt']) {
+  if (`${transitionModule}\n${truthSpine}\n${explicitSource}`.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Generalized or external-security platform term appears in bounded Runtime modules: ${forbiddenPlatformTerm}`);
 }
 
 const sessionValidator = readText('scripts/validate-session-state.mjs');
@@ -117,9 +137,9 @@ if (!sessionValidator.includes('runtime/state-transitions.v1.json')) fail('Sessi
 
 const inspector = readText('scripts/builder-inspector.mjs');
 if (!inspector.includes("from './lib/builder-runtime-transition.mjs'")) fail('Builder Inspector must preserve delegation to the shared bounded transition module.');
-if (!inspector.includes("from './lib/builder-truth-spine.mjs'")) fail('Builder Inspector must delegate real authority decisions to the truth spine.');
-for (const command of ['fixture-validation', 'real-intake', 'confirm-batch', 'real-completion']) {
-  if (!inspector.includes(command)) fail(`Builder Inspector is missing command: ${command}.`);
+if (!inspector.includes("from './lib/builder-explicit-source-runtime.mjs'")) fail('Builder Inspector must delegate active source selection and Completion to the explicit-source Runtime.');
+for (const command of ['fixture-validation', 'real-intake', 'confirm-batch', 'real-completion', 'manual-builder-input']) {
+  if (!inspector.includes(command)) fail(`Builder Inspector is missing command or source mode: ${command}.`);
 }
 if (!inspector.includes('resume <builder-input.json>')) fail('Resume CLI must require actual Builder Input.');
 
@@ -136,6 +156,7 @@ for (const required of [
   'validate-lean-runtime.mjs',
   'test-builder-authority-bypasses.mjs',
   'test-builder-truth-spine.mjs',
+  'test-builder-explicit-source-modes.mjs',
   'validate-builder-runtime-transaction.mjs'
 ]) {
   if (!centralValidation.includes(required)) fail(`Central validation is missing: ${required}`);
@@ -151,17 +172,18 @@ for (const file of activeDocs) {
   if (!text.includes('personal_single_operator')) fail(`${file} does not declare personal_single_operator.`);
   if (!text.includes('production_ready: false')) fail(`${file} does not preserve production_ready: false.`);
 }
-for (const file of ['README.md', 'STATUS.md', 'docs/BUILDER_TRUTH_SPINE.md']) {
+for (const file of ['README.md', 'STATUS.md', 'docs/EXPLICIT_SOURCE_MODES.md']) {
   const text = readText(file);
   for (const term of [
     'fixture_validation_is_real_completion: false',
-    'real_completion_requires_source_bound_input: true',
-    'real_completion_requires_confirmation_receipt: true',
-    'real_completion_requires_verified_evidence_bytes: true',
+    'real_completion_requires_explicit_source_mode: true',
+    'real_completion_requires_deterministic_content_binding: true',
+    'origin_identity_independently_verified: false',
+    'manual_builder_input_mode_enabled: true',
     'completion_status_runtime_derived: true',
     'completion_gate_runtime_derived: true'
   ]) {
-    if (!text.includes(term)) fail(`${file} is missing active truth-spine declaration: ${term}`);
+    if (!text.includes(term)) fail(`${file} is missing explicit-source Runtime declaration: ${term}`);
   }
 }
 
@@ -170,4 +192,4 @@ if (errors.length > 0) {
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log('Lean runtime authority, source-bound truth spine, and canonical transition consistency passed.');
+console.log('Lean Runtime authority, explicit source modes, deterministic content binding, and canonical transition consistency passed.');
