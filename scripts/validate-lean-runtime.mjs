@@ -113,7 +113,7 @@ for (const requiredTerm of [
   "source_selection: 'operator_explicit'",
   "origin_assurance: 'not_independently_verified'",
   "origin_assurance: 'manual_operator_supplied'",
-  "receipt_binding_status: 'matched'",
+  "sourceMode === SOURCE_MODES.PROJECT_GATE ? 'matched' : 'not_applicable'",
   'BUILDER-CONTEXT-113'
 ]) {
   if (!explicitSource.includes(requiredTerm)) fail(`Explicit source Runtime is missing required invariant: ${requiredTerm}`);
