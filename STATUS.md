@@ -10,7 +10,14 @@ security_posture: minimal_nonblocking
 independent_review_required: false
 pr_inspector_required: false
 exact_head_runtime_authority: false
+fixture_validation_is_real_completion: false
+real_completion_requires_source_bound_input: true
+real_completion_requires_confirmation_receipt: true
+real_completion_requires_verified_evidence_bytes: true
+completion_status_runtime_derived: true
+completion_gate_runtime_derived: true
 builder_to_responsive: out_of_scope
+responsive_complete: false
 production_ready: false
 ```
 
@@ -18,52 +25,89 @@ production_ready: false
 
 ```yaml
 base_branch: main
-starting_main_sha: e43879f3a30a59921da70964a530ef5617791d7f
-feature_branch: feat/lean-personal-runtime
-pull_request: 64
-delivery_model: one_consolidated_pull_request
+verified_starting_main_sha: 45a889ed8a122f3273d2e93c724abb394430cb25
+feature_branch: fix/lean-builder-truth-spine
+pull_request: 66
+pull_request_state: draft_open
+delivery_model: exactly_one_feature_branch_and_one_pull_request
 merge_performed: false
+approval_performed: false
 deployment_performed: false
+external_repositories_modified: false
 ```
 
 ## Implemented on Feature Branch
 
-- one active personal runtime authority;
-- Lightweight Builder Inspector with `intake`, `verify-capsule`, `resume`, and `completion`;
-- fail-closed state transition table;
-- `COMPLETED` restricted to `APPROVED_HANDOFF_MODE`;
-- session/package/candidate/checkpoint/blocker continuity;
-- simplified ordinary Action metadata with risk-conditioned extended fields;
-- deep runtime transaction retained as CI regression evidence;
-- industrial Exact-Head and external authority workflows removed from blocking CI;
-- deterministic Project Pack from one canonical source map;
-- fixture-based CE → Project Gate → Builder smoke validation;
-- active docs and Project Pack synchronized;
-- Builder → Responsive and production readiness remain out of scope.
+- explicit `fixture-validation` and `real-builder-run` operational modes;
+- standalone Builder Input restricted to fixture, preview, diagnostics and compatibility use;
+- Project Gate source binding through exact Builder Input byte SHA-256 and canonical package digest;
+- direct CE source path through the existing repository-owned Contract Gate and adapter;
+- Runtime-owned `ev4-builder-verified-context@1.0.0` with Context digest, source identity, candidate, Batch, Action IDs and Action body digests;
+- executable `confirm-batch` command and `ev4-builder-confirmation-receipt@1.0.0`;
+- Confirmation bound to exact Session, Package, Candidate, Context, Batch, Action IDs, Action body digests and operator token;
+- normal-path Evidence source resolution, byte reading and SHA-256 recomputation;
+- Evidence type, claim, subject, Session, Package and Action binding;
+- synthetic Evidence rejection in real mode;
+- compact claim/Evidence compatibility mapping;
+- Runtime-derived Completion Status and Completion Gate;
+- atomic publication of derived Completion carriers;
+- 54 focused mutation and preservation tests wired into `npm run validate`;
+- active README, CLI help and Runtime documentation synchronized.
 
-## Runtime Boundary
+## Functional Boundary
 
-A normal Builder Run is blocked only by real functional defects in input, candidate, lineage, action semantics, confirmation, Session State, Checkpoint, unresolved blockers, or Completion conditions.
+A real Builder Completion now requires:
 
-Repository CI, PR review state, independent review, governance receipts, merge evidence and repository commit identity do not authorize a Builder project run.
+```text
+verified upstream source
++ Runtime-derived Builder Context
++ valid BUILD_ACTIVE Session and Checkpoint
++ exact Confirmation Receipt
++ verified Evidence bytes and bindings
++ compatible claim coverage
++ zero unresolved blockers
+→ derived Builder Completion
+```
+
+The following cannot independently authorize a real Completion:
+
+- manually authored `builder-input.json`;
+- `confirmed_action_ids`;
+- declared `content_sha256` without source-byte verification;
+- synthetic or fixture Evidence;
+- caller-authored Completion booleans;
+- caller-authored proof status.
+
+## Existing Controls Preserved
+
+- canonical state-transition table;
+- `APPROVED_HANDOFF_MODE` and `BUILD_ACTIVE` predecessor requirements;
+- PAUSED-only Resume behavior;
+- Candidate, Session, Package and Checkpoint continuity;
+- exact embedded Checkpoint consistency;
+- Action omission, foreign ID, duplicate and unconfirmed rejection;
+- terminal predecessor rejection;
+- atomic publication and failure cleanup;
+- `responsive_complete: false`;
+- `production_ready: false`.
 
 ## Validation Status
 
 ```yaml
 connector_write_evidence: confirmed
 local_validation_environment: unavailable
-normal_ci_status: passing_on_pull_request
-last_confirmed_passing_head: 1d489bded43014b7fd02353c0a36c4356009cb33
-last_confirmed_workflow_run: 29930951595
-validated_command: npm run validate
-fixture_smoke_status: passed_in_central_validation
+local_commands_executed: []
+focused_truth_spine_suite: pending_exact_head_ci
+full_validation_suite: pending_exact_head_ci
+exact_head_ci_status: pending
 real_elementor_execution: not_verified
 owner_local_pilot_required: true
-current_head_rule: use_live_PR_64_checks_as_final_authority
 ```
 
-The passing run included checkout, `npm ci`, and the complete central functional validation suite. This mutable Status file is not runtime authorization; the live PR check on the current Head is the final repository-validation evidence.
+No local command is reported as passed. GitHub Actions on the exact current PR Head is the validation authority for this delivery.
 
 ## Remaining Functional Work
 
-No known Builder-repository architecture work is intentionally deferred. Project Gate currently pins an older Builder commit and requires a separate post-Merge pin update outside this repository. Real Elementor use still requires the Owner Local Pilot.
+- resolve any exact-head CI failure with evidence from the failing job;
+- run one real Owner Local Pilot with current Project Gate or direct CE source material;
+- keep Builder → Responsive, Responsive completion and production readiness outside this PR.
