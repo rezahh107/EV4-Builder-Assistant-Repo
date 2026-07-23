@@ -109,14 +109,36 @@
       "id": "emit-batch",
       "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"},
       "trigger": "action_batch_emitted",
-      "guards": ["action_batch_valid", "no_blocker", "confirmation_binding_created"],
+      "guards": [
+        "runtime_context_valid",
+        "session_checkpoint_identity_matches",
+        "checkpoint_sequence_valid",
+        "batch_matches_context",
+        "confirmed_action_ids_empty",
+        "unconfirmed_action_ids_complete",
+        "no_blocker",
+        "derived_waiting_carriers",
+        "atomic_publication_required"
+      ],
       "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "WAITING_FOR_CONFIRMATION"}
     },
     {
       "id": "confirm-batch",
       "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "WAITING_FOR_CONFIRMATION"},
       "trigger": "confirmation_accepted",
-      "guards": ["active_confirmation_matches", "checkpoint_updated", "unresolved_blockers_preserved"],
+      "guards": [
+        "runtime_context_valid",
+        "session_checkpoint_identity_matches",
+        "checkpoint_sequence_valid",
+        "batch_matches_context",
+        "confirmed_action_ids_empty",
+        "unconfirmed_action_ids_complete",
+        "exact_operator_token_matches",
+        "derived_build_active_carriers",
+        "receipt_binds_resulting_checkpoint",
+        "unresolved_blockers_preserved",
+        "atomic_publication_required"
+      ],
       "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"}
     },
     {
@@ -156,6 +178,12 @@
     "intake_or_correction_direct_jump_to_completed",
     "caller_authored_completed_carrier_as_transition_input",
     "capsule_only_resume_or_completion_authorization",
-    "required_action_disappears_by_omission"
+    "required_action_disappears_by_omission",
+    "confirm_batch_from_build_active",
+    "confirm_batch_from_preconfirmed_carrier",
+    "confirm_batch_with_incomplete_or_foreign_unconfirmed_actions",
+    "evidence_without_verified_source_status",
+    "generic_subject_authorizes_action_execution",
+    "completion_batch_drift"
   ]
 }
