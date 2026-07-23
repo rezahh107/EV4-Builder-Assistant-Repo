@@ -5,13 +5,21 @@
   "active": true,
   "runtime_authorities": [
     "valid_builder_context_input",
+    "explicit_source_mode_selection",
+    "deterministic_content_binding",
     "selected_candidate_id_continuity",
     "decision_lineage_continuity",
     "allowed_action_batch_semantics",
+    "canonical_confirmation_transaction",
     "active_confirmation_binding",
+    "canonical_checkpoint_sequence",
+    "exact_confirmed_batch_binding",
+    "verified_evidence_status",
+    "action_specific_execution_evidence",
     "session_state_consistency",
     "checkpoint_consistency",
     "unresolved_blocker_preservation",
+    "atomic_confirmation_publication",
     "valid_completion_conditions"
   ],
   "maintenance_authorities": [
