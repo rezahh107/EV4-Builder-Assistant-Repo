@@ -1,31 +1,25 @@
-# Intake Inspector
+# Explicit Source Intake
 
-Canonical command:
+Runtime invocation selects exactly one source mode.
 
-```bash
-node scripts/builder-inspector.mjs intake builder-input.json builder-intake-result.json
+```yaml
+project-gate:
+  sourceArtifactFile: required
+  builderInputFile: required
+direct-ce:
+  sourceArtifactFile: required
+  builderInputFile: forbidden
+manual-builder-input:
+  sourceArtifactFile: forbidden
+  builderInputFile: required
 ```
 
-Accepted input must be exact parsed `ev4-builder-context-package@1.0.0` content and must pass:
-
-- JSON parsing;
-- Builder Context Schema validation;
-- semantic and cross-field validation;
-- decision-lineage validation;
-- selected candidate lock and consistency;
-- `input_authorization` decision and eligible mode/state;
-- canonical package digest validation.
-
-The source file is read-only. Output publication uses a temporary file followed by atomic rename.
-
-`builder-input.json` remains canonical Runtime identity. `builder-intake-result.json` is derived evidence and cannot independently authorize Resume or Completion.
-
-Receipt-only input, raw Project Gate envelopes, malformed JSON, wrong Schema, candidate mismatch, lineage mismatch, failed authorization, or stale source bytes remain blocked.
-
-Verify a previously accepted Capsule against current source bytes with:
+Canonical commands:
 
 ```bash
-node scripts/builder-inspector.mjs verify-capsule builder-input.json builder-intake-result.json
+node scripts/builder-inspector.mjs real-intake project-gate receipt.json builder-input.json runtime-context.json
+node scripts/builder-inspector.mjs real-intake direct-ce ce-source.json - runtime-context.json
+node scripts/builder-inspector.mjs real-intake manual-builder-input - builder-input.json runtime-context.json
 ```
 
-Resume and Completion perform the same Builder Input and Capsule reconciliation again before evaluating their transitions.
+Unused paths are rejected. Context references identify bytes actually consumed. `intake` is fixture/compatibility-only.
