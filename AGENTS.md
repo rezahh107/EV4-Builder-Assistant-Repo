@@ -55,7 +55,16 @@ manual-builder-input:
 
 - `confirm-batch` accepts only matching `APPROVED_HANDOFF_MODE / WAITING_FOR_CONFIRMATION` Session and Checkpoint carriers.
 - Confirmation predecessor has empty `confirmed_action_ids` and the complete Context Action set in `unconfirmed_action_ids`.
-- Runtime derives the resulting `BUILD_ACTIVE` carriers and publishes Receipt, Checkpoint, Session and Result atomically.
+- Runtime derives the resulting `BUILD_ACTIVE` carriers.
+- Confirmation atomically publishes exactly:
+
+```text
+confirmation-receipt.json
+checkpoint.json
+session-state.json
+confirmation-result.json
+```
+
 - Receipt binds resulting Checkpoint ID, sequence and parent, Session, Package, Candidate, Context, Batch, Action IDs, Action body digests and token.
 - Checkpoint sequence rule: sequence 1 has null parent; later sequences have a non-empty parent.
 - Evidence is verified only when `source.status == "verified"`.
