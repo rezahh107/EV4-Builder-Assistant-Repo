@@ -3,13 +3,23 @@
 ```yaml
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
-industrial_governance: removed_from_active_system
-security_posture: minimal_nonblocking
 production_ready: false
 ```
 
-Builder executes a selected and locked implementation. It does not choose architecture or change `selected_candidate_id`.
+Canonical real flow:
 
-Runtime authorities are limited to valid Builder input, candidate and decision-lineage continuity, Action Batch semantics, confirmation binding, Session State, Checkpoint, unresolved blocker preservation, and valid Completion conditions.
+```text
+explicit operator source mode
+→ real-intake
+→ Runtime Context
+→ Action Batch
+→ emit-batch
+→ WAITING_FOR_CONFIRMATION
+→ atomic confirm-batch transaction
+→ BUILD_ACTIVE
+→ verified Evidence
+→ real-completion
+→ COMPLETED
+```
 
-Repository maintenance uses Schemas, validators, fixtures, regression tests, normal CI, and owner review. Repository process evidence is not runtime authorization.
+Runtime proves deterministic content binding, not producer identity or independent origin. `responsive_complete: false` and `production_ready: false` remain invariant.
