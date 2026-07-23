@@ -57,11 +57,11 @@
     },
     {
       "source_path": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt",
-      "source_sha256": "aba1bb49230765f5a9dcdaac8bde322a662a6e110d32361d0c63e3500ca52772",
+      "source_sha256": "79c5339f55f388bf71431276b89b739a89c8d7a786833bccc907d26c458e6cec",
       "output_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "output_sha256": "aba1bb49230765f5a9dcdaac8bde322a662a6e110d32361d0c63e3500ca52772",
-      "bytes": 2805,
-      "chars": 2781,
+      "output_sha256": "79c5339f55f388bf71431276b89b739a89c8d7a786833bccc907d26c458e6cec",
+      "bytes": 3149,
+      "chars": 3111,
       "role": "project_instructions"
     }
   ]
