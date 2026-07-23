@@ -21,6 +21,13 @@ production_ready: false
 
 Runtime executes the exact operator-selected source bytes and derives facts from those bytes. It does not claim independently verified producer or origin identity.
 
+## Bootstrap and Resume
+
+Canonical Builder package Schema is `ev4-builder-context-package@1.0.0`; `builder-input.json` is a conventional operator filename and does not create authority.
+
+- `شروع` initializes a fresh intake only when no active Run exists; repeated `شروع` preserves initialized state.
+- `استارت` resumes only from valid `PAUSED` Session and Checkpoint carriers and cannot fabricate a Run.
+
 ## Canonical Real Flow
 
 ```text
