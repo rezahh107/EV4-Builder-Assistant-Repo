@@ -22,6 +22,8 @@ production_ready: false
 
 این ریپو Runtime شخصی Builder برای اجرای Action Batchهای کوچک و قابل Resume است. یک فایل مستقل و caller-authored با نام `builder-input.json` فقط می‌تواند برای fixture، preview، diagnostics و compatibility inspection استفاده شود؛ چنین فایلی به‌تنهایی Run واقعی را authorize نمی‌کند.
 
+Canonical Builder package Schema همچنان `ev4-builder-context-package@1.0.0` است. Real Runtime این package را از source معتبر استخراج یا به source معتبر bind می‌کند؛ نام فایل به‌تنهایی شرط پذیرش نیست.
+
 ## Active Runtime Truth Spine
 
 ```text
