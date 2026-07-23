@@ -6,6 +6,12 @@ industrial_governance: removed_from_active_system
 security_posture: minimal_nonblocking
 production_ready: false
 
+Bootstrap and Resume:
+- Canonical Builder package Schema: ev4-builder-context-package@1.0.0
+- Conventional operator filename: builder-input.json
+- شروع initializes fresh intake only when no active Run exists; repeated شروع preserves initialized state.
+- استارت resumes only from valid PAUSED carriers and cannot fabricate a Run.
+
 CANONICAL_REAL_FLOW:
 explicit operator source mode
 → real-intake
