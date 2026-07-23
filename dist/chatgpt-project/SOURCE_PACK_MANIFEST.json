@@ -11,58 +11,58 @@
   "deterministic": true,
   "files": [
     {
+      "source_path": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt",
+      "source_sha256": "aba1bb49230765f5a9dcdaac8bde322a662a6e110d32361d0c63e3500ca52772",
+      "output_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
+      "output_sha256": "aba1bb49230765f5a9dcdaac8bde322a662a6e110d32361d0c63e3500ca52772",
+      "bytes": 2805,
+      "chars": 2781,
+      "role": "project_instructions"
+    },
+    {
       "source_path": "runtime/project-pack/01_RUNTIME_CORE.md",
-      "source_sha256": "021fb279f8522021f1bd2e952b96db9c1647effe83b3d670dcc9f3ba235e18a4",
+      "source_sha256": "4b2ebf9c979d96540c9706f99204be982b70f7d0e3de7d3bc7a90e4c78e50eac",
       "output_path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
-      "output_sha256": "021fb279f8522021f1bd2e952b96db9c1647effe83b3d670dcc9f3ba235e18a4",
-      "bytes": 749,
-      "chars": 749,
+      "output_sha256": "4b2ebf9c979d96540c9706f99204be982b70f7d0e3de7d3bc7a90e4c78e50eac",
+      "bytes": 575,
+      "chars": 555,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/02_INTAKE_INSPECTOR.md",
-      "source_sha256": "d90446cbfc50991bdaea279c0b48aee7f300226513dbe51c5f2f3ebd834e9e66",
+      "source_sha256": "a3a83fa676d341a50d58a47209f43f6b8c1d873f9622e96150f23fe7090c5b19",
       "output_path": "dist/chatgpt-project/knowledge/02_INTAKE_INSPECTOR.md",
-      "output_sha256": "d90446cbfc50991bdaea279c0b48aee7f300226513dbe51c5f2f3ebd834e9e66",
-      "bytes": 1246,
-      "chars": 1246,
+      "output_sha256": "a3a83fa676d341a50d58a47209f43f6b8c1d873f9622e96150f23fe7090c5b19",
+      "bytes": 793,
+      "chars": 793,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/03_STATE_RESUME.md",
-      "source_sha256": "9f52efcb38fcc48ceee9936eb14e87998c52837638d2e3292c8feee9ade2a6af",
+      "source_sha256": "a8549ea1c339b4f186f290564a4c9ad818f1ec4bfc8e2446fe0bb7659c57dd0a",
       "output_path": "dist/chatgpt-project/knowledge/03_STATE_RESUME.md",
-      "output_sha256": "9f52efcb38fcc48ceee9936eb14e87998c52837638d2e3292c8feee9ade2a6af",
-      "bytes": 1334,
-      "chars": 1320,
+      "output_sha256": "a8549ea1c339b4f186f290564a4c9ad818f1ec4bfc8e2446fe0bb7659c57dd0a",
+      "bytes": 504,
+      "chars": 504,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/04_ACTION_CONFIRMATION.md",
-      "source_sha256": "e90172b6c97edd14fc0f54581f1a74476573f17a734a6e7e9c04a5737c2dbb4f",
+      "source_sha256": "c3152930fba48e8c2af8bbf6ca6a1b75052f1e26bca12db58400bc226021e582",
       "output_path": "dist/chatgpt-project/knowledge/04_ACTION_CONFIRMATION.md",
-      "output_sha256": "e90172b6c97edd14fc0f54581f1a74476573f17a734a6e7e9c04a5737c2dbb4f",
-      "bytes": 1186,
-      "chars": 1186,
+      "output_sha256": "c3152930fba48e8c2af8bbf6ca6a1b75052f1e26bca12db58400bc226021e582",
+      "bytes": 734,
+      "chars": 726,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/05_CHECKPOINT_COMPLETION.md",
-      "source_sha256": "20af3d3993077468dc535eed3a431c644c4088e70322906e13840498fd121907",
+      "source_sha256": "2ddc85278be3d9dc2643a24fec08a877fd6cc9390aa1d77093522c65eeb69895",
       "output_path": "dist/chatgpt-project/knowledge/05_CHECKPOINT_COMPLETION.md",
-      "output_sha256": "20af3d3993077468dc535eed3a431c644c4088e70322906e13840498fd121907",
-      "bytes": 1762,
-      "chars": 1762,
+      "output_sha256": "2ddc85278be3d9dc2643a24fec08a877fd6cc9390aa1d77093522c65eeb69895",
+      "bytes": 895,
+      "chars": 895,
       "role": "knowledge"
-    },
-    {
-      "source_path": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt",
-      "source_sha256": "fd6ddd3f26642e7dbc043d69416fce95b195912940ba86183e72c493a7efbc8d",
-      "output_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "output_sha256": "fd6ddd3f26642e7dbc043d69416fce95b195912940ba86183e72c493a7efbc8d",
-      "bytes": 4845,
-      "chars": 3725,
-      "role": "project_instructions"
     }
   ]
 }
