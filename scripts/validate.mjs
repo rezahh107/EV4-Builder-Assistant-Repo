@@ -51,6 +51,7 @@ const nodeChecks = [
   'scripts/test-builder-authority-bypasses.mjs',
   'scripts/test-builder-truth-spine.mjs',
   'scripts/test-builder-explicit-source-modes.mjs',
+  'scripts/test-builder-functional-correctness.mjs',
   'scripts/test-project-pack-determinism.mjs',
   'scripts/smoke-ce-project-gate-builder.mjs',
   'scripts/validate-builder-runtime-transaction.mjs',
