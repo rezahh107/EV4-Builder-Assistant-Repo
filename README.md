@@ -10,7 +10,10 @@ independent_review_required: false
 pr_inspector_required: false
 exact_head_runtime_authority: false
 fixture_validation_is_real_completion: false
-real_completion_requires_source_bound_input: true
+real_completion_requires_explicit_source_mode: true
+real_completion_requires_deterministic_content_binding: true
+origin_identity_independently_verified: false
+manual_builder_input_mode_enabled: true
 real_completion_requires_confirmation_receipt: true
 real_completion_requires_verified_evidence_bytes: true
 completion_status_runtime_derived: true
@@ -20,47 +23,101 @@ responsive_complete: false
 production_ready: false
 ```
 
-این ریپو Runtime شخصی Builder برای اجرای Action Batchهای کوچک و قابل Resume است. یک فایل مستقل و caller-authored با نام `builder-input.json` فقط می‌تواند برای fixture، preview، diagnostics و compatibility inspection استفاده شود؛ چنین فایلی به‌تنهایی Run واقعی را authorize نمی‌کند.
+این ریپو Runtime شخصی Builder برای اجرای Action Batchهای کوچک، تأییدشده و قابل Resume است. Canonical Builder package Schema همچنان `ev4-builder-context-package@1.0.0` است.
 
-Canonical Builder package Schema همچنان `ev4-builder-context-package@1.0.0` است. Real Runtime این package را از source معتبر استخراج یا به source معتبر bind می‌کند؛ نام فایل به‌تنهایی شرط پذیرش نیست.
+یک نام فایل مانند `builder-input.json` authority ایجاد نمی‌کند. Runtime فقط bytes دقیق source mode انتخاب‌شده توسط اپراتور را اجرا می‌کند، تمام facts را از همان bytes مشتق می‌کند و origin یا producer identity را مستقل از محتوا تأییدشده معرفی نمی‌کند.
 
-## Active Runtime Truth Spine
+## Active Runtime
 
 ```text
-Authoritative upstream source artifact
-→ Builder Source Resolver
-→ Runtime-owned Verified Builder Context
+operator selects source mode
+→ exact selected source bytes are read
+→ mode-specific content checks and Builder validators run
+→ deterministic Runtime Context is derived
 → Builder Action Batch
-→ explicit confirm-batch command
+→ explicit confirm-batch
 → Confirmation Receipt
-→ source-bound Evidence byte verification
+→ Evidence byte/hash/claim verification
 → Runtime-derived Completion Status
 → Runtime-derived Completion Gate
 → COMPLETED
 ```
 
-Sourceهای واقعی پشتیبانی‌شده:
+## Explicit Source Modes
 
-- `project-gate`: یک `ev4-project-gate-c2b-receipt@1.0.0` که SHA-256 دقیق bytes فایل Builder Input و canonical package digest را bind می‌کند؛
-- `direct-ce`: یک CE Builder package که توسط adapter رسمی همین ریپو normalize می‌شود و digest محتوای CE آن بررسی می‌شود.
+Source mode فقط از Runtime invocation می‌آید:
 
-`شروع` فقط intake جدید را در نبود Run فعال آغاز می‌کند. `شروع` تکراری state را حفظ می‌کند. `استارت` فقط Session واقعی و `PAUSED` را Resume می‌کند و نمی‌تواند Run بسازد.
+```text
+project-gate
+direct-ce
+manual-builder-input
+```
 
-Builder completion فقط پایان محدوده Builder است و Responsive completion یا production readiness را اثبات نمی‌کند.
+هیچ JSON ورودی نمی‌تواند خودش را به mode دیگری ارتقا دهد.
+
+### `project-gate`
+
+Runtime:
+
+1. bytes دقیق Builder Input را می‌خواند؛
+2. تمام Builder Schema، semantic، cross-field و lineage validationها را اجرا می‌کند؛
+3. SHA-256 فایل و canonical package digest را دوباره محاسبه می‌کند؛
+4. هر دو مقدار را با Project Gate Receipt مقایسه می‌کند؛
+5. Context را از Builder Input واقعی مشتق می‌کند.
+
+Receipt فقط content-binding cross-check است. `producer_repository`، `producer_commit_sha` و metadata مشابه، Run را authorize یا block نمی‌کنند.
+
+Context این semantics را ثبت می‌کند:
+
+```yaml
+source_mode: project-gate
+source_selection: operator_explicit
+content_binding_status: verified
+origin_assurance: not_independently_verified
+receipt_binding_status: matched
+```
+
+### `direct-ce`
+
+Runtime actual CE package را می‌خواند، declared content digest را با content واقعی مقایسه می‌کند، CE Contract Gate و adapter رسمی همین ریپو را اجرا می‌کند، Builder package را داخلی می‌سازد و سپس تمام Builder validatorها را اجرا می‌کند.
+
+```yaml
+source_mode: direct-ce
+source_selection: operator_explicit
+content_binding_status: verified
+origin_assurance: not_independently_verified
+receipt_binding_status: not_applicable
+```
+
+هیچ external CE attestation، repository allowlist یا producer authentication لازم نیست.
+
+### `manual-builder-input`
+
+این mode فقط با انتخاب صریح اپراتور فعال می‌شود و همان Builder validatorها، package digest، Candidate، Batch، Action IDs و Action body digests را محاسبه می‌کند.
+
+```yaml
+source_mode: manual-builder-input
+source_selection: operator_explicit
+content_binding_status: verified
+origin_assurance: manual_operator_supplied
+receipt_binding_status: not_applicable
+```
+
+Manual mode هرگز Project Gate یا CE origin را claim نمی‌کند؛ اما پس از intake، تمام Session، Confirmation، Evidence و Completion rules دقیقاً یکسان هستند.
 
 ## Real and Fixture Modes
 
 | Capability | `fixture-validation` | `real-builder-run` |
 |---|---:|---:|
-| validate standalone Builder Input | yes | no |
+| validate standalone Builder Input | yes | only through explicit source mode |
 | report `would_complete: true` | yes | n/a |
-| create source-bound Context | no | yes |
+| create deterministic Runtime Context | no | yes |
 | create Confirmation Receipt | no | yes |
 | verify Evidence source bytes | no | yes |
 | set `builder_build_complete: true` | never | only after all derived predicates pass |
 | enter `COMPLETED` | never | only after all derived predicates pass |
 
-Fixture terminal semantics remain:
+Fixture semantics remain:
 
 ```yaml
 synthetic_validation_passed: true
@@ -80,9 +137,9 @@ node scripts/builder-inspector.mjs \
   fixture-result.json
 ```
 
-The legacy alias `intake` has the same fixture-only authority.
+The legacy alias `intake` has fixture-only authority.
 
-### Real intake from Project Gate
+### Project Gate intake
 
 ```bash
 node scripts/builder-inspector.mjs \
@@ -90,11 +147,11 @@ node scripts/builder-inspector.mjs \
   project-gate \
   project-gate-c2b-receipt.json \
   builder-input.json \
-  verified-builder-context.json \
+  runtime-context.json \
   real-intake-result.json
 ```
 
-### Real intake from direct CE package
+### Direct CE intake
 
 ```bash
 node scripts/builder-inspector.mjs \
@@ -102,7 +159,19 @@ node scripts/builder-inspector.mjs \
   direct-ce \
   ce-source-wrapper.json \
   - \
-  verified-builder-context.json \
+  runtime-context.json \
+  real-intake-result.json
+```
+
+### Manual Builder Input intake
+
+```bash
+node scripts/builder-inspector.mjs \
+  real-intake \
+  manual-builder-input \
+  - \
+  builder-input.json \
+  runtime-context.json \
   real-intake-result.json
 ```
 
@@ -111,14 +180,14 @@ node scripts/builder-inspector.mjs \
 ```bash
 node scripts/builder-inspector.mjs \
   confirm-batch \
-  verified-builder-context.json \
+  runtime-context.json \
   session-state.json \
   checkpoint.json \
   "تایید BATCH-001" \
   confirmation-receipt.json
 ```
 
-The token must match the active Runtime-derived batch. `checkpoint.confirmed_action_ids` is only a mirror and is insufficient without the validated Receipt.
+`checkpoint.confirmed_action_ids` فقط mirror است و بدون Receipt معتبر Completion را authorize نمی‌کند.
 
 ### Real Completion
 
@@ -128,151 +197,95 @@ node scripts/builder-inspector.mjs \
   project-gate \
   project-gate-c2b-receipt.json \
   builder-input.json \
-  verified-builder-context.json \
+  runtime-context.json \
   session-state.json \
   checkpoint.json \
   confirmation-receipt.json \
   completion-output
 ```
 
-For direct CE intake, replace `project-gate` with `direct-ce`, use the CE wrapper as the source artifact, and pass `-` for the Builder Input argument.
+برای manual mode، `manual-builder-input` را انتخاب کن، source artifact را `-` بده و همان Builder Input استفاده‌شده در intake را ارائه کن.
 
-### Legacy compatibility
+## Completion Re-derivation
+
+قبل از هر real Completion، Runtime:
+
+1. source mode invocation را دوباره اعمال می‌کند؛
+2. source fileهای انتخاب‌شده را دوباره می‌خواند؛
+3. mode-specific derivation و تمام Builder validationها را دوباره اجرا می‌کند؛
+4. hashها، canonical package digest، Candidate، Batch، Action IDs و Action body digests را دوباره می‌سازد؛
+5. Context تازه را با Context ذخیره‌شده به‌صورت canonical مقایسه می‌کند؛
+6. هر source-byte drift یا Context drift را fail-closed رد می‌کند.
+
+## Confirmation and Evidence
+
+Confirmation Receipt به Session، Package، Candidate، Context digest، Batch، Action set، Action body digests و token دقیق اپراتور bind می‌شود.
+
+Normal Completion برای Evidence:
+
+- path امن repository-relative را resolve می‌کند؛
+- actual bytes را می‌خواند؛
+- SHA-256 را دوباره محاسبه می‌کند؛
+- claim ID، claim class، Evidence type، subject، Session، Package و Action binding را بررسی می‌کند؛
+- synthetic Evidence را در `real-builder-run` رد می‌کند؛
+- Evidence ناقص یا ناسازگار را blocker نگه می‌دارد.
+
+هیچ signature، PKI، secret، remote attestation، service، database یا event bus لازم نیست.
+
+## Derived Completion
+
+Caller-authored `completion-status.json` و `completion-gate.json` authority ندارند. Runtime Status و Gate را از verified content predicates مشتق و atomically منتشر می‌کند.
+
+Completion همچنان فقط Builder scope را اثبات می‌کند:
+
+```yaml
+builder_build_complete: true
+responsive_complete: false
+production_ready: false
+```
+
+## Startup and Resume
+
+`شروع` فقط intake جدید را در نبود Run فعال آغاز می‌کند. `شروع` تکراری state را حفظ می‌کند. `استارت` فقط Session واقعی و `PAUSED` را Resume می‌کند و نمی‌تواند Run بسازد.
+
+Legacy Capsule verification برای diagnostics و Resume compatibility باقی مانده و real Completion را authorize نمی‌کند:
 
 ```bash
 node scripts/builder-inspector.mjs verify-capsule builder-input.json legacy-intake-result.json
 node scripts/builder-inspector.mjs resume builder-input.json legacy-intake-result.json session-state.json checkpoint.json resume-output
 ```
 
-Legacy Capsule verification remains for diagnostics and existing Resume compatibility. It cannot authorize real Completion.
-
-## Confirmation Binding
-
-The local functional Confirmation Receipt binds:
-
-- exact `session_id`;
-- exact canonical `package_digest`;
-- exact selected candidate;
-- exact verified Context digest;
-- exact `batch_id`;
-- complete Action ID set;
-- canonical digest of every Action body;
-- exact operator token.
-
-No signature, PKI, external ledger or independent reviewer is required.
-
-## Evidence Verification
-
-Normal real Completion performs all of the following for every consequential Evidence Record:
-
-1. resolve a safe repository-relative `source_ref`;
-2. read the actual source bytes;
-3. recompute SHA-256;
-4. compare it with `content_sha256`;
-5. parse the Evidence source as machine-readable JSON;
-6. verify Evidence type, claim ID and claim class compatibility;
-7. verify subject, Session and Package bindings;
-8. verify Action identity for execution claims;
-9. reject synthetic or fixture Evidence in `real-builder-run`;
-10. retain missing, incompatible or unverified Evidence as Completion blockers.
-
-The compact canonical claim classes are:
-
-```text
-required_action_execution
-scaffold_built
-structure_built
-content_filled
-desktop_layout_established
-layout_verified
-export_checked
-export_verified
-```
-
-One Evidence item cannot satisfy unrelated claim classes unless the explicit compatibility mapping permits the pair.
-
-## Derived Completion
-
-Caller-authored `completion-status.json` or `completion-gate.json` cannot force Completion. Real Completion derives and atomically publishes:
-
-```text
-completion-status.json
-completion-gate.json
-checkpoint.json
-session-state.json
-completion-result.json
-```
-
-Completion requires:
-
-- a freshly re-derived source-bound Builder Context;
-- `APPROVED_HANDOFF_MODE / BUILD_ACTIVE` predecessor state;
-- exact Session, Package, Candidate and Checkpoint continuity;
-- no unresolved blockers;
-- a valid Confirmation Receipt;
-- verified execution Evidence for every required Action;
-- compatible verified Evidence for all required Completion claims;
-- successful atomic publication validation.
-
-## Repository Maintenance
+## Repository Validation
 
 ```bash
 npm ci
-npm run validate:version-consistency
-npm run validate:schema-registry
-npm run validate:builder-context-package
-npm run validate:cross-field
-npm run validate:builder-lineage-sequence
+node scripts/test-builder-authority-bypasses.mjs
 node scripts/test-builder-truth-spine.mjs
-npm run build:project-pack
+node scripts/test-builder-explicit-source-modes.mjs
 npm run validate
 ```
 
-`npm run validate` includes the 54 focused mutation and preservation tests in `scripts/test-builder-truth-spine.mjs`.
-
-Deep Runtime Transaction remains available for CI regression and diagnostics. It is not required per message or per Action.
+`npm run validate` شامل reproductionهای legacy، 54 regression قبلی و 11 mutation/preservation test برای F-001 است.
 
 ## Deterministic Project Pack
 
-Canonical source map:
-
-```text
-runtime/project-pack-source-map.v1.json
-```
-
-Build verification:
-
 ```bash
 node scripts/build-project-pack.mjs --verify
-```
-
-Regeneration:
-
-```bash
 node scripts/build-project-pack.mjs --write
 ```
 
-Generated files in `dist/chatgpt-project` are non-authoritative. Hand edits or stale generated files cause validation failure.
+Canonical source map در `runtime/project-pack-source-map.v1.json` است. فایل‌های `dist/chatgpt-project` authoritative نیستند و hand edit یا stale output باعث failure می‌شود.
 
 ## Out of Scope
 
+- producer authentication یا independent origin verification
+- GitHub API provenance checks
+- repository یا commit allowlists
+- signed Receipts، PKI، secrets یا external attestation
+- databases، services، event buses یا state machine دوم
 - Builder → Responsive runtime handoff
 - Responsive completion
-- production deployment
-- real Elementor automation
-- production readiness claim
-- cryptographic signatures or external attestations
-- databases, services, event buses or a second state machine
+- production deployment و production readiness claim
+- real Elementor automation در CI
 
-## Owner Local Pilot
-
-1. Publish a real Project Gate receipt and exact Builder Input bytes, or provide a direct CE package wrapper.
-2. Run `real-intake` and retain the generated Verified Builder Context.
-3. Initialize or preserve the exact Session State and Checkpoint.
-4. Execute one bounded Action Batch in Elementor.
-5. Run `confirm-batch` with the exact operator token.
-6. Capture non-synthetic source-bound Evidence files with correct hashes and bindings.
-7. Run `real-completion`.
-8. Confirm only Builder completion; keep Responsive and production flags false.
-
-Detailed contract and examples are documented in `docs/BUILDER_TRUTH_SPINE.md`.
+جزئیات source contract در `docs/EXPLICIT_SOURCE_MODES.md` و Completion/Evidence contract در `docs/BUILDER_TRUTH_SPINE.md` ثبت شده است.
