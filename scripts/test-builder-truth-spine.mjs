@@ -204,12 +204,12 @@ function createCase(name) {
     options(output = path.join(dir, 'completion-output')) {
       return {
         sourceKind: 'project-gate',
-        sourceArtifactFile: rel(sourceFile),
-        builderInputFile: rel(builderFile),
-        contextFile: rel(contextFile),
-        sessionFile: rel(sessionFile),
-        checkpointFile: rel(checkpointFile),
-        confirmationReceiptFile: rel(confirmationFile),
+        sourceArtifactFile: rel(this.sourceFile),
+        builderInputFile: rel(this.builderFile),
+        contextFile: rel(this.contextFile),
+        sessionFile: rel(this.sessionFile),
+        checkpointFile: rel(this.checkpointFile),
+        confirmationReceiptFile: rel(this.confirmationFile),
         outputDirectory: rel(output)
       };
     },
