@@ -97,17 +97,24 @@ The following cannot independently authorize a real Completion:
 connector_write_evidence: confirmed
 local_validation_environment: unavailable
 local_commands_executed: []
-focused_truth_spine_suite: pending_exact_head_ci
-full_validation_suite: pending_exact_head_ci
-exact_head_ci_status: pending
+last_validated_head: 7a5784ea062ceed0c5027df84df99f81cf95b5e3
+last_validated_workflow: Schema validation
+last_validated_run_id: 30023456727
+last_validated_result: passed
+validated_commands:
+  - npm ci
+  - npm run validate
+focused_truth_spine_suite: passed_in_full_validation
+full_validation_suite: passed
+current_status_commit_requires_exact_head_ci: true
 real_elementor_execution: not_verified
 owner_local_pilot_required: true
 ```
 
-No local command is reported as passed. GitHub Actions on the exact current PR Head is the validation authority for this delivery.
+No local command is reported as passed. GitHub Actions checked out the recorded exact commit, installed dependencies, and completed functional validation successfully. The documentation-only Status commit that records that evidence must itself receive final exact-head CI before delivery is reported complete.
 
 ## Remaining Functional Work
 
-- resolve any exact-head CI failure with evidence from the failing job;
+- obtain final exact-head CI for the Status evidence commit;
 - run one real Owner Local Pilot with current Project Gate or direct CE source material;
 - keep Builder → Responsive, Responsive completion and production readiness outside this PR.
