@@ -12,6 +12,13 @@ production_ready: false
 
 Read `runtime/personal-runtime-authority.v1.json`, `runtime/state-transitions.v1.json`, `PROJECT_INSTRUCTIONS.md`, `core/MODE_STATE_MATRIX.md`, relevant Schemas/validators/tests, then `scripts/validate.mjs`.
 
+## Bootstrap and Resume
+
+Canonical Builder package Schema is `ev4-builder-context-package@1.0.0`; `builder-input.json` is the conventional operator filename, not an authority source.
+
+- `شروع` initializes fresh intake only when no active Run exists; repeated `شروع` preserves the initialized Session, Checkpoint and unresolved blockers.
+- `استارت` resumes only from valid `PAUSED` carriers and cannot fabricate a Run.
+
 ## Canonical Real Runtime
 
 ```text
