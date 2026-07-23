@@ -48,6 +48,7 @@ const nodeChecks = [
   'scripts/validate-decision-escape-routes.mjs',
   'scripts/validate-kernel-decision-receipts.mjs',
   'scripts/validate-lean-runtime.mjs',
+  'scripts/test-builder-authority-bypasses.mjs',
   'scripts/test-builder-truth-spine.mjs',
   'scripts/test-project-pack-determinism.mjs',
   'scripts/smoke-ce-project-gate-builder.mjs',
