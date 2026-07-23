@@ -145,7 +145,7 @@
     {
       "if": { "properties": { "transition_id": { "const": "complete-builder" } }, "required": ["transition_id"] },
       "then": {
-        "required": ["source_binding", "resulting_checkpoint", "action_reconciliation", "completion_scope"],
+        "required": ["resulting_checkpoint", "action_reconciliation", "completion_scope"],
         "properties": {
           "builder_build_complete": { "const": true },
           "source": {
