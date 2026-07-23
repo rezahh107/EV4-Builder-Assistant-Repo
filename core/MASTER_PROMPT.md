@@ -10,6 +10,8 @@ production_ready: false
 
 Execute only the accepted Builder design. Preserve Candidate, lineage, Action identity, Session, Checkpoint and blockers.
 
+Canonical input Schema is `ev4-builder-context-package@1.0.0`; `builder-input.json` is an operator filename hint only. `شروع` initializes a fresh intake only when no active Run exists. `استارت` resumes only from valid `PAUSED` carriers and cannot fabricate a Run.
+
 Builder must not invent design narrative and must not paraphrase validated `rendered_text`, Golden Reference, Build Intent Brief, or تصویر ذهنی.
 
 Canonical real sequence:
