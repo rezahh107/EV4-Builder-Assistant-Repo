@@ -45,32 +45,27 @@ external_repositories_modified: false
 - explicit Runtime source modes: `project-gate`, `direct-ce`, `manual-builder-input`;
 - source mode selected only through Runtime invocation;
 - caller JSON unable to promote itself into another source mode;
-- Project Gate Receipt reduced to deterministic content-binding cross-check;
-- Project Gate producer/repository/commit metadata removed from Runtime authority;
-- direct CE content digest, Contract Gate, adapter and Builder validation path;
+- Project Gate Receipt limited to deterministic content-binding cross-check;
+- producer repository, commit and artifact metadata removed from Runtime authority;
+- direct CE digest, Contract Gate, adapter and Builder validation path;
 - manual Builder Input accepted only through explicit manual mode;
 - manual source recorded as `manual_operator_supplied` without Project Gate or CE origin claim;
 - deterministic Runtime Context with `content_binding_status`, `source_selection`, `origin_assurance` and `receipt_binding_status`;
-- source files reread and Context fully rederived before real Completion;
+- selected source files reread and Context fully rederived before real Completion;
 - source-byte and stored-Context drift rejection;
-- executable `confirm-batch` and functional Confirmation Receipt;
-- Evidence byte reading, SHA-256 recomputation and claim compatibility validation;
-- Runtime-derived Completion Status and Completion Gate;
-- atomic publication of derived Completion carriers;
-- 7 executable legacy-path reproductions for authority bypasses B1–B7;
-- 54 post-repair truth-spine mutation and preservation tests;
+- Confirmation Receipt, Evidence byte/hash/claim validation, Runtime-derived Completion and atomic publication preserved;
+- 7 executable legacy authority-bypass reproductions;
+- 54 truth-spine regression and preservation tests;
 - 11 focused F-001 explicit-source mutation and preservation tests;
 - all suites wired into `npm run validate`.
 
 ## Functional Boundary
 
-A real Builder Completion requires:
-
 ```text
 operator-explicit source mode
 + exact selected source bytes
-+ mode-specific content derivation
-+ deterministic Builder validation
++ mode-specific deterministic derivation
++ Builder validation
 + freshly rederived Runtime Context
 + valid BUILD_ACTIVE Session and Checkpoint
 + exact Confirmation Receipt
@@ -82,50 +77,54 @@ operator-explicit source mode
 
 The Runtime proves content consistency and deterministic derivation. It does not prove who created the source artifact.
 
-The following do not independently authorize a real Completion:
-
-- producer repository or commit metadata;
-- a source-mode field inside caller JSON;
-- Project Gate Receipt metadata beyond required content-binding values;
-- `confirmed_action_ids` without Confirmation Receipt;
-- declared `content_sha256` without source-byte verification;
-- synthetic or fixture Evidence;
-- caller-authored Completion booleans;
-- caller-authored proof status.
-
-Manual `builder-input.json` is permitted only when the operator explicitly invokes `manual-builder-input`. It receives the same Builder, Session, Confirmation, Evidence and Completion checks and cannot claim Project Gate or CE origin.
+Manual `builder-input.json` is permitted only through explicit `manual-builder-input`; it receives the same Builder, Session, Confirmation, Evidence and Completion checks and cannot claim Project Gate or CE origin.
 
 ## Context Semantics
 
-Project Gate:
-
 ```yaml
-source_mode: project-gate
-source_selection: operator_explicit
-content_binding_status: verified
-origin_assurance: not_independently_verified
-receipt_binding_status: matched
+project_gate:
+  source_mode: project-gate
+  source_selection: operator_explicit
+  content_binding_status: verified
+  origin_assurance: not_independently_verified
+  receipt_binding_status: matched
+
+direct_ce:
+  source_mode: direct-ce
+  source_selection: operator_explicit
+  content_binding_status: verified
+  origin_assurance: not_independently_verified
+  receipt_binding_status: not_applicable
+manual_builder_input:
+  source_mode: manual-builder-input
+  source_selection: operator_explicit
+  content_binding_status: verified
+  origin_assurance: manual_operator_supplied
+  receipt_binding_status: not_applicable
 ```
 
-Direct CE:
+## Validation Evidence
 
 ```yaml
-source_mode: direct-ce
-source_selection: operator_explicit
-content_binding_status: verified
-origin_assurance: not_independently_verified
-receipt_binding_status: not_applicable
+connector_write_evidence: confirmed
+local_validation_environment: unavailable
+local_commands_executed: []
+validated_implementation_head: 20d40342d3af82bc5950aeee862e6716275fe1cc
+validated_workflow: Schema validation
+validated_run_id: 30035450978
+validated_job_id: 89302182611
+validated_result: passed
+validated_commands:
+  - npm ci
+  - npm run validate
+authority_bypass_reproduction_suite: passed
+truth_spine_regression_suite: passed_54_of_54
+f001_explicit_source_suite: passed_11_of_11
+real_elementor_execution: not_verified
+owner_local_pilot_required: true
 ```
 
-Manual Builder Input:
-
-```yaml
-source_mode: manual-builder-input
-source_selection: operator_explicit
-content_binding_status: verified
-origin_assurance: manual_operator_supplied
-receipt_binding_status: not_applicable
-```
+GitHub Actions checked out the recorded implementation SHA exactly, verified the tested object, installed dependencies and completed the full validation sequence successfully. This Status update contains no Runtime logic change and remains subject to the repository's normal exact-head CI before the PR is returned to Ready for review.
 
 ## Existing Controls Preserved
 
@@ -133,36 +132,13 @@ receipt_binding_status: not_applicable
 - `APPROVED_HANDOFF_MODE` and `BUILD_ACTIVE` predecessor requirements;
 - PAUSED-only Resume behavior;
 - Candidate, Session, Package and Checkpoint continuity;
-- exact embedded Checkpoint consistency;
 - Action omission, foreign ID, duplicate and unconfirmed rejection;
-- terminal predecessor rejection;
-- Confirmation Receipt binding;
-- Evidence source-byte and claim binding;
+- Confirmation Receipt and Evidence binding;
 - atomic publication and failure cleanup;
 - `responsive_complete: false`;
 - `production_ready: false`.
 
-## Validation Status
-
-```yaml
-connector_write_evidence: confirmed
-local_validation_environment: unavailable
-local_commands_executed: []
-previous_validated_head: 9e937bab6b489587b631464b0ab98a424773f61f
-previous_validated_workflow: Schema validation
-previous_validated_run_id: 30024931393
-previous_validated_result: passed
-f001_explicit_source_suite: added_pending_exact_head_ci
-current_head_exact_ci: pending
-real_elementor_execution: not_verified
-owner_local_pilot_required: true
-```
-
-No local command is reported as passed. The current F-001 repair requires a fresh GitHub Actions run on the exact new PR Head before the PR returns to Ready for review.
-
 ## Remaining Functional Work
 
-- obtain exact-head CI for the current PR Head;
-- resolve any evidence-backed CI failure;
 - run one Owner Local Pilot using one explicitly selected source mode;
 - keep Builder → Responsive, Responsive completion and production readiness outside this PR.
