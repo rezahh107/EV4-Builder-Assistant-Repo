@@ -83,8 +83,32 @@ for (const symbol of [
 ]) {
   if (!transitionModule.includes(`function ${symbol}`)) fail(`Shared bounded transition module is missing ${symbol}.`);
 }
+
+const truthSpine = readText('scripts/lib/builder-truth-spine.mjs');
+for (const symbol of [
+  'fixtureValidateBuilderInput',
+  'resolveRealBuilderSource',
+  'verifyDerivedContext',
+  'createConfirmationReceipt',
+  'validateConfirmationReceipt',
+  'verifyEvidenceLedger',
+  'validateRealCompletion',
+  'publishRealCompletion'
+]) {
+  if (!truthSpine.includes(`function ${symbol}`)) fail(`Builder truth spine is missing ${symbol}.`);
+}
+for (const requiredTerm of [
+  "FIXTURE: 'fixture-validation'",
+  "REAL: 'real-builder-run'",
+  'ev4-builder-confirmation-receipt@1.0.0',
+  'ev4-builder-evidence-source@1.0.0',
+  'builder_build_complete: false',
+  "runtime_state: 'NOT_A_REAL_RUN'"
+]) {
+  if (!truthSpine.includes(requiredTerm)) fail(`Builder truth spine is missing required mode/contract term: ${requiredTerm}`);
+}
 for (const forbiddenPlatformTerm of ['event bus', 'plugin guard registry', 'database adapter', 'service layer']) {
-  if (transitionModule.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Generalized runtime platform term appears in bounded transition module: ${forbiddenPlatformTerm}.`);
+  if (`${transitionModule}\n${truthSpine}`.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Generalized runtime platform term appears in bounded runtime modules: ${forbiddenPlatformTerm}.`);
 }
 
 const sessionValidator = readText('scripts/validate-session-state.mjs');
@@ -92,8 +116,11 @@ if (sessionValidator.includes('const ALLOWED_BY_MODE = {')) fail('Session valida
 if (!sessionValidator.includes('runtime/state-transitions.v1.json')) fail('Session validator must derive allowed combinations from canonical transition data.');
 
 const inspector = readText('scripts/builder-inspector.mjs');
-if (!inspector.includes("from './lib/builder-runtime-transition.mjs'")) fail('Builder Inspector must delegate to the shared bounded transition module.');
-if (!inspector.includes('completion <builder-input.json>')) fail('Completion CLI must require actual Builder Input.');
+if (!inspector.includes("from './lib/builder-runtime-transition.mjs'")) fail('Builder Inspector must preserve delegation to the shared bounded transition module.');
+if (!inspector.includes("from './lib/builder-truth-spine.mjs'")) fail('Builder Inspector must delegate real authority decisions to the truth spine.');
+for (const command of ['fixture-validation', 'real-intake', 'confirm-batch', 'real-completion']) {
+  if (!inspector.includes(command)) fail(`Builder Inspector is missing command: ${command}.`);
+}
 if (!inspector.includes('resume <builder-input.json>')) fail('Resume CLI must require actual Builder Input.');
 
 const centralValidation = readText('scripts/validate.mjs');
@@ -105,7 +132,7 @@ for (const removed of [
 ]) {
   if (centralValidation.includes(removed)) fail(`Industrial governance remains in central validation: ${removed}`);
 }
-for (const required of ['validate-lean-runtime.mjs', 'test-builder-inspector.mjs', 'validate-builder-runtime-transaction.mjs']) {
+for (const required of ['validate-lean-runtime.mjs', 'test-builder-truth-spine.mjs', 'validate-builder-runtime-transaction.mjs']) {
   if (!centralValidation.includes(required)) fail(`Central validation is missing: ${required}`);
 }
 
@@ -119,10 +146,23 @@ for (const file of activeDocs) {
   if (!text.includes('personal_single_operator')) fail(`${file} does not declare personal_single_operator.`);
   if (!text.includes('production_ready: false')) fail(`${file} does not preserve production_ready: false.`);
 }
+for (const file of ['README.md', 'STATUS.md', 'docs/BUILDER_TRUTH_SPINE.md']) {
+  const text = readText(file);
+  for (const term of [
+    'fixture_validation_is_real_completion: false',
+    'real_completion_requires_source_bound_input: true',
+    'real_completion_requires_confirmation_receipt: true',
+    'real_completion_requires_verified_evidence_bytes: true',
+    'completion_status_runtime_derived: true',
+    'completion_gate_runtime_derived: true'
+  ]) {
+    if (!text.includes(term)) fail(`${file} is missing active truth-spine declaration: ${term}`);
+  }
+}
 
 if (errors.length > 0) {
   console.error('Lean runtime validation failed:');
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log('Lean runtime authority, bounded transition module, and canonical transition consistency passed.');
+console.log('Lean runtime authority, source-bound truth spine, and canonical transition consistency passed.');
