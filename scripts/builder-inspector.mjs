@@ -17,7 +17,7 @@ import {
   publishRealCompletion,
   writeConfirmationReceipt,
   writeRealIntake
-} from './lib/builder-truth-spine.mjs';
+} from './lib/builder-explicit-source-runtime.mjs';
 
 const ROOT = process.cwd();
 
@@ -25,11 +25,11 @@ function usage() {
   console.error(`Usage:
   node scripts/builder-inspector.mjs fixture-validation <builder-input.json> [fixture-result.json]
   node scripts/builder-inspector.mjs intake <builder-input.json> [fixture-result.json]
-  node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce> <source-artifact.json> <builder-input.json|-> <verified-context.json> [real-intake-result.json]
-  node scripts/builder-inspector.mjs confirm-batch <verified-context.json> <session-state.json> <checkpoint.json> <operator-token> <confirmation-receipt.json>
+  node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <runtime-context.json> [real-intake-result.json]
+  node scripts/builder-inspector.mjs confirm-batch <runtime-context.json> <session-state.json> <checkpoint.json> <operator-token> <confirmation-receipt.json>
   node scripts/builder-inspector.mjs fixture-completion <builder-input.json> <session-state.json> <checkpoint.json> <completion-status.json> <completion-gate.json>
   node scripts/builder-inspector.mjs completion <builder-input.json> <session-state.json> <checkpoint.json> <completion-status.json> <completion-gate.json>
-  node scripts/builder-inspector.mjs real-completion <project-gate|direct-ce> <source-artifact.json> <builder-input.json|-> <verified-context.json> <session-state.json> <checkpoint.json> <confirmation-receipt.json> <completion-output-directory>
+  node scripts/builder-inspector.mjs real-completion <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <runtime-context.json> <session-state.json> <checkpoint.json> <confirmation-receipt.json> <completion-output-directory>
   node scripts/builder-inspector.mjs verify-capsule <builder-input.json> <legacy-intake-result.json>
   node scripts/builder-inspector.mjs resume <builder-input.json> <legacy-intake-result.json> <session-state.json> <checkpoint.json> <resume-output-directory>`);
   process.exit(2);
@@ -74,10 +74,10 @@ function fixtureValidation(sourceFile, outputFile = null) {
   process.exitCode = result.status === 'accepted' ? 0 : 1;
 }
 
-function realIntake(sourceKind, sourceArtifactFile, builderInputArgument, contextOutputFile, resultOutputFile = null) {
+function realIntake(sourceMode, sourceArtifactArgument, builderInputArgument, contextOutputFile, resultOutputFile = null) {
   const result = writeRealIntake({
-    sourceKind,
-    sourceArtifactFile,
+    sourceMode,
+    sourceArtifactFile: sourceArtifactArgument === '-' ? null : sourceArtifactArgument,
     builderInputFile: builderInputArgument === '-' ? null : builderInputArgument,
     contextOutputFile,
     resultOutputFile
@@ -134,10 +134,10 @@ function fixtureCompletion(sourceFile, sessionFile, checkpointFile, statusFile, 
   }
 }
 
-function realCompletion(sourceKind, sourceArtifactFile, builderInputArgument, contextFile, sessionFile, checkpointFile, confirmationReceiptFile, outputDirectory) {
+function realCompletion(sourceMode, sourceArtifactArgument, builderInputArgument, contextFile, sessionFile, checkpointFile, confirmationReceiptFile, outputDirectory) {
   const result = publishRealCompletion({
-    sourceKind,
-    sourceArtifactFile,
+    sourceMode,
+    sourceArtifactFile: sourceArtifactArgument === '-' ? null : sourceArtifactArgument,
     builderInputFile: builderInputArgument === '-' ? null : builderInputArgument,
     contextFile,
     sessionFile,
