@@ -1,43 +1,26 @@
-# Checkpoint and Completion
+# Verified Evidence and Real Completion
 
-Checkpoint identity binds:
+Evidence enters the verified set only when `source.status == "verified"`.
 
-- `session_id`;
-- canonical `package_digest`;
-- `selected_candidate_id`;
-- `batch_id` and Action IDs;
-- assertions and retained evidence;
-- unresolved blockers;
-- legal workflow mode and runtime state.
+For `required_action_execution`:
+- source.action_id belongs to the active Context Action set;
+- assertion.subject_ref equals source.action_id;
+- source.subject_ref equals source.action_id;
+- record and source bind the exact assertion.
 
-Completion is a bounded transition from `APPROVED_HANDOFF_MODE / BUILD_ACTIVE` to `APPROVED_HANDOFF_MODE / COMPLETED`. Caller-authored `COMPLETED` Session State or Checkpoint input is rejected.
+Real Completion requires:
 
-Before transition, the shared module must:
-
-- revalidate actual `builder-input.json` and its derived Intake Capsule;
-- verify exact session, package, candidate and predecessor Checkpoint identity;
-- reconcile every required Action in `builder-input.json:first_builder_batch.actions` with the final Checkpoint;
-- reject omitted, foreign, duplicate, conflicting or unconfirmed Action IDs;
-- enforce the active desktop Builder Completion Status semantics;
-- bind Completion Gate to candidate, package digest, session ID, Checkpoint ID and Checkpoint sequence;
-- require zero unresolved blocking evidence.
-
-Canonical command:
-
-```bash
-node scripts/builder-inspector.mjs completion \
-  builder-input.json \
-  builder-intake-result.json \
-  session-state.json \
-  checkpoint.json \
-  completion-status.json \
-  completion-gate.json \
-  completion-output-directory
+```text
+checkpoint.batch_id
+== confirmation_receipt.batch_id
+== context.action_batch.batch_id
 ```
 
-After every guard passes, the Inspector derives the next `COMPLETED` Session State and Checkpoint, validates generated carriers, and atomically publishes them with `completion-result.json`. A failed transition publishes no terminal carrier and removes temporary output.
+Receipt Candidate, confirmation_id, resulting Checkpoint identity/sequence, Action IDs and Action body digests must match the fresh Runtime Context and current confirmed Checkpoint.
 
-Builder completion never implies Responsive completion or production readiness:
+Canonical command is `real-completion`. The alias `completion` is fixture/compatibility-only.
+
+Successful publication is atomic and derives:
 
 ```yaml
 builder_build_complete: true
