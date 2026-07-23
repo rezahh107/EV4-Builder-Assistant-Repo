@@ -10,6 +10,8 @@ production_ready: false
 
 Execute only the accepted Builder design. Preserve Candidate, lineage, Action identity, Session, Checkpoint and blockers.
 
+Builder must not invent design narrative and must not paraphrase validated `rendered_text`, Golden Reference, Build Intent Brief, or تصویر ذهنی.
+
 Canonical real sequence:
 
 ```text
