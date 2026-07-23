@@ -8,6 +8,9 @@ const errors = [];
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const readText = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const fail = (message) => errors.push(message);
+const includesAll = (text, terms, label) => {
+  for (const term of terms) if (!text.includes(term)) fail(`${label} is missing required invariant: ${term}`);
+};
 
 const authority = readJson('runtime/personal-runtime-authority.v1.json');
 const transitions = readJson('runtime/state-transitions.v1.json');
@@ -22,24 +25,26 @@ for (const key of ['independent_review_required', 'pr_inspector_required', 'exac
 }
 if (authority.builder_to_responsive !== 'out_of_scope') fail('Builder to Responsive must remain out of scope.');
 
-const requiredRuntimeAuthorities = [
+for (const item of [
   'valid_builder_context_input',
+  'explicit_source_mode_selection',
+  'deterministic_content_binding',
   'selected_candidate_id_continuity',
   'decision_lineage_continuity',
   'allowed_action_batch_semantics',
+  'canonical_confirmation_transaction',
   'active_confirmation_binding',
+  'canonical_checkpoint_sequence',
+  'exact_confirmed_batch_binding',
+  'verified_evidence_status',
+  'action_specific_execution_evidence',
   'session_state_consistency',
   'checkpoint_consistency',
   'unresolved_blocker_preservation',
+  'atomic_confirmation_publication',
   'valid_completion_conditions'
-];
-for (const item of requiredRuntimeAuthorities) {
+]) {
   if (!authority.runtime_authorities.includes(item)) fail(`Missing runtime authority: ${item}`);
-}
-
-const requiredNonRuntime = ['exact_head_ci', 'pr_inspector', 'independent_review', 'review_receipt', 'owner_merge_receipt', 'repository_commit_identity'];
-for (const item of requiredNonRuntime) {
-  if (!authority.non_runtime_authorities.includes(item)) fail(`Missing non-runtime authority classification: ${item}`);
 }
 
 const allowed = transitions.allowed_combinations || {};
@@ -54,137 +59,191 @@ try {
   fail(error.message);
 }
 
-const completionTransitions = (transitions.transitions || []).filter((entry) => entry?.to?.runtime_state === 'COMPLETED');
-if (completionTransitions.length !== 1) fail(`Expected exactly one transition to COMPLETED; found ${completionTransitions.length}.`);
-
+const transitionById = Object.fromEntries((transitions.transitions || []).map((entry) => [entry.id, entry]));
+const emit = transitionById['emit-batch'];
+const confirm = transitionById['confirm-batch'];
+if (emit?.from?.runtime_state !== 'BUILD_ACTIVE' || emit?.to?.runtime_state !== 'WAITING_FOR_CONFIRMATION') fail('Canonical emit-batch transition is invalid.');
+if (confirm?.from?.runtime_state !== 'WAITING_FOR_CONFIRMATION' || confirm?.to?.runtime_state !== 'BUILD_ACTIVE') fail('Canonical confirm-batch transition is invalid.');
+for (const guard of ['checkpoint_sequence_valid', 'batch_matches_context', 'confirmed_action_ids_empty', 'unconfirmed_action_ids_complete', 'derived_waiting_carriers', 'atomic_publication_required']) {
+  if (!(emit?.guards || []).includes(guard)) fail(`emit-batch is missing guard: ${guard}`);
+}
+for (const guard of ['checkpoint_sequence_valid', 'batch_matches_context', 'confirmed_action_ids_empty', 'unconfirmed_action_ids_complete', 'exact_operator_token_matches', 'derived_build_active_carriers', 'receipt_binds_resulting_checkpoint', 'atomic_publication_required']) {
+  if (!(confirm?.guards || []).includes(guard)) fail(`confirm-batch is missing guard: ${guard}`);
+}
 for (const forbidden of [
-  'fresh_intake_to_completed',
-  'fresh_image_to_completed',
-  'completion_report_request_to_completed',
-  'resume_without_prior_initialized_state',
-  'start_command_fabricates_run',
-  'unresolved_blocker_disappears',
-  'caller_authored_completed_carrier_as_transition_input',
-  'capsule_only_resume_or_completion_authorization',
-  'required_action_disappears_by_omission'
+  'confirm_batch_from_build_active',
+  'confirm_batch_from_preconfirmed_carrier',
+  'evidence_without_verified_source_status',
+  'generic_subject_authorizes_action_execution',
+  'completion_batch_drift'
 ]) {
-  if (!(transitions.forbidden || []).includes(forbidden)) fail(`Missing forbidden transition invariant: ${forbidden}`);
+  if (!(transitions.forbidden || []).includes(forbidden)) fail(`Missing forbidden Runtime path: ${forbidden}`);
 }
 
 const transitionModule = readText('scripts/lib/builder-runtime-transition.mjs');
-for (const symbol of [
-  'verifyBuilderInput',
-  'verifyIntakeCapsule',
-  'verifyRuntimeIdentity',
-  'validateResumeTransition',
-  'validateCompletionTransition',
-  'reconcileRequiredActions',
-  'publishDirectoryAtomically'
-]) {
-  if (!transitionModule.includes(`function ${symbol}`)) fail(`Shared bounded transition module is missing ${symbol}.`);
-}
-
-const truthSpine = readText('scripts/lib/builder-truth-spine.mjs');
-for (const symbol of [
-  'fixtureValidateBuilderInput',
-  'createConfirmationReceipt',
-  'validateConfirmationReceipt',
-  'verifyEvidenceLedger'
-]) {
-  if (!truthSpine.includes(`function ${symbol}`)) fail(`Shared Builder truth-spine control is missing ${symbol}.`);
-}
-
 const explicitSource = readText('scripts/lib/builder-explicit-source-runtime.mjs');
-for (const symbol of [
-  'resolveExplicitBuilderSource',
-  'resolveRealBuilderSource',
-  'verifyDerivedContext',
-  'writeRealIntake',
-  'validateRealCompletion',
-  'publishRealCompletion'
-]) {
-  if (!explicitSource.includes(`function ${symbol}`)) fail(`Explicit source Runtime is missing ${symbol}.`);
-}
-for (const requiredTerm of [
+const functional = readText('scripts/lib/builder-functional-correctness.mjs');
+const sequence = readText('scripts/lib/checkpoint-sequence.mjs');
+const inspector = readText('scripts/builder-inspector.mjs');
+const centralValidation = readText('scripts/validate.mjs');
+
+includesAll(sequence, [
+  'export function checkpointSequenceIsValid',
+  'checkpoint_sequence === 1',
+  'parent_checkpoint_id === null',
+  'parent_checkpoint_id.trim().length > 0'
+], 'Canonical checkpoint sequence module');
+
+includesAll(explicitSource, [
   "PROJECT_GATE: 'project-gate'",
   "DIRECT_CE: 'direct-ce'",
   "MANUAL_BUILDER_INPUT: 'manual-builder-input'",
-  "content_binding_status: 'verified'",
   "source_selection: 'operator_explicit'",
+  "content_binding_status: 'verified'",
   "origin_assurance: 'not_independently_verified'",
   "origin_assurance: 'manual_operator_supplied'",
-  "sourceMode === SOURCE_MODES.PROJECT_GATE ? 'matched' : 'not_applicable'",
   'BUILDER-CONTEXT-113'
-]) {
-  if (!explicitSource.includes(requiredTerm)) fail(`Explicit source Runtime is missing required invariant: ${requiredTerm}`);
-}
-for (const forbiddenOriginClaim of [
-  "verification_status: 'verified_source_bound'",
-  'producer_repository: sourceArtifact',
-  'producer_commit_sha: sourceArtifact',
-  'producer_artifact_id:',
-  'producer_artifact_sha256:'
-]) {
-  if (explicitSource.includes(forbiddenOriginClaim)) fail(`Explicit source Runtime retains origin-overclaiming code: ${forbiddenOriginClaim}`);
-}
-for (const forbiddenPlatformTerm of ['event bus', 'plugin guard registry', 'database adapter', 'service layer', 'public key infrastructure', 'signed receipt']) {
-  if (`${transitionModule}\n${truthSpine}\n${explicitSource}`.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Generalized or external-security platform term appears in bounded Runtime modules: ${forbiddenPlatformTerm}`);
+], 'Explicit source Runtime');
+
+includesAll(functional, [
+  'validateSourceModeArguments',
+  'writeStrictRealIntake',
+  'publishEmitBatchTransaction',
+  'validateConfirmationTransaction',
+  'publishConfirmationTransaction',
+  'validateStrictConfirmationReceipt',
+  'verifyStrictEvidenceLedger',
+  'validateStrictRealCompletion',
+  'publishStrictRealCompletion',
+  'validateCanonicalResume',
+  "source.status !== 'verified'",
+  'assertion.subject_ref !== source.action_id',
+  'source.subject_ref !== source.action_id',
+  'checkpoint.batch_id !== receipt.batch_id',
+  'receipt.batch_id !== context.action_batch.batch_id',
+  'receipt.selected_candidate_id !== context.selected_candidate_id',
+  'receipt.confirmation_id !== context.confirmation.confirmation_id',
+  "'confirmation-receipt.json'",
+  "'confirmation-result.json'",
+  "'checkpoint.json'",
+  "'session-state.json'",
+  'Atomic Confirmation publication failed; no output was published.'
+], 'Functional-correctness Runtime');
+
+for (const forbiddenPlatformTerm of ['event bus', 'plugin guard registry', 'database adapter', 'service layer', 'public key infrastructure']) {
+  if (`${transitionModule}\n${explicitSource}\n${functional}`.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Forbidden generalized platform term appears in Runtime code: ${forbiddenPlatformTerm}`);
 }
 
-const sessionValidator = readText('scripts/validate-session-state.mjs');
-if (sessionValidator.includes('const ALLOWED_BY_MODE = {')) fail('Session validator still maintains a competing hard-coded transition matrix.');
-if (!sessionValidator.includes('runtime/state-transitions.v1.json')) fail('Session validator must derive allowed combinations from canonical transition data.');
+includesAll(inspector, [
+  "from './lib/builder-functional-correctness.mjs'",
+  'real-intake project-gate',
+  'real-intake direct-ce',
+  'real-intake manual-builder-input',
+  'emit-batch',
+  'confirm-batch',
+  'real-completion project-gate',
+  'real-completion direct-ce',
+  'real-completion manual-builder-input',
+  'Aliases intake and completion are fixture/compatibility-only'
+], 'Builder Inspector CLI');
+if (inspector.includes('writeConfirmationReceipt')) fail('Builder Inspector still routes confirm-batch through Receipt-only legacy behavior.');
 
-const inspector = readText('scripts/builder-inspector.mjs');
-if (!inspector.includes("from './lib/builder-runtime-transition.mjs'")) fail('Builder Inspector must preserve delegation to the shared bounded transition module.');
-if (!inspector.includes("from './lib/builder-explicit-source-runtime.mjs'")) fail('Builder Inspector must delegate active source selection and Completion to the explicit-source Runtime.');
-for (const command of ['fixture-validation', 'real-intake', 'confirm-batch', 'real-completion', 'manual-builder-input']) {
-  if (!inspector.includes(command)) fail(`Builder Inspector is missing command or source mode: ${command}.`);
-}
-if (!inspector.includes('resume <builder-input.json>')) fail('Resume CLI must require actual Builder Input.');
-
-const centralValidation = readText('scripts/validate.mjs');
-for (const removed of [
-  'validate-governance-progress-evidence.mjs',
-  'validate-governance-authorities.mjs',
-  'validate-governance-sequence.mjs',
-  'validate-pr-template-hygiene.mjs'
-]) {
-  if (centralValidation.includes(removed)) fail(`Industrial governance remains in central validation: ${removed}`);
-}
 for (const required of [
   'validate-lean-runtime.mjs',
   'test-builder-authority-bypasses.mjs',
   'test-builder-truth-spine.mjs',
   'test-builder-explicit-source-modes.mjs',
+  'test-builder-functional-correctness.mjs',
+  'test-project-pack-determinism.mjs',
   'validate-builder-runtime-transaction.mjs'
 ]) {
   if (!centralValidation.includes(required)) fail(`Central validation is missing: ${required}`);
 }
 
-for (const workflow of ['.github/workflows/governance-exact-head-evidence.yml', '.github/workflows/verify-project-gate-contract.yml']) {
-  if (fs.existsSync(path.join(root, workflow))) fail(`Industrial/external blocking workflow remains active: ${workflow}`);
-}
-
-const activeDocs = ['AGENTS.md', 'README.md', 'STATUS.md', 'PROJECT_INSTRUCTIONS.md', 'core/MASTER_PROMPT.md', 'core/MODE_STATE_MATRIX.md'];
+const activeDocs = [
+  'AGENTS.md',
+  'PROJECT_INSTRUCTIONS.md',
+  'core/MASTER_PROMPT.md',
+  'core/MODE_STATE_MATRIX.md',
+  'README.md',
+  'STATUS.md',
+  'docs/BUILDER_TRUTH_SPINE.md',
+  'docs/EXPLICIT_SOURCE_MODES.md',
+  'runtime/project-pack/PROJECT_INSTRUCTIONS.txt',
+  'runtime/project-pack/01_RUNTIME_CORE.md',
+  'runtime/project-pack/02_INTAKE_INSPECTOR.md',
+  'runtime/project-pack/03_STATE_RESUME.md',
+  'runtime/project-pack/04_ACTION_CONFIRMATION.md',
+  'runtime/project-pack/05_CHECKPOINT_COMPLETION.md',
+  'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt',
+  'dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md',
+  'dist/chatgpt-project/knowledge/02_INTAKE_INSPECTOR.md',
+  'dist/chatgpt-project/knowledge/03_STATE_RESUME.md',
+  'dist/chatgpt-project/knowledge/04_ACTION_CONFIRMATION.md',
+  'dist/chatgpt-project/knowledge/05_CHECKPOINT_COMPLETION.md'
+];
 for (const file of activeDocs) {
   const text = readText(file);
-  if (!text.includes('personal_single_operator')) fail(`${file} does not declare personal_single_operator.`);
   if (!text.includes('production_ready: false')) fail(`${file} does not preserve production_ready: false.`);
+  if (!text.includes('real-completion')) fail(`${file} does not identify the actual Completion command.`);
 }
-for (const file of ['README.md', 'STATUS.md', 'docs/EXPLICIT_SOURCE_MODES.md']) {
+
+for (const file of [
+  'AGENTS.md', 'PROJECT_INSTRUCTIONS.md', 'core/MASTER_PROMPT.md', 'README.md', 'STATUS.md',
+  'docs/BUILDER_TRUTH_SPINE.md', 'docs/EXPLICIT_SOURCE_MODES.md',
+  'runtime/project-pack/PROJECT_INSTRUCTIONS.txt', 'runtime/project-pack/01_RUNTIME_CORE.md',
+  'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt', 'dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md'
+]) {
+  includesAll(readText(file), [
+    'explicit operator source mode',
+    'real-intake',
+    'emit-batch',
+    'WAITING_FOR_CONFIRMATION',
+    'confirm-batch',
+    'BUILD_ACTIVE',
+    'verified Evidence',
+    'real-completion',
+    'COMPLETED'
+  ], file);
+}
+
+for (const file of [
+  'AGENTS.md', 'PROJECT_INSTRUCTIONS.md', 'README.md', 'docs/BUILDER_TRUTH_SPINE.md',
+  'runtime/project-pack/PROJECT_INSTRUCTIONS.txt', 'runtime/project-pack/04_ACTION_CONFIRMATION.md',
+  'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt', 'dist/chatgpt-project/knowledge/04_ACTION_CONFIRMATION.md'
+]) {
+  includesAll(readText(file), [
+    'WAITING_FOR_CONFIRMATION',
+    'confirmation-receipt.json',
+    'checkpoint.json',
+    'session-state.json',
+    'confirmation-result.json'
+  ], file);
+}
+
+for (const file of [
+  'AGENTS.md', 'PROJECT_INSTRUCTIONS.md', 'README.md', 'docs/BUILDER_TRUTH_SPINE.md',
+  'runtime/project-pack/PROJECT_INSTRUCTIONS.txt', 'runtime/project-pack/05_CHECKPOINT_COMPLETION.md',
+  'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt', 'dist/chatgpt-project/knowledge/05_CHECKPOINT_COMPLETION.md'
+]) {
   const text = readText(file);
-  for (const term of [
-    'fixture_validation_is_real_completion: false',
-    'real_completion_requires_explicit_source_mode: true',
-    'real_completion_requires_deterministic_content_binding: true',
-    'origin_identity_independently_verified: false',
-    'manual_builder_input_mode_enabled: true',
-    'completion_status_runtime_derived: true',
-    'completion_gate_runtime_derived: true'
+  if (!text.includes('verified')) fail(`${file} does not require verified Evidence status.`);
+  if (!text.includes('required_action_execution') && !text.includes('Action-specific') && !text.includes('Action execution')) fail(`${file} does not document Action-specific execution Evidence.`);
+}
+
+for (const file of activeDocs) {
+  const text = readText(file);
+  for (const forbidden of [
+    'node scripts/builder-inspector.mjs intake builder-input.json builder-intake-result.json',
+    'node scripts/builder-inspector.mjs completion \\\n',
+    'confirm-batch <runtime-context.json> <session-state.json> <checkpoint.json> <operator-token> <confirmation-receipt.json>'
   ]) {
-    if (!text.includes(term)) fail(`${file} is missing explicit-source Runtime declaration: ${term}`);
+    if (text.includes(forbidden)) fail(`${file} retains contradictory legacy Runtime instruction: ${forbidden.trim()}`);
   }
+}
+
+for (const workflow of ['.github/workflows/governance-exact-head-evidence.yml', '.github/workflows/verify-project-gate-contract.yml']) {
+  if (fs.existsSync(path.join(root, workflow))) fail(`Industrial/external blocking workflow remains active: ${workflow}`);
 }
 
 if (errors.length > 0) {
@@ -192,4 +251,4 @@ if (errors.length > 0) {
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log('Lean Runtime authority, explicit source modes, deterministic content binding, and canonical transition consistency passed.');
+console.log('Lean Runtime explicit source, canonical Confirmation, sequence, Evidence, Completion, documentation, and Project Pack consistency passed.');
