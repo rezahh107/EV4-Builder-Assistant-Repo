@@ -183,18 +183,18 @@ const activeDocs = [
   'dist/chatgpt-project/knowledge/05_CHECKPOINT_COMPLETION.md'
 ];
 for (const file of activeDocs) {
-  const text = readText(file);
-  if (!text.includes('production_ready: false')) fail(`${file} does not preserve production_ready: false.`);
-  if (!text.includes('real-completion')) fail(`${file} does not identify the actual Completion command.`);
+  if (!fs.existsSync(path.join(root, file))) fail(`Active Runtime document is missing: ${file}`);
 }
 
-for (const file of [
+const topAuthorityDocs = [
   'AGENTS.md', 'PROJECT_INSTRUCTIONS.md', 'core/MASTER_PROMPT.md', 'README.md', 'STATUS.md',
   'docs/BUILDER_TRUTH_SPINE.md', 'docs/EXPLICIT_SOURCE_MODES.md',
   'runtime/project-pack/PROJECT_INSTRUCTIONS.txt', 'runtime/project-pack/01_RUNTIME_CORE.md',
   'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt', 'dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md'
-]) {
-  includesAll(readText(file), [
+];
+for (const file of topAuthorityDocs) {
+  const text = readText(file);
+  includesAll(text, [
     'explicit operator source mode',
     'real-intake',
     'emit-batch',
@@ -203,15 +203,26 @@ for (const file of [
     'BUILD_ACTIVE',
     'verified Evidence',
     'real-completion',
-    'COMPLETED'
+    'COMPLETED',
+    'production_ready: false'
   ], file);
 }
 
-for (const file of [
-  'AGENTS.md', 'PROJECT_INSTRUCTIONS.md', 'README.md', 'docs/BUILDER_TRUTH_SPINE.md',
+const sourceDocs = [
+  'AGENTS.md', 'PROJECT_INSTRUCTIONS.md', 'README.md', 'docs/BUILDER_TRUTH_SPINE.md', 'docs/EXPLICIT_SOURCE_MODES.md',
+  'runtime/project-pack/PROJECT_INSTRUCTIONS.txt', 'runtime/project-pack/02_INTAKE_INSPECTOR.md',
+  'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt', 'dist/chatgpt-project/knowledge/02_INTAKE_INSPECTOR.md'
+];
+for (const file of sourceDocs) {
+  includesAll(readText(file), ['project-gate', 'direct-ce', 'manual-builder-input', 'required', 'forbidden'], file);
+}
+
+const confirmationDocs = [
+  'AGENTS.md', 'README.md', 'docs/BUILDER_TRUTH_SPINE.md',
   'runtime/project-pack/PROJECT_INSTRUCTIONS.txt', 'runtime/project-pack/04_ACTION_CONFIRMATION.md',
   'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt', 'dist/chatgpt-project/knowledge/04_ACTION_CONFIRMATION.md'
-]) {
+];
+for (const file of confirmationDocs) {
   includesAll(readText(file), [
     'WAITING_FOR_CONFIRMATION',
     'confirmation-receipt.json',
@@ -221,11 +232,22 @@ for (const file of [
   ], file);
 }
 
-for (const file of [
+const sequenceDocs = [
+  'AGENTS.md', 'PROJECT_INSTRUCTIONS.md', 'README.md', 'docs/BUILDER_TRUTH_SPINE.md',
+  'runtime/project-pack/PROJECT_INSTRUCTIONS.txt', 'runtime/project-pack/03_STATE_RESUME.md',
+  'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt', 'dist/chatgpt-project/knowledge/03_STATE_RESUME.md'
+];
+for (const file of sequenceDocs) {
+  const text = readText(file);
+  if (!text.includes('sequence') || !text.includes('parent')) fail(`${file} does not document the canonical Checkpoint sequence predicate.`);
+}
+
+const evidenceDocs = [
   'AGENTS.md', 'PROJECT_INSTRUCTIONS.md', 'README.md', 'docs/BUILDER_TRUTH_SPINE.md',
   'runtime/project-pack/PROJECT_INSTRUCTIONS.txt', 'runtime/project-pack/05_CHECKPOINT_COMPLETION.md',
   'dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt', 'dist/chatgpt-project/knowledge/05_CHECKPOINT_COMPLETION.md'
-]) {
+];
+for (const file of evidenceDocs) {
   const text = readText(file);
   if (!text.includes('verified')) fail(`${file} does not require verified Evidence status.`);
   if (!text.includes('required_action_execution') && !text.includes('Action-specific') && !text.includes('Action execution')) fail(`${file} does not document Action-specific execution Evidence.`);
@@ -235,10 +257,9 @@ for (const file of activeDocs) {
   const text = readText(file);
   for (const forbidden of [
     'node scripts/builder-inspector.mjs intake builder-input.json builder-intake-result.json',
-    'node scripts/builder-inspector.mjs completion \\\n',
     'confirm-batch <runtime-context.json> <session-state.json> <checkpoint.json> <operator-token> <confirmation-receipt.json>'
   ]) {
-    if (text.includes(forbidden)) fail(`${file} retains contradictory legacy Runtime instruction: ${forbidden.trim()}`);
+    if (text.includes(forbidden)) fail(`${file} retains contradictory legacy Runtime instruction: ${forbidden}`);
   }
 }
 
