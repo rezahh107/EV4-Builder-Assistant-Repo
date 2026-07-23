@@ -11,15 +11,6 @@
   "deterministic": true,
   "files": [
     {
-      "source_path": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt",
-      "source_sha256": "aba1bb49230765f5a9dcdaac8bde322a662a6e110d32361d0c63e3500ca52772",
-      "output_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "output_sha256": "aba1bb49230765f5a9dcdaac8bde322a662a6e110d32361d0c63e3500ca52772",
-      "bytes": 2805,
-      "chars": 2781,
-      "role": "project_instructions"
-    },
-    {
       "source_path": "runtime/project-pack/01_RUNTIME_CORE.md",
       "source_sha256": "4b2ebf9c979d96540c9706f99204be982b70f7d0e3de7d3bc7a90e4c78e50eac",
       "output_path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
@@ -63,6 +54,15 @@
       "bytes": 895,
       "chars": 895,
       "role": "knowledge"
+    },
+    {
+      "source_path": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt",
+      "source_sha256": "aba1bb49230765f5a9dcdaac8bde322a662a6e110d32361d0c63e3500ca52772",
+      "output_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
+      "output_sha256": "aba1bb49230765f5a9dcdaac8bde322a662a6e110d32361d0c63e3500ca52772",
+      "bytes": 2805,
+      "chars": 2781,
+      "role": "project_instructions"
     }
   ]
 }
