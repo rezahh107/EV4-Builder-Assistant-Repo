@@ -1,36 +1,31 @@
-# Action Batch and Confirmation
+# Action Batch and Canonical Confirmation
 
-Ordinary actions carry only execution-critical metadata:
+Canonical transaction:
 
-```yaml
-required_for_normal_action:
-  - target_node
-  - element_type
-  - control_family
-  - control_name
-  - value when applicable
-  - unit and value_source for numeric values
-  - responsive_scope
-  - class_scope when class_name is present
-  - expected_result
+```text
+BUILD_ACTIVE
+→ emit-batch
+→ WAITING_FOR_CONFIRMATION
+→ confirm-batch
+→ BUILD_ACTIVE
 ```
 
-Extended metadata is conditional:
+`emit-batch` and `confirm-batch` derive carriers; caller-authored confirmation arrays are not authority.
 
-```yaml
-risk_conditioned:
-  - rationale
-  - reversibility_analysis
-  - safety_decision
-  - evidence_required
-  - confirmation_scope
-  - forbidden_changes
+`confirm-batch` requires:
+- matching APPROVED_HANDOFF_MODE / WAITING_FOR_CONFIRMATION Session and Checkpoint;
+- matching Context Batch;
+- empty confirmed_action_ids;
+- complete Context Action set in unconfirmed_action_ids;
+- exact operator token.
+
+Atomic output set:
+
+```text
+confirmation-receipt.json
+checkpoint.json
+session-state.json
+confirmation-result.json
 ```
 
-It is required for `risk_level: high` or `difficult_to_reverse: true`.
-
-Never weaken target identity, `selected_candidate_id`, decision lineage, class scope, or active confirmation binding.
-
-A checkpointed action must carry a non-empty `confirmation_scope`. Only the active structured confirmation token can advance the state.
-
-For the active bounded Run, `builder-input.json:first_builder_batch.actions` defines the complete expected Action set. Completion must reconcile every expected Action ID with the final Checkpoint; deleting an Action from `unconfirmed_action_ids` cannot make it complete. No separate Action Ledger is active.
+Failure publishes nothing. Receipt binds the resulting Checkpoint identity and sequence.
