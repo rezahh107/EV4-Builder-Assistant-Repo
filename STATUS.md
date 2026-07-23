@@ -51,7 +51,9 @@ external_repositories_modified: false
 - compact claim/Evidence compatibility mapping;
 - Runtime-derived Completion Status and Completion Gate;
 - atomic publication of derived Completion carriers;
-- 54 focused mutation and preservation tests wired into `npm run validate`;
+- 7 executable legacy-path reproductions for authority bypasses B1–B7;
+- 54 focused post-repair mutation and preservation tests;
+- both suites wired into `npm run validate`;
 - active README, CLI help and Runtime documentation synchronized.
 
 ## Functional Boundary
@@ -97,24 +99,24 @@ The following cannot independently authorize a real Completion:
 connector_write_evidence: confirmed
 local_validation_environment: unavailable
 local_commands_executed: []
-last_validated_head: 7a5784ea062ceed0c5027df84df99f81cf95b5e3
+last_validated_head: c67c4d99339f23ab780cbd17304b99b60b525b5b
 last_validated_workflow: Schema validation
-last_validated_run_id: 30023456727
+last_validated_run_id: 30024053735
 last_validated_result: passed
 validated_commands:
   - npm ci
   - npm run validate
-focused_truth_spine_suite: passed_in_full_validation
-full_validation_suite: passed
-current_status_commit_requires_exact_head_ci: true
+focused_truth_spine_suite: passed_on_last_validated_head
+authority_bypass_reproduction_suite: added_after_last_validated_head
+current_head_exact_ci: pending
 real_elementor_execution: not_verified
 owner_local_pilot_required: true
 ```
 
-No local command is reported as passed. GitHub Actions checked out the recorded exact commit, installed dependencies, and completed functional validation successfully. The documentation-only Status commit that records that evidence must itself receive final exact-head CI before delivery is reported complete.
+No local command is reported as passed. GitHub Actions checked out the recorded commit, installed dependencies, and completed functional validation successfully. The newly added executable bypass-reproduction suite and this Status update require final exact-head CI before delivery is reported complete.
 
 ## Remaining Functional Work
 
-- obtain final exact-head CI for the Status evidence commit;
+- obtain final exact-head CI for the current PR Head;
 - run one real Owner Local Pilot with current Project Gate or direct CE source material;
 - keep Builder → Responsive, Responsive completion and production readiness outside this PR.
