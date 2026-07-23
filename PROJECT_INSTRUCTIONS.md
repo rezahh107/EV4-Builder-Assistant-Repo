@@ -29,7 +29,21 @@ explicit operator source mode
 → COMPLETED
 ```
 
-Mode arguments are exact: `project-gate` consumes Receipt plus Builder Input; `direct-ce` consumes only the CE source; `manual-builder-input` consumes only Builder Input. Unused paths are rejected. Caller JSON cannot select or promote source mode.
+Runtime invocation selects source mode. Caller JSON cannot promote itself. The argument contract is exact:
+
+```yaml
+project-gate:
+  sourceArtifactFile: required
+  builderInputFile: required
+direct-ce:
+  sourceArtifactFile: required
+  builderInputFile: forbidden
+manual-builder-input:
+  sourceArtifactFile: forbidden
+  builderInputFile: required
+```
+
+Unused paths are rejected.
 
 ## Commands
 
@@ -49,13 +63,22 @@ node scripts/builder-inspector.mjs real-completion manual-builder-input - builde
 
 ## Confirmation
 
-`confirm-batch` accepts only matching `APPROVED_HANDOFF_MODE / WAITING_FOR_CONFIRMATION` carriers with empty confirmed actions, the complete Context Action set unconfirmed, matching Batch and exact token. It derives `BUILD_ACTIVE` carriers, increments Checkpoint sequence, binds parent to predecessor, and atomically publishes Receipt, Checkpoint, Session and Confirmation Result. Failure publishes nothing.
+`confirm-batch` accepts only matching `APPROVED_HANDOFF_MODE / WAITING_FOR_CONFIRMATION` carriers with empty confirmed actions, the complete Context Action set unconfirmed, matching Batch and exact token. It derives `BUILD_ACTIVE` carriers, increments Checkpoint sequence, binds parent to predecessor, and atomically publishes:
+
+```text
+confirmation-receipt.json
+checkpoint.json
+session-state.json
+confirmation-result.json
+```
+
+Failure publishes nothing.
 
 ## Sequence, Evidence, Completion
 
 Checkpoint sequence 1 requires null parent; later sequences require a non-empty parent.
 
-Evidence contributes only when source status is the exact string `verified`. Action execution Evidence must bind the exact Action ID in `source.action_id`, `source.subject_ref`, and `assertion.subject_ref`.
+Evidence contributes only when source status is the exact string `verified`. `required_action_execution` must bind the exact Action ID in `source.action_id`, `source.subject_ref`, and `assertion.subject_ref`.
 
 Real Completion rereads selected source bytes, rederives Context, binds Checkpoint/Receipt/Context to the same Batch, validates Candidate, confirmation ID, confirmed Checkpoint identity and Action body digests, then atomically derives `COMPLETED`.
 
