@@ -108,7 +108,7 @@ for (const requiredTerm of [
   if (!truthSpine.includes(requiredTerm)) fail(`Builder truth spine is missing required mode/contract term: ${requiredTerm}`);
 }
 for (const forbiddenPlatformTerm of ['event bus', 'plugin guard registry', 'database adapter', 'service layer']) {
-  if (`${transitionModule}\n${truthSpine}`.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Generalized runtime platform term appears in bounded runtime modules: ${forbiddenPlatformTerm}.`);
+  if (`${transitionModule}\n${truthSpine}`.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Generalized runtime platform term appears in bounded runtime modules: ${forbiddenPlatformTerm}`);
 }
 
 const sessionValidator = readText('scripts/validate-session-state.mjs');
@@ -132,7 +132,12 @@ for (const removed of [
 ]) {
   if (centralValidation.includes(removed)) fail(`Industrial governance remains in central validation: ${removed}`);
 }
-for (const required of ['validate-lean-runtime.mjs', 'test-builder-truth-spine.mjs', 'validate-builder-runtime-transaction.mjs']) {
+for (const required of [
+  'validate-lean-runtime.mjs',
+  'test-builder-authority-bypasses.mjs',
+  'test-builder-truth-spine.mjs',
+  'validate-builder-runtime-transaction.mjs'
+]) {
   if (!centralValidation.includes(required)) fail(`Central validation is missing: ${required}`);
 }
 
