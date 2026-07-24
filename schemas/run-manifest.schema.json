@@ -1,16 +1,37 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/run-manifest.schema.json",
-  "title": "EV4 Builder Atomic Run Manifest",
+  "title": "EV4 Builder Immutable Generation Manifest",
   "type": "object",
   "required": [
-    "schema", "run_id", "source_mode", "source_snapshot_ref", "source_snapshot_sha256",
-    "receipt_snapshot_ref", "receipt_snapshot_sha256", "runtime_context_ref", "runtime_context_digest",
-    "session_ref", "checkpoint_ref", "current_runtime_state", "current_checkpoint_id",
-    "current_checkpoint_sequence", "canonical_package_digest", "selected_candidate_id", "active_batch_id",
-    "active_emit_result_ref", "active_confirmation_receipt_ref", "active_confirmation_result_ref",
-    "confirmed_checkpoint_id", "confirmed_checkpoint_sequence", "evidence_snapshot_refs",
-    "evidence_attachment_result_refs", "completion_result_ref", "completion_status_ref", "completion_gate_ref",
+    "schema",
+    "run_id",
+    "source_mode",
+    "source_snapshot_ref",
+    "source_snapshot_sha256",
+    "receipt_snapshot_ref",
+    "receipt_snapshot_sha256",
+    "runtime_context_ref",
+    "runtime_context_digest",
+    "session_ref",
+    "checkpoint_ref",
+    "current_runtime_state",
+    "current_checkpoint_id",
+    "current_checkpoint_sequence",
+    "canonical_package_digest",
+    "selected_candidate_id",
+    "active_batch_id",
+    "active_emit_result_ref",
+    "active_confirmation_receipt_ref",
+    "active_confirmation_result_ref",
+    "confirmed_checkpoint_id",
+    "confirmed_checkpoint_sequence",
+    "evidence_snapshot_refs",
+    "evidence_attachment_result_refs",
+    "completion_result_ref",
+    "completion_status_ref",
+    "completion_gate_ref",
+    "generation",
     "manifest_digest"
   ],
   "properties": {
@@ -21,10 +42,10 @@
     "source_snapshot_sha256": { "$ref": "#/$defs/hash" },
     "receipt_snapshot_ref": { "type": ["string", "null"] },
     "receipt_snapshot_sha256": { "anyOf": [{ "$ref": "#/$defs/hash" }, { "type": "null" }] },
-    "runtime_context_ref": { "const": "runtime-context.json" },
+    "runtime_context_ref": { "type": "string", "pattern": "^generations/[0-9]{6}/runtime-context\\.json$" },
     "runtime_context_digest": { "$ref": "#/$defs/hash" },
-    "session_ref": { "const": "session-state.json" },
-    "checkpoint_ref": { "const": "checkpoint.json" },
+    "session_ref": { "type": "string", "pattern": "^generations/[0-9]{6}/session-state\\.json$" },
+    "checkpoint_ref": { "type": "string", "pattern": "^generations/[0-9]{6}/checkpoint\\.json$" },
     "current_runtime_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "COMPLETED"] },
     "current_checkpoint_id": { "type": "string", "minLength": 1 },
     "current_checkpoint_sequence": { "type": "integer", "minimum": 1 },
@@ -36,15 +57,48 @@
     "active_confirmation_result_ref": { "type": ["string", "null"] },
     "confirmed_checkpoint_id": { "type": ["string", "null"] },
     "confirmed_checkpoint_sequence": { "type": ["integer", "null"], "minimum": 1 },
-    "evidence_snapshot_refs": { "type": "array", "items": { "type": "string", "pattern": "^evidence/EV-[a-f0-9]{20}\\.json$" }, "uniqueItems": true },
-    "evidence_attachment_result_refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "evidence_snapshot_refs": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^evidence/EV-[a-f0-9]{20}\\.json$" },
+      "uniqueItems": true
+    },
+    "evidence_attachment_result_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
     "completion_result_ref": { "type": ["string", "null"] },
     "completion_status_ref": { "type": ["string", "null"] },
     "completion_gate_ref": { "type": ["string", "null"] },
+    "generation": { "$ref": "#/$defs/generation" },
     "manifest_digest": { "$ref": "#/$defs/hash" }
   },
   "$defs": {
-    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "generation": {
+      "type": "object",
+      "required": [
+        "number",
+        "ref",
+        "predecessor_generation",
+        "predecessor_checkpoint_id",
+        "predecessor_checkpoint_sequence",
+        "resulting_checkpoint_id",
+        "resulting_checkpoint_sequence",
+        "runtime_state"
+      ],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1, "maximum": 999999 },
+        "ref": { "type": "string", "pattern": "^generations/[0-9]{6}$" },
+        "predecessor_generation": { "type": ["integer", "null"], "minimum": 1 },
+        "predecessor_checkpoint_id": { "type": ["string", "null"] },
+        "predecessor_checkpoint_sequence": { "type": ["integer", "null"], "minimum": 1 },
+        "resulting_checkpoint_id": { "type": "string", "minLength": 1 },
+        "resulting_checkpoint_sequence": { "type": "integer", "minimum": 1 },
+        "runtime_state": { "enum": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "COMPLETED"] }
+      },
+      "additionalProperties": false
+    }
   },
   "allOf": [
     {
@@ -59,6 +113,20 @@
         "properties": {
           "receipt_snapshot_ref": { "type": "null" },
           "receipt_snapshot_sha256": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "generation": { "properties": { "number": { "const": 1 } }, "required": ["number"] } }, "required": ["generation"] },
+      "then": {
+        "properties": {
+          "generation": {
+            "properties": {
+              "predecessor_generation": { "type": "null" },
+              "predecessor_checkpoint_id": { "type": "null" },
+              "predecessor_checkpoint_sequence": { "type": "null" }
+            }
+          }
         }
       }
     }
