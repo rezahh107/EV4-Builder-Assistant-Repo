@@ -48,10 +48,12 @@ const nodeChecks = [
   'scripts/validate-decision-escape-routes.mjs',
   'scripts/validate-kernel-decision-receipts.mjs',
   'scripts/validate-lean-runtime.mjs',
+  'scripts/validate-canonical-run-artifacts.mjs',
   'scripts/test-builder-authority-bypasses.mjs',
   'scripts/test-builder-truth-spine.mjs',
   'scripts/test-builder-explicit-source-modes.mjs',
   'scripts/test-builder-functional-correctness.mjs',
+  'scripts/test-builder-atomic-run-bundle.mjs',
   'scripts/test-project-pack-determinism.mjs',
   'scripts/smoke-ce-project-gate-builder.mjs',
   'scripts/validate-builder-runtime-transaction.mjs',
@@ -80,17 +82,12 @@ function failureDetail(result) {
 
 function run(command, args, label) {
   console.log(`\n==> ${label}`);
-  const result = spawnSync(command, args, {
-    encoding: 'utf8',
-    maxBuffer: 32 * 1024 * 1024
-  });
-
+  const result = spawnSync(command, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   if (result.error) {
     writeOutput('failed_check', `${label} :: ${result.error.message}`);
     console.error(`Failed to execute ${command}: ${result.error.message}`);
     process.exit(1);
   }
-
   if (result.status !== 0) {
     writeOutput('failed_check', `${label} :: ${failureDetail(result)}`);
     if (result.stdout) process.stdout.write(result.stdout);
@@ -98,19 +95,14 @@ function run(command, args, label) {
     console.error(`${label}: failed with exit code ${result.status ?? 1}.`);
     process.exit(result.status ?? 1);
   }
-
   console.log(`${label}: passed.`);
 }
 
 for (const script of scripts) run(npmCommand, ['run', script], `npm run ${script}`);
 for (const check of nodeChecks) {
   let args;
-  if (check === 'scripts/validate-builder-runtime-transaction.mjs') {
-    args = [check, transactionFixture, '--self-test'];
-  } else if (check === 'scripts/validate-builder-runtime-transaction-state.mjs') {
-    args = [check, transactionFixture];
-  } else {
-    args = [check];
-  }
+  if (check === 'scripts/validate-builder-runtime-transaction.mjs') args = [check, transactionFixture, '--self-test'];
+  else if (check === 'scripts/validate-builder-runtime-transaction-state.mjs') args = [check, transactionFixture];
+  else args = [check];
   run(process.execPath, args, `node ${args.join(' ')}`);
 }
