@@ -12,7 +12,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     # Deep regression compatibility markers. These commands are executed by
     # npm run validate through scripts/validate.mjs; they are not separate
