@@ -1,48 +1,11 @@
 {
   "schema": "ev4-builder-state-transitions@1.0.0",
-  "workflow_modes": [
-    "START_INTAKE_MODE",
-    "APPROVED_HANDOFF_MODE",
-    "FRESH_IMAGE_MODE_LIMITED"
-  ],
-  "runtime_states": [
-    "INTAKE_WAITING",
-    "INTAKE_VALIDATING",
-    "BUILD_ACTIVE",
-    "WAITING_FOR_CONFIRMATION",
-    "EVIDENCE_REQUIRED",
-    "CORRECTION",
-    "REVIEW_ONLY",
-    "PAUSED",
-    "COMPLETED"
-  ],
+  "workflow_modes": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"],
+  "runtime_states": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"],
   "allowed_combinations": {
-    "START_INTAKE_MODE": [
-      "INTAKE_WAITING",
-      "INTAKE_VALIDATING",
-      "EVIDENCE_REQUIRED",
-      "REVIEW_ONLY",
-      "CORRECTION",
-      "PAUSED"
-    ],
-    "APPROVED_HANDOFF_MODE": [
-      "BUILD_ACTIVE",
-      "WAITING_FOR_CONFIRMATION",
-      "EVIDENCE_REQUIRED",
-      "CORRECTION",
-      "REVIEW_ONLY",
-      "PAUSED",
-      "COMPLETED"
-    ],
-    "FRESH_IMAGE_MODE_LIMITED": [
-      "INTAKE_WAITING",
-      "EVIDENCE_REQUIRED",
-      "BUILD_ACTIVE",
-      "WAITING_FOR_CONFIRMATION",
-      "CORRECTION",
-      "REVIEW_ONLY",
-      "PAUSED"
-    ]
+    "START_INTAKE_MODE": ["INTAKE_WAITING", "INTAKE_VALIDATING", "EVIDENCE_REQUIRED", "REVIEW_ONLY", "CORRECTION", "PAUSED"],
+    "APPROVED_HANDOFF_MODE": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"],
+    "FRESH_IMAGE_MODE_LIMITED": ["INTAKE_WAITING", "EVIDENCE_REQUIRED", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "CORRECTION", "REVIEW_ONLY", "PAUSED"]
   },
   "transitions": [
     {
@@ -81,6 +44,27 @@
       "to": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "EVIDENCE_REQUIRED"}
     },
     {
+      "id": "real-intake",
+      "from": null,
+      "trigger": "explicit_operator_source_selected",
+      "guards": [
+        "source_mode_arguments_exact",
+        "selected_source_bytes_read",
+        "internal_source_snapshot_created",
+        "source_mode_derivation_valid",
+        "builder_schema_valid",
+        "builder_semantic_valid",
+        "decision_lineage_valid",
+        "runtime_context_derived",
+        "initial_session_derived",
+        "initial_checkpoint_derived",
+        "checkpoint_sequence_initial",
+        "generated_run_bundle_valid",
+        "atomic_publication_required"
+      ],
+      "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"}
+    },
+    {
       "id": "pause",
       "from": "ANY_INITIALIZED_NON_COMPLETED_STATE",
       "trigger": "توقف",
@@ -110,13 +94,15 @@
       "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"},
       "trigger": "action_batch_emitted",
       "guards": [
-        "runtime_context_valid",
+        "run_manifest_valid",
+        "internal_source_snapshot_hash_matches",
+        "full_runtime_context_rederivation_matches",
         "session_checkpoint_identity_matches",
         "checkpoint_sequence_valid",
         "batch_matches_context",
         "confirmed_action_ids_empty",
         "unconfirmed_action_ids_complete",
-        "no_blocker",
+        "active_blocker_set_empty",
         "derived_waiting_carriers",
         "atomic_publication_required"
       ],
@@ -127,16 +113,37 @@
       "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "WAITING_FOR_CONFIRMATION"},
       "trigger": "confirmation_accepted",
       "guards": [
-        "runtime_context_valid",
+        "run_manifest_valid",
+        "internal_source_snapshot_hash_matches",
+        "stored_context_digest_valid",
+        "emit_result_binding_matches",
         "session_checkpoint_identity_matches",
         "checkpoint_sequence_valid",
         "batch_matches_context",
         "confirmed_action_ids_empty",
         "unconfirmed_action_ids_complete",
         "exact_operator_token_matches",
+        "active_blocker_set_empty",
         "derived_build_active_carriers",
         "receipt_binds_resulting_checkpoint",
-        "unresolved_blockers_preserved",
+        "atomic_publication_required"
+      ],
+      "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"}
+    },
+    {
+      "id": "attach-evidence",
+      "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"},
+      "trigger": "verified_evidence_attached",
+      "guards": [
+        "run_manifest_valid",
+        "confirmation_exists",
+        "external_evidence_bytes_read_once",
+        "evidence_source_status_verified",
+        "evidence_schema_valid",
+        "evidence_semantic_binding_valid",
+        "action_specific_execution_binding_valid",
+        "internal_evidence_snapshot_created",
+        "checkpoint_sequence_valid",
         "atomic_publication_required"
       ],
       "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"}
@@ -184,6 +191,15 @@
     "confirm_batch_with_incomplete_or_foreign_unconfirmed_actions",
     "evidence_without_verified_source_status",
     "generic_subject_authorizes_action_execution",
-    "completion_batch_drift"
+    "completion_batch_drift",
+    "caller_authored_initial_state",
+    "caller_managed_carrier_selection",
+    "external_source_dependency_after_intake",
+    "legacy_real_authority_entrypoint",
+    "partial_intake_publication",
+    "partial_emit_publication",
+    "partial_confirmation_publication",
+    "partial_evidence_publication",
+    "partial_completion_publication"
   ]
 }
