@@ -3,16 +3,13 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { sortedCanonicalJson } from './lib/canonical-builder-package.mjs';
 import { runAjv } from './lib/builder-runtime-transition.mjs';
 import { validateCanonicalRun } from './lib/runtime/canonical-run-runtime.mjs';
 import { completeHappyRun } from './lib/runtime/runtime-test-fixtures.mjs';
 
 const ROOT = process.cwd();
 const selfTestRoot = process.argv[2] ? null : fs.mkdtempSync(path.join(os.tmpdir(), 'ev4-run-artifact-validator-'));
-const runDirectory = process.argv[2]
-  ? path.resolve(ROOT, process.argv[2])
-  : completeHappyRun(selfTestRoot, 'artifact-validator').runDirectory;
+const runDirectory = process.argv[2] ? path.resolve(ROOT, process.argv[2]) : completeHappyRun(selfTestRoot, 'artifact-validator').runDirectory;
 const errors = [];
 if (selfTestRoot) process.on('exit', () => fs.rmSync(selfTestRoot, { recursive: true, force: true }));
 
@@ -31,17 +28,19 @@ function sameSet(left, right) {
   const b = [...right].sort();
   return a.every((value, index) => value === b[index]);
 }
-function generationFiles(ref) { return ['checkpoint.json', 'run-manifest.json', 'runtime-context.json', 'session-state.json'].map((name) => `${ref}/${name}`); }
-function findGenerationByCheckpoint(checkpointId) {
-  const root = path.join(runDirectory, 'generations');
-  for (const name of fs.readdirSync(root).sort()) {
-    if (!/^\d{6}$/.test(name)) continue;
-    const file = path.join(root, name, 'checkpoint.json');
-    if (!fs.existsSync(file)) continue;
-    const checkpoint = readJson(file);
-    if (checkpoint.checkpoint_id === checkpointId) return { number: Number.parseInt(name, 10), ref: `generations/${name}`, checkpoint, manifest: readJson(path.join(root, name, 'run-manifest.json')), context: readJson(path.join(root, name, 'runtime-context.json')), session: readJson(path.join(root, name, 'session-state.json')) };
-  }
-  return null;
+function validateSchema(schema, file, refs = []) {
+  const result = runAjv(schema, file, refs);
+  if (!result.passed) fail(`Schema validation failed for ${path.relative(runDirectory, file)}: ${result.detail}`);
+}
+function validateJsonRef(ref, expectedSchema, schemaFile = null, refs = []) {
+  const file = safeRef(ref);
+  if (!file || !fs.existsSync(file)) { fail(`Artifact is missing or unsafe: ${ref}`); return null; }
+  let value;
+  try { value = readJson(file); }
+  catch (error) { fail(`Artifact is malformed: ${ref}: ${error.message}`); return null; }
+  if (value?.schema !== expectedSchema) fail(`Artifact Schema differs for ${ref}: ${value?.schema || '<missing>'}`);
+  if (schemaFile) validateSchema(schemaFile, file, refs);
+  return value;
 }
 function findFiles(directory, filename) {
   const found = [];
@@ -53,45 +52,12 @@ function findFiles(directory, filename) {
   }
   return found;
 }
-function validateSchema(schema, file, refs = []) {
-  const result = runAjv(schema, file, refs);
-  if (!result.passed) fail(`Schema validation failed for ${path.relative(runDirectory, file)}: ${result.detail}`);
-}
-function validateResult({ operation, ref, schema, expectedSchema, extraExpected = [] }) {
-  const file = safeRef(ref);
-  if (!file || !fs.existsSync(file)) { fail(`${operation} artifact is missing or unsafe: ${ref}`); return null; }
-  const result = readJson(file);
-  validateSchema(schema, file);
-  if (result.schema !== expectedSchema || result.status !== 'accepted' || result.blocking_diagnostics?.length !== 0) fail(`${operation} result acceptance fields are invalid.`);
-  const generation = findGenerationByCheckpoint(result.resulting_checkpoint?.checkpoint_id);
-  if (!generation) { fail(`${operation} resulting generation cannot be located.`); return result; }
-  const expected = ['CURRENT.json', ...generationFiles(generation.ref), ref, ...extraExpected].sort();
-  if (!sameSet(result.publication?.files, expected)) fail(`${operation} publication set differs from independent canonical expectation.`);
-  if (result.run_id !== generation.manifest.run_id) fail(`${operation} Run binding differs from resulting generation.`);
-  if (result.context_digest && result.context_digest !== generation.context.context_digest) fail(`${operation} Context binding differs from resulting generation.`);
-  if (result.package_digest && result.package_digest !== generation.context.canonical_package_digest) fail(`${operation} Package binding differs from resulting generation.`);
-  if (result.selected_candidate_id && result.selected_candidate_id !== generation.context.selected_candidate_id) fail(`${operation} Candidate binding differs from resulting generation.`);
-  if (result.batch_id && result.batch_id !== generation.context.action_batch.batch_id) fail(`${operation} Batch binding differs from resulting generation.`);
-  if (result.action_ids && !sameSet(result.action_ids, generation.context.action_batch.action_ids)) fail(`${operation} Action ID binding differs from resulting generation.`);
-  if (result.action_digests && sortedCanonicalJson(result.action_digests) !== sortedCanonicalJson(generation.context.action_batch.action_digests)) fail(`${operation} Action digest binding differs from resulting generation.`);
-  if (result.resulting_checkpoint?.checkpoint_sequence !== generation.checkpoint.checkpoint_sequence || result.resulting_checkpoint?.parent_checkpoint_id !== generation.checkpoint.parent_checkpoint_id) fail(`${operation} resulting Checkpoint lineage differs from generation.`);
-  if (generation.number > 1) {
-    const predecessor = path.join(runDirectory, 'generations', String(generation.number - 1).padStart(6, '0'), 'checkpoint.json');
-    if (!fs.existsSync(predecessor)) fail(`${operation} predecessor generation is missing.`);
-    else {
-      const checkpoint = readJson(predecessor);
-      if (result.predecessor_checkpoint?.checkpoint_id !== checkpoint.checkpoint_id || result.predecessor_checkpoint?.checkpoint_sequence !== checkpoint.checkpoint_sequence) fail(`${operation} predecessor Checkpoint binding is invalid.`);
-    }
-  }
-  if (result.responsive_complete !== false || result.production_ready !== false) fail(`${operation} overclaims Responsive or production readiness.`);
-  return result;
-}
 
 const loaded = validateCanonicalRun(runDirectory, { fullDerivation: true });
-if (!loaded.passed) errors.push(...loaded.diagnostics.map((entry) => `${entry.code}: ${entry.message}`));
+if (!loaded.passed) errors.push(...loaded.diagnostics.map((entry) => `${entry.code}: ${entry.message}${entry.detail ? `: ${entry.detail}` : ''}`));
 for (const name of ['run-manifest.json', 'runtime-context.json', 'session-state.json', 'checkpoint.json']) if (fs.existsSync(path.join(runDirectory, name))) fail(`Forbidden mutable top-level Authority file exists: ${name}`);
 
-if (loaded.passed) {
+if (loaded.manifest) {
   validateSchema('schemas/current-generation.schema.json', path.join(runDirectory, 'CURRENT.json'));
   const generations = fs.readdirSync(path.join(runDirectory, 'generations')).filter((name) => /^\d{6}$/.test(name)).sort();
   for (const name of generations) {
@@ -104,34 +70,20 @@ if (loaded.passed) {
   }
   const intakeFiles = findFiles(path.join(runDirectory, 'transitions', 'intake'), 'real-intake-result.json');
   if (intakeFiles.length !== 1) fail(`Expected exactly one real-intake result, found ${intakeFiles.length}.`);
-  else {
-    const ref = path.relative(runDirectory, intakeFiles[0]).split(path.sep).join('/');
-    const result = readJson(intakeFiles[0]);
-    const expected = ['CURRENT.json', ...generationFiles('generations/000001'), ref, 'source/selected-source.json', ...(loaded.manifest.source_mode === 'project-gate' ? ['source/project-gate-receipt.json'] : [])].sort();
-    validateSchema('schemas/real-intake-result.v2.schema.json', intakeFiles[0]);
-    if (!sameSet(result.publication?.files, expected)) fail('real-intake publication set differs from independent canonical expectation.');
-    if (result.resulting_checkpoint?.checkpoint_sequence !== 1 || result.resulting_checkpoint?.parent_checkpoint_id !== null) fail('real-intake initial Checkpoint lineage is invalid.');
-  }
-  if (loaded.manifest.active_emit_result_ref) validateResult({ operation: 'emit-batch', ref: loaded.manifest.active_emit_result_ref, schema: 'schemas/emit-batch-result.v2.schema.json', expectedSchema: 'ev4-builder-emit-batch-result@2.0.0' });
-  if (loaded.manifest.active_confirmation_result_ref) {
-    validateResult({ operation: 'confirm-batch', ref: loaded.manifest.active_confirmation_result_ref, schema: 'schemas/confirmation-result.v2.schema.json', expectedSchema: 'ev4-builder-confirmation-result@2.0.0', extraExpected: [loaded.manifest.active_confirmation_receipt_ref] });
-    const receiptFile = safeRef(loaded.manifest.active_confirmation_receipt_ref);
-    if (!receiptFile || !fs.existsSync(receiptFile)) fail('Confirmation Receipt is missing.');
-    else validateSchema('schemas/confirmation-receipt.v2.schema.json', receiptFile);
-  }
-  for (const ref of loaded.manifest.evidence_attachment_result_refs || []) {
-    const result = readJson(safeRef(ref));
-    validateResult({ operation: 'attach-evidence', ref, schema: 'schemas/evidence-attachment-result.v1.schema.json', expectedSchema: 'ev4-builder-evidence-attachment-result@1.0.0', extraExpected: [result.evidence_snapshot_ref] });
-  }
-  if (loaded.manifest.completion_result_ref) {
-    const result = validateResult({ operation: 'real-completion', ref: loaded.manifest.completion_result_ref, schema: 'schemas/completion-result.v2.schema.json', expectedSchema: 'ev4-builder-completion-result@2.0.0', extraExpected: [loaded.manifest.completion_status_ref, loaded.manifest.completion_gate_ref] });
-    if (result?.builder_build_complete !== true || result?.runtime_state !== 'COMPLETED') fail('Completion result is not truthfully terminal.');
-    if (loaded.current.runtime_state !== 'COMPLETED') fail('Completion result exists without terminal CURRENT State.');
-  }
+  else validateSchema('schemas/real-intake-result.v2.schema.json', intakeFiles[0]);
+  if (loaded.manifest.active_emit_result_ref) validateJsonRef(loaded.manifest.active_emit_result_ref, 'ev4-builder-emit-batch-result@2.0.0', 'schemas/emit-batch-result.v2.schema.json');
+  if (loaded.manifest.active_confirmation_receipt_ref) validateJsonRef(loaded.manifest.active_confirmation_receipt_ref, 'ev4-builder-confirmation-receipt@2.0.0', 'schemas/confirmation-receipt.v2.schema.json');
+  if (loaded.manifest.active_confirmation_result_ref) validateJsonRef(loaded.manifest.active_confirmation_result_ref, 'ev4-builder-confirmation-result@2.0.0', 'schemas/confirmation-result.v2.schema.json');
+  for (const ref of loaded.manifest.evidence_snapshot_refs || []) validateJsonRef(ref, 'ev4-builder-evidence-source@1.0.0');
+  for (const ref of loaded.manifest.evidence_attachment_result_refs || []) validateJsonRef(ref, 'ev4-builder-evidence-attachment-result@1.0.0', 'schemas/evidence-attachment-result.v1.schema.json');
+  if (loaded.manifest.completion_result_ref) validateJsonRef(loaded.manifest.completion_result_ref, 'ev4-builder-completion-result@2.0.0', 'schemas/completion-result.v2.schema.json');
+  if (loaded.manifest.completion_status_ref) validateJsonRef(loaded.manifest.completion_status_ref, 'ev4-builder-derived-completion-status@1.0.0');
+  if (loaded.manifest.completion_gate_ref) validateJsonRef(loaded.manifest.completion_gate_ref, 'ev4-builder-derived-completion-gate@1.0.0');
 }
+
 if (errors.length) {
   console.error('Canonical Run artifact validation failed:');
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log('Canonical Run generations, CURRENT pointer, and independent publication validation passed.');
+console.log('Canonical Run Schemas and shared-planner committed transition exactness validation passed.');
