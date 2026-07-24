@@ -45,8 +45,10 @@ explicit operator source
 → COMPLETED
 ```
 
-Implemented scope includes concurrent Intake protection, immediate `RUN_BUSY_OR_STALE_LOCK`, immutable complete State generations, atomic same-filesystem `CURRENT.json` replacement, orphan generation inspection, explicit stale-lock recovery, independent publication validation, child-process concurrency tests, crash-boundary tests, and repository-wide Legacy authority rejection.
+Implemented scope includes concurrent Intake protection, immediate `RUN_BUSY_OR_STALE_LOCK`, immutable complete State generations, atomic same-filesystem `CURRENT.json` replacement, exact expected-successor derivation, byte-level generation and auxiliary-artifact reconciliation, exact same-transition orphan finalization, post-commit replay, explicit conflict/ambiguity diagnostics, orphan generation inspection, bounded stale-lock/temp cleanup, independent publication validation, child-process concurrency tests, crash-boundary tests, inert historical bypass records and repository-wide Legacy authority rejection.
+
+`CURRENT.json` remains the sole authority. No future generation is promoted by number or Schema validity alone. Exact N+1 may be finalized only by retrying the same canonical command with matching inputs; differing, incomplete or multiple future generations leave `CURRENT.json` unchanged. An exact already-committed transition replays its accepted result without producing another generation.
 
 The canonical real commands remain `real-intake`, `emit-batch`, `confirm-batch`, `attach-evidence`, and `real-completion`. Compatibility operations cannot mutate canonical Run State or claim Builder Completion.
 
-Exact-head GitHub Actions evidence must be regenerated after all code, documentation and deterministic Project Pack commits. A fresh independent review remains mandatory; no review finding is declared finally closed.
+Exact-head GitHub Actions evidence must be regenerated after all code and documentation commits. A fresh independent review remains mandatory; no review finding is declared finally closed.
