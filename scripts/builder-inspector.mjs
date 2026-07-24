@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 import {
   buildIntakeCapsule,
@@ -22,6 +23,7 @@ import {
 } from './lib/runtime/canonical-run-runtime.mjs';
 
 const ROOT = process.cwd();
+const ARTIFACT_VALIDATOR = path.join(ROOT, 'scripts', 'validate-canonical-run-artifacts.mjs');
 
 function usage() {
   console.error(`Usage:
@@ -161,6 +163,19 @@ function resume(sourceFile, capsuleFile, sessionFile, checkpointFile, outputDire
   print(result);
 }
 
+function runMaintenanceArtifactValidation(script, runDirectory) {
+  if (path.resolve(script) !== ARTIFACT_VALIDATOR) throw new Error('Unsupported maintenance validation script.');
+  const result = spawnSync(process.execPath, [ARTIFACT_VALIDATOR, runDirectory], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+    shell: false
+  });
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+  if (result.error || result.status !== 0) process.exitCode = result.status ?? 1;
+}
+
 try {
   const [command, ...args] = process.argv.slice(2);
   if (command === 'real-intake' && args.length === 4) {
@@ -175,6 +190,7 @@ try {
   else if (command === 'confirm-batch' && args.length === 2) publishResult('confirm-batch', () => confirmRunBatch({ runDirectory: args[0], userToken: args[1] }));
   else if (command === 'attach-evidence' && args.length === 2) publishResult('attach-evidence', () => attachRunEvidence({ runDirectory: args[0], evidenceSourceFile: args[1] }));
   else if (command === 'real-completion' && args.length === 1) publishResult('real-completion', () => completeRun({ runDirectory: args[0] }));
+  else if (command && path.resolve(command) === ARTIFACT_VALIDATOR && args.length === 1) runMaintenanceArtifactValidation(command, args[0]);
   else if (['fixture-validation', 'intake'].includes(command) && args.length >= 1 && args.length <= 2) fixtureValidation(args[0], args[1]);
   else if (['fixture-completion', 'completion'].includes(command) && args.length === 5) fixtureCompletion(...args);
   else if (command === 'verify-capsule' && args.length === 2) verifyCapsule(...args);
