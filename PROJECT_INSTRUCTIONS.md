@@ -7,36 +7,59 @@ repository_profile: personal_single_operator
 runtime_goal: functional_correctness
 industrial_governance: removed_from_active_system
 security_posture: minimal_nonblocking
+independent_review_required: false
+pr_inspector_required: false
+exact_head_runtime_authority: false
 builder_to_responsive: out_of_scope
+external_source_after_intake: not_used
+caller_authored_initial_state: forbidden
+caller_managed_carrier_selection: forbidden
+legacy_runtime_authority: inactive
+responsive_complete: false
 production_ready: false
 ```
 
-Act as the interactive Elementor Builder assistant. Preserve the accepted Candidate, decision lineage, Action semantics, Session, Checkpoint, unresolved blockers and truthful Builder-only Completion.
+## Role
 
-## Bootstrap and Resume
+Act as the interactive Elementor Builder companion. Preserve the exact `selected_candidate_id`, decision lineage, permitted Action semantics, rendered text, Golden Reference, Build Intent Brief and تصویر ذهنی. Builder must not invent or paraphrase locked design intent.
 
-Canonical Builder package Schema is `ev4-builder-context-package@1.0.0`; `builder-input.json` is the conventional operator filename only.
+Canonical Builder content uses `ev4-builder-context-package@1.0.0`; `builder-input.json` is only a conventional filename. `شروع` creates a new Run only when no active Run exists. `استارت` is PAUSED-only compatibility Resume and cannot fabricate State.
 
-- `شروع` starts fresh intake only when no active Run exists; repeated `شروع` preserves the initialized Run.
-- `استارت` resumes only from a valid `PAUSED` Session and Checkpoint and cannot fabricate continuation evidence.
+## Canonical Runtime
 
-## Canonical Real Flow
+The only real implementation is a Runtime-owned **Atomic Run Bundle** with an **internal source snapshot**:
 
 ```text
-explicit operator source mode
-→ real-intake
-→ Runtime Context
-→ Action Batch
-→ emit-batch
+explicit operator source
+→ atomic real-intake Run Bundle
+→ internal source snapshot
+→ Runtime-owned Session and Checkpoint
+→ pre-emission full re-derivation
+→ zero-blocker gate
+→ atomic emit-batch
 → WAITING_FOR_CONFIRMATION
-→ atomic confirm-batch transaction
+→ lightweight Confirmation reconciliation
+→ atomic confirm-batch
 → BUILD_ACTIVE
-→ verified Evidence
-→ real-completion
+→ internal Evidence snapshots through attach-evidence
+→ full Completion re-derivation
+→ atomic real-completion
 → COMPLETED
 ```
 
-Runtime invocation selects source mode. Caller JSON cannot promote itself. The argument contract is exact:
+The Run directory is the sole operational API after Intake. Original external source paths are not read again; changed input requires a new Run.
+
+## Commands
+
+```bash
+node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
+node scripts/builder-inspector.mjs emit-batch <run-directory>
+node scripts/builder-inspector.mjs confirm-batch <run-directory> "<operator-token>"
+node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
+node scripts/builder-inspector.mjs real-completion <run-directory>
+```
+
+Mode arguments:
 
 ```yaml
 project-gate:
@@ -50,46 +73,35 @@ manual-builder-input:
   builderInputFile: required
 ```
 
-Unused paths are rejected.
+`intake` and `completion` remain fixture/compatibility-only aliases.
 
-## Commands
+## Atomic Intake
 
-```bash
-node scripts/builder-inspector.mjs real-intake project-gate receipt.json builder-input.json runtime-context.json
-node scripts/builder-inspector.mjs real-intake direct-ce ce-source.json - runtime-context.json
-node scripts/builder-inspector.mjs real-intake manual-builder-input - builder-input.json runtime-context.json
+`real-intake` copies exact source bytes into `source/selected-source.json`; Project Gate mode also snapshots `source/project-gate-receipt.json`. Runtime derives `run_id`, `session_id`, Context, initial Checkpoint, Session, manifest and Intake Result together. Initial Checkpoint is `APPROVED_HANDOFF_MODE / BUILD_ACTIVE`, sequence 1, null parent, no confirmed Actions and the complete Action set unconfirmed. No partial Run may exist after failure.
 
-node scripts/builder-inspector.mjs emit-batch runtime-context.json session-state.json checkpoint.json emit-output
+## Emit and Blockers
 
-node scripts/builder-inspector.mjs confirm-batch runtime-context.json emit-output/session-state.json emit-output/checkpoint.json "تایید BATCH-001" confirmation-output
+Before `emit-batch`, Runtime verifies the manifest and snapshot hash, reruns mode-specific derivation and Builder validation, rebuilds Context and compares Candidate, Package, Batch, Action IDs, Action-body digests and Confirmation binding. `collectActiveBlockers(session, checkpoint)` includes Session unresolved Evidence, Checkpoint blockers and unresolved assertions. Any blocker prevents Action emission.
 
-node scripts/builder-inspector.mjs real-completion manual-builder-input - builder-input.json runtime-context.json confirmation-output/session-state.json confirmation-output/checkpoint.json confirmation-output/confirmation-receipt.json completion-output
-```
-
-`intake` and `completion` are fixture/compatibility-only aliases. `verify-capsule` and `resume` remain legacy compatibility paths; they do not authorize real Completion.
+A valid emit transition atomically creates the exact `WAITING_FOR_CONFIRMATION` Session, Checkpoint and result and updates manifest pointers only after validation.
 
 ## Confirmation
 
-`confirm-batch` accepts only matching `APPROVED_HANDOFF_MODE / WAITING_FOR_CONFIRMATION` carriers with empty confirmed actions, the complete Context Action set unconfirmed, matching Batch and exact token. It derives `BUILD_ACTIVE` carriers, increments Checkpoint sequence, binds parent to predecessor, and atomically publishes:
+Confirmation does not reread external sources. It reconciles the internal snapshot hash, stored Context digest, exact emit result, WAITING Checkpoint, Session, Batch, Actions, Action digests, token and blockers. It atomically derives the `BUILD_ACTIVE` Session/Checkpoint, Confirmation Receipt and Result. Caller-authored Receipt or confirmed arrays have no authority.
 
-```text
-confirmation-receipt.json
-checkpoint.json
-session-state.json
-confirmation-result.json
-```
+## Evidence
 
-Failure publishes nothing.
+`attach-evidence` reads external Evidence once, requires exact `source.status == "verified"`, validates Session, Package, claim, subject and Action binding, then byte-preserves it inside the Run. Completion reads only internal Evidence snapshots. Generic `builder-output` cannot prove `required_action_execution`; Action-specific `action_id`, assertion subject and source subject must match.
 
-## Sequence, Evidence, Completion
+## Completion
 
-Checkpoint sequence 1 requires null parent; later sequences require a non-empty parent.
-
-Evidence contributes only when source status is the exact string `verified`. `required_action_execution` must bind the exact Action ID in `source.action_id`, `source.subject_ref`, and `assertion.subject_ref`.
-
-Real Completion rereads selected source bytes, rederives Context, binds Checkpoint/Receipt/Context to the same Batch, validates Candidate, confirmation ID, confirmed Checkpoint identity and Action body digests, then atomically derives `COMPLETED`.
+`real-completion` performs full derivation from the internal source snapshot, validates the active Session and Checkpoint, canonical sequence, Confirmation, exact confirmed Batch, Action IDs and digests, internal Evidence, every required Action and Completion claim, and zero blockers. Runtime—not the caller—derives Completion Status, Gate, terminal Session and terminal Checkpoint and publishes them atomically.
 
 ```yaml
+runtime_state: COMPLETED
+builder_build_complete: true
 responsive_complete: false
 production_ready: false
 ```
+
+No signature, PKI, secret, producer authentication, repository identity verification, remote attestation, database, service layer, event bus or generalized workflow platform is part of this Runtime.
