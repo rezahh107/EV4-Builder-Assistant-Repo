@@ -4,45 +4,40 @@
 version: 0.3.6
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
-runtime_owned_atomic_run_bundle: true
-internal_source_snapshot: true
 external_source_after_intake: not_used
 caller_authored_initial_state: forbidden
 caller_managed_carrier_selection: forbidden
 legacy_runtime_authority: inactive
-origin_identity_independently_verified: false
-builder_to_responsive: out_of_scope
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
 responsive_complete: false
 production_ready: false
 ```
 
-This repository runs one personal, deterministic Builder workflow. It does not authenticate producers or remote origins. It executes the exact explicit operator-selected source bytes and owns all real Runtime State inside one **Atomic Run Bundle**.
+The real Runtime owns one stable local Run directory. Intake snapshots exact selected source bytes and creates immutable `generations/000001`. `CURRENT.json` is the sole active State pointer; there are no duplicate mutable top-level Session, Checkpoint, Context or manifest files.
 
-Canonical Builder content uses `ev4-builder-context-package@1.0.0`; `builder-input.json` is a filename hint only. `شروع` begins a new Intake only when no active Run exists. `استارت` is PAUSED-only compatibility Resume.
-
-## Canonical real flow
+## Canonical Flow
 
 ```text
 explicit operator source
-→ atomic real-intake Run Bundle
+→ stable Run root
 → internal source snapshot
-→ Runtime-owned Session and Checkpoint
-→ pre-emission full re-derivation
-→ zero-blocker gate
-→ atomic emit-batch
-→ WAITING_FOR_CONFIRMATION
-→ lightweight Confirmation reconciliation
-→ atomic confirm-batch
-→ BUILD_ACTIVE
-→ internal Evidence snapshots through attach-evidence
-→ full Completion re-derivation
-→ atomic real-completion
+→ immutable generations/000001
+→ atomic CURRENT.json
+→ acquire .mutation-lock
+→ load active generation after lock
+→ emit immutable WAITING_FOR_CONFIRMATION generation
+→ atomic CURRENT.json update
+→ confirm immutable BUILD_ACTIVE generation
+→ attach-evidence internal snapshots and generations
+→ derive immutable terminal generation
+→ atomic CURRENT.json update
 → COMPLETED
 ```
-
-After Intake, only the Run directory is operational input. The original source may be moved, deleted or changed without changing the Run. New source content requires a new Run.
-
-## CLI
 
 ```bash
 node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
@@ -52,76 +47,11 @@ node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-sou
 node scripts/builder-inspector.mjs real-completion <run-directory>
 ```
 
-```yaml
-project-gate:
-  sourceArtifactFile: required
-  builderInputFile: required
-direct-ce:
-  sourceArtifactFile: required
-  builderInputFile: forbidden
-manual-builder-input:
-  sourceArtifactFile: forbidden
-  builderInputFile: required
-```
+A mutation writer acquires `.mutation-lock` before reading `CURRENT.json`. A competing local process receives `RUN_BUSY_OR_STALE_LOCK`; it cannot commit previously loaded State. Each successful transition publishes a complete successor generation and advances `CURRENT.json` through one atomic same-filesystem rename. A crash before pointer replacement leaves the predecessor active; a crash after replacement leaves the complete successor active. Orphan generations never become authoritative automatically.
 
-The aliases `intake` and `completion` are fixture/compatibility-only and cannot create a real Run or real Completion.
-
-## Run Bundle
-
-```text
-runs/<RUN_ID>/
-├── run-manifest.json
-├── source/
-│   ├── selected-source.json
-│   └── project-gate-receipt.json   # project-gate only
-├── runtime-context.json
-├── session-state.json
-├── checkpoint.json
-├── real-intake-result.json
-├── transitions/
-│   ├── emit-batch/
-│   ├── confirmation/
-│   ├── evidence/
-│   └── completion/
-├── evidence/
-└── outputs/
-```
-
-`run-manifest.json` is a deterministic Run index, not a security attestation. It binds source snapshots, Context, current State, current Checkpoint, Package, Candidate, Batch, transition results and internal Evidence.
-
-## Functional correctness
-
-- Intake atomically snapshots bytes and derives Context, Session and initial Checkpoint.
-- initial Checkpoint is sequence 1 with null parent, `BUILD_ACTIVE`, zero confirmed Actions and the complete unconfirmed Action set.
-- `emit-batch` fully rederives Context from the internal snapshot and requires zero active blockers.
-- `confirm-batch` accepts only the exact emitted `WAITING_FOR_CONFIRMATION` State and exact operator token.
-- Confirmation Receipt is Runtime-derived and binds Run, Context, Package, Candidate, Confirmation, Batch, Actions, digests and predecessor/resulting Checkpoints.
-- `attach-evidence` snapshots exact Evidence bytes inside the Run and requires exact `source.status == "verified"`.
-- `required_action_execution` requires Action-specific assertion/source subjects and `action_id`.
-- Completion fully rederives Context from the internal snapshot, validates exact Confirmation/Batch/Actions/Evidence/blockers and derives Status and Gate.
-- every transition publishes atomically; failed staging cannot move active manifest pointers.
-- repeated operations do not overwrite existing transition directories or create competing active Checkpoints.
-
-## Completion boundary
-
-```yaml
-runtime_state: COMPLETED
-builder_build_complete: true
-responsive_complete: false
-production_ready: false
-```
-
-No signatures, PKI, secrets, repository provenance checks, producer authentication, remote attestations, databases, services, event buses or generalized workflow infrastructure are used.
-
-## Validation
+The Runtime preserves exact source mode arguments, deterministic Package/Candidate/Batch/Action binding, zero-blocker Action emission, `WAITING_FOR_CONFIRMATION`-only Confirmation, exact verified Action-specific Evidence, and Runtime-derived Completion Status/Gate. Builder Completion never implies Responsive completion or production readiness.
 
 ```bash
 npm ci
 npm run validate
-node scripts/test-builder-atomic-run-bundle.mjs
-node scripts/validate-canonical-run-artifacts.mjs
-node scripts/validate-lean-runtime.mjs
-node scripts/test-project-pack-determinism.mjs
 ```
-
-The complete suite also preserves explicit source modes, previous truth-spine mutations, functional-correctness regressions, historical bypass reproductions and deterministic Project Pack generation.
