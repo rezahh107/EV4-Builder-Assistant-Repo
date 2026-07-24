@@ -11,58 +11,58 @@
   "deterministic": true,
   "files": [
     {
+      "source_path": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt",
+      "source_sha256": "4e95af50f956828b5f20a023b62c00179605b5665f5ecb94a091242bac86d952",
+      "output_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
+      "output_sha256": "4e95af50f956828b5f20a023b62c00179605b5665f5ecb94a091242bac86d952",
+      "bytes": 1546,
+      "chars": 1512,
+      "role": "project_instructions"
+    },
+    {
       "source_path": "runtime/project-pack/01_RUNTIME_CORE.md",
-      "source_sha256": "f66cbb37601242f86e6885bc1d619f8ed5804c21ee1ad32b76527d6cfb999989",
+      "source_sha256": "d5006bfe2cb89980ac5eff8fe74d7da3b496d1084d9349fd4cbfc3a2f42a984c",
       "output_path": "dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md",
-      "output_sha256": "f66cbb37601242f86e6885bc1d619f8ed5804c21ee1ad32b76527d6cfb999989",
-      "bytes": 1296,
-      "chars": 1256,
+      "output_sha256": "d5006bfe2cb89980ac5eff8fe74d7da3b496d1084d9349fd4cbfc3a2f42a984c",
+      "bytes": 1056,
+      "chars": 1046,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/02_INTAKE_INSPECTOR.md",
-      "source_sha256": "10e8ecdb2e99a6f043b8801785dddc5b676e42d97fe4ac5c34266df1f189a184",
+      "source_sha256": "a49e85a0445933760a57664fb8c70c181f5f9fd4f088923866e56db153dd3f86",
       "output_path": "dist/chatgpt-project/knowledge/02_INTAKE_INSPECTOR.md",
-      "output_sha256": "10e8ecdb2e99a6f043b8801785dddc5b676e42d97fe4ac5c34266df1f189a184",
-      "bytes": 1756,
-      "chars": 1756,
+      "output_sha256": "a49e85a0445933760a57664fb8c70c181f5f9fd4f088923866e56db153dd3f86",
+      "bytes": 1134,
+      "chars": 1132,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/03_STATE_RESUME.md",
-      "source_sha256": "f46781ed3fb54c39d8fddaff9bc4a389db2ab57281b3c29a9aa2362d56c6eae8",
+      "source_sha256": "7b6bf417b62a3dd17f37082dd7aec7d3428b92ba064dc2cbb1edd6d3c87eca6b",
       "output_path": "dist/chatgpt-project/knowledge/03_STATE_RESUME.md",
-      "output_sha256": "f46781ed3fb54c39d8fddaff9bc4a389db2ab57281b3c29a9aa2362d56c6eae8",
-      "bytes": 1681,
-      "chars": 1671,
+      "output_sha256": "7b6bf417b62a3dd17f37082dd7aec7d3428b92ba064dc2cbb1edd6d3c87eca6b",
+      "bytes": 1280,
+      "chars": 1270,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/04_ACTION_CONFIRMATION.md",
-      "source_sha256": "2a03d481ba39bc86dd26e916d6c9b09069a432743631a30d0f52be6bb67a5048",
+      "source_sha256": "9f73ca1e61c5d4fb74cd1379d5832e37eb7ac94c74cf413b4f3fe47743e57283",
       "output_path": "dist/chatgpt-project/knowledge/04_ACTION_CONFIRMATION.md",
-      "output_sha256": "2a03d481ba39bc86dd26e916d6c9b09069a432743631a30d0f52be6bb67a5048",
-      "bytes": 1885,
-      "chars": 1885,
+      "output_sha256": "9f73ca1e61c5d4fb74cd1379d5832e37eb7ac94c74cf413b4f3fe47743e57283",
+      "bytes": 1235,
+      "chars": 1221,
       "role": "knowledge"
     },
     {
       "source_path": "runtime/project-pack/05_CHECKPOINT_COMPLETION.md",
-      "source_sha256": "f3a09eedf1f88e1273e025b0ae7a40ce4356394fec1665fffe229a7db48e5139",
+      "source_sha256": "904688ba2b915c55bba8e4bcd98c79a4bff50a165693578aafe6adac9c604057",
       "output_path": "dist/chatgpt-project/knowledge/05_CHECKPOINT_COMPLETION.md",
-      "output_sha256": "f3a09eedf1f88e1273e025b0ae7a40ce4356394fec1665fffe229a7db48e5139",
-      "bytes": 2028,
-      "chars": 2028,
+      "output_sha256": "904688ba2b915c55bba8e4bcd98c79a4bff50a165693578aafe6adac9c604057",
+      "bytes": 1354,
+      "chars": 1342,
       "role": "knowledge"
-    },
-    {
-      "source_path": "runtime/project-pack/PROJECT_INSTRUCTIONS.txt",
-      "source_sha256": "cee39a0abb19d3aa28d2bf461571e833b73f018983ed1bcb3f50450f3a207149",
-      "output_path": "dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt",
-      "output_sha256": "cee39a0abb19d3aa28d2bf461571e833b73f018983ed1bcb3f50450f3a207149",
-      "bytes": 3806,
-      "chars": 3764,
-      "role": "project_instructions"
     }
   ]
 }
