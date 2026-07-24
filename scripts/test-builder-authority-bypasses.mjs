@@ -5,182 +5,182 @@ import os from 'node:os';
 import path from 'node:path';
 
 import {
-  buildIntakeCapsule,
-  validateCompletionTransition,
-  verifyBuilderInput
-} from './lib/builder-runtime-transition.mjs';
-import { resolveRealBuilderSource } from './lib/builder-truth-spine.mjs';
+  createConfirmationReceipt,
+  writeConfirmationReceipt,
+  validateConfirmationReceipt,
+  verifyEvidenceLedger,
+  resolveRealBuilderSource,
+  verifyDerivedContext,
+  validateRealCompletion,
+  publishRealCompletion,
+  writeRealIntake
+} from './lib/builder-truth-spine.mjs';
+import {
+  attachRunEvidence,
+  completeRun,
+  initializeAtomicRun
+} from './lib/runtime/canonical-run-runtime.mjs';
+import {
+  activeRun,
+  initializeManualRun,
+  progressToConfirmed,
+  progressToCompletable,
+  writeJson
+} from './lib/runtime/runtime-test-fixtures.mjs';
 
-const ROOT = process.cwd();
-const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'ev4-builder-bypass-reproduction-'));
-const fixture = (...parts) => path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', ...parts);
-const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
-const writeJson = (name, value) => {
-  const file = path.join(temp, name);
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
-  return file;
-};
-const clone = (value) => structuredClone(value);
+const TEMP = fs.mkdtempSync(path.join(os.tmpdir(), 'ev4-builder-authority-bypasses-'));
+const failures = [];
+let count = 0;
 
-function prepareLegacyCase(name, mutate = () => {}) {
-  const sourceFile = fixture('builder_context_package.json');
-  const capsule = buildIntakeCapsule(sourceFile);
-  assert.equal(capsule.result.status, 'accepted', JSON.stringify(capsule.diagnostics));
-  const capsuleFile = writeJson(`${name}/legacy-intake-result.json`, capsule.result);
-
-  const checkpoint = readJson(fixture('checkpoint_final.json'));
-  checkpoint.runtime_state = 'BUILD_ACTIVE';
-  checkpoint.checkpoint_id = `${name}-CP-001`;
-  checkpoint.checkpoint_sequence = 2;
-  checkpoint.parent_checkpoint_id = `${name}-CP-000`;
-  checkpoint.confirmed_action_ids = ['BATCH-001-A01'];
-  checkpoint.unconfirmed_action_ids = [];
-  checkpoint.unresolved_blockers = [];
-
-  const session = readJson(fixture('session_state_final.json'));
-  session.workflow_mode = 'APPROVED_HANDOFF_MODE';
-  session.runtime_state = 'BUILD_ACTIVE';
-  session.current_state = 'BUILD_ACTIVE';
-  session.unresolved_evidence = [];
-  delete session.resume_target;
-
-  const status = readJson(fixture('completion_status.json'));
-  const gate = readJson(fixture('completion_gate.json'));
-  gate.package_digest = session.package_digest;
-  gate.session_id = session.session_id;
-  gate.checkpoint_id = checkpoint.checkpoint_id;
-  gate.checkpoint_sequence = checkpoint.checkpoint_sequence;
-
-  mutate({ sourceFile, capsuleFile, session, checkpoint, status, gate });
-  session.last_verified_checkpoint = clone(checkpoint);
-
-  const sessionFile = writeJson(`${name}/session.json`, session);
-  const checkpointFile = writeJson(`${name}/checkpoint.json`, checkpoint);
-  const statusFile = writeJson(`${name}/completion-status.json`, status);
-  const gateFile = writeJson(`${name}/completion-gate.json`, gate);
-
-  const result = validateCompletionTransition({
-    sourceFile,
-    capsuleFile,
-    sessionFile,
-    checkpointFile,
-    statusFile,
-    gateFile
-  });
-  return { result, sourceFile, capsuleFile, session, checkpoint, status, gate };
+function test(title, fn) {
+  count += 1;
+  try {
+    fn();
+    console.log(`PASS ${count}: ${title}`);
+  } catch (error) {
+    failures.push(`FAIL ${count}: ${title}: ${error.message}`);
+  }
 }
 
-const report = [];
+function assertInactive(result, operation) {
+  assert.equal(result.passed, false, operation);
+  assert.equal(result.status, 'blocked', operation);
+  assert.equal(result.runtime_mode, 'fixture-validation', operation);
+  assert.equal(result.runtime_state, 'NOT_A_REAL_RUN', operation);
+  assert.equal(result.builder_build_complete, false, operation);
+  assert.equal(result.responsive_complete, false, operation);
+  assert.equal(result.production_ready, false, operation);
+  assert.equal(result.diagnostics?.length, 1, operation);
+  assert.equal(result.diagnostics[0].code, 'BUILDER-LEGACY-AUTHORITY-INACTIVE', operation);
+}
 
-function reproduce(id, title, execute, authorityEffect, postRepairTest) {
-  const value = execute();
-  assert.equal(value.passed, true, `${id} was not reproduced: ${JSON.stringify(value.diagnostics || value)}`);
-  report.push({
-    test_id: id,
-    title,
-    input_mode: 'legacy_normal_runtime_path',
-    validation_result: 'accepted',
-    authority_effect_reached: authorityEffect,
-    classification: 'AUTHORITY_BYPASS_CONFIRMED',
-    post_repair_regression_test: postRepairTest
-  });
+function hasCode(result, code) {
+  return (result.diagnostics || []).some((entry) => entry.code === code);
+}
+
+function rewriteActiveCheckpoint(runDirectory, mutate) {
+  const loaded = activeRun(runDirectory);
+  const directory = path.join(runDirectory, loaded.current.generation_ref);
+  const checkpointFile = path.join(directory, 'checkpoint.json');
+  const sessionFile = path.join(directory, 'session-state.json');
+  const checkpoint = JSON.parse(fs.readFileSync(checkpointFile, 'utf8'));
+  const session = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
+  mutate(checkpoint, session);
+  session.last_verified_checkpoint = structuredClone(checkpoint);
+  fs.writeFileSync(checkpointFile, `${JSON.stringify(checkpoint, null, 2)}\n`);
+  fs.writeFileSync(sessionFile, `${JSON.stringify(session, null, 2)}\n`);
 }
 
 try {
-  reproduce(
-    'B1',
-    'manual or synthetic Builder Input admission',
-    () => {
-      const sourceFile = fixture('builder_context_package.json');
-      const verification = verifyBuilderInput(sourceFile);
-      const manualSourceResolution = resolveRealBuilderSource({
-        sourceKind: 'manual',
-        sourceArtifactFile: sourceFile,
-        builderInputFile: sourceFile
-      });
-      assert.equal(manualSourceResolution.passed, false, 'Post-repair real source resolver unexpectedly accepted manual source.');
-      return verification;
-    },
-    'legacy intake accepted an internally consistent caller-controlled package without upstream provenance',
-    'truth-spine tests 1, 2, 6, 7'
-  );
+  const legacyEntrypoints = {
+    createConfirmationReceipt,
+    writeConfirmationReceipt,
+    validateConfirmationReceipt,
+    verifyEvidenceLedger,
+    resolveRealBuilderSource,
+    verifyDerivedContext,
+    validateRealCompletion,
+    publishRealCompletion,
+    writeRealIntake
+  };
+  for (const [name, fn] of Object.entries(legacyEntrypoints)) {
+    test(`Legacy real-authority export ${name} is inactive`, () => assertInactive(fn(), name));
+  }
 
-  reproduce(
-    'B2',
-    'Checkpoint confirmation without Confirmation Receipt',
-    () => prepareLegacyCase('B2').result,
-    'legacy Completion accepted confirmed_action_ids although no Receipt input existed',
-    'truth-spine tests 13-20'
-  );
+  test('B1 unsupported manual alias cannot bypass explicit canonical Intake', () => {
+    const result = initializeAtomicRun({ sourceMode: 'manual', builderInputFile: 'ignored.json', runDirectory: path.join(TEMP, 'b1') });
+    assert.equal(result.passed, false);
+    assert.equal(hasCode(result, 'RUN-SOURCE-007'), true);
+    assert.equal(fs.existsSync(path.join(TEMP, 'b1')), false);
+  });
 
-  reproduce(
-    'B3',
-    'nonexistent Evidence source',
-    () => prepareLegacyCase('B3', ({ checkpoint }) => {
-      checkpoint.evidence_ledger[0].source_ref = 'path-that-does-not-exist.json';
+  test('B2 confirmed Action arrays cannot replace canonical Confirmation', () => {
+    const value = initializeManualRun(TEMP, 'b2');
+    const loaded = activeRun(value.runDirectory);
+    rewriteActiveCheckpoint(value.runDirectory, (checkpoint) => {
+      checkpoint.confirmed_action_ids = [...loaded.context.action_batch.action_ids];
+      checkpoint.unconfirmed_action_ids = [];
+    });
+    const result = completeRun({ runDirectory: value.runDirectory });
+    assert.equal(result.passed, false);
+    assert.equal(hasCode(result, 'RUN-COMPLETE-CONFIRM-001'), true);
+  });
+
+  test('B3 missing Evidence bytes cannot authorize Completion', () => {
+    const value = progressToCompletable(TEMP, 'b3');
+    const loaded = activeRun(value.runDirectory);
+    const ref = loaded.manifest.evidence_snapshot_refs[0];
+    fs.rmSync(path.join(value.runDirectory, ref));
+    const result = completeRun({ runDirectory: value.runDirectory });
+    assert.equal(result.passed, false);
+    assert.equal(hasCode(result, 'RUN-COMPLETE-EVIDENCE-001'), true);
+  });
+
+  test('B4 incorrect Evidence hash cannot authorize Completion', () => {
+    const value = progressToCompletable(TEMP, 'b4');
+    rewriteActiveCheckpoint(value.runDirectory, (checkpoint) => {
       checkpoint.evidence_ledger[0].content_sha256 = 'a'.repeat(64);
-    }).result,
-    'legacy Completion accepted Evidence metadata without resolving source_ref',
-    'truth-spine test 21'
-  );
+    });
+    const result = completeRun({ runDirectory: value.runDirectory });
+    assert.equal(result.passed, false);
+    assert.equal(hasCode(result, 'RUN-COMPLETE-EVIDENCE-003'), true);
+  });
 
-  reproduce(
-    'B4',
-    'wrong Evidence content hash',
-    () => prepareLegacyCase('B4', ({ checkpoint }) => {
-      checkpoint.evidence_ledger[0].content_sha256 = 'a'.repeat(64);
-    }).result,
-    'legacy Completion accepted a declared hash without recomputing source bytes',
-    'truth-spine tests 22 and 23'
-  );
+  test('B5 fixture carrier cannot become a real Run', () => {
+    const source = writeJson(path.join(TEMP, 'b5-fixture-result.json'), {
+      schema: 'ev4-builder-fixture-validation-result@1.0.0',
+      status: 'accepted',
+      runtime_mode: 'fixture-validation',
+      builder_build_complete: false,
+      runtime_state: 'NOT_A_REAL_RUN'
+    });
+    const runDirectory = path.join(TEMP, 'b5-run');
+    const result = initializeAtomicRun({ sourceMode: 'manual-builder-input', builderInputFile: source, runDirectory });
+    assert.equal(result.passed, false);
+    assert.equal(fs.existsSync(runDirectory), false);
+  });
 
-  reproduce(
-    'B5',
-    'synthetic Evidence reaches legacy Completion authorization',
-    () => {
-      const trace = readJson(fixture('execution-trace.json'));
-      assert.equal(trace.fixture_classification, 'synthetic_validation_only');
-      return prepareLegacyCase('B5').result;
-    },
-    'legacy Completion authorized the official synthetic transaction fixture',
-    'truth-spine tests 8-12 and 24'
-  );
+  test('B6 caller-authored Completion booleans have no authority', () => {
+    const value = progressToConfirmed(TEMP, 'b6');
+    writeJson(path.join(value.runDirectory, 'outputs', 'caller', 'completion-status.json'), {
+      states: { scaffold_built: true, structure_built: true, content_filled: true, desktop_layout_established: true, export_checked: true }
+    });
+    writeJson(path.join(value.runDirectory, 'outputs', 'caller', 'completion-gate.json'), {
+      proofs: { layout_verified: { derived_status: 'confirmed' }, export_verified: { derived_status: 'confirmed' } }
+    });
+    const before = activeRun(value.runDirectory).current.generation;
+    const result = completeRun({ runDirectory: value.runDirectory });
+    assert.equal(result.passed, false);
+    assert.equal(activeRun(value.runDirectory).current.generation, before);
+    assert.equal(hasCode(result, 'RUN-COMPLETE-EVIDENCE-007') || hasCode(result, 'RUN-COMPLETE-EVIDENCE-008'), true);
+  });
 
-  reproduce(
-    'B6',
-    'caller-authored Completion Status booleans',
-    () => prepareLegacyCase('B6', ({ status }) => {
-      status.states.scaffold_built = true;
-      status.states.structure_built = true;
-      status.states.content_filled = true;
-      status.states.desktop_layout_established = true;
-      status.states.export_checked = true;
-      status.evidence.export = true;
-    }).result,
-    'legacy Completion consumed caller-authored true values as terminal predicates',
-    'truth-spine tests 32 and 34'
-  );
-
-  reproduce(
-    'B7',
-    'incompatible proof reuse',
-    () => prepareLegacyCase('B7', ({ gate }) => {
-      gate.proofs.layout_verified.status = 'confirmed';
-      gate.proofs.export_verified.status = 'confirmed';
-      gate.proofs.layout_verified.evidence_refs = ['EV-BATCH-001-A01'];
-      gate.proofs.export_verified.evidence_refs = ['EV-BATCH-001-A01'];
-    }).result,
-    'legacy Completion accepted one Evidence ID for unrelated layout and export proofs',
-    'truth-spine tests 29, 30, 33 and 35'
-  );
+  test('B7 incompatible Evidence cannot satisfy unrelated proof classes', () => {
+    const value = progressToConfirmed(TEMP, 'b7');
+    const loaded = activeRun(value.runDirectory);
+    const file = writeJson(path.join(TEMP, 'b7-incompatible-evidence.json'), {
+      schema: 'ev4-builder-evidence-source@1.0.0',
+      evidence_type: 'frontend_screenshot',
+      claim_ids: ['ASSERT-INCOMPATIBLE-REUSE'],
+      claim_classes: ['layout_verified', 'export_verified'],
+      subject_ref: 'builder-output',
+      session_id: loaded.session.session_id,
+      package_digest: loaded.context.canonical_package_digest,
+      status: 'verified'
+    });
+    const result = attachRunEvidence({ runDirectory: value.runDirectory, evidenceSourceFile: file });
+    assert.equal(result.passed, false);
+    assert.equal(hasCode(result, 'RUN-EVIDENCE-004') || hasCode(result, 'RUN-EVIDENCE-007'), true);
+  });
 } finally {
-  fs.rmSync(temp, { recursive: true, force: true });
+  fs.rmSync(TEMP, { recursive: true, force: true });
 }
 
-console.log(JSON.stringify({
-  schema: 'ev4-builder-authority-bypass-reproduction@1.0.0',
-  reproduced: report.length,
-  expected: 7,
-  results: report
-}, null, 2));
+if (failures.length) {
+  console.error('Builder authority bypass regression tests failed:');
+  failures.forEach((failure) => console.error(`- ${failure}`));
+  console.error(`Passed ${count - failures.length}/${count} tests.`);
+  process.exit(1);
+}
+
+console.log(`Builder authority bypass regression tests passed: ${count}/${count}.`);
