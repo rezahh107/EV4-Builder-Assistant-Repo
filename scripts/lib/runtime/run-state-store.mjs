@@ -10,11 +10,34 @@ import {
 } from './run-state-validation.mjs';
 
 const {
-  ROOT, ACTIVE_STATE_FILENAMES, diagnostic, resolveRoot, relativeRoot, stableJson, readBytes, readJson, writeJson, writeBytes,
+  ROOT, ACTIVE_STATE_FILENAMES, GENERATION_NAME, diagnostic, resolveRoot, relativeRoot, stableJson, readBytes, readJson, writeJson, writeBytes,
   sameSet, safeRunRef, generationName, generationRef, sleepSync, injectedPoint,
   fsyncFile, fsyncDirectory, validateCanonicalSourceModeArguments, deriveFromInternalSnapshot,
   collectInitialBlockers, buildCheckpoint, buildSession, buildManifest, buildCurrentPointer
 } = primitives;
+
+function runtimeError(code, message, detail = '') {
+  const error = new Error(message);
+  error.code = code;
+  if (detail) error.detail = detail;
+  return error;
+}
+
+function entryBytes(entry) {
+  return entry.kind === 'bytes'
+    ? Buffer.from(entry.value)
+    : Buffer.from(stableJson(entry.value), 'utf8');
+}
+
+function blockedSuccessor(loaded, operation, code, message, detail = '') {
+  return {
+    ...loaded,
+    passed: false,
+    operation,
+    state_modified: false,
+    diagnostics: [diagnostic(code, message, detail)]
+  };
+}
 
 export function expectedPublicationFiles(operation, refs) {
   const generationFiles = ACTIVE_STATE_FILENAMES.map((name) => `${refs.generation_ref}/${name}`);
@@ -87,44 +110,55 @@ export function mutationFailure(loaded, operation, error) {
   } catch {
     // Keep null when CURRENT cannot be read.
   }
+  const explicitCode = typeof error?.code === 'string' && error.code.startsWith('RUN-')
+    ? error.code
+    : `RUN-${operation.toUpperCase().replaceAll('-', '_')}-FAILURE`;
   return {
     ...(loaded && typeof loaded === 'object' ? loaded : {}),
     passed: false,
     operation,
+    state_modified: false,
     failure_stage: error?.failureStage || null,
     expected_diagnostic_code: error?.code || null,
     active_generation_after_failure: activeGeneration,
     diagnostics: [diagnostic(
-      error?.code === 'RUN-INJECTED-FAILURE' ? 'RUN-INJECTED-FAILURE' : `RUN-${operation.toUpperCase().replaceAll('-', '_')}-FAILURE`,
+      explicitCode,
       `${operation} failed; CURRENT remains the sole authority.`,
-      error?.message || String(error)
+      error?.detail || error?.message || String(error)
     )]
   };
 }
 
 export function writeAuxiliaryFiles(run, files) {
+  const reused = [];
+  const created = [];
   for (const entry of files) {
     const target = safeRunRef(run, entry.ref);
-    if (!target) throw new Error(`Unsafe auxiliary publication ref: ${entry.ref}`);
-    const expected = entry.kind === 'bytes' ? Buffer.from(entry.value) : Buffer.from(stableJson(entry.value), 'utf8');
+    if (!target) throw runtimeError('RUN_UNCOMMITTED_SUCCESSOR_CONFLICT', `Unsafe auxiliary publication ref: ${entry.ref}`);
+    const expected = entryBytes(entry);
     if (fs.existsSync(target)) {
       const actual = readBytes(target);
-      if (!actual.equals(expected)) throw new Error(`Existing orphan auxiliary artifact differs from retry content: ${entry.ref}`);
+      if (!actual.equals(expected)) {
+        throw runtimeError(
+          'RUN_UNCOMMITTED_SUCCESSOR_CONFLICT',
+          `Existing auxiliary artifact differs from the expected same-transition bytes: ${entry.ref}`,
+          `mismatch=auxiliary:${entry.ref}`
+        );
+      }
+      reused.push(entry.ref);
       continue;
     }
     writeBytes(target, expected, 'wx');
     fsyncFile(target);
+    created.push(entry.ref);
   }
+  return { reused, created };
 }
 
-export function publishSuccessor({ loaded, operation, context, session, checkpoint, manifestUpdates, result, auxiliaryFiles, failureInjection }) {
-  const run = loaded.runDirectory;
+export function deriveExpectedSuccessorSnapshot({ loaded, context, session, checkpoint, manifestUpdates, result, auxiliaryFiles }) {
   const predecessorNumber = loaded.current.generation;
   const nextNumber = predecessorNumber + 1;
   const nextRef = generationRef(nextNumber);
-  const finalGeneration = path.join(run, nextRef);
-  const temporaryGeneration = path.join(run, 'generations', `.tmp-${generationName(nextNumber)}-${process.pid}-${Date.now()}`);
-  const currentTemporary = path.join(run, `CURRENT.tmp-${process.pid}-${Date.now()}`);
   const manifest = buildManifest({
     previousManifest: loaded.manifest,
     runId: loaded.manifest.run_id,
@@ -139,37 +173,268 @@ export function publishSuccessor({ loaded, operation, context, session, checkpoi
     predecessorCheckpointSequence: loaded.checkpoint.checkpoint_sequence,
     updates: manifestUpdates
   });
+  const pointer = buildCurrentPointer(manifest, context, checkpoint);
+  const generationFiles = new Map([
+    ['runtime-context.json', Buffer.from(stableJson(context), 'utf8')],
+    ['session-state.json', Buffer.from(stableJson(session), 'utf8')],
+    ['checkpoint.json', Buffer.from(stableJson(checkpoint), 'utf8')],
+    ['run-manifest.json', Buffer.from(stableJson(manifest), 'utf8')]
+  ]);
+  const auxiliary = new Map(auxiliaryFiles.map((entry) => [entry.ref, entryBytes(entry)]));
+  return {
+    predecessorNumber,
+    nextNumber,
+    nextRef,
+    manifest,
+    pointer,
+    context,
+    session,
+    checkpoint,
+    result,
+    auxiliaryFiles,
+    generationFiles,
+    auxiliary
+  };
+}
+
+export function listFutureGenerations(runDirectory, activeGeneration) {
+  const run = resolveRoot(runDirectory);
+  const root = path.join(run, 'generations');
+  if (!fs.existsSync(root)) return [];
+  return fs.readdirSync(root)
+    .filter((name) => GENERATION_NAME.test(name))
+    .map((name) => Number.parseInt(name, 10))
+    .filter((number) => number > activeGeneration)
+    .sort((left, right) => left - right);
+}
+
+export function loadExactSuccessorCandidate(runDirectory, generationNumber) {
+  const run = resolveRoot(runDirectory);
+  const directory = path.join(run, generationRef(generationNumber));
+  if (!fs.existsSync(directory) || !fs.statSync(directory).isDirectory()) {
+    return {
+      passed: false,
+      code: 'RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE',
+      diagnostics: [diagnostic('RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE', `Expected successor generation ${generationName(generationNumber)} is missing.`)]
+    };
+  }
+  const validation = validateGeneration(run, directory, generationNumber);
+  if (!validation.passed) {
+    return {
+      ...validation,
+      code: 'RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE',
+      diagnostics: [
+        diagnostic('RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE', `Future generation ${generationName(generationNumber)} is incomplete or invalid.`),
+        ...validation.diagnostics
+      ]
+    };
+  }
+  return { ...validation, passed: true, code: null, directory };
+}
+
+export function compareSuccessorToExpected({ loaded, candidate, expected }) {
+  const mismatches = [];
+  if (candidate.manifest?.generation?.number !== expected.nextNumber) mismatches.push('generation_number');
+  if (candidate.manifest?.generation?.predecessor_generation !== expected.predecessorNumber) mismatches.push('predecessor_generation');
+  if (candidate.manifest?.generation?.predecessor_checkpoint_id !== loaded.checkpoint.checkpoint_id) mismatches.push('predecessor_checkpoint_id');
+  if (candidate.manifest?.generation?.predecessor_checkpoint_sequence !== loaded.checkpoint.checkpoint_sequence) mismatches.push('predecessor_checkpoint_sequence');
+
+  for (const [filename, expectedBytes] of expected.generationFiles) {
+    const file = path.join(candidate.directory, filename);
+    if (!fs.existsSync(file)) {
+      return {
+        passed: false,
+        code: 'RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE',
+        diagnostics: [diagnostic('RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE', `Future generation is missing ${filename}.`, `mismatch=generation:${filename}`)]
+      };
+    }
+    if (!readBytes(file).equals(expectedBytes)) mismatches.push(`generation:${filename}`);
+  }
+
+  for (const [ref, expectedBytes] of expected.auxiliary) {
+    const file = safeRunRef(loaded.runDirectory, ref);
+    if (!file || !fs.existsSync(file)) {
+      return {
+        passed: false,
+        code: 'RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE',
+        diagnostics: [diagnostic('RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE', `Future generation references a missing auxiliary artifact: ${ref}.`, `mismatch=auxiliary:${ref}`)]
+      };
+    }
+    if (!readBytes(file).equals(expectedBytes)) mismatches.push(`auxiliary:${ref}`);
+  }
+
+  if (mismatches.length) {
+    return {
+      passed: false,
+      code: 'RUN_UNCOMMITTED_SUCCESSOR_CONFLICT',
+      diagnostics: [diagnostic(
+        'RUN_UNCOMMITTED_SUCCESSOR_CONFLICT',
+        'Existing N+1 is not the exact successor derived for this transition and input.',
+        `mismatch=${mismatches[0]}`
+      )],
+      mismatches
+    };
+  }
+  return { passed: true, diagnostics: [], mismatches: [] };
+}
+
+function advanceCurrentPointer({ run, expected, failureInjection }) {
+  const currentTemporary = path.join(run, `CURRENT.tmp-${process.pid}-${Date.now()}`);
   try {
-    writeAuxiliaryFiles(run, auxiliaryFiles);
-    fs.mkdirSync(temporaryGeneration, { recursive: false });
-    writeJson(path.join(temporaryGeneration, 'runtime-context.json'), context, 'wx');
-    writeJson(path.join(temporaryGeneration, 'session-state.json'), session, 'wx');
-    writeJson(path.join(temporaryGeneration, 'checkpoint.json'), checkpoint, 'wx');
-    writeJson(path.join(temporaryGeneration, 'run-manifest.json'), manifest, 'wx');
-    injectedPoint(failureInjection, 'after_successor_temp_write');
-    const validation = validateGeneration(run, temporaryGeneration, nextNumber);
-    if (!validation.passed) throw new Error(`Successor generation validation failed: ${JSON.stringify(validation.diagnostics)}`);
-    injectedPoint(failureInjection, 'after_successor_validation');
-    injectedPoint(failureInjection, 'before_successor_generation_rename');
-    if (fs.existsSync(finalGeneration)) throw new Error(`Successor generation already exists: ${nextRef}`);
-    fs.renameSync(temporaryGeneration, finalGeneration);
-    fsyncDirectory(path.dirname(finalGeneration));
-    injectedPoint(failureInjection, 'after_successor_generation_rename');
-    const pointer = buildCurrentPointer(manifest, context, checkpoint);
     injectedPoint(failureInjection, 'before_CURRENT_temp_write');
-    writeJson(currentTemporary, pointer, 'wx');
+    writeJson(currentTemporary, expected.pointer, 'wx');
     fsyncFile(currentTemporary);
     injectedPoint(failureInjection, 'after_CURRENT_temp_write');
     injectedPoint(failureInjection, 'before_CURRENT_rename');
     fs.renameSync(currentTemporary, path.join(run, 'CURRENT.json'));
     fsyncDirectory(run);
     injectedPoint(failureInjection, 'after_CURRENT_rename');
+  } finally {
+    if (fs.existsSync(currentTemporary)) fs.rmSync(currentTemporary, { force: true });
+  }
+}
+
+export function finalizeExistingExactSuccessor({ loaded, operation, expected, failureInjection }) {
+  advanceCurrentPointer({ run: loaded.runDirectory, expected, failureInjection });
+  const active = loadRunUnlocked(loaded.runDirectory);
+  if (!active.passed || active.current.generation !== expected.nextNumber) {
+    throw runtimeError(
+      'RUN_UNCOMMITTED_SUCCESSOR_FINALIZATION_FAILED',
+      'Exact successor pointer finalization did not produce a valid active Run.',
+      JSON.stringify(active.diagnostics || [])
+    );
+  }
+  return {
+    ...active,
+    passed: true,
+    diagnostics: [],
+    result: {
+      ...expected.result,
+      publication_recovery: 'finalized_existing_exact_successor',
+      generation_created: false,
+      generation_reused: true,
+      current_pointer_advanced: true,
+      state_modified: true
+    },
+    manifest: expected.manifest,
+    current: expected.pointer,
+    nextSession: expected.session,
+    nextCheckpoint: expected.checkpoint,
+    generation: expected.nextNumber,
+    publication_recovery: 'finalized_existing_exact_successor',
+    generation_created: false,
+    generation_reused: true,
+    current_pointer_advanced: true,
+    state_modified: true
+  };
+}
+
+export function detectCommittedTransitionReplay({ loaded, operation, resultRef, expectedSchema, matches }) {
+  if (!resultRef) return { matched: false };
+  const file = safeRunRef(loaded.runDirectory, resultRef);
+  if (!file || !fs.existsSync(file)) return { matched: false };
+  let result;
+  try {
+    result = readJson(file);
+  } catch {
+    return { matched: false };
+  }
+  if (result?.schema !== expectedSchema || result?.status !== 'accepted') return { matched: false };
+  if (result?.resulting_checkpoint?.checkpoint_id !== loaded.checkpoint.checkpoint_id
+    || result?.resulting_checkpoint?.checkpoint_sequence !== loaded.checkpoint.checkpoint_sequence
+    || result?.resulting_checkpoint?.parent_checkpoint_id !== loaded.checkpoint.parent_checkpoint_id) return { matched: false };
+  const local = matches(result);
+  const passed = local === true || local?.passed === true;
+  if (!passed) return { matched: false, diagnostics: local?.diagnostics || [] };
+  const replayResult = {
+    ...result,
+    replayed_existing_transition: true,
+    publication_recovery: 'post_commit_replay',
+    state_modified: false
+  };
+  return {
+    matched: true,
+    outcome: {
+      ...loaded,
+      passed: true,
+      diagnostics: [],
+      operation,
+      result: replayResult,
+      replayed_existing_transition: true,
+      state_modified: false,
+      generation: loaded.current.generation
+    }
+  };
+}
+
+export function publishSuccessor({ loaded, operation, context, session, checkpoint, manifestUpdates, result, auxiliaryFiles, failureInjection }) {
+  const run = loaded.runDirectory;
+  const expected = deriveExpectedSuccessorSnapshot({ loaded, context, session, checkpoint, manifestUpdates, result, auxiliaryFiles });
+  const future = listFutureGenerations(run, loaded.current.generation);
+
+  if (future.length > 1 || (future.length === 1 && future[0] !== expected.nextNumber)) {
+    return blockedSuccessor(
+      loaded,
+      operation,
+      'RUN_AMBIGUOUS_FUTURE_GENERATIONS',
+      'Future generations are ambiguous; no generation was selected or promoted.',
+      `future_generations=${future.join(',')}`
+    );
+  }
+
+  if (future.length === 1) {
+    const candidate = loadExactSuccessorCandidate(run, expected.nextNumber);
+    if (!candidate.passed) return { ...loaded, passed: false, operation, state_modified: false, diagnostics: candidate.diagnostics };
+    const comparison = compareSuccessorToExpected({ loaded, candidate, expected });
+    if (!comparison.passed) return { ...loaded, passed: false, operation, state_modified: false, diagnostics: comparison.diagnostics };
+    return finalizeExistingExactSuccessor({ loaded, operation, expected, failureInjection });
+  }
+
+  const finalGeneration = path.join(run, expected.nextRef);
+  const temporaryGeneration = path.join(run, 'generations', `.tmp-${generationName(expected.nextNumber)}-${process.pid}-${Date.now()}`);
+  try {
+    writeAuxiliaryFiles(run, auxiliaryFiles);
+    fs.mkdirSync(temporaryGeneration, { recursive: false });
+    for (const [filename, bytes] of expected.generationFiles) writeBytes(path.join(temporaryGeneration, filename), bytes, 'wx');
+    injectedPoint(failureInjection, 'after_successor_temp_write');
+    const validation = validateGeneration(run, temporaryGeneration, expected.nextNumber);
+    if (!validation.passed) throw runtimeError('RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE', 'Successor generation validation failed.', JSON.stringify(validation.diagnostics));
+    injectedPoint(failureInjection, 'after_successor_validation');
+    injectedPoint(failureInjection, 'before_successor_generation_rename');
+    if (fs.existsSync(finalGeneration)) {
+      throw runtimeError('RUN_UNCOMMITTED_SUCCESSOR_CONFLICT', `Successor generation already exists: ${expected.nextRef}`, `mismatch=generation:${expected.nextRef}`);
+    }
+    fs.renameSync(temporaryGeneration, finalGeneration);
+    fsyncDirectory(path.dirname(finalGeneration));
+    injectedPoint(failureInjection, 'after_successor_generation_rename');
+    advanceCurrentPointer({ run, expected, failureInjection });
     const active = loadRunUnlocked(run);
-    if (!active.passed || active.current.generation !== nextNumber) throw new Error(`Published successor did not become valid authority: ${JSON.stringify(active.diagnostics)}`);
-    return { passed: true, diagnostics: [], result, manifest, current: pointer, nextSession: session, nextCheckpoint: checkpoint, generation: nextNumber };
+    if (!active.passed || active.current.generation !== expected.nextNumber) throw runtimeError('RUN_UNCOMMITTED_SUCCESSOR_FINALIZATION_FAILED', 'Published successor did not become valid authority.', JSON.stringify(active.diagnostics));
+    return {
+      ...active,
+      passed: true,
+      diagnostics: [],
+      result: {
+        ...result,
+        publication_recovery: 'new_successor_published',
+        generation_created: true,
+        generation_reused: false,
+        current_pointer_advanced: true,
+        state_modified: true
+      },
+      manifest: expected.manifest,
+      current: expected.pointer,
+      nextSession: session,
+      nextCheckpoint: checkpoint,
+      generation: expected.nextNumber,
+      publication_recovery: 'new_successor_published',
+      generation_created: true,
+      generation_reused: false,
+      current_pointer_advanced: true,
+      state_modified: true
+    };
   } finally {
     if (fs.existsSync(temporaryGeneration)) fs.rmSync(temporaryGeneration, { recursive: true, force: true });
-    if (fs.existsSync(currentTemporary)) fs.rmSync(currentTemporary, { force: true });
   }
 }
 
