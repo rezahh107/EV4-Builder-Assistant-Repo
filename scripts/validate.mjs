@@ -36,6 +36,7 @@ const nodeChecks = [
   'scripts/test-builder-functional-correctness.mjs',
   'scripts/test-builder-atomic-run-bundle.mjs',
   'scripts/test-builder-successor-reconciliation.mjs',
+  'scripts/test-builder-committed-replay-exactness.mjs',
   'scripts/test-builder-run-concurrency.mjs',
   'scripts/test-builder-run-crash-recovery.mjs',
   'scripts/test-project-pack-determinism.mjs',
@@ -46,11 +47,7 @@ const nodeChecks = [
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const transactionFixture = 'tests/valid/runtime-transaction/complete-transaction.json';
-
-function writeOutput(name, value) {
-  if (!process.env.GITHUB_OUTPUT) return;
-  fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${String(value).replace(/[\r\n]+/g, ' ')}\n`);
-}
+function writeOutput(name, value) { if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${String(value).replace(/[\r\n]+/g, ' ')}\n`); }
 function failureDetail(result) {
   const lines = `${result.stderr || ''}\n${result.stdout || ''}`.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   return (lines.find((line) => line.startsWith('- ')) || lines.find((line) => /failed|missing|mismatch|unexpectedly passed/i.test(line)) || lines.at(-1) || 'no diagnostic output').replace(/[^\x20-\x7E]/g, '?').slice(0, 220);
@@ -67,7 +64,6 @@ function run(command, args, label) {
   }
   console.log(`${label}: passed.`);
 }
-
 for (const script of scripts) run(npmCommand, ['run', script], `npm run ${script}`);
 for (const check of nodeChecks) {
   let args;
