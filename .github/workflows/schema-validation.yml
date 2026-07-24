@@ -51,16 +51,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Diagnose auxiliary successor conflict
-        id: aux_debug
-        run: node scripts/debug-successor-aux-conflict.mjs
-
-      - name: Auxiliary diagnostic injected=${{ steps.aux_debug.outputs.injected_passed }} stage=${{ steps.aux_debug.outputs.injected_stage }} dirs=${{ steps.aux_debug.outputs.transition_count }} result=${{ steps.aux_debug.outputs.result_exists }} retry=${{ steps.aux_debug.outputs.retry_passed }} codes=${{ steps.aux_debug.outputs.retry_codes }} expected=${{ steps.aux_debug.outputs.retry_expected_code }} modified=${{ steps.aux_debug.outputs.retry_state_modified }} generation=${{ steps.aux_debug.outputs.active_generation }}
-        run: exit 1
-
-      - name: Run focused successor reconciliation
-        run: node scripts/test-builder-successor-reconciliation.mjs
-
       - name: Run functional validation
         id: functional_validation
         continue-on-error: true
