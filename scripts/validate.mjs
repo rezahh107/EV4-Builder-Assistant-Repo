@@ -3,36 +3,16 @@ import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const scripts = [
-  'validate:version-consistency',
-  'validate:schema-registry',
-  'build:project-pack',
-  'validate:builder-context-package',
-  'validate:cross-field',
-  'validate:reference-paradigm',
-  'validate:golden-reference',
-  'validate:spatial-lexicon',
-  'validate:build-intent-template',
-  'validate:build-intent-brief',
-  'validate:experience-intent',
-  'validate:action-batch',
-  'validate:unit-policy',
-  'validate:evidence-claims',
-  'validate:completion-status',
-  'validate:repair-packet',
-  'validate:visual-parity',
-  'validate:asset-generation',
-  'validate:ui-confidence',
-  'validate:user-facing-wording',
-  'validate:checkpoint',
-  'validate:intake-result',
-  'validate:session-state',
-  'validate:layout-check',
-  'validate:completion-gate',
-  'validate:unit-strategy',
-  'validate:batch-compaction',
-  'validate:cognitive-mode-hint',
-  'validate:runtime-behavior',
-  'validate:builder-lineage-sequence'
+  'validate:version-consistency', 'validate:schema-registry', 'build:project-pack',
+  'validate:builder-context-package', 'validate:cross-field', 'validate:reference-paradigm',
+  'validate:golden-reference', 'validate:spatial-lexicon', 'validate:build-intent-template',
+  'validate:build-intent-brief', 'validate:experience-intent', 'validate:action-batch',
+  'validate:unit-policy', 'validate:evidence-claims', 'validate:completion-status',
+  'validate:repair-packet', 'validate:visual-parity', 'validate:asset-generation',
+  'validate:ui-confidence', 'validate:user-facing-wording', 'validate:checkpoint',
+  'validate:intake-result', 'validate:session-state', 'validate:layout-check',
+  'validate:completion-gate', 'validate:unit-strategy', 'validate:batch-compaction',
+  'validate:cognitive-mode-hint', 'validate:runtime-behavior', 'validate:builder-lineage-sequence'
 ];
 
 const nodeChecks = [
@@ -54,6 +34,8 @@ const nodeChecks = [
   'scripts/test-builder-explicit-source-modes.mjs',
   'scripts/test-builder-functional-correctness.mjs',
   'scripts/test-builder-atomic-run-bundle.mjs',
+  'scripts/test-builder-run-concurrency.mjs',
+  'scripts/test-builder-run-crash-recovery.mjs',
   'scripts/test-project-pack-determinism.mjs',
   'scripts/smoke-ce-project-gate-builder.mjs',
   'scripts/validate-builder-runtime-transaction.mjs',
@@ -67,29 +49,15 @@ function writeOutput(name, value) {
   if (!process.env.GITHUB_OUTPUT) return;
   fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${String(value).replace(/[\r\n]+/g, ' ')}\n`);
 }
-
 function failureDetail(result) {
-  const lines = `${result.stderr || ''}\n${result.stdout || ''}`
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-  const diagnostic = lines.find((line) => line.startsWith('- '))
-    || lines.find((line) => /failed|missing|mismatch|unexpectedly passed/i.test(line))
-    || lines.at(-1)
-    || 'no diagnostic output';
-  return diagnostic.replace(/[^\x20-\x7E]/g, '?').slice(0, 180);
+  const lines = `${result.stderr || ''}\n${result.stdout || ''}`.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  return (lines.find((line) => line.startsWith('- ')) || lines.find((line) => /failed|missing|mismatch|unexpectedly passed/i.test(line)) || lines.at(-1) || 'no diagnostic output').replace(/[^\x20-\x7E]/g, '?').slice(0, 220);
 }
-
 function run(command, args, label) {
   console.log(`\n==> ${label}`);
-  const result = spawnSync(command, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-  if (result.error) {
-    writeOutput('failed_check', `${label} :: ${result.error.message}`);
-    console.error(`Failed to execute ${command}: ${result.error.message}`);
-    process.exit(1);
-  }
-  if (result.status !== 0) {
-    writeOutput('failed_check', `${label} :: ${failureDetail(result)}`);
+  const result = spawnSync(command, args, { encoding: 'utf8', maxBuffer: 96 * 1024 * 1024, env: process.env });
+  if (result.error || result.status !== 0) {
+    writeOutput('failed_check', `${label} :: ${result.error?.message || failureDetail(result)}`);
     if (result.stdout) process.stdout.write(result.stdout);
     if (result.stderr) process.stderr.write(result.stderr);
     console.error(`${label}: failed with exit code ${result.status ?? 1}.`);
