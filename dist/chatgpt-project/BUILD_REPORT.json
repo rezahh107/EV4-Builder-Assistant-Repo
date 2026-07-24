@@ -1,7 +1,7 @@
 {
   "schema": "ev4-chatgpt-project-build-report@2.0.0",
   "source_map_sha256": "95cd79f1c917ac2a3294fb5d84678d20ab4dff2a9f984df84aa9039b8dc208a8",
-  "project_instructions_chars": 3111,
+  "project_instructions_chars": 3764,
   "knowledge_file_count": 5,
   "manifest_file_count": 6,
   "generated_file_count": 8,
