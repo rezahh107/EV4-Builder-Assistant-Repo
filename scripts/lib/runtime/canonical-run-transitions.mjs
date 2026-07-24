@@ -20,7 +20,14 @@ import {
   readJson
 } from './run-primitives.mjs';
 import { loadRunUnlocked, fullDeriveAndCompare } from './run-state-validation.mjs';
-import { expectedPublicationFiles, validatePublication, publishSuccessor, withRunMutation, initializeStage } from './run-state-store.mjs';
+import {
+  expectedPublicationFiles,
+  validatePublication,
+  publishSuccessor,
+  withRunMutation,
+  initializeStage,
+  detectCommittedTransitionReplay
+} from './run-state-store.mjs';
 
 export function initializeAtomicRun({ sourceMode, sourceArtifactFile = null, builderInputFile = null, runDirectory, failureInjection = null }) {
   const args = validateCanonicalSourceModeArguments({ sourceMode, sourceArtifactFile, builderInputFile });
@@ -66,8 +73,48 @@ export function loadTransitionResult(run, ref, expectedSchema) {
   return value;
 }
 
+function validateEmitBinding(loaded) {
+  const diagnostics = [];
+  let emitResult = null;
+  try {
+    emitResult = loadTransitionResult(loaded.runDirectory, loaded.manifest.active_emit_result_ref, 'ev4-builder-emit-batch-result@2.0.0');
+  } catch (error) {
+    return { passed: false, diagnostics: [diagnostic('RUN-CONFIRM-001', 'Active emit-batch result is unavailable.', error.message)], emitResult };
+  }
+  const { context, checkpoint, manifest } = loaded;
+  if (emitResult.run_id !== manifest.run_id || emitResult.context_digest !== context.context_digest) diagnostics.push(diagnostic('RUN-CONFIRM-002', 'emit-batch Run/Context binding is stale.'));
+  if (emitResult.source_snapshot_sha256 !== manifest.source_snapshot_sha256) diagnostics.push(diagnostic('RUN-CONFIRM-003', 'emit-batch source snapshot binding is stale.'));
+  if (emitResult.package_digest !== context.canonical_package_digest || emitResult.selected_candidate_id !== context.selected_candidate_id || emitResult.batch_id !== context.action_batch.batch_id) diagnostics.push(diagnostic('RUN-CONFIRM-004', 'emit-batch Package/Candidate/Batch binding is stale.'));
+  if (!sameSet(emitResult.action_ids, context.action_batch.action_ids) || sortedCanonicalJson(emitResult.action_digests) !== sortedCanonicalJson(context.action_batch.action_digests)) diagnostics.push(diagnostic('RUN-CONFIRM-005', 'emit-batch Action binding is stale.'));
+  if (emitResult.resulting_checkpoint?.checkpoint_id !== checkpoint.checkpoint_id || emitResult.resulting_checkpoint?.checkpoint_sequence !== checkpoint.checkpoint_sequence || emitResult.resulting_checkpoint?.parent_checkpoint_id !== checkpoint.parent_checkpoint_id) diagnostics.push(diagnostic('RUN-CONFIRM-006', 'Current WAITING Checkpoint is not the exact emitted Checkpoint.'));
+  return { passed: diagnostics.length === 0, diagnostics, emitResult };
+}
+
+function detectEmitReplay(loaded) {
+  const { manifest, context, session, checkpoint } = loaded;
+  return detectCommittedTransitionReplay({
+    loaded,
+    operation: 'emit-batch',
+    resultRef: manifest.active_emit_result_ref,
+    expectedSchema: 'ev4-builder-emit-batch-result@2.0.0',
+    matches: (result) => {
+      const binding = validateEmitBinding(loaded);
+      const diagnostics = [...binding.diagnostics];
+      if (checkpoint.runtime_state !== 'WAITING_FOR_CONFIRMATION' || session.runtime_state !== 'WAITING_FOR_CONFIRMATION') diagnostics.push(diagnostic('RUN-EMIT-REPLAY-001', 'Active State is not the exact committed emit-batch transition.'));
+      if (manifest.active_confirmation_receipt_ref || manifest.active_confirmation_result_ref) diagnostics.push(diagnostic('RUN-EMIT-REPLAY-002', 'A later Confirmation transition is already active.'));
+      if (result.context_digest !== context.context_digest || result.batch_id !== context.action_batch.batch_id) diagnostics.push(diagnostic('RUN-EMIT-REPLAY-003', 'Committed emit-batch identity differs from the active Context.'));
+      const refs = { generation_ref: loaded.current.generation_ref, result_ref: manifest.active_emit_result_ref };
+      diagnostics.push(...validatePublication(result, 'emit-batch', refs, 'ev4-builder-emit-batch-result@2.0.0', manifest.run_id));
+      return { passed: diagnostics.length === 0, diagnostics };
+    }
+  });
+}
+
 export function emitRunBatch({ runDirectory, failureInjection = null }) {
   return withRunMutation({ runDirectory, operation: 'emit-batch', failureInjection }, (loaded) => {
+    const replay = detectEmitReplay(loaded);
+    if (replay.matched) return replay.outcome;
+
     const derivation = fullDeriveAndCompare(loaded);
     const diagnostics = [...derivation.diagnostics];
     const { manifest, context, session, checkpoint } = loaded;
@@ -122,25 +169,38 @@ export function emitRunBatch({ runDirectory, failureInjection = null }) {
   });
 }
 
-function validateEmitBinding(loaded) {
-  const diagnostics = [];
-  let emitResult = null;
-  try {
-    emitResult = loadTransitionResult(loaded.runDirectory, loaded.manifest.active_emit_result_ref, 'ev4-builder-emit-batch-result@2.0.0');
-  } catch (error) {
-    return { passed: false, diagnostics: [diagnostic('RUN-CONFIRM-001', 'Active emit-batch result is unavailable.', error.message)], emitResult };
-  }
-  const { context, checkpoint, manifest } = loaded;
-  if (emitResult.run_id !== manifest.run_id || emitResult.context_digest !== context.context_digest) diagnostics.push(diagnostic('RUN-CONFIRM-002', 'emit-batch Run/Context binding is stale.'));
-  if (emitResult.source_snapshot_sha256 !== manifest.source_snapshot_sha256) diagnostics.push(diagnostic('RUN-CONFIRM-003', 'emit-batch source snapshot binding is stale.'));
-  if (emitResult.package_digest !== context.canonical_package_digest || emitResult.selected_candidate_id !== context.selected_candidate_id || emitResult.batch_id !== context.action_batch.batch_id) diagnostics.push(diagnostic('RUN-CONFIRM-004', 'emit-batch Package/Candidate/Batch binding is stale.'));
-  if (!sameSet(emitResult.action_ids, context.action_batch.action_ids) || sortedCanonicalJson(emitResult.action_digests) !== sortedCanonicalJson(context.action_batch.action_digests)) diagnostics.push(diagnostic('RUN-CONFIRM-005', 'emit-batch Action binding is stale.'));
-  if (emitResult.resulting_checkpoint?.checkpoint_id !== checkpoint.checkpoint_id || emitResult.resulting_checkpoint?.checkpoint_sequence !== checkpoint.checkpoint_sequence || emitResult.resulting_checkpoint?.parent_checkpoint_id !== checkpoint.parent_checkpoint_id) diagnostics.push(diagnostic('RUN-CONFIRM-006', 'Current WAITING Checkpoint is not the exact emitted Checkpoint.'));
-  return { passed: diagnostics.length === 0, diagnostics, emitResult };
+function detectConfirmationReplay(loaded, userToken) {
+  const { manifest, context, session, checkpoint } = loaded;
+  return detectCommittedTransitionReplay({
+    loaded,
+    operation: 'confirm-batch',
+    resultRef: manifest.active_confirmation_result_ref,
+    expectedSchema: 'ev4-builder-confirmation-result@2.0.0',
+    matches: (result) => {
+      const diagnostics = [];
+      let receipt = null;
+      try {
+        receipt = loadTransitionResult(loaded.runDirectory, manifest.active_confirmation_receipt_ref, 'ev4-builder-confirmation-receipt@2.0.0');
+      } catch (error) {
+        diagnostics.push(diagnostic('RUN-CONFIRM-REPLAY-001', 'Committed Confirmation Receipt is unavailable.', error.message));
+      }
+      if (checkpoint.runtime_state !== 'BUILD_ACTIVE' || session.runtime_state !== 'BUILD_ACTIVE' || checkpoint.checkpoint_id !== manifest.confirmed_checkpoint_id || checkpoint.checkpoint_sequence !== manifest.confirmed_checkpoint_sequence) diagnostics.push(diagnostic('RUN-CONFIRM-REPLAY-002', 'Active State is not the exact committed Confirmation transition.'));
+      if (receipt?.operator_token !== userToken) diagnostics.push(diagnostic('RUN-CONFIRM-REPLAY-003', 'Confirmation replay token differs from the committed token.'));
+      if (receipt?.receipt_digest !== digestWithout(receipt, 'receipt_digest') || result.receipt_digest !== receipt?.receipt_digest) diagnostics.push(diagnostic('RUN-CONFIRM-REPLAY-004', 'Committed Confirmation Receipt/Result binding is invalid.'));
+      if (receipt?.context_digest !== context.context_digest || receipt?.package_digest !== context.canonical_package_digest || receipt?.selected_candidate_id !== context.selected_candidate_id || receipt?.batch_id !== context.action_batch.batch_id) diagnostics.push(diagnostic('RUN-CONFIRM-REPLAY-005', 'Committed Confirmation identity differs from the active Context.'));
+      if (!sameSet(receipt?.action_ids, context.action_batch.action_ids) || sortedCanonicalJson(receipt?.action_digests) !== sortedCanonicalJson(context.action_batch.action_digests)) diagnostics.push(diagnostic('RUN-CONFIRM-REPLAY-006', 'Committed Confirmation Action binding is invalid.'));
+      const refs = { generation_ref: loaded.current.generation_ref, receipt_ref: manifest.active_confirmation_receipt_ref, result_ref: manifest.active_confirmation_result_ref };
+      diagnostics.push(...validatePublication(result, 'confirm-batch', refs, 'ev4-builder-confirmation-result@2.0.0', manifest.run_id));
+      return { passed: diagnostics.length === 0, diagnostics };
+    }
+  });
 }
 
 export function confirmRunBatch({ runDirectory, userToken, failureInjection = null }) {
   return withRunMutation({ runDirectory, operation: 'confirm-batch', failureInjection }, (loaded) => {
+    const replay = detectConfirmationReplay(loaded, userToken);
+    if (replay.matched) return replay.outcome;
+
     const diagnostics = [];
     const { manifest, context, session, checkpoint } = loaded;
     if (manifest.active_confirmation_receipt_ref) diagnostics.push(diagnostic('RUN-CONFIRM-007', 'Action Batch is already confirmed.'));
