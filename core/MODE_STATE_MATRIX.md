@@ -3,6 +3,8 @@
 ```yaml
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
+canonical_input_schema: ev4-builder-context-package@1.0.0
+canonical_input_filename_hint: builder-input.json
 canonical_transition_table: runtime/state-transitions.v1.json
 active_runtime_module: scripts/lib/runtime/canonical-run-runtime.mjs
 external_source_after_intake: not_used
@@ -50,3 +52,5 @@ Operational invariants:
 - orphan generations remain non-authoritative;
 - compatibility Resume and fixture Completion have no real Run authority;
 - Responsive completion and production readiness remain false.
+
+Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.
