@@ -57,6 +57,8 @@ node scripts/builder-inspector.mjs real-completion <run-directory>
 
 Source modes and content binding, exact Package/Candidate/Batch/Action bindings, zero-blocker emission, WAITING-only Confirmation, exact verified Action-specific Evidence, Runtime-derived Completion Status/Gate, `responsive_complete: false`, and `production_ready: false` must be preserved.
 
+Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.
+
 Do not add a database, service layer, daemon, event bus, distributed lock, authentication, signatures, PKI, secrets, remote attestation, multi-tenant support, generalized event sourcing or workflow platform.
 
 ## Validation
