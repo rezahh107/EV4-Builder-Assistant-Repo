@@ -1,4 +1,6 @@
-import { computeCanonicalDigest, sha256Bytes } from '../canonical-builder-package.mjs';
+import fs from 'node:fs';
+
+import { computeCanonicalDigest, sha256Bytes, sortedCanonicalJson } from '../canonical-builder-package.mjs';
 import { CLAIM_COMPATIBILITY } from '../builder-explicit-source-runtime.mjs';
 import {
   ALLOWED_MULTI_CLAIM_SETS,
@@ -8,9 +10,17 @@ import {
   timestampForSequence,
   generationRef,
   buildCheckpoint,
-  updateSessionForCheckpoint
+  updateSessionForCheckpoint,
+  safeRunRef,
+  sameSet
 } from './run-primitives.mjs';
-import { expectedPublicationFiles, validatePublication, publishSuccessor, withRunMutation } from './run-state-store.mjs';
+import {
+  expectedPublicationFiles,
+  validatePublication,
+  publishSuccessor,
+  withRunMutation,
+  detectCommittedTransitionReplay
+} from './run-state-store.mjs';
 
 export function claimSetCompatible(claimClasses) {
   if (claimClasses.length <= 1) return true;
@@ -38,11 +48,34 @@ export function validateEvidenceSource(source, loaded) {
   return diagnostics;
 }
 
+function detectEvidenceReplay({ loaded, bytes, evidenceSha, evidenceId, evidenceRef }) {
+  const { manifest, context, checkpoint } = loaded;
+  const resultRef = manifest.evidence_attachment_result_refs?.at(-1) || null;
+  if (manifest.evidence_snapshot_refs?.at(-1) !== evidenceRef) return { matched: false };
+  return detectCommittedTransitionReplay({
+    loaded,
+    operation: 'attach-evidence',
+    resultRef,
+    expectedSchema: 'ev4-builder-evidence-attachment-result@1.0.0',
+    matches: (result) => {
+      const diagnostics = [];
+      const snapshotFile = safeRunRef(loaded.runDirectory, evidenceRef);
+      if (!snapshotFile || !fs.existsSync(snapshotFile) || !readBytes(snapshotFile).equals(bytes)) diagnostics.push(diagnostic('RUN-EVIDENCE-REPLAY-001', 'Committed Evidence snapshot bytes differ from the replay input.'));
+      if (result.evidence_id !== evidenceId || result.evidence_snapshot_ref !== evidenceRef || result.evidence_snapshot_sha256 !== evidenceSha) diagnostics.push(diagnostic('RUN-EVIDENCE-REPLAY-002', 'Committed Evidence result identity differs from the replay input.'));
+      if (result.context_digest !== context.context_digest || result.package_digest !== context.canonical_package_digest || result.selected_candidate_id !== context.selected_candidate_id || result.batch_id !== context.action_batch.batch_id) diagnostics.push(diagnostic('RUN-EVIDENCE-REPLAY-003', 'Committed Evidence result differs from the active Context.'));
+      if (!sameSet(result.action_ids, context.action_batch.action_ids) || sortedCanonicalJson(result.action_digests) !== sortedCanonicalJson(context.action_batch.action_digests)) diagnostics.push(diagnostic('RUN-EVIDENCE-REPLAY-004', 'Committed Evidence Action binding is invalid.'));
+      if (checkpoint.evidence_ledger?.at(-1)?.evidence_id !== evidenceId) diagnostics.push(diagnostic('RUN-EVIDENCE-REPLAY-005', 'Active generation is not the exact committed Evidence transition.'));
+      const refs = { generation_ref: loaded.current.generation_ref, evidence_ref: evidenceRef, result_ref: resultRef };
+      diagnostics.push(...validatePublication(result, 'attach-evidence', refs, 'ev4-builder-evidence-attachment-result@1.0.0', manifest.run_id));
+      return { passed: diagnostics.length === 0, diagnostics };
+    }
+  });
+}
+
 export function attachRunEvidence({ runDirectory, evidenceSourceFile, failureInjection = null }) {
   return withRunMutation({ runDirectory, operation: 'attach-evidence', failureInjection }, (loaded) => {
     const diagnostics = [];
     const { manifest, context, session, checkpoint } = loaded;
-    if (checkpoint.runtime_state !== 'BUILD_ACTIVE' || !manifest.active_confirmation_receipt_ref) diagnostics.push(diagnostic('RUN-EVIDENCE-012', 'Evidence attachment requires a confirmed BUILD_ACTIVE Run.'));
     let bytes;
     let source;
     try {
@@ -51,10 +84,15 @@ export function attachRunEvidence({ runDirectory, evidenceSourceFile, failureInj
     } catch (error) {
       return { ...loaded, passed: false, diagnostics: [diagnostic('RUN-EVIDENCE-013', 'External Evidence source is unreadable or malformed.', error.message)] };
     }
-    diagnostics.push(...validateEvidenceSource(source, loaded));
     const evidenceSha = sha256Bytes(bytes);
     const evidenceId = `EV-${evidenceSha.slice(0, 20)}`;
     const evidenceRef = `evidence/${evidenceId}.json`;
+
+    const replay = detectEvidenceReplay({ loaded, bytes, evidenceSha, evidenceId, evidenceRef });
+    if (replay.matched) return replay.outcome;
+
+    if (checkpoint.runtime_state !== 'BUILD_ACTIVE' || !manifest.active_confirmation_receipt_ref) diagnostics.push(diagnostic('RUN-EVIDENCE-012', 'Evidence attachment requires a confirmed BUILD_ACTIVE Run.'));
+    diagnostics.push(...validateEvidenceSource(source, loaded));
     if ((manifest.evidence_snapshot_refs || []).includes(evidenceRef)) diagnostics.push(diagnostic('RUN-EVIDENCE-014', 'Identical Evidence snapshot is already attached.'));
     const existingAssertionIds = new Set((checkpoint.assertions || []).map((entry) => entry.assertion_id));
     for (const claimId of source.claim_ids || []) if (existingAssertionIds.has(claimId)) diagnostics.push(diagnostic('RUN-EVIDENCE-015', `Assertion already exists: ${claimId}.`));
