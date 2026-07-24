@@ -19,7 +19,9 @@ import {
   completeRun,
   confirmRunBatch,
   emitRunBatch,
-  initializeAtomicRun
+  initializeAtomicRun,
+  inspectRunGenerations,
+  recoverRunLock
 } from './lib/runtime/canonical-run-runtime.mjs';
 
 const ROOT = process.cwd();
@@ -33,6 +35,10 @@ function usage() {
   node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
   node scripts/builder-inspector.mjs real-completion <run-directory>
 
+Local maintenance:
+  node scripts/builder-inspector.mjs inspect-run-generations <run-directory>
+  node scripts/builder-inspector.mjs recover-run-lock <run-directory>
+
 Fixture and compatibility commands:
   node scripts/builder-inspector.mjs fixture-validation <builder-input.json> [fixture-result.json]
   node scripts/builder-inspector.mjs intake <builder-input.json> [fixture-result.json]
@@ -41,7 +47,7 @@ Fixture and compatibility commands:
   node scripts/builder-inspector.mjs verify-capsule <builder-input.json> <legacy-intake-result.json>
   node scripts/builder-inspector.mjs resume <builder-input.json> <legacy-intake-result.json> <session-state.json> <checkpoint.json> <resume-output-directory>
 
-Only the Run-directory commands are real Runtime authority. Aliases intake and completion are fixture/compatibility-only.`);
+Only stable-Run-directory commands are real Runtime authority. Maintenance and compatibility commands cannot create real Completion.`);
   process.exit(2);
 }
 
@@ -62,11 +68,15 @@ function print(value) {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
-function blocked(transitionId, diagnostics) {
+function blocked(transitionId, outcome) {
+  const diagnostics = Array.isArray(outcome) ? outcome : outcome?.diagnostics || [];
   const result = {
     schema: 'ev4-builder-runtime-blocked-result@1.0.0',
     transition_id: transitionId,
     status: 'blocked',
+    failure_stage: Array.isArray(outcome) ? null : outcome?.failure_stage ?? null,
+    expected_diagnostic_code: Array.isArray(outcome) ? null : outcome?.expected_diagnostic_code ?? diagnostics[0]?.code ?? null,
+    active_generation_after_failure: Array.isArray(outcome) ? null : outcome?.active_generation_after_failure ?? null,
     builder_build_complete: false,
     responsive_complete: false,
     production_ready: false,
@@ -79,7 +89,7 @@ function blocked(transitionId, diagnostics) {
 
 function publishResult(transitionId, operation) {
   const outcome = operation();
-  if (!outcome.passed) return blocked(transitionId, outcome.diagnostics || []);
+  if (!outcome.passed) return blocked(transitionId, outcome);
   print(outcome.result);
   return outcome;
 }
@@ -133,12 +143,13 @@ function verifyCapsule(sourceFile, capsuleFile) {
 
 function resume(sourceFile, capsuleFile, sessionFile, checkpointFile, outputDirectory) {
   const transition = validateCanonicalResume({ sourceFile, capsuleFile, sessionFile, checkpointFile });
-  if (!transition.passed) return blocked('resume', transition.diagnostics);
+  if (!transition.passed) return blocked('resume', transition);
   const result = {
     schema: 'ev4-builder-runtime-transition-result@1.0.0',
     transition_id: 'resume',
     status: 'accepted',
     authority_scope: 'legacy_compatibility_only',
+    real_run_authority: false,
     source: { workflow_mode: transition.session.workflow_mode, runtime_state: transition.session.runtime_state },
     target: { workflow_mode: transition.nextSession.workflow_mode, runtime_state: transition.nextSession.runtime_state },
     identity: {
@@ -190,6 +201,8 @@ try {
   else if (command === 'confirm-batch' && args.length === 2) publishResult('confirm-batch', () => confirmRunBatch({ runDirectory: args[0], userToken: args[1] }));
   else if (command === 'attach-evidence' && args.length === 2) publishResult('attach-evidence', () => attachRunEvidence({ runDirectory: args[0], evidenceSourceFile: args[1] }));
   else if (command === 'real-completion' && args.length === 1) publishResult('real-completion', () => completeRun({ runDirectory: args[0] }));
+  else if (command === 'inspect-run-generations' && args.length === 1) publishResult('inspect-run-generations', () => inspectRunGenerations({ runDirectory: args[0] }));
+  else if (command === 'recover-run-lock' && args.length === 1) publishResult('recover-run-lock', () => recoverRunLock({ runDirectory: args[0] }));
   else if (command && path.resolve(command) === ARTIFACT_VALIDATOR && args.length === 1) runMaintenanceArtifactValidation(command, args[0]);
   else if (['fixture-validation', 'intake'].includes(command) && args.length >= 1 && args.length <= 2) fixtureValidation(args[0], args[1]);
   else if (['fixture-completion', 'completion'].includes(command) && args.length === 5) fixtureCompletion(...args);
@@ -197,5 +210,5 @@ try {
   else if (command === 'resume' && args.length === 5) resume(...args);
   else usage();
 } catch (error) {
-  blocked(process.argv[2] || 'unknown', [{ code: 'BUILDER-CLI-001', message: error.message }]);
+  blocked(process.argv[2] || 'unknown', { diagnostics: [{ code: 'BUILDER-CLI-001', message: error.message }] });
 }
