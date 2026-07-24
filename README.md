@@ -51,6 +51,8 @@ A mutation writer acquires `.mutation-lock` before reading `CURRENT.json`. A com
 
 The Runtime preserves exact source mode arguments, deterministic Package/Candidate/Batch/Action binding, zero-blocker Action emission, `WAITING_FOR_CONFIRMATION`-only Confirmation, exact verified Action-specific Evidence, and Runtime-derived Completion Status/Gate. Builder Completion never implies Responsive completion or production readiness.
 
+Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.
+
 ```bash
 npm ci
 npm run validate
