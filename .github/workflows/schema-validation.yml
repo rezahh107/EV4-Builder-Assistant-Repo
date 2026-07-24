@@ -51,6 +51,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Diagnose auxiliary successor conflict
+        run: node scripts/debug-successor-aux-conflict.mjs
+
       - name: Run focused successor reconciliation
         run: node scripts/test-builder-successor-reconciliation.mjs
 
