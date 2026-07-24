@@ -1,14 +1,20 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import { sortedCanonicalJson } from './lib/canonical-builder-package.mjs';
 import { runAjv } from './lib/builder-runtime-transition.mjs';
 import { validateCanonicalRun } from './lib/runtime/canonical-run-runtime.mjs';
+import { completeHappyRun } from './lib/runtime/runtime-test-fixtures.mjs';
 
 const ROOT = process.cwd();
-const runDirectory = path.resolve(ROOT, process.argv[2] || '');
+const selfTestRoot = process.argv[2] ? null : fs.mkdtempSync(path.join(os.tmpdir(), 'ev4-run-artifact-validator-'));
+const runDirectory = process.argv[2]
+  ? path.resolve(ROOT, process.argv[2])
+  : completeHappyRun(selfTestRoot, 'artifact-validator').runDirectory;
 const errors = [];
+if (selfTestRoot) process.on('exit', () => fs.rmSync(selfTestRoot, { recursive: true, force: true }));
 
 function fail(message) { errors.push(message); }
 function readJson(file) { return JSON.parse(fs.readFileSync(file, 'utf8')); }
@@ -81,10 +87,6 @@ function validateResult({ operation, ref, schema, expectedSchema, extraExpected 
   return result;
 }
 
-if (!process.argv[2]) {
-  console.error('Usage: node scripts/validate-canonical-run-artifacts.mjs <run-directory>');
-  process.exit(2);
-}
 const loaded = validateCanonicalRun(runDirectory, { fullDerivation: true });
 if (!loaded.passed) errors.push(...loaded.diagnostics.map((entry) => `${entry.code}: ${entry.message}`));
 for (const name of ['run-manifest.json', 'runtime-context.json', 'session-state.json', 'checkpoint.json']) if (fs.existsSync(path.join(runDirectory, name))) fail(`Forbidden mutable top-level Authority file exists: ${name}`);
