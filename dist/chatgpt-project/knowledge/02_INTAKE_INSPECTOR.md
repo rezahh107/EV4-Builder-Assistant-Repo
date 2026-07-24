@@ -1,47 +1,20 @@
-# Explicit Source Intake and Internal Snapshot
+# Intake Inspector — Source Snapshot and Generation 000001
 
 ```yaml
 external_source_after_intake: not_used
 caller_authored_initial_state: forbidden
 caller_managed_carrier_selection: forbidden
 legacy_runtime_authority: inactive
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
 responsive_complete: false
 production_ready: false
 ```
 
-`real-intake` is the sole real initialization transaction for the Atomic Run Bundle.
+`real-intake` validates exact `project-gate`, `direct-ce`, or `manual-builder-input` arguments, reads selected bytes once, creates a unique sibling stage, snapshots source bytes, derives Context/Session/Checkpoint, validates immutable `generations/000001`, writes `CURRENT.json`, and atomically publishes the stable Run root only if absent.
 
-```bash
-node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
-```
-
-```yaml
-project-gate:
-  sourceArtifactFile: required
-  builderInputFile: required
-  selected_snapshot: exact Builder Input bytes
-  receipt_snapshot: exact Receipt bytes
-direct-ce:
-  sourceArtifactFile: required
-  builderInputFile: forbidden
-  selected_snapshot: exact CE wrapper bytes
-manual-builder-input:
-  sourceArtifactFile: forbidden
-  builderInputFile: required
-  selected_snapshot: exact Builder Input bytes
-```
-
-Runtime validates exact bytes, source-mode contracts, Builder Schema `ev4-builder-context-package@1.0.0`, semantic/cross-field rules, decision lineage, Candidate, Package, Batch, Action IDs/digests and Confirmation binding. It then generates Context, `run_id`, `session_id`, initial Checkpoint and Session together.
-
-Initial Checkpoint:
-
-```yaml
-checkpoint_sequence: 1
-parent_checkpoint_id: null
-workflow_mode: APPROVED_HANDOFF_MODE
-runtime_state: BUILD_ACTIVE
-confirmed_action_ids: []
-unconfirmed_action_ids: complete derived Action set
-```
-
-All applicable snapshots, `run-manifest.json`, `runtime-context.json`, `session-state.json`, `checkpoint.json` and `real-intake-result.json` publish atomically. Any failure leaves no Run directory. After success, original external source paths are never used again.
+Concurrent Intake produces one accepted Run and one `RUN_ALREADY_EXISTS` or busy result. A failing process removes only its own stage. Later `emit-batch`, `WAITING_FOR_CONFIRMATION`, `confirm-batch`, `attach-evidence`, and `COMPLETED` transitions use internal snapshots under `.mutation-lock`.
