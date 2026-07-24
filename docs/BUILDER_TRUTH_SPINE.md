@@ -1,83 +1,56 @@
-# Builder Truth Spine — Atomic Run Bundle
+# Builder Truth Spine — Stable Run Generations
 
 ```yaml
 repository_profile: personal_single_operator
 runtime_owned_atomic_run_bundle: true
-internal_source_snapshot: true
 external_source_after_intake: not_used
 caller_authored_initial_state: forbidden
 caller_managed_carrier_selection: forbidden
 legacy_runtime_authority: inactive
-origin_identity_independently_verified: false
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
 responsive_complete: false
 production_ready: false
 ```
 
-The canonical implementation is `scripts/lib/runtime/canonical-run-runtime.mjs`. It alone may publish real Session, Checkpoint, Confirmation, Evidence or Completion State.
+## Authoritative Storage
 
 ```text
-explicit operator source
-→ atomic real-intake Run Bundle
-→ internal source snapshot
-→ Runtime-owned Session and Checkpoint
-→ pre-emission full re-derivation
-→ zero-blocker gate
-→ atomic emit-batch
-→ WAITING_FOR_CONFIRMATION
-→ lightweight Confirmation reconciliation
-→ atomic confirm-batch
-→ BUILD_ACTIVE
-→ internal Evidence snapshots through attach-evidence
-→ full Completion re-derivation
-→ atomic real-completion
-→ COMPLETED
+<run-directory>/
+├── source/
+├── evidence/
+├── generations/000001/
+│   ├── run-manifest.json
+│   ├── runtime-context.json
+│   ├── session-state.json
+│   └── checkpoint.json
+├── generations/000002/...
+├── transitions/
+├── outputs/
+├── CURRENT.json
+└── .mutation-lock/
 ```
 
-## Run ownership
+The Run root remains stable. Published generations are immutable. `CURRENT.json` is the sole active State selector and is replaced atomically only after the complete successor generation validates. A crash before the pointer rename leaves the predecessor active; a crash after it leaves the complete successor active. Unselected generations are orphans, not authority.
 
-`real-intake` byte-preserves selected source content, derives Context and generates `run_id`, `session_id`, initial Checkpoint and Session. Project Gate also snapshots its Receipt. Initial Checkpoint is sequence 1, null parent, `APPROVED_HANDOFF_MODE / BUILD_ACTIVE`, no confirmed Actions and the complete derived Action set unconfirmed.
+## Canonical Transaction
 
-`run-manifest.json` binds source snapshots, Context, active Session/Checkpoint, Package, Candidate, Batch, transitions, internal Evidence and outputs. It is a deterministic index, not origin attestation.
-
-## Emit and blockers
-
-Before `emit-batch`, Runtime verifies the internal snapshot SHA, reruns source-mode derivation and all Builder validators, rebuilds Context and compares Candidate, Package, Batch, Action IDs, Action-body digests and Confirmation binding.
-
-`collectActiveBlockers(session, checkpoint)` includes Session unresolved Evidence, Checkpoint blockers and assertions marked `not_checked` or `insufficient_evidence`. Any blocker prevents Action emission.
-
-Valid emit atomically creates the exact `WAITING_FOR_CONFIRMATION` Session, Checkpoint and Result and only then updates manifest pointers.
-
-## Confirmation
-
-`confirm-batch` reconciles manifest/snapshot hash, Context digest, emit result, exact WAITING Checkpoint, embedded Session, Batch, Action IDs/digests, exact token and zero blockers. It atomically derives `confirmation-receipt.json`, `confirmation-result.json`, `checkpoint.json` and `session-state.json`.
-
-The Receipt binds Run, Context, Package, Candidate, Confirmation ID, operator token, Batch, exact Actions/digests and predecessor/resulting Checkpoints. It is never caller-authoritative.
-
-## Internal Evidence
-
-`attach-evidence` reads external Evidence once and byte-preserves it inside the Run. It requires exact `source.status == "verified"` and validates Schema, type, Session, Package, claims and subject.
-
-For `required_action_execution`, `source.action_id`, `assertion.subject_ref` and `source.subject_ref` must be the same active Action ID. Generic `builder-output` cannot prove Action execution. Completion reads only internal Evidence snapshots.
-
-## Completion
-
-`real-completion` validates the manifest and internal snapshot, fully rederives Context, validates current State and canonical sequence, exact Confirmation/Batch/Actions/digests, all internal Evidence, every required Action and Completion claim, and zero blockers. Runtime derives terminal State, Completion Status and Gate atomically.
-
-```yaml
-runtime_state: COMPLETED
-builder_build_complete: true
-responsive_complete: false
-production_ready: false
+```text
+acquire .mutation-lock
+→ load CURRENT.json
+→ validate active generation
+→ derive successor
+→ write and validate temporary complete generation
+→ rename generation into final location
+→ write/fsync temporary CURRENT pointer
+→ atomically rename CURRENT.json
+→ release lock in finally
 ```
 
-Transition directories are never overwritten; failed temporary publication is removed; active pointers update last; duplicate or repeated operations cannot create competing Checkpoints.
+The real flow is `real-intake → emit-batch → WAITING_FOR_CONFIRMATION → confirm-batch → BUILD_ACTIVE → attach-evidence → real-completion → COMPLETED`. Every transition preserves exact source, Context, Package, Candidate, Batch, Action ID/digest, Checkpoint lineage and blocker bindings.
 
-```bash
-node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
-node scripts/builder-inspector.mjs emit-batch <run-directory>
-node scripts/builder-inspector.mjs confirm-batch <run-directory> "<operator-token>"
-node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
-node scripts/builder-inspector.mjs real-completion <run-directory>
-```
-
-`intake`, `completion`, old multi-carrier APIs and historical bypass reproductions are fixture/diagnostic-only.
+Legacy truth-spine functions are fixture or historical reproduction only and return `BUILDER-LEGACY-AUTHORITY-INACTIVE`; they cannot publish real Session, Checkpoint, Confirmation, Evidence or Completion carriers.
