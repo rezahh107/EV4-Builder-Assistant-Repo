@@ -11,37 +11,35 @@ import {
   validateGeneratedResumeCarriers,
   verifyIntakeCapsule
 } from './lib/builder-runtime-transition.mjs';
+import { fixtureValidateBuilderInput } from './lib/builder-explicit-source-runtime.mjs';
+import { validateCanonicalResume } from './lib/builder-functional-correctness.mjs';
 import {
-  fixtureValidateBuilderInput
-} from './lib/builder-explicit-source-runtime.mjs';
-import {
-  publishConfirmationTransaction,
-  publishEmitBatchTransaction,
-  publishStrictRealCompletion,
-  validateCanonicalResume,
-  writeStrictRealIntake
-} from './lib/builder-functional-correctness.mjs';
+  attachRunEvidence,
+  completeRun,
+  confirmRunBatch,
+  emitRunBatch,
+  initializeAtomicRun
+} from './lib/runtime/canonical-run-runtime.mjs';
 
 const ROOT = process.cwd();
 
 function usage() {
   console.error(`Usage:
+  node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
+  node scripts/builder-inspector.mjs emit-batch <run-directory>
+  node scripts/builder-inspector.mjs confirm-batch <run-directory> <operator-token>
+  node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
+  node scripts/builder-inspector.mjs real-completion <run-directory>
+
+Fixture and compatibility commands:
   node scripts/builder-inspector.mjs fixture-validation <builder-input.json> [fixture-result.json]
   node scripts/builder-inspector.mjs intake <builder-input.json> [fixture-result.json]
-  node scripts/builder-inspector.mjs real-intake project-gate <project-gate-receipt.json> <builder-input.json> <runtime-context.json> [real-intake-result.json]
-  node scripts/builder-inspector.mjs real-intake direct-ce <ce-source-package.json> - <runtime-context.json> [real-intake-result.json]
-  node scripts/builder-inspector.mjs real-intake manual-builder-input - <builder-input.json> <runtime-context.json> [real-intake-result.json]
-  node scripts/builder-inspector.mjs emit-batch <runtime-context.json> <session-state.json> <checkpoint.json> <atomic-output-directory>
-  node scripts/builder-inspector.mjs confirm-batch <runtime-context.json> <session-state.json> <checkpoint.json> <operator-token> <atomic-output-directory>
   node scripts/builder-inspector.mjs fixture-completion <builder-input.json> <session-state.json> <checkpoint.json> <completion-status.json> <completion-gate.json>
   node scripts/builder-inspector.mjs completion <builder-input.json> <session-state.json> <checkpoint.json> <completion-status.json> <completion-gate.json>
-  node scripts/builder-inspector.mjs real-completion project-gate <project-gate-receipt.json> <builder-input.json> <runtime-context.json> <session-state.json> <checkpoint.json> <confirmation-receipt.json> <completion-output-directory>
-  node scripts/builder-inspector.mjs real-completion direct-ce <ce-source-package.json> - <runtime-context.json> <session-state.json> <checkpoint.json> <confirmation-receipt.json> <completion-output-directory>
-  node scripts/builder-inspector.mjs real-completion manual-builder-input - <builder-input.json> <runtime-context.json> <session-state.json> <checkpoint.json> <confirmation-receipt.json> <completion-output-directory>
   node scripts/builder-inspector.mjs verify-capsule <builder-input.json> <legacy-intake-result.json>
   node scripts/builder-inspector.mjs resume <builder-input.json> <legacy-intake-result.json> <session-state.json> <checkpoint.json> <resume-output-directory>
 
-Aliases intake and completion are fixture/compatibility-only and can never create real Builder Completion.`);
+Only the Run-directory commands are real Runtime authority. Aliases intake and completion are fixture/compatibility-only.`);
   process.exit(2);
 }
 
@@ -77,35 +75,18 @@ function blocked(transitionId, diagnostics) {
   return result;
 }
 
+function publishResult(transitionId, operation) {
+  const outcome = operation();
+  if (!outcome.passed) return blocked(transitionId, outcome.diagnostics || []);
+  print(outcome.result);
+  return outcome;
+}
+
 function fixtureValidation(sourceFile, outputFile = null) {
   const result = fixtureValidateBuilderInput(sourceFile);
   if (outputFile) atomicWriteJson(outputFile, result);
   print(result);
   process.exitCode = result.status === 'accepted' ? 0 : 1;
-}
-
-function realIntake(sourceMode, sourceArtifactArgument, builderInputArgument, contextOutputFile, resultOutputFile = null) {
-  const result = writeStrictRealIntake({
-    sourceMode,
-    sourceArtifactFile: sourceArtifactArgument === '-' ? null : sourceArtifactArgument,
-    builderInputFile: builderInputArgument === '-' ? null : builderInputArgument,
-    contextOutputFile,
-    resultOutputFile
-  });
-  print(result.result);
-  process.exitCode = result.passed ? 0 : 1;
-}
-
-function emitBatch(contextFile, sessionFile, checkpointFile, outputDirectory) {
-  const result = publishEmitBatchTransaction({ contextFile, sessionFile, checkpointFile, outputDirectory });
-  if (!result.passed) return blocked('emit-batch', result.diagnostics);
-  print(result.result);
-}
-
-function confirmBatch(contextFile, sessionFile, checkpointFile, userToken, outputDirectory) {
-  const result = publishConfirmationTransaction({ contextFile, sessionFile, checkpointFile, userToken, outputDirectory });
-  if (!result.passed) return blocked('confirm-batch', result.diagnostics);
-  print(result.result);
 }
 
 function fixtureCompletion(sourceFile, sessionFile, checkpointFile, statusFile, gateFile) {
@@ -135,21 +116,6 @@ function fixtureCompletion(sourceFile, sessionFile, checkpointFile, statusFile, 
   }
 }
 
-function realCompletion(sourceMode, sourceArtifactArgument, builderInputArgument, contextFile, sessionFile, checkpointFile, confirmationReceiptFile, outputDirectory) {
-  const result = publishStrictRealCompletion({
-    sourceMode,
-    sourceArtifactFile: sourceArtifactArgument === '-' ? null : sourceArtifactArgument,
-    builderInputFile: builderInputArgument === '-' ? null : builderInputArgument,
-    contextFile,
-    sessionFile,
-    checkpointFile,
-    confirmationReceiptFile,
-    outputDirectory
-  });
-  if (!result.passed) return blocked('complete-builder', result.diagnostics);
-  print(result.result);
-}
-
 function verifyCapsule(sourceFile, capsuleFile) {
   const verification = verifyIntakeCapsule(sourceFile, capsuleFile);
   const result = {
@@ -170,6 +136,7 @@ function resume(sourceFile, capsuleFile, sessionFile, checkpointFile, outputDire
     schema: 'ev4-builder-runtime-transition-result@1.0.0',
     transition_id: 'resume',
     status: 'accepted',
+    authority_scope: 'legacy_compatibility_only',
     source: { workflow_mode: transition.session.workflow_mode, runtime_state: transition.session.runtime_state },
     target: { workflow_mode: transition.nextSession.workflow_mode, runtime_state: transition.nextSession.runtime_state },
     identity: {
@@ -183,11 +150,7 @@ function resume(sourceFile, capsuleFile, sessionFile, checkpointFile, outputDire
     builder_build_complete: false,
     responsive_complete: false,
     production_ready: false,
-    publication: {
-      atomic: true,
-      output_directory: path.relative(ROOT, resolveFile(outputDirectory)),
-      files: ['checkpoint.json', 'resume-result.json', 'session-state.json']
-    },
+    publication: { atomic: true, output_directory: path.relative(ROOT, resolveFile(outputDirectory)), files: ['checkpoint.json', 'resume-result.json', 'session-state.json'] },
     blocking_diagnostics: []
   };
   publishDirectoryAtomically(outputDirectory, {
@@ -200,12 +163,20 @@ function resume(sourceFile, capsuleFile, sessionFile, checkpointFile, outputDire
 
 try {
   const [command, ...args] = process.argv.slice(2);
-  if (['fixture-validation', 'intake'].includes(command) && args.length >= 1 && args.length <= 2) fixtureValidation(args[0], args[1]);
-  else if (command === 'real-intake' && args.length >= 4 && args.length <= 5) realIntake(...args);
-  else if (command === 'emit-batch' && args.length === 4) emitBatch(...args);
-  else if (command === 'confirm-batch' && args.length === 5) confirmBatch(...args);
+  if (command === 'real-intake' && args.length === 4) {
+    const [sourceMode, sourceArg, builderArg, runDirectory] = args;
+    publishResult('real-intake', () => initializeAtomicRun({
+      sourceMode,
+      sourceArtifactFile: sourceArg === '-' ? null : sourceArg,
+      builderInputFile: builderArg === '-' ? null : builderArg,
+      runDirectory
+    }));
+  } else if (command === 'emit-batch' && args.length === 1) publishResult('emit-batch', () => emitRunBatch({ runDirectory: args[0] }));
+  else if (command === 'confirm-batch' && args.length === 2) publishResult('confirm-batch', () => confirmRunBatch({ runDirectory: args[0], userToken: args[1] }));
+  else if (command === 'attach-evidence' && args.length === 2) publishResult('attach-evidence', () => attachRunEvidence({ runDirectory: args[0], evidenceSourceFile: args[1] }));
+  else if (command === 'real-completion' && args.length === 1) publishResult('real-completion', () => completeRun({ runDirectory: args[0] }));
+  else if (['fixture-validation', 'intake'].includes(command) && args.length >= 1 && args.length <= 2) fixtureValidation(args[0], args[1]);
   else if (['fixture-completion', 'completion'].includes(command) && args.length === 5) fixtureCompletion(...args);
-  else if (command === 'real-completion' && args.length === 8) realCompletion(...args);
   else if (command === 'verify-capsule' && args.length === 2) verifyCapsule(...args);
   else if (command === 'resume' && args.length === 5) resume(...args);
   else usage();
