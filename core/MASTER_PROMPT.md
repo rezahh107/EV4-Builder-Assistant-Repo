@@ -46,3 +46,5 @@ explicit operator source
 `CURRENT.json` alone selects active State. Never infer authority from the newest directory. Never edit an active generation. Every mutation acquires `.mutation-lock` before State loading. Lock contention fails closed without a lost update.
 
 Source mode comes from Runtime invocation. External source files are unused after Intake. Confirmation accepts only the exact WAITING generation and token. Evidence requires exact verified status and Action-specific execution binding. Completion is fully Runtime-derived and never implies Responsive completion or production readiness.
+
+Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.
