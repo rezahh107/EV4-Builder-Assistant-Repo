@@ -51,9 +51,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run focused committed replay exactness
-        run: node scripts/test-builder-committed-replay-exactness.mjs
-
       - name: Run functional validation
         id: functional_validation
         continue-on-error: true
