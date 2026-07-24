@@ -1,66 +1,66 @@
-EV4 Builder Assistant — Canonical Personal Runtime
+EV4 Builder Assistant — Atomic Run Bundle Runtime
 
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
-industrial_governance: removed_from_active_system
-security_posture: minimal_nonblocking
-production_ready: false
-
-Bootstrap and Resume:
-- Canonical Builder package Schema: ev4-builder-context-package@1.0.0
-- Conventional operator filename: builder-input.json
-- شروع initializes fresh intake only when no active Run exists; repeated شروع preserves initialized state.
-- استارت resumes only from valid PAUSED carriers and cannot fabricate a Run.
-
-CANONICAL_REAL_FLOW:
-explicit operator source mode
-→ real-intake
-→ Runtime Context
-→ Action Batch
-→ emit-batch
-→ WAITING_FOR_CONFIRMATION
-→ atomic confirm-batch transaction
-→ BUILD_ACTIVE
-→ verified Evidence
-→ real-completion
-→ COMPLETED
-
-Explicit source modes are project-gate, direct-ce, and manual-builder-input. Runtime invocation selects the mode. Caller JSON cannot promote itself.
-
-Mode-specific arguments:
-- project-gate: sourceArtifactFile required; builderInputFile required.
-- direct-ce: sourceArtifactFile required; builderInputFile forbidden.
-- manual-builder-input: sourceArtifactFile forbidden; builderInputFile required.
-
-`intake` and `completion` are fixture/compatibility-only aliases. They never create real Builder Completion.
-
-Canonical Confirmation:
-- `emit-batch` derives WAITING_FOR_CONFIRMATION carriers.
-- `confirm-batch` accepts only matching APPROVED_HANDOFF_MODE / WAITING_FOR_CONFIRMATION Session and Checkpoint carriers.
-- predecessor confirmed_action_ids is empty.
-- predecessor unconfirmed_action_ids equals the complete Runtime Context Action set.
-- exact operator token is required.
-- resulting Session and Checkpoint are derived as BUILD_ACTIVE.
-- Checkpoint sequence increments and parent_checkpoint_id binds the predecessor.
-- confirmation-receipt.json, checkpoint.json, session-state.json, and confirmation-result.json publish atomically or not at all.
-- Receipt binds the resulting Checkpoint ID, sequence and parent, plus Session, Package, Candidate, Context, Batch, Action IDs, Action body digests and token.
-
-Checkpoint sequence:
-- sequence == 1 requires parent_checkpoint_id == null.
-- sequence > 1 requires a non-empty parent_checkpoint_id.
-
-Evidence:
-- source.status must be the exact string verified.
-- required_action_execution requires source.action_id in the active Context Action set.
-- assertion.subject_ref and source.subject_ref must equal source.action_id.
-- generic builder-output subjects cannot prove Action execution.
-- rejected Evidence contributes no claim class or Action coverage.
-
-Real Completion rereads selected source bytes, rederives Runtime Context, validates the exact confirmed Batch and Receipt checkpoint identity, verifies Evidence, then atomically derives COMPLETED carriers.
-
-Builder completion remains Builder-only:
-builder_build_complete: true | false
+external_source_after_intake: not_used
+caller_authored_initial_state: forbidden
+caller_managed_carrier_selection: forbidden
+legacy_runtime_authority: inactive
 responsive_complete: false
 production_ready: false
 
-Do not add signatures, PKI, secrets, GitHub provenance checks, remote attestations, services, databases, event buses, or Builder → Responsive behavior.
+Canonical Builder Schema: ev4-builder-context-package@1.0.0
+Conventional filename hint: builder-input.json
+Fresh trigger: شروع
+PAUSED-only compatibility Resume trigger: استارت
+
+The sole real Runtime is a Runtime-owned Atomic Run Bundle with an internal source snapshot.
+
+explicit operator source
+→ atomic real-intake Run Bundle
+→ internal source snapshot
+→ Runtime-owned Session and Checkpoint
+→ pre-emission full re-derivation
+→ zero-blocker gate
+→ atomic emit-batch
+→ WAITING_FOR_CONFIRMATION
+→ lightweight Confirmation reconciliation
+→ atomic confirm-batch
+→ BUILD_ACTIVE
+→ internal Evidence snapshots through attach-evidence
+→ full Completion re-derivation
+→ atomic real-completion
+→ COMPLETED
+
+Real commands:
+
+node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
+node scripts/builder-inspector.mjs emit-batch <run-directory>
+node scripts/builder-inspector.mjs confirm-batch <run-directory> "<operator-token>"
+node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
+node scripts/builder-inspector.mjs real-completion <run-directory>
+
+Mode arguments:
+- project-gate requires Receipt and Builder Input.
+- direct-ce requires CE source wrapper and forbids Builder Input.
+- manual-builder-input forbids source artifact and requires Builder Input.
+
+real-intake copies exact bytes into the Run, derives Context, run_id, session_id, initial Checkpoint and Session, and publishes the complete Run atomically. Initial Checkpoint is BUILD_ACTIVE, sequence 1, null parent, empty confirmed Actions and complete unconfirmed Actions.
+
+After Intake, only the Run directory is accepted. Original source paths are never read again. New source content requires a new Run.
+
+Before emit-batch, fully rederive Context from the internal snapshot and compare Package, Candidate, Batch, Action IDs, Action-body digests and Confirmation binding. Active blockers include Session unresolved Evidence, Checkpoint blockers and unresolved assertions. Any blocker prevents Action emission.
+
+emit-batch atomically derives WAITING_FOR_CONFIRMATION. confirm-batch accepts only that exact emitted State, exact Batch/Actions/digests, exact token and zero blockers. It atomically publishes Confirmation Receipt, Confirmation Result, Checkpoint and Session. Caller-authored Receipt or confirmed arrays have no authority.
+
+attach-evidence reads external Evidence once, requires exact source.status == "verified", validates claim, subject, Session, Package and Action binding and byte-preserves Evidence inside the Run. required_action_execution must use the exact active Action ID as source.action_id, assertion.subject_ref and source.subject_ref.
+
+real-completion fully rederives Context from the internal snapshot, validates current State, sequence, Confirmation, exact confirmed Batch and Actions, internal Evidence and zero blockers, then derives terminal Session, Checkpoint, Completion Status and Gate atomically.
+
+Truthful terminal result:
+runtime_state: COMPLETED
+builder_build_complete: true
+responsive_complete: false
+production_ready: false
+
+intake and completion aliases are fixture/compatibility-only. Do not use signatures, PKI, secrets, repository provenance, producer authentication, remote attestation, databases, services, event buses, Builder → Responsive behavior, deployment or production claims.
