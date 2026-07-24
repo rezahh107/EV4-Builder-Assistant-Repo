@@ -43,14 +43,26 @@ The Run root remains stable. Published generations are immutable. `CURRENT.json`
 acquire .mutation-lock
 → load CURRENT.json
 → validate active generation
-→ derive successor
-→ write and validate temporary complete generation
-→ rename generation into final location
-→ write/fsync temporary CURRENT pointer
-→ atomically rename CURRENT.json
+→ derive the exact expected successor and all auxiliary artifacts
+→ inspect future generation state
+→ publish a new complete successor or reconcile exact N+1
+→ atomically replace CURRENT.json
+→ validate the newly active Run
 → release lock in finally
 ```
 
+### Interrupted publication
+
+The numerically highest or merely Schema-valid generation is never promoted. When exactly one adjacent N+1 exists, the same canonical transition rederives its expected successor from the active predecessor and exact command arguments. Reconciliation compares the final bytes of `runtime-context.json`, `session-state.json`, `checkpoint.json`, `run-manifest.json` and every operation-specific artifact. Only an exact match may advance `CURRENT.json`; the published generation and artifacts are not rewritten.
+
+A different N+1 returns `RUN_UNCOMMITTED_SUCCESSOR_CONFLICT`. An incomplete or corrupt N+1 returns `RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE`. Multiple or non-adjacent future generations return `RUN_AMBIGUOUS_FUTURE_GENERATIONS`. All cases leave `CURRENT.json` unchanged.
+
+`recover-run-lock` removes only validated non-authoritative `.tmp-*` debris and the explicit stale lock. It does not promote, modify or delete a published orphan generation. The original canonical command must be rerun to reconcile commit intent.
+
+### Post-commit replay
+
+When `CURRENT.json` advanced but the process terminated before returning success, rerunning the exact command returns the already committed accepted result with `replayed_existing_transition: true` and `state_modified: false`. Different operator tokens or Evidence bytes are not treated as replay.
+
 The real flow is `real-intake → emit-batch → WAITING_FOR_CONFIRMATION → confirm-batch → BUILD_ACTIVE → attach-evidence → real-completion → COMPLETED`. Every transition preserves exact source, Context, Package, Candidate, Batch, Action ID/digest, Checkpoint lineage and blocker bindings.
 
-Legacy truth-spine functions are fixture or historical reproduction only and return `BUILDER-LEGACY-AUTHORITY-INACTIVE`; they cannot publish real Session, Checkpoint, Confirmation, Evidence or Completion carriers.
+Historical bypass records are inert records only. They import no active Runtime implementation and cannot mutate or complete a Run. Legacy truth-spine exports return `BUILDER-LEGACY-AUTHORITY-INACTIVE`; separate canonical regression tests prove all seven historical bypass classes remain rejected.
