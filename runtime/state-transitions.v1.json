@@ -12,6 +12,24 @@
   "canonical_mutation_protocol": ["acquire_run_lock","load_CURRENT_after_lock","validate_active_generation","derive_successor_state","write_complete_temporary_generation","validate_complete_successor_generation","atomically_publish_successor_generation","atomically_advance_CURRENT","release_run_lock_in_finally"],
   "transitions": [
     {
+      "id": "fresh-intake",
+      "authority_scope": "bootstrap_routing_only",
+      "real_run_authority": false,
+      "from": null,
+      "trigger": "شروع",
+      "guards": ["no_initialized_session", "routes_to_explicit_real_intake_without_fabricating_run"],
+      "to": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_WAITING"}
+    },
+    {
+      "id": "repeated-start",
+      "authority_scope": "bootstrap_routing_only",
+      "real_run_authority": false,
+      "from": "ANY_INITIALIZED_STATE",
+      "trigger": "شروع",
+      "guards": ["preserve_session_id", "preserve_checkpoint", "preserve_unresolved_blockers", "create_second_active_run_false"],
+      "to": "SAME_STATE"
+    },
+    {
       "id": "real-intake",
       "authority_scope": "canonical_real_run",
       "real_run_authority": true,
@@ -62,7 +80,7 @@
       "real_run_authority": false,
       "from": {"workflow_mode": "ANY", "runtime_state": "PAUSED"},
       "trigger": "استارت",
-      "guards": ["legacy_fixture_carriers_only", "cannot_mutate_canonical_run"],
+      "guards": ["prior_initialized_state_exists", "session_id_matches", "package_digest_matches", "candidate_matches", "checkpoint_valid", "unresolved_blockers_preserved", "legacy_fixture_carriers_only", "cannot_mutate_canonical_run"],
       "to": "NON_AUTHORITATIVE_COMPATIBILITY_OUTPUT"
     },
     {
@@ -75,5 +93,5 @@
       "to": "NON_AUTHORITATIVE_FIXTURE_RESULT"
     }
   ],
-  "forbidden": ["run_root_replacement","active_generation_mutation","mutation_without_run_lock","state_load_before_lock","CURRENT_points_to_partial_or_missing_generation","highest_generation_implicitly_becomes_authoritative","lost_update","competing_active_checkpoints","concurrent_intake_overwrites_or_deletes_existing_run","time_based_lock_breaking","caller_authored_initial_state","caller_managed_carrier_selection","external_source_dependency_after_intake","legacy_real_authority_entrypoint","legacy_module_publishes_real_completion","confirm_batch_from_build_active","evidence_without_verified_source_status","generic_subject_authorizes_action_execution","completion_batch_drift","partial_generation_selected","mixed_generation_carriers"]
+  "forbidden": ["run_root_replacement","active_generation_mutation","mutation_without_run_lock","state_load_before_lock","CURRENT_points_to_partial_or_missing_generation","highest_generation_implicitly_becomes_authoritative","lost_update","competing_active_checkpoints","concurrent_intake_overwrites_or_deletes_existing_run","time_based_lock_breaking","caller_authored_initial_state","caller_managed_carrier_selection","external_source_dependency_after_intake","legacy_real_authority_entrypoint","legacy_module_publishes_real_completion","start_command_fabricates_run","confirm_batch_from_build_active","evidence_without_verified_source_status","generic_subject_authorizes_action_execution","completion_batch_drift","partial_generation_selected","mixed_generation_carriers"]
 }
