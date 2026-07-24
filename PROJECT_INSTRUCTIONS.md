@@ -56,6 +56,8 @@ node scripts/builder-inspector.mjs inspect-run-generations <run-directory>
 node scripts/builder-inspector.mjs recover-run-lock <run-directory>
 ```
 
-`CURRENT.json` alone selects authority. Never infer authority from the highest generation. Published State generations are immutable. Every canonical mutation acquires `.mutation-lock` before loading State; contention returns `RUN_BUSY_OR_STALE_LOCK` without changing the Run.
+`CURRENT.json` alone selects authority. Never infer authority from the highest generation. Published State generations are immutable. Every canonical mutation acquires `.mutation-lock` before State loading; contention returns `RUN_BUSY_OR_STALE_LOCK` without changing the Run.
 
 Mode arguments remain exact. After Intake, external source paths are not used. Confirmation starts only from `WAITING_FOR_CONFIRMATION`. Evidence requires exact `source.status == "verified"` and Action-specific execution binding. Completion is Runtime-derived and can set only Builder completion; Responsive and production remain false.
+
+Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.
