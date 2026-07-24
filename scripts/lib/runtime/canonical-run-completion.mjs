@@ -19,7 +19,13 @@ import {
   updateSessionForCheckpoint
 } from './run-primitives.mjs';
 import { validateGeneration, loadRunUnlocked, fullDeriveAndCompare } from './run-state-validation.mjs';
-import { expectedPublicationFiles, validatePublication, publishSuccessor, withRunMutation } from './run-state-store.mjs';
+import {
+  expectedPublicationFiles,
+  validatePublication,
+  publishSuccessor,
+  withRunMutation,
+  detectCommittedTransitionReplay
+} from './run-state-store.mjs';
 import { loadTransitionResult } from './canonical-run-transitions.mjs';
 import { validateEvidenceSource } from './canonical-run-evidence.mjs';
 
@@ -132,8 +138,35 @@ function deriveCompletionArtifacts(evidence) {
   };
 }
 
+function detectCompletionReplay(loaded) {
+  const { manifest, context, checkpoint, session } = loaded;
+  return detectCommittedTransitionReplay({
+    loaded,
+    operation: 'real-completion',
+    resultRef: manifest.completion_result_ref,
+    expectedSchema: 'ev4-builder-completion-result@2.0.0',
+    matches: (result) => {
+      const diagnostics = [];
+      if (checkpoint.runtime_state !== 'COMPLETED' || session.runtime_state !== 'COMPLETED') diagnostics.push(diagnostic('RUN-COMPLETE-REPLAY-001', 'Active State is not the committed Completion transition.'));
+      if (result.context_digest !== context.context_digest || result.package_digest !== context.canonical_package_digest || result.selected_candidate_id !== context.selected_candidate_id || result.batch_id !== context.action_batch.batch_id) diagnostics.push(diagnostic('RUN-COMPLETE-REPLAY-002', 'Committed Completion identity differs from the active Context.'));
+      if (!sameSet(result.action_ids, context.action_batch.action_ids) || sortedCanonicalJson(result.action_digests) !== sortedCanonicalJson(context.action_batch.action_digests)) diagnostics.push(diagnostic('RUN-COMPLETE-REPLAY-003', 'Committed Completion Action binding is invalid.'));
+      if (result.builder_build_complete !== true || result.responsive_complete !== false || result.production_ready !== false) diagnostics.push(diagnostic('RUN-COMPLETE-REPLAY-004', 'Committed Completion flags are untruthful.'));
+      for (const ref of [manifest.completion_status_ref, manifest.completion_gate_ref]) {
+        const file = safeRunRef(loaded.runDirectory, ref);
+        if (!file || !fs.existsSync(file)) diagnostics.push(diagnostic('RUN-COMPLETE-REPLAY-005', `Committed Completion auxiliary artifact is missing: ${ref}.`));
+      }
+      const refs = { generation_ref: loaded.current.generation_ref, result_ref: manifest.completion_result_ref, status_ref: manifest.completion_status_ref, gate_ref: manifest.completion_gate_ref };
+      diagnostics.push(...validatePublication(result, 'real-completion', refs, 'ev4-builder-completion-result@2.0.0', manifest.run_id));
+      return { passed: diagnostics.length === 0, diagnostics };
+    }
+  });
+}
+
 export function completeRun({ runDirectory, failureInjection = null }) {
   return withRunMutation({ runDirectory, operation: 'real-completion', failureInjection }, (loaded) => {
+    const replay = detectCompletionReplay(loaded);
+    if (replay.matched) return replay.outcome;
+
     const derivation = fullDeriveAndCompare(loaded);
     const diagnostics = [...derivation.diagnostics];
     const { manifest, context, session, checkpoint } = loaded;
@@ -257,14 +290,35 @@ export function inspectRunGenerations({ runDirectory }) {
   };
 }
 
+function collectRecoveryDebris(run) {
+  const paths = [];
+  for (const name of fs.readdirSync(run)) if (name.startsWith('CURRENT.tmp-')) paths.push(name);
+  const generations = path.join(run, 'generations');
+  if (fs.existsSync(generations)) {
+    for (const name of fs.readdirSync(generations)) if (name.startsWith('.tmp-')) paths.push(`generations/${name}`);
+  }
+  return paths.sort();
+}
+
 export function recoverRunLock({ runDirectory }) {
   const run = resolveRoot(runDirectory);
   const lockDirectory = path.join(run, '.mutation-lock');
   if (!fs.existsSync(lockDirectory)) return { passed: false, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-001', 'No Run mutation lock exists.')] };
-  const currentTemporary = fs.readdirSync(run).filter((entry) => entry.startsWith('CURRENT.tmp-'));
-  if (currentTemporary.length) return { passed: false, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-002', 'Temporary CURRENT pointer files exist; lock recovery is blocked.')] };
   const loaded = loadRunUnlocked(run);
   if (!loaded.passed) return { ...loaded, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-003', 'Active Run validation failed; lock recovery is blocked.'), ...loaded.diagnostics] };
+
+  const debris = collectRecoveryDebris(run);
+  const authoritativeText = JSON.stringify({ current: loaded.current, manifest: loaded.manifest });
+  for (const ref of debris) {
+    if (authoritativeText.includes(ref)) return { passed: false, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-004', `Recovery debris is referenced by active authority: ${ref}.`)] };
+  }
+  for (const ref of debris) {
+    const target = safeRunRef(run, ref);
+    if (!target || !fs.existsSync(target)) continue;
+    const stat = fs.statSync(target);
+    if (stat.isDirectory()) fs.rmSync(target, { recursive: true, force: true });
+    else fs.rmSync(target, { force: true });
+  }
   fs.rmSync(lockDirectory, { recursive: true, force: true });
   return {
     passed: true,
@@ -275,8 +329,11 @@ export function recoverRunLock({ runDirectory }) {
       run_id: loaded.manifest.run_id,
       active_generation: loaded.current.generation,
       state_modified: false,
+      current_pointer_advanced: false,
       lock_removed: true,
-      builder_build_complete: false,
+      temporary_paths_removed: debris,
+      orphan_generations_preserved: true,
+      builder_build_complete: loaded.checkpoint.runtime_state === 'COMPLETED',
       responsive_complete: false,
       production_ready: false
     }
