@@ -55,6 +55,10 @@ node scripts/builder-inspector.mjs real-completion <run-directory>
 
 `CURRENT.json` is the sole active State selector. Published generations are immutable. Every mutation acquires `.mutation-lock` before reading State. Lock contention fails closed as `RUN_BUSY_OR_STALE_LOCK`; stale locks are removed only by explicit `recover-run-lock` after active Run validation.
 
+A future generation is never authority merely because it exists or has the highest number. The same canonical transition may finalize only an exact byte-identical expected N+1, including every operation-specific artifact. A different, incomplete or ambiguous future generation blocks without changing `CURRENT.json`. Repeating an exact transition after `CURRENT.json` already advanced returns the committed result with `replayed_existing_transition: true` and creates no new generation.
+
+Historical bypass records are inert evidence only. Active Legacy entrypoints must return `BUILDER-LEGACY-AUTHORITY-INACTIVE`, while canonical Runtime regression tests prove every historical bypass class remains blocked.
+
 Source modes and content binding, exact Package/Candidate/Batch/Action bindings, zero-blocker emission, WAITING-only Confirmation, exact verified Action-specific Evidence, Runtime-derived Completion Status/Gate, `responsive_complete: false`, and `production_ready: false` must be preserved.
 
 Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.
