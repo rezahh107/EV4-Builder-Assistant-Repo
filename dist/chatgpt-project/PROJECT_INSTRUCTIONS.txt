@@ -38,3 +38,5 @@ explicit operator source
 ```
 
 Only `real-intake`, `emit-batch`, `confirm-batch`, `attach-evidence`, and `real-completion` have real Runtime authority. `CURRENT.json` alone selects State; never infer authority from the highest generation. Lock contention returns `RUN_BUSY_OR_STALE_LOCK` without changing State. Source mode arguments, Package/Candidate/Batch/Action bindings, blockers, verified Action-specific Evidence, Builder-only Completion, `responsive_complete: false`, and `production_ready: false` must remain truthful.
+
+Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.
