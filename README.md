@@ -47,7 +47,11 @@ node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-sou
 node scripts/builder-inspector.mjs real-completion <run-directory>
 ```
 
-A mutation writer acquires `.mutation-lock` before reading `CURRENT.json`. A competing local process receives `RUN_BUSY_OR_STALE_LOCK`; it cannot commit previously loaded State. Each successful transition publishes a complete successor generation and advances `CURRENT.json` through one atomic same-filesystem rename. A crash before pointer replacement leaves the predecessor active; a crash after replacement leaves the complete successor active. Orphan generations never become authoritative automatically.
+A mutation writer acquires `.mutation-lock` before reading `CURRENT.json`. A competing local process receives `RUN_BUSY_OR_STALE_LOCK`; it cannot commit previously loaded State. Each successful transition publishes a complete successor generation and advances `CURRENT.json` through one atomic same-filesystem rename.
+
+A valid adjacent generation is not automatically authoritative. After an interrupted publication, rerunning the same canonical command rederives the exact expected successor from the active predecessor and original command input. Only a byte-identical N+1 and byte-identical operation artifacts may be finalized by advancing `CURRENT.json`. A different, incomplete or ambiguous future generation returns an explicit blocking diagnostic and leaves authority unchanged. If `CURRENT.json` was already advanced before the caller received the result, the identical command returns the committed result with `replayed_existing_transition: true` and creates no additional generation.
+
+Historical bypass records are inert evidence of earlier defects. They import no active Runtime implementation and cannot complete a Run. CI separately proves that every Legacy authority export is inactive and that the canonical Runtime rejects all seven historical bypass classes.
 
 The Runtime preserves exact source mode arguments, deterministic Package/Candidate/Batch/Action binding, zero-blocker Action emission, `WAITING_FOR_CONFIRMATION`-only Confirmation, exact verified Action-specific Evidence, and Runtime-derived Completion Status/Gate. Builder Completion never implies Responsive completion or production readiness.
 
