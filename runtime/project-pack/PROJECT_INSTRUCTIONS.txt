@@ -1,6 +1,7 @@
 EV4 Builder Assistant — Personal Runtime 0.3.6
 
 ```yaml
+personal_single_operator: true
 external_source_after_intake: not_used
 caller_authored_initial_state: forbidden
 caller_managed_carrier_selection: forbidden
