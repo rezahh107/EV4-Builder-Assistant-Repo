@@ -148,15 +148,6 @@ export function acquireRunLock(runDirectory, operation) {
   const handle = acquireOwnedDirectory(lockDirectory, LOCK_SCHEMA, operation);
   if (!handle.passed) return handle;
 
-  try {
-    const current = readJson(path.join(run, 'CURRENT.json'));
-    const metadata = { ...handle.metadata, run_id: current.run_id };
-    fs.writeFileSync(metadataFile(lockDirectory), `${JSON.stringify(metadata, null, 2)}\n`, { flag: 'w' });
-    handle.metadata = metadata;
-  } catch {
-    // The authoritative load after acquisition reports malformed or missing State.
-  }
-
   const hold = Number.parseInt(process.env.EV4_BUILDER_TEST_HOLD_LOCK_MS || '0', 10);
   if (hold > 0) sleepSync(hold);
   return handle;
