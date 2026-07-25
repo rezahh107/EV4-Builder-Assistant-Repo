@@ -3,7 +3,8 @@ import path from 'node:path';
 
 import { GENERATION_NAME, diagnostic, resolveRoot, safeRunRef } from './run-primitives.mjs';
 import { validateGeneration, loadRunUnlocked, fullDeriveAndCompare } from './run-state-validation.mjs';
-import { executePlannedMutation, validateCommittedTransitionHistory } from './committed-transition-replay.mjs';
+import { executePlannedMutation } from './committed-transition-replay.mjs';
+import { validateIndependentCommittedTransitions } from './canonical-run-independent-validation.mjs';
 
 export function completeRun({ runDirectory, failureInjection = null }) {
   return executePlannedMutation({ runDirectory, operation: 'real-completion', failureInjection });
@@ -14,7 +15,7 @@ export function validateCanonicalRun(runDirectory, { fullDerivation = false } = 
   if (!loaded.passed || !fullDerivation) return loaded;
   const derivation = fullDeriveAndCompare(loaded);
   if (!derivation.passed) return { ...loaded, passed: false, diagnostics: [...loaded.diagnostics, ...derivation.diagnostics], derivation };
-  const history = validateCommittedTransitionHistory(runDirectory);
+  const history = validateIndependentCommittedTransitions(runDirectory, loaded);
   return { ...loaded, passed: history.passed, diagnostics: [...loaded.diagnostics, ...history.diagnostics], derivation, committed_transition_history_validated: history.passed };
 }
 
