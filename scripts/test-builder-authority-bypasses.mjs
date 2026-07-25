@@ -106,24 +106,24 @@ try {
     assert.equal(hasCode(result, 'RUN-COMPLETE-CONFIRM-001'), true);
   });
 
-  test('B3 missing Evidence bytes cannot authorize Completion', () => {
+  test('B3 missing committed Evidence bytes cannot authorize Completion', () => {
     const value = progressToCompletable(TEMP, 'b3');
     const loaded = activeRun(value.runDirectory);
     const ref = loaded.manifest.evidence_snapshot_refs[0];
     fs.rmSync(path.join(value.runDirectory, ref));
     const result = completeRun({ runDirectory: value.runDirectory });
     assert.equal(result.passed, false);
-    assert.equal(hasCode(result, 'RUN-COMPLETE-EVIDENCE-001'), true);
+    assert.equal(hasCode(result, 'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT'), true);
   });
 
-  test('B4 incorrect Evidence hash cannot authorize Completion', () => {
+  test('B4 incorrect committed Evidence hash cannot authorize Completion', () => {
     const value = progressToCompletable(TEMP, 'b4');
     rewriteActiveCheckpoint(value.runDirectory, (checkpoint) => {
       checkpoint.evidence_ledger[0].content_sha256 = 'a'.repeat(64);
     });
     const result = completeRun({ runDirectory: value.runDirectory });
     assert.equal(result.passed, false);
-    assert.equal(hasCode(result, 'RUN-COMPLETE-EVIDENCE-003'), true);
+    assert.equal(hasCode(result, 'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT'), true);
   });
 
   test('B5 fixture carrier cannot become a real Run', () => {
