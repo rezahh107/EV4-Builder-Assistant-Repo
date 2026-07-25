@@ -50,26 +50,32 @@ includesAll(runtimeCode, [
   'loadExactSuccessorCandidate',
   'compareSuccessorToExpected',
   'finalizeExistingExactSuccessor',
-  'detectCommittedTransitionReplay',
+  'verifyCommittedTransitionReplay',
+  'validateCommittedTransitionHistory',
+  'executePlannedMutation',
+  'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT',
   'RUN_UNCOMMITTED_SUCCESSOR_CONFLICT',
   'RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE',
   'RUN_AMBIGUOUS_FUTURE_GENERATIONS',
   'recoverRunLock',
   'inspectRunGenerations'
 ], 'Canonical generation Runtime');
+if (runtimeCode.includes('detectCommittedTransitionReplay')) fail('Callback-based selected-field committed replay authority remains active.');
 if (runtimeCode.includes('replaceRunAtomically')) fail('Run-root replacement implementation remains active.');
 if (runtimeCode.includes('fs.renameSync(target, backup)')) fail('Active Run-root backup swap remains.');
 if (runtimeCode.includes("writeJson(path.join(stage, 'run-manifest.json')")) fail('Mutable top-level Run manifest publication remains.');
 if (runtimeCode.includes("writeJson(path.join(stage, 'runtime-context.json')")) fail('Mutable top-level Runtime Context publication remains.');
 if (runtimeCode.includes("writeJson(path.join(stage, 'session-state.json')")) fail('Mutable top-level Session publication remains.');
 if (runtimeCode.includes("writeJson(path.join(stage, 'checkpoint.json')")) fail('Mutable top-level Checkpoint publication remains.');
-const mutationStart = runtimeCode.indexOf('export function withRunMutation');
-const mutationEnd = runtimeCode.indexOf('export function intakeResultRefs');
+const mutationStart = runtimeCode.indexOf('export function executePlannedMutation');
+const mutationEnd = runtimeCode.indexOf('function inferCommittedOperation', mutationStart);
 const mutationFunction = mutationStart >= 0 && mutationEnd > mutationStart ? runtimeCode.slice(mutationStart, mutationEnd) : '';
-if (!mutationFunction) fail('Canonical mutation wrapper is missing.');
+if (!mutationFunction) fail('Canonical planned mutation executor is missing.');
 else {
   if (mutationFunction.indexOf('acquireRunLock') > mutationFunction.indexOf('loadRunUnlocked')) fail('Canonical State is loaded before lock acquisition.');
-  if (!mutationFunction.includes('releaseRunLock')) fail('Run lock is not released in canonical mutation wrapper.');
+  if (!mutationFunction.includes('verifyCommittedTransitionReplay')) fail('Canonical mutation executor does not use exact committed replay verification.');
+  if (!mutationFunction.includes('publishSuccessor')) fail('Canonical mutation executor does not use the existing atomic publication mechanism.');
+  if (!mutationFunction.includes('releaseRunLock')) fail('Run lock is not released in canonical mutation executor.');
 }
 
 includesAll(inspector, ['real-intake <project-gate|direct-ce|manual-builder-input>','emit-batch <run-directory>','confirm-batch <run-directory>','attach-evidence <run-directory>','real-completion <run-directory>','inspect-run-generations <run-directory>','recover-run-lock <run-directory>'], 'Builder Inspector CLI');
@@ -96,7 +102,24 @@ const completionGuards = transitionById['complete-builder']?.guards || [];
 for (const guard of ['run_root_valid','current_pointer_valid','active_generation_valid','run_lock_held','internal_source_snapshot_hash_matches','full_runtime_context_rederivation_matches','canonical_confirmation_artifacts_valid','confirmed_checkpoint_lineage_valid','batch_matches_context','confirmed_action_set_complete','action_body_digests_match','internal_evidence_snapshots_valid','required_action_evidence_complete','required_completion_claims_complete','active_blocker_set_empty','checkpoint_sequence_valid','successor_generation_valid','runtime_derived_completion_status','runtime_derived_completion_gate','atomic_generation_publication','atomic_current_pointer_update']) if (!completionGuards.includes(guard)) fail(`Completion State Machine is missing guard: ${guard}`);
 for (const outdated of ['builder_input_verified','intake_capsule_verified','completion_status_valid','completion_gate_bound']) if (completionGuards.includes(outdated)) fail(`Completion State Machine retains Legacy guard: ${outdated}`);
 
-for (const required of ['scripts/test-builder-historical-bypass-records.mjs','scripts/test-builder-authority-bypasses.mjs','scripts/test-builder-explicit-source-modes.mjs','scripts/test-builder-truth-spine.mjs','scripts/test-builder-functional-correctness.mjs','scripts/test-builder-atomic-run-bundle.mjs','scripts/test-builder-successor-reconciliation.mjs','scripts/test-builder-run-concurrency.mjs','scripts/test-builder-run-crash-recovery.mjs','scripts/validate-canonical-run-artifacts.mjs','scripts/validate-lean-runtime.mjs','scripts/test-project-pack-determinism.mjs']) {
+for (const required of [
+  'scripts/test-builder-historical-bypass-records.mjs',
+  'scripts/test-builder-authority-bypasses.mjs',
+  'scripts/test-builder-explicit-source-modes.mjs',
+  'scripts/test-builder-truth-spine.mjs',
+  'scripts/test-builder-functional-correctness.mjs',
+  'scripts/test-builder-atomic-run-bundle.mjs',
+  'scripts/test-builder-successor-reconciliation.mjs',
+  'scripts/test-builder-transition-planners.mjs',
+  'scripts/test-builder-single-replay-authority.mjs',
+  'scripts/test-builder-committed-replay-exactness.mjs',
+  'scripts/test-builder-committed-replay-semantic-fields.mjs',
+  'scripts/test-builder-run-concurrency.mjs',
+  'scripts/test-builder-run-crash-recovery.mjs',
+  'scripts/validate-canonical-run-artifacts.mjs',
+  'scripts/validate-lean-runtime.mjs',
+  'scripts/test-project-pack-determinism.mjs'
+]) {
   if (!centralValidation.includes(required)) fail(`Central validation is missing: ${required}`);
   if (!fs.existsSync(path.join(ROOT, required))) fail(`Required validation file is missing: ${required}`);
 }
@@ -112,10 +135,11 @@ for (const file of activeDocs) {
 }
 if (!runtimeModules.includes('scripts/lib/runtime/canonical-run-runtime.mjs')) fail('Canonical Runtime module is missing.');
 if (!runtimeModules.includes('scripts/lib/runtime/runtime-test-fixtures.mjs')) fail('Runtime test fixture helper is missing.');
+if (!runtimeModules.includes('scripts/lib/runtime/committed-transition-replay.mjs')) fail('Exact committed replay authority module is missing.');
 
 if (errors.length) {
   console.error('Lean Runtime validation failed:');
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log('Lean Runtime stable root, immutable generations, exact successor reconciliation, atomic CURRENT, local locking, Legacy isolation, replay, concurrency, crash recovery, and documentation consistency passed.');
+console.log('Lean Runtime stable root, immutable generations, exact successor reconciliation, atomic CURRENT, local locking, Legacy isolation, exact committed replay, concurrency, crash recovery, and documentation consistency passed.');
