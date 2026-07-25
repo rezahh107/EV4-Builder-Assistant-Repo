@@ -80,6 +80,51 @@ function activeView(active) {
   return { ...active, runDirectory, current, manifest };
 }
 
+function canonicalGenerationByteDiagnostics(validation, generationDirectory, number) {
+  const diagnostics = [];
+  for (const [filename, valueKey] of GENERATION_STATE_VALUES) {
+    const file = path.join(generationDirectory, filename);
+    const expectedBytes = Buffer.from(stableJson(validation[valueKey]), 'utf8');
+    if (!fs.existsSync(file) || !readBytes(file).equals(expectedBytes)) {
+      diagnostics.push(diagnostic(
+        'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT',
+        'Committed generation bytes are not the exact canonical encoding.',
+        `mismatch=generation:${filename};generation=${number}`
+      ));
+    }
+  }
+  return diagnostics;
+}
+
+function readCommittedGenerationView(run, number) {
+  const generationDirectory = safeRunRef(run, generationRef(number));
+  if (!generationDirectory || !fs.existsSync(generationDirectory) || !fs.statSync(generationDirectory).isDirectory()) {
+    return { passed: false, outcome: replayConflict({ runDirectory: run }, 'generation:run-manifest.json', `generation=${number};generation_missing`) };
+  }
+  try {
+    const context = readJson(path.join(generationDirectory, 'runtime-context.json'));
+    const session = readJson(path.join(generationDirectory, 'session-state.json'));
+    const checkpoint = readJson(path.join(generationDirectory, 'checkpoint.json'));
+    const manifest = readJson(path.join(generationDirectory, 'run-manifest.json'));
+    return {
+      passed: true,
+      active: {
+        passed: true,
+        diagnostics: [],
+        runDirectory: run,
+        generationDirectory,
+        context,
+        session,
+        checkpoint,
+        manifest,
+        current: buildCurrentPointer(manifest, context, checkpoint)
+      }
+    };
+  } catch (error) {
+    return { passed: false, outcome: replayConflict({ runDirectory: run }, 'generation:run-manifest.json', `generation=${number};${error.message}`) };
+  }
+}
+
 function loadExactPredecessor(active) {
   const currentNumber = active.current?.generation;
   if (!Number.isInteger(currentNumber) || currentNumber <= 1) return { passed: false, replayable: false, diagnostics: [] };
@@ -94,7 +139,11 @@ function loadExactPredecessor(active) {
   }
   const validation = validateGeneration(active.runDirectory, predecessorDirectory, currentNumber - 1);
   const snapshotDiagnostics = validation.manifest ? validateSnapshots(active.runDirectory, validation.manifest) : [];
-  if (!validation.passed || snapshotDiagnostics.length) return { passed: false, replayable: true, conflict: replayConflict(active, 'generation:run-manifest.json', 'predecessor_generation_invalid') };
+  const byteDiagnostics = validation.passed ? canonicalGenerationByteDiagnostics(validation, predecessorDirectory, currentNumber - 1) : [];
+  if (!validation.passed || snapshotDiagnostics.length || byteDiagnostics.length) {
+    const mismatch = byteDiagnostics[0]?.detail?.match(/mismatch=([^;]+)/)?.[1] || 'generation:run-manifest.json';
+    return { passed: false, replayable: true, conflict: replayConflict(active, mismatch, 'predecessor_generation_invalid') };
+  }
   if (validation.checkpoint.checkpoint_id !== generation.predecessor_checkpoint_id || validation.checkpoint.checkpoint_sequence !== generation.predecessor_checkpoint_sequence) {
     return { passed: false, replayable: true, conflict: replayConflict(active, 'generation:run-manifest.json', 'predecessor_checkpoint_binding_mismatch') };
   }
@@ -276,53 +325,30 @@ function recoverCommandInput(active, operation) {
   return { passed: true, commandInput: {} };
 }
 
-function validateGenerationCanonicalBytes(run, number) {
-  const generationDirectory = safeRunRef(run, generationRef(number));
-  if (!generationDirectory || !fs.existsSync(generationDirectory) || !fs.statSync(generationDirectory).isDirectory()) {
-    return {
-      validation: null,
-      diagnostics: [diagnostic('RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT', 'Committed generation is missing or unsafe.', `mismatch=generation:run-manifest.json;generation=${number}`)]
-    };
-  }
-  const validation = validateGeneration(run, generationDirectory, number);
-  if (!validation.passed) {
-    return {
-      validation,
-      diagnostics: [diagnostic('RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT', 'Committed generation semantic validation failed.', `mismatch=generation:run-manifest.json;generation=${number}`)]
-    };
-  }
-  const diagnostics = [];
-  for (const [filename, valueKey] of GENERATION_STATE_VALUES) {
-    const file = path.join(generationDirectory, filename);
-    const expectedBytes = Buffer.from(stableJson(validation[valueKey]), 'utf8');
-    if (!fs.existsSync(file) || !readBytes(file).equals(expectedBytes)) {
-      diagnostics.push(diagnostic('RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT', 'Committed generation bytes are not the exact canonical encoding.', `mismatch=generation:${filename};generation=${number}`));
-    }
-  }
-  return { validation, diagnostics };
-}
-
 export function validateCommittedTransitionHistory(runDirectory) {
   const run = resolveRoot(runDirectory);
   const activeRun = loadRunUnlocked(run);
   if (!activeRun.passed) return activeRun;
   const diagnostics = [];
   const currentNumber = activeRun.current.generation;
-  const generations = new Map();
 
-  for (let number = 1; number <= currentNumber; number += 1) {
-    const checked = validateGenerationCanonicalBytes(run, number);
-    diagnostics.push(...checked.diagnostics);
-    if (checked.validation?.passed) generations.set(number, checked.validation);
+  if (currentNumber === 1) {
+    diagnostics.push(...canonicalGenerationByteDiagnostics(activeRun, activeRun.generationDirectory, 1));
   }
 
   for (let number = 2; number <= currentNumber; number += 1) {
-    const activeValidation = generations.get(number);
-    const predecessorValidation = generations.get(number - 1);
-    if (!activeValidation || !predecessorValidation) continue;
-    const active = { ...activeValidation, runDirectory: run, current: buildCurrentPointer(activeValidation.manifest, activeValidation.context, activeValidation.checkpoint) };
-    const predecessor = { ...predecessorValidation, runDirectory: run, current: buildCurrentPointer(predecessorValidation.manifest, predecessorValidation.context, predecessorValidation.checkpoint) };
-    const operation = inferCommittedOperation(active.manifest, predecessor.manifest);
+    const activeRead = readCommittedGenerationView(run, number);
+    if (!activeRead.passed) {
+      diagnostics.push(...activeRead.outcome.diagnostics);
+      continue;
+    }
+    const active = activeRead.active;
+    const predecessorRead = readCommittedGenerationView(run, number - 1);
+    if (!predecessorRead.passed) {
+      diagnostics.push(...predecessorRead.outcome.diagnostics);
+      continue;
+    }
+    const operation = inferCommittedOperation(active.manifest, predecessorRead.active.manifest);
     if (!operation) {
       diagnostics.push(diagnostic('RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT', 'Committed generation operation cannot be identified.', `mismatch=generation:run-manifest.json;generation=${number}`));
       continue;
