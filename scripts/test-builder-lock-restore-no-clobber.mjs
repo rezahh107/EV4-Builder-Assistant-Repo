@@ -173,9 +173,8 @@ async function main() {
       assert.equal(oldHandle.passed, true);
       const handleFile = writeHandle(TEMP, 'restore-replacement-wins', oldHandle);
       const syncDirectory = fs.mkdtempSync(path.join(TEMP, 'restore-replacement-sync-'));
-      const point = 'before_post_claim_restore';
+      const point = 'after_claim_before_verify';
       const worker = spawnWorker(['--release-worker', handleFile], {
-        EV4_BUILDER_TEST_FORCE_POST_CLAIM_INVALID: '1',
         EV4_BUILDER_TEST_RESTORE_SYNC_DIRECTORY: syncDirectory,
         EV4_BUILDER_TEST_RESTORE_SYNC_POINT: point
       });
@@ -184,6 +183,7 @@ async function main() {
       const oldClaim = claimFiles(value.runDirectory, 'release')[0];
       assert.ok(oldClaim);
       assert.equal(fs.existsSync(lockFile(value.runDirectory)), false);
+      fs.writeFileSync(oldClaim, '{"schema":');
       const replacement = acquireRunLock(value.runDirectory, 'restore-replacement-owner');
       assert.equal(replacement.passed, true);
       const replacementBefore = entrySnapshot(lockFile(value.runDirectory));
