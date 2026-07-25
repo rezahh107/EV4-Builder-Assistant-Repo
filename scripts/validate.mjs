@@ -36,6 +36,7 @@ const nodeChecks = [
   'scripts/test-builder-functional-correctness.mjs',
   'scripts/test-builder-atomic-run-bundle.mjs',
   'scripts/test-builder-successor-reconciliation.mjs',
+  'scripts/test-builder-transition-planners.mjs',
   'scripts/test-builder-committed-replay-exactness.mjs',
   'scripts/test-builder-committed-replay-semantic-fields.mjs',
   'scripts/test-builder-run-concurrency.mjs',
