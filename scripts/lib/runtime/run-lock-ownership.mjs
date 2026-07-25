@@ -189,6 +189,7 @@ export function recoverRunLock({ runDirectory }) {
   if (!guard.passed) return blocked('recover-run-lock', 'RUN-LOCK-RECOVERY-005', 'Another lock recovery attempt is already in progress.');
 
   let claimedDirectory = null;
+  let recoveryLock = null;
   try {
     if (!fs.existsSync(lockDirectory)) return { passed: false, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-001', 'No Run mutation lock exists.')] };
     const read = readMetadata(lockDirectory);
@@ -202,29 +203,24 @@ export function recoverRunLock({ runDirectory }) {
     if (!claim.passed) return { passed: false, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-006', 'Run mutation lock ownership changed during recovery; no lock was removed.', claim.reason)] };
     claimedDirectory = claim.claimedDirectory;
 
+    recoveryLock = acquireOwnedDirectory(lockDirectory, LOCK_SCHEMA, 'recover-run-lock');
+    if (!recoveryLock.passed) {
+      return { passed: false, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-006', 'A replacement writer acquired the Run mutation lock during recovery; no replacement lock was removed.')] };
+    }
+
     const claimedLiveness = inspectRecordedOwnerLiveness(claim.metadata);
     if (claimedLiveness.state !== 'dead') {
-      restoreClaimedDirectory(claimedDirectory, lockDirectory);
-      claimedDirectory = null;
       const code = claimedLiveness.state === 'live' ? 'RUN-LOCK-RECOVERY-LIVE-OWNER' : 'RUN-LOCK-RECOVERY-UNKNOWN-OWNER';
       return { passed: false, diagnostics: [diagnostic(code, 'Recorded owner is not proven dead after lock claim; recovery is blocked.', claimedLiveness.detail)] };
     }
 
     const loaded = loadRunUnlocked(run);
-    if (!loaded.passed) {
-      restoreClaimedDirectory(claimedDirectory, lockDirectory);
-      claimedDirectory = null;
-      return { ...loaded, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-003', 'Active Run validation failed; lock recovery is blocked.'), ...loaded.diagnostics] };
-    }
+    if (!loaded.passed) return { ...loaded, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-003', 'Active Run validation failed; lock recovery is blocked.'), ...loaded.diagnostics] };
 
     const debris = collectRecoveryDebris(run);
     const authoritativeText = JSON.stringify({ current: loaded.current, manifest: loaded.manifest });
     for (const ref of debris) {
-      if (authoritativeText.includes(ref)) {
-        restoreClaimedDirectory(claimedDirectory, lockDirectory);
-        claimedDirectory = null;
-        return { passed: false, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-004', `Recovery debris is referenced by active authority: ${ref}.`)] };
-      }
+      if (authoritativeText.includes(ref)) return { passed: false, diagnostics: [diagnostic('RUN-LOCK-RECOVERY-004', `Recovery debris is referenced by active authority: ${ref}.`)] };
     }
 
     for (const ref of debris) {
@@ -257,6 +253,7 @@ export function recoverRunLock({ runDirectory }) {
       }
     };
   } finally {
+    if (recoveryLock?.passed) releaseRunLock(recoveryLock);
     if (claimedDirectory && fs.existsSync(claimedDirectory)) restoreClaimedDirectory(claimedDirectory, lockDirectory);
     releaseRunLock(guard);
   }
