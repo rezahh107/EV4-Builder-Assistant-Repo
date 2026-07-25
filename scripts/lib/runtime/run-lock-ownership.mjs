@@ -128,6 +128,34 @@ function publicationUnavailable(operation, error) {
   );
 }
 
+function testOnlyRestorePause(point, claimedFile, finalFile) {
+  const syncDirectory = process.env.EV4_BUILDER_TEST_RESTORE_SYNC_DIRECTORY;
+  const requestedPoint = process.env.EV4_BUILDER_TEST_RESTORE_SYNC_POINT;
+  if (!syncDirectory || requestedPoint !== point) return;
+
+  fs.mkdirSync(syncDirectory, { recursive: true });
+  const readyFile = path.join(syncDirectory, `${point}.ready.json`);
+  const continueFile = path.join(syncDirectory, `${point}.continue`);
+  fs.writeFileSync(readyFile, stableJson({
+    point,
+    claimed_file: claimedFile,
+    final_file: finalFile,
+    process_id: process.pid
+  }), { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+  fsyncFile(readyFile);
+  fsyncDirectory(syncDirectory);
+
+  const deadline = Date.now() + 15000;
+  while (!fs.existsSync(continueFile)) {
+    if (Date.now() >= deadline) {
+      const error = new Error(`Timed out waiting at test-only restore point ${point}.`);
+      error.code = 'RUN-LOCK-TEST-SYNC-TIMEOUT';
+      throw error;
+    }
+    sleepSync(10);
+  }
+}
+
 export function inspectRecordedOwnerLiveness(metadata) {
   if (!validLockMetadata(metadata)) return { state: 'malformed', detail: 'lock_metadata_invalid' };
   try {
@@ -217,6 +245,60 @@ function acquireOwnedDirectory(directory, schema, operation) {
   }
 }
 
+function restoreClaimedLockFile(claimedFile, lockDirectory, testPoint = 'before_claim_restore') {
+  const finalFile = metadataFile(lockDirectory);
+  if (!claimedFile || !fs.existsSync(claimedFile)) {
+    return {
+      status: 'claim_missing',
+      restored: false,
+      claimed_entry_removed: false,
+      claimed_entry_preserved: false,
+      replacement_overwritten: false
+    };
+  }
+
+  try {
+    testOnlyRestorePause(testPoint, claimedFile, finalFile);
+    fs.linkSync(claimedFile, finalFile);
+  } catch (error) {
+    if (error?.code === 'EEXIST') {
+      return {
+        status: 'replacement_owner_won',
+        restored: false,
+        claimed_entry_removed: false,
+        claimed_entry_preserved: true,
+        replacement_overwritten: false
+      };
+    }
+    return {
+      status: 'restoration_unavailable',
+      restored: false,
+      claimed_entry_removed: false,
+      claimed_entry_preserved: true,
+      replacement_overwritten: false,
+      detail: error?.code || error?.message || 'restore_link_failed'
+    };
+  }
+
+  fsyncDirectory(lockDirectory);
+  let claimedEntryRemoved = false;
+  try {
+    fs.rmSync(claimedFile, { force: true });
+    claimedEntryRemoved = true;
+    fsyncDirectory(lockDirectory);
+  } catch {
+    // The final hard link is authoritative. A surviving claim name is inert evidence.
+  }
+
+  return {
+    status: 'restored',
+    restored: true,
+    claimed_entry_removed: claimedEntryRemoved,
+    claimed_entry_preserved: !claimedEntryRemoved,
+    replacement_overwritten: false
+  };
+}
+
 function claimOwnedLockFile(directory, expectedLockId, purpose) {
   const finalFile = metadataFile(directory);
   const before = readMetadataFile(finalFile);
@@ -230,32 +312,26 @@ function claimOwnedLockFile(directory, expectedLockId, purpose) {
     return { passed: false, reason: error?.code || 'claim_failed' };
   }
 
-  const after = readMetadataFile(claimedFile);
+  try {
+    testOnlyRestorePause('after_claim_before_verify', claimedFile, finalFile);
+  } catch (error) {
+    const restoration = restoreClaimedLockFile(claimedFile, directory, 'before_post_claim_restore');
+    return {
+      passed: false,
+      reason: error?.code || 'claim_verification_unavailable',
+      claimedFile,
+      restoration
+    };
+  }
+
+  const after = process.env.EV4_BUILDER_TEST_FORCE_POST_CLAIM_INVALID === '1'
+    ? { passed: false, metadata: null }
+    : readMetadataFile(claimedFile);
   if (!after.passed || after.metadata?.lock_id !== expectedLockId) {
-    try {
-      if (!finalEntryExists(finalFile)) {
-        fs.renameSync(claimedFile, finalFile);
-        fsyncDirectory(directory);
-      }
-    } catch {
-      // Fail closed and preserve both names when restoration races.
-    }
-    return { passed: false, reason: 'ownership_changed_during_claim', claimedFile };
+    const restoration = restoreClaimedLockFile(claimedFile, directory, 'before_post_claim_restore');
+    return { passed: false, reason: 'ownership_changed_during_claim', claimedFile, restoration };
   }
   return { passed: true, claimedFile, metadata: after.metadata };
-}
-
-function restoreClaimedLockFile(claimedFile, lockDirectory) {
-  const finalFile = metadataFile(lockDirectory);
-  if (!claimedFile || !fs.existsSync(claimedFile)) return false;
-  try {
-    if (finalEntryExists(finalFile)) return false;
-    fs.renameSync(claimedFile, finalFile);
-    fsyncDirectory(lockDirectory);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function removeAssociatedPreparationFiles(directory, authorityFile, expectedLockId) {
@@ -426,7 +502,13 @@ export function recoverRunLock({ runDirectory }) {
     };
   } finally {
     if (recoveryLock?.passed) releaseRunLock(recoveryLock);
-    if (claimedFile && fs.existsSync(claimedFile)) restoreClaimedLockFile(claimedFile, lockDirectory);
+    if (claimedFile && fs.existsSync(claimedFile)) {
+      try {
+        restoreClaimedLockFile(claimedFile, lockDirectory, 'before_recovery_finally_restore');
+      } catch {
+        // Preserve the primary recovery outcome and claimed evidence.
+      }
+    }
     releaseRunLock(guard);
   }
 }
