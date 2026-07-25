@@ -36,6 +36,13 @@ const PLANNERS = Object.freeze({
   'real-completion': planCompletionTransition
 });
 
+const GENERATION_STATE_VALUES = Object.freeze([
+  ['runtime-context.json', 'context'],
+  ['session-state.json', 'session'],
+  ['checkpoint.json', 'checkpoint'],
+  ['run-manifest.json', 'manifest']
+]);
+
 function replayConflict(active, mismatch, detail = '') {
   return {
     ...(active && typeof active === 'object' ? active : {}),
@@ -269,25 +276,50 @@ function recoverCommandInput(active, operation) {
   return { passed: true, commandInput: {} };
 }
 
+function validateGenerationCanonicalBytes(run, number) {
+  const generationDirectory = safeRunRef(run, generationRef(number));
+  if (!generationDirectory || !fs.existsSync(generationDirectory) || !fs.statSync(generationDirectory).isDirectory()) {
+    return {
+      validation: null,
+      diagnostics: [diagnostic('RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT', 'Committed generation is missing or unsafe.', `mismatch=generation:run-manifest.json;generation=${number}`)]
+    };
+  }
+  const validation = validateGeneration(run, generationDirectory, number);
+  if (!validation.passed) {
+    return {
+      validation,
+      diagnostics: [diagnostic('RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT', 'Committed generation semantic validation failed.', `mismatch=generation:run-manifest.json;generation=${number}`)]
+    };
+  }
+  const diagnostics = [];
+  for (const [filename, valueKey] of GENERATION_STATE_VALUES) {
+    const file = path.join(generationDirectory, filename);
+    const expectedBytes = Buffer.from(stableJson(validation[valueKey]), 'utf8');
+    if (!fs.existsSync(file) || !readBytes(file).equals(expectedBytes)) {
+      diagnostics.push(diagnostic('RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT', 'Committed generation bytes are not the exact canonical encoding.', `mismatch=generation:${filename};generation=${number}`));
+    }
+  }
+  return { validation, diagnostics };
+}
+
 export function validateCommittedTransitionHistory(runDirectory) {
   const run = resolveRoot(runDirectory);
   const activeRun = loadRunUnlocked(run);
   if (!activeRun.passed) return activeRun;
   const diagnostics = [];
   const currentNumber = activeRun.current.generation;
+  const generations = new Map();
+
+  for (let number = 1; number <= currentNumber; number += 1) {
+    const checked = validateGenerationCanonicalBytes(run, number);
+    diagnostics.push(...checked.diagnostics);
+    if (checked.validation?.passed) generations.set(number, checked.validation);
+  }
+
   for (let number = 2; number <= currentNumber; number += 1) {
-    const activeDirectory = safeRunRef(run, generationRef(number));
-    const predecessorDirectory = safeRunRef(run, generationRef(number - 1));
-    if (!activeDirectory || !predecessorDirectory) {
-      diagnostics.push(diagnostic('RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT', 'Committed generation path is unsafe.', `mismatch=generation:run-manifest.json;generation=${number}`));
-      continue;
-    }
-    const activeValidation = validateGeneration(run, activeDirectory, number);
-    const predecessorValidation = validateGeneration(run, predecessorDirectory, number - 1);
-    if (!activeValidation.manifest || !predecessorValidation.passed) {
-      diagnostics.push(diagnostic('RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT', 'Committed generation or predecessor is invalid.', `mismatch=generation:run-manifest.json;generation=${number}`));
-      continue;
-    }
+    const activeValidation = generations.get(number);
+    const predecessorValidation = generations.get(number - 1);
+    if (!activeValidation || !predecessorValidation) continue;
     const active = { ...activeValidation, runDirectory: run, current: buildCurrentPointer(activeValidation.manifest, activeValidation.context, activeValidation.checkpoint) };
     const predecessor = { ...predecessorValidation, runDirectory: run, current: buildCurrentPointer(predecessorValidation.manifest, predecessorValidation.context, predecessorValidation.checkpoint) };
     const operation = inferCommittedOperation(active.manifest, predecessor.manifest);
