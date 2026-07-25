@@ -8,10 +8,14 @@ import {
   validateGeneration,
   loadRunUnlocked
 } from './run-state-validation.mjs';
+import {
+  acquireRunLock as acquireOwnedRunLock,
+  releaseRunLock as releaseOwnedRunLock
+} from './run-lock-ownership.mjs';
 
 const {
   ROOT, ACTIVE_STATE_FILENAMES, GENERATION_NAME, diagnostic, resolveRoot, relativeRoot, stableJson, readBytes, readJson, writeJson, writeBytes,
-  sameSet, safeRunRef, generationName, generationRef, sleepSync, injectedPoint,
+  sameSet, safeRunRef, generationName, generationRef, injectedPoint,
   fsyncFile, fsyncDirectory, validateCanonicalSourceModeArguments, deriveFromInternalSnapshot,
   collectInitialBlockers, buildCheckpoint, buildSession, buildManifest, buildCurrentPointer
 } = primitives;
@@ -71,35 +75,11 @@ export function lockResult(operation, code = 'RUN_BUSY_OR_STALE_LOCK') {
 }
 
 export function acquireRunLock(runDirectory, operation) {
-  const run = resolveRoot(runDirectory);
-  const lockDirectory = path.join(run, '.mutation-lock');
-  try {
-    fs.mkdirSync(lockDirectory, { recursive: false });
-  } catch (error) {
-    if (error?.code === 'EEXIST') return { passed: false, result: lockResult(operation) };
-    throw error;
-  }
-  const metadata = {
-    schema: 'ev4-builder-local-run-lock@1.0.0',
-    run_id: null,
-    operation,
-    process_id: process.pid,
-    created_at: new Date().toISOString()
-  };
-  try {
-    const current = readJson(path.join(run, 'CURRENT.json'));
-    metadata.run_id = current.run_id;
-  } catch {
-    // The subsequent authoritative load reports malformed State.
-  }
-  writeJson(path.join(lockDirectory, 'lock.json'), metadata, 'wx');
-  const hold = Number.parseInt(process.env.EV4_BUILDER_TEST_HOLD_LOCK_MS || '0', 10);
-  if (hold > 0) sleepSync(hold);
-  return { passed: true, lockDirectory };
+  return acquireOwnedRunLock(runDirectory, operation);
 }
 
-export function releaseRunLock(lockDirectory) {
-  if (lockDirectory && fs.existsSync(lockDirectory)) fs.rmSync(lockDirectory, { recursive: true, force: true });
+export function releaseRunLock(handle) {
+  return releaseOwnedRunLock(handle);
 }
 
 export function mutationFailure(loaded, operation, error) {
@@ -421,7 +401,7 @@ export function withRunMutation({ runDirectory, operation, failureInjection }, f
   } catch (error) {
     outcome = mutationFailure(loaded, operation, error);
   } finally {
-    releaseRunLock(lock.lockDirectory);
+    releaseRunLock(lock);
   }
   return outcome;
 }
