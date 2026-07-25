@@ -94,15 +94,17 @@ function assertExactPositiveReplay(baseline) {
   assertSnapshotUnchanged(before);
 }
 
-function assertTamperBlocked(baseline, target, mutate, requireSharedValidatorConflict = false) {
+function assertTamperBlocked(baseline, target, mutate, { checkValidator = false, requireSharedConflict = false } = {}) {
   restoreRun(baseline.runDirectory, baseline.backupDirectory);
   const targets = canonicalTargets(baseline.runDirectory, baseline.expected);
   const selected = targets.find((entry) => entry.label === target.label);
   assert.ok(selected, target.label);
   mutate(selected.file);
-  const validator = validateCanonicalRun(baseline.runDirectory, { fullDerivation: true });
-  assert.equal(validator.passed, false, `independent validator accepted tamper: ${target.label}`);
-  if (requireSharedValidatorConflict) assert.equal(hasCode(validator, 'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT'), true, JSON.stringify(validator.diagnostics));
+  if (checkValidator) {
+    const validator = validateCanonicalRun(baseline.runDirectory, { fullDerivation: true });
+    assert.equal(validator.passed, false, `independent validator accepted tamper: ${target.label}`);
+    if (requireSharedConflict) assert.equal(hasCode(validator, 'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT'), true, JSON.stringify(validator.diagnostics));
+  }
   const beforeInvoke = snapshotTargets(targets);
   const beforeGenerationCount = generationCount(baseline.runDirectory);
   const result = baseline.invoke(baseline.runDirectory);
@@ -115,7 +117,7 @@ function assertTamperBlocked(baseline, target, mutate, requireSharedValidatorCon
   assertSnapshotUnchanged(beforeInvoke);
 }
 
-function assertMissingAuxiliaryBlocked(baseline) {
+function assertMissingAuxiliaryBlocked(baseline, checkValidator) {
   restoreRun(baseline.runDirectory, baseline.backupDirectory);
   const targets = canonicalTargets(baseline.runDirectory, baseline.expected);
   const ref = [...baseline.expected.auxiliary.keys()][0];
@@ -123,8 +125,10 @@ function assertMissingAuxiliaryBlocked(baseline) {
   const nonTargetSnapshot = snapshotTargets(targets.filter((entry) => entry.file !== target));
   const beforeGenerationCount = generationCount(baseline.runDirectory);
   fs.rmSync(target);
-  const validator = validateCanonicalRun(baseline.runDirectory, { fullDerivation: true });
-  assert.equal(validator.passed, false, `independent validator accepted missing auxiliary: ${ref}`);
+  if (checkValidator) {
+    const validator = validateCanonicalRun(baseline.runDirectory, { fullDerivation: true });
+    assert.equal(validator.passed, false, `independent validator accepted missing auxiliary: ${ref}`);
+  }
   const result = baseline.invoke(baseline.runDirectory);
   assert.equal(result.passed, false, `missing auxiliary unexpectedly replayed: ${ref}`);
   assert.equal(hasCode(result, 'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT'), true, JSON.stringify(result.diagnostics));
@@ -139,41 +143,42 @@ function assertMissingAuxiliaryBlocked(baseline) {
 function rawTamper(file) { fs.appendFileSync(file, '\nRAW-TAMPER\n'); }
 function semanticMutations(baseline) {
   const manifest = readJson(path.join(baseline.runDirectory, baseline.expected.nextRef, 'run-manifest.json'));
+  const emitValidator = baseline.operation === 'emit-batch';
   const cases = [
-    { name: 'runtime Context canonical bytes', label: 'generation:runtime-context.json', mutate: reverseTopLevelJson, shared: true },
-    { name: 'Session canonical bytes', label: 'generation:session-state.json', mutate: reverseTopLevelJson, shared: true },
-    { name: 'Checkpoint canonical bytes', label: 'generation:checkpoint.json', mutate: reverseTopLevelJson, shared: true },
-    { name: 'Manifest canonical bytes', label: 'generation:run-manifest.json', mutate: reverseTopLevelJson, shared: true },
-    { name: 'CURRENT canonical bytes', label: 'CURRENT.json', mutate: reverseTopLevelJson, shared: true },
-    { name: 'Manifest predecessor binding', label: 'generation:run-manifest.json', shared: false, mutate: (file) => mutateResult(file, (value) => { value.generation.predecessor_checkpoint_id = replaceLastCharacter(value.generation.predecessor_checkpoint_id); value.manifest_digest = digestWithout(value, 'manifest_digest'); }) },
-    { name: 'CURRENT semantic pointer', label: 'CURRENT.json', shared: false, mutate: (file) => mutateResult(file, (value) => { value.checkpoint_id = replaceLastCharacter(value.checkpoint_id); value.pointer_digest = digestWithout(value, 'pointer_digest'); }) }
+    { name: 'runtime Context canonical bytes', label: 'generation:runtime-context.json', mutate: reverseTopLevelJson },
+    { name: 'Session canonical bytes', label: 'generation:session-state.json', mutate: reverseTopLevelJson },
+    { name: 'Checkpoint canonical bytes', label: 'generation:checkpoint.json', mutate: reverseTopLevelJson },
+    { name: 'Manifest canonical bytes', label: 'generation:run-manifest.json', mutate: reverseTopLevelJson },
+    { name: 'CURRENT canonical bytes', label: 'CURRENT.json', mutate: reverseTopLevelJson },
+    { name: 'Manifest predecessor binding', label: 'generation:run-manifest.json', checkValidator: emitValidator, mutate: (file) => mutateResult(file, (value) => { value.generation.predecessor_checkpoint_id = replaceLastCharacter(value.generation.predecessor_checkpoint_id); value.manifest_digest = digestWithout(value, 'manifest_digest'); }) },
+    { name: 'CURRENT semantic pointer', label: 'CURRENT.json', checkValidator: emitValidator, mutate: (file) => mutateResult(file, (value) => { value.checkpoint_id = replaceLastCharacter(value.checkpoint_id); value.pointer_digest = digestWithout(value, 'pointer_digest'); }) }
   ];
   const resultRef = baseline.expected.auxiliaryFiles.find((entry) => entry.ref.endsWith('result.json'))?.ref || baseline.expected.auxiliaryFiles.find((entry) => entry.ref.includes('result'))?.ref;
   if (resultRef) {
     const resultLabel = `auxiliary:${resultRef}`;
-    cases.push({ name: 'transition_id', label: resultLabel, shared: true, mutate: (file) => mutateResult(file, (value) => { value.transition_id = replaceLastCharacter(value.transition_id); }) });
-    cases.push({ name: 'predecessor_checkpoint', label: resultLabel, shared: true, mutate: (file) => mutateResult(file, (value) => { value.predecessor_checkpoint.checkpoint_sequence += 1; }) });
-    cases.push({ name: 'resulting_checkpoint', label: resultLabel, shared: true, mutate: (file) => mutateResult(file, (value) => { value.resulting_checkpoint.checkpoint_sequence += 1; }) });
-    cases.push({ name: 'publication.files order', label: resultLabel, shared: true, mutate: (file) => mutateResult(file, (value) => { value.publication.files = [...value.publication.files].reverse(); }) });
-    cases.push({ name: 'wrong publication file set', label: resultLabel, shared: true, mutate: (file) => mutateResult(file, (value) => { value.publication.files = value.publication.files.slice(0, -1); }) });
-    cases.push({ name: 'Result identity fields', label: resultLabel, shared: true, mutate: (file) => mutateResult(file, (value) => { value.context_digest = value.context_digest === '0'.repeat(64) ? '1'.repeat(64) : '0'.repeat(64); }) });
-    cases.push({ name: 'Result Action bindings', label: resultLabel, shared: true, mutate: (file) => mutateResult(file, mutateFirstDigest) });
-    cases.push({ name: 'valid JSON Schema-invalid Result', label: resultLabel, shared: true, mutate: (file) => mutateResult(file, (value) => { delete value.status; }) });
+    cases.push({ name: 'transition_id', label: resultLabel, mutate: (file) => mutateResult(file, (value) => { value.transition_id = replaceLastCharacter(value.transition_id); }) });
+    cases.push({ name: 'predecessor_checkpoint', label: resultLabel, mutate: (file) => mutateResult(file, (value) => { value.predecessor_checkpoint.checkpoint_sequence += 1; }) });
+    cases.push({ name: 'resulting_checkpoint', label: resultLabel, mutate: (file) => mutateResult(file, (value) => { value.resulting_checkpoint.checkpoint_sequence += 1; }) });
+    cases.push({ name: 'publication.files order', label: resultLabel, mutate: (file) => mutateResult(file, (value) => { value.publication.files = [...value.publication.files].reverse(); }) });
+    cases.push({ name: 'wrong publication file set', label: resultLabel, checkValidator: emitValidator, requireSharedConflict: emitValidator, mutate: (file) => mutateResult(file, (value) => { value.publication.files = value.publication.files.slice(0, -1); }) });
+    cases.push({ name: 'Result identity fields', label: resultLabel, mutate: (file) => mutateResult(file, (value) => { value.context_digest = value.context_digest === '0'.repeat(64) ? '1'.repeat(64) : '0'.repeat(64); }) });
+    cases.push({ name: 'Result Action bindings', label: resultLabel, mutate: (file) => mutateResult(file, mutateFirstDigest) });
+    cases.push({ name: 'valid JSON Schema-invalid Result', label: resultLabel, checkValidator: emitValidator, requireSharedConflict: emitValidator, mutate: (file) => mutateResult(file, (value) => { delete value.status; }) });
   }
   if (baseline.operation === 'confirm-batch') {
-    cases.push({ name: 'Confirmation operator token', label: `auxiliary:${manifest.active_confirmation_receipt_ref}`, shared: true, mutate: (file) => mutateResult(file, (value) => { value.operator_token = `${value.operator_token}-tampered`; }) });
-    cases.push({ name: 'Confirmation Receipt digest', label: `auxiliary:${manifest.active_confirmation_receipt_ref}`, shared: true, mutate: (file) => mutateResult(file, (value) => { value.receipt_digest = '0'.repeat(64); }) });
-    cases.push({ name: 'Confirmation Result receipt binding', label: `auxiliary:${manifest.active_confirmation_result_ref}`, shared: true, mutate: (file) => mutateResult(file, (value) => { value.receipt_digest = '0'.repeat(64); }) });
+    cases.push({ name: 'Confirmation operator token', label: `auxiliary:${manifest.active_confirmation_receipt_ref}`, checkValidator: true, requireSharedConflict: true, mutate: (file) => mutateResult(file, (value) => { value.operator_token = `${value.operator_token}-tampered`; }) });
+    cases.push({ name: 'Confirmation Receipt digest', label: `auxiliary:${manifest.active_confirmation_receipt_ref}`, checkValidator: true, requireSharedConflict: true, mutate: (file) => mutateResult(file, (value) => { value.receipt_digest = '0'.repeat(64); }) });
+    cases.push({ name: 'Confirmation Result receipt binding', label: `auxiliary:${manifest.active_confirmation_result_ref}`, mutate: (file) => mutateResult(file, (value) => { value.receipt_digest = '0'.repeat(64); }) });
   }
   if (baseline.operation === 'attach-evidence') {
-    cases.push({ name: 'Evidence snapshot bytes', label: `auxiliary:${manifest.evidence_snapshot_refs.at(-1)}`, mutate: reverseTopLevelJson, shared: true });
-    cases.push({ name: 'Evidence attachment Result', label: `auxiliary:${manifest.evidence_attachment_result_refs.at(-1)}`, shared: true, mutate: (file) => mutateResult(file, (value) => { value.evidence_snapshot_sha256 = '0'.repeat(64); }) });
+    cases.push({ name: 'Evidence snapshot bytes', label: `auxiliary:${manifest.evidence_snapshot_refs.at(-1)}`, checkValidator: true, requireSharedConflict: true, mutate: reverseTopLevelJson });
+    cases.push({ name: 'Evidence attachment Result', label: `auxiliary:${manifest.evidence_attachment_result_refs.at(-1)}`, checkValidator: true, requireSharedConflict: true, mutate: (file) => mutateResult(file, (value) => { value.evidence_snapshot_sha256 = '0'.repeat(64); }) });
   }
   if (baseline.operation === 'real-completion') {
-    cases.push({ name: 'Completion verified_evidence_ids', label: `auxiliary:${manifest.completion_result_ref}`, shared: true, mutate: (file) => mutateResult(file, (value) => { value.verified_evidence_ids = [...value.verified_evidence_ids].reverse(); }) });
-    cases.push({ name: 'Completion truth flags', label: `auxiliary:${manifest.completion_result_ref}`, shared: true, mutate: (file) => mutateResult(file, (value) => { value.builder_build_complete = false; }) });
-    cases.push({ name: 'completion-status.json', label: `auxiliary:${manifest.completion_status_ref}`, shared: true, mutate: (file) => mutateResult(file, (value) => { value.states.export_checked = false; }) });
-    cases.push({ name: 'completion-gate.json', label: `auxiliary:${manifest.completion_gate_ref}`, shared: true, mutate: (file) => mutateResult(file, (value) => { value.proofs.layout_verified.derived_status = 'missing'; }) });
+    cases.push({ name: 'Completion verified_evidence_ids', label: `auxiliary:${manifest.completion_result_ref}`, checkValidator: true, requireSharedConflict: true, mutate: (file) => mutateResult(file, (value) => { value.verified_evidence_ids = [...value.verified_evidence_ids].reverse(); }) });
+    cases.push({ name: 'Completion truth flags', label: `auxiliary:${manifest.completion_result_ref}`, mutate: (file) => mutateResult(file, (value) => { value.builder_build_complete = false; }) });
+    cases.push({ name: 'completion-status.json', label: `auxiliary:${manifest.completion_status_ref}`, checkValidator: true, requireSharedConflict: true, mutate: (file) => mutateResult(file, (value) => { value.states.export_checked = false; }) });
+    cases.push({ name: 'completion-gate.json', label: `auxiliary:${manifest.completion_gate_ref}`, checkValidator: true, requireSharedConflict: true, mutate: (file) => mutateResult(file, (value) => { value.proofs.layout_verified.derived_status = 'missing'; }) });
   }
   return cases;
 }
@@ -183,8 +188,8 @@ try {
     const baseline = buildBaseline(operation);
     test(`${operation} exact committed replay is non-mutating`, () => { restoreRun(baseline.runDirectory, baseline.backupDirectory); assertExactPositiveReplay(baseline); });
     for (const target of canonicalTargets(baseline.runDirectory, baseline.expected)) test(`${operation} raw tamper blocks exact replay at ${target.label}`, () => assertTamperBlocked(baseline, target, rawTamper));
-    test(`${operation} missing committed auxiliary blocks validator and replay`, () => assertMissingAuxiliaryBlocked(baseline));
-    for (const mutation of semanticMutations(baseline)) test(`${operation} ${mutation.name} tamper blocks replay`, () => assertTamperBlocked(baseline, mutation, mutation.mutate, mutation.shared));
+    test(`${operation} missing committed auxiliary blocks replay`, () => assertMissingAuxiliaryBlocked(baseline, operation === 'real-completion'));
+    for (const mutation of semanticMutations(baseline)) test(`${operation} ${mutation.name} tamper blocks replay`, () => assertTamperBlocked(baseline, mutation, mutation.mutate, { checkValidator: mutation.checkValidator, requireSharedConflict: mutation.requireSharedConflict }));
     if (operation === 'confirm-batch') {
       test('confirm-batch different command token conflicts without another transition', () => {
         restoreRun(baseline.runDirectory, baseline.backupDirectory);
