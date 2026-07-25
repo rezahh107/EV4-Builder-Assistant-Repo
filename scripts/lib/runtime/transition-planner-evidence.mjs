@@ -4,9 +4,33 @@ import { ALLOWED_MULTI_CLAIM_SETS, diagnostic, timestampForSequence, generationR
 import { expectedPublicationFiles, validatePublication } from './run-state-store.mjs';
 import { failedPlan, successfulPlan } from './transition-planner-common.mjs';
 
+export const BUILDER_OUTPUT_SUBJECT = 'builder-output';
+
 export function claimSetCompatible(claimClasses) {
   if (claimClasses.length <= 1) return true;
   return ALLOWED_MULTI_CLAIM_SETS.has([...claimClasses].sort().join('|'));
+}
+
+export function expectedEvidenceSubject(claimClass, source, predecessor) {
+  if (claimClass === 'required_action_execution') {
+    return predecessor.context.action_batch.action_ids.includes(source?.action_id) ? source.action_id : null;
+  }
+  return Object.hasOwn(CLAIM_COMPATIBILITY, claimClass) ? BUILDER_OUTPUT_SUBJECT : null;
+}
+
+function subjectPolicyDiagnostics(source, predecessor) {
+  const diagnostics = [];
+  const expectedSubjects = new Set();
+  for (const claimClass of source?.claim_classes || []) {
+    const expected = expectedEvidenceSubject(claimClass, source, predecessor);
+    if (expected !== null) expectedSubjects.add(expected);
+  }
+  if (expectedSubjects.size > 1) diagnostics.push(diagnostic('RUN-EVIDENCE-016', 'Evidence claim aggregation requires inconsistent subject identities.'));
+  if (expectedSubjects.size === 1) {
+    const [expected] = expectedSubjects;
+    if (source?.subject_ref !== expected) diagnostics.push(diagnostic('RUN-EVIDENCE-017', `Evidence subject_ref must equal the canonical subject for its claim class: ${expected}.`));
+  }
+  return diagnostics;
 }
 
 export function validateEvidenceSource(source, predecessor) {
@@ -27,6 +51,7 @@ export function validateEvidenceSource(source, predecessor) {
   }
   if (typeof source?.subject_ref !== 'string' || !source.subject_ref) diagnostics.push(diagnostic('RUN-EVIDENCE-010', 'Evidence subject_ref is missing.'));
   if (typeof source?.evidence_type !== 'string' || !source.evidence_type) diagnostics.push(diagnostic('RUN-EVIDENCE-011', 'Evidence type is missing.'));
+  diagnostics.push(...subjectPolicyDiagnostics(source, predecessor));
   return diagnostics;
 }
 
