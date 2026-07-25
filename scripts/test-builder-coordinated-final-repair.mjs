@@ -13,7 +13,11 @@ import {
   inspectRunGenerations,
   recoverRunLock
 } from './lib/runtime/canonical-run-runtime.mjs';
-import { acquireRunLock, releaseRunLock } from './lib/runtime/run-lock-ownership.mjs';
+import {
+  acquireRunLock,
+  inspectRecordedOwnerLiveness,
+  releaseRunLock
+} from './lib/runtime/run-lock-ownership.mjs';
 import {
   ROOT,
   activeRun,
@@ -118,6 +122,48 @@ function evidenceByClaim(files, claim) {
 }
 
 try {
+  await test('T-LOCK-METADATA-SHAPE', 'lock metadata is minimal, immutable and live-owner bound', () => {
+    const value = initializeManualRun(TEMP, 'lock-metadata-shape');
+    const handle = acquireRunLock(value.runDirectory, 'test-metadata-shape');
+    assert.equal(handle.passed, true);
+    try {
+      const metadata = readJson(path.join(handle.lockDirectory, 'lock.json'));
+      assert.deepEqual(Object.keys(metadata).sort(), [
+        'created_at',
+        'lock_id',
+        'operation',
+        'process_id',
+        'process_start_token',
+        'schema'
+      ]);
+      assert.equal(metadata.lock_id, handle.lock_id);
+      assert.equal(Object.hasOwn(metadata, 'run_id'), false);
+      assert.equal(inspectRecordedOwnerLiveness(metadata).state, 'live');
+    } finally {
+      assert.equal(releaseRunLock(handle).released, true);
+    }
+  });
+
+  await test('T-LOCK-MALFORMED-FAIL-CLOSED', 'malformed lock metadata remains fail-closed and non-destructive', () => {
+    const value = initializeManualRun(TEMP, 'lock-malformed-fail-closed');
+    const beforeCurrent = fs.readFileSync(path.join(value.runDirectory, 'CURRENT.json'));
+    const handle = acquireRunLock(value.runDirectory, 'test-malformed-lock');
+    assert.equal(handle.passed, true);
+    const lockFile = path.join(handle.lockDirectory, 'lock.json');
+    try {
+      fs.writeFileSync(lockFile, '{"schema":');
+      const malformedBytes = fs.readFileSync(lockFile);
+      const recovery = recoverRunLock({ runDirectory: value.runDirectory });
+      assert.equal(recovery.passed, false);
+      assert.equal(recovery.diagnostics[0].code, 'RUN-LOCK-RECOVERY-002');
+      assert.equal(fs.existsSync(handle.lockDirectory), true);
+      assert.equal(fs.readFileSync(lockFile).equals(malformedBytes), true);
+      assert.equal(fs.readFileSync(path.join(value.runDirectory, 'CURRENT.json')).equals(beforeCurrent), true);
+    } finally {
+      fs.rmSync(handle.lockDirectory, { recursive: true, force: true });
+    }
+  });
+
   await test('T-LOCK-LIVE-OWNER', 'live owner blocks explicit recovery without changing authority', async () => {
     const value = initializeManualRun(TEMP, 'lock-live-owner');
     const beforeCurrent = fs.readFileSync(path.join(value.runDirectory, 'CURRENT.json'));
@@ -133,7 +179,7 @@ try {
     assert.equal(completed.status, 0, completed.stderr || completed.stdout);
   });
 
-  await test('T-LOCK-CRASHED-OWNER', 'proven-dead owner can be recovered and command retried', () => {
+  await test('T-LOCK-DEAD-OWNER-RECOVERY', 'proven-dead owner can be recovered and command retried', () => {
     const value = initializeManualRun(TEMP, 'lock-crashed-owner');
     const crashed = crashCli(['emit-batch', value.runDirectory], 'after_lock_acquisition');
     assert.equal(crashed.status, 97, crashed.stderr || crashed.stdout);
