@@ -324,9 +324,7 @@ function claimOwnedLockFile(directory, expectedLockId, purpose) {
     };
   }
 
-  const after = process.env.EV4_BUILDER_TEST_FORCE_POST_CLAIM_INVALID === '1'
-    ? { passed: false, metadata: null }
-    : readMetadataFile(claimedFile);
+  const after = readMetadataFile(claimedFile);
   if (!after.passed || after.metadata?.lock_id !== expectedLockId) {
     const restoration = restoreClaimedLockFile(claimedFile, directory, 'before_post_claim_restore');
     return { passed: false, reason: 'ownership_changed_during_claim', claimedFile, restoration };
