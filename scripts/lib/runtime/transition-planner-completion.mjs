@@ -4,7 +4,7 @@ import { checkpointSequenceIsValid } from '../checkpoint-sequence.mjs';
 import { REQUIRED_COMPLETION_CLAIMS, diagnostic, sameSet, digestWithout, generationRef, collectActiveBlockers, buildCheckpoint, updateSessionForCheckpoint } from './run-primitives.mjs';
 import { expectedPublicationFiles, validatePublication } from './run-state-store.mjs';
 import { failedPlan, successfulPlan } from './transition-planner-common.mjs';
-import { validateEvidenceSource } from './transition-planner-evidence.mjs';
+import { BUILDER_OUTPUT_SUBJECT, validateEvidenceSource } from './transition-planner-evidence.mjs';
 
 function verifyPreparedEvidence(predecessor) {
   const diagnostics = [];
@@ -35,13 +35,17 @@ function verifyPreparedEvidence(predecessor) {
     }
     diagnostics.push(...local);
     if (!local.length) {
-      verified.push({ evidence_id: evidenceId, evidence_snapshot_ref: entry.ref, evidence_snapshot_sha256: actualSha, claim_classes: [...entry.source.claim_classes], action_id: entry.source.action_id ?? null });
+      verified.push({ evidence_id: evidenceId, evidence_snapshot_ref: entry.ref, evidence_snapshot_sha256: actualSha, claim_classes: [...entry.source.claim_classes], subject_ref: entry.source.subject_ref, action_id: entry.source.action_id ?? null });
       for (const claimClass of entry.source.claim_classes) verifiedClaimClasses.add(claimClass);
       if (entry.source.claim_classes.includes('required_action_execution')) verifiedActionIds.add(entry.source.action_id);
     }
   }
   for (const actionId of predecessor.context.action_batch.action_ids) if (!verifiedActionIds.has(actionId)) diagnostics.push(diagnostic('RUN-COMPLETE-EVIDENCE-007', `Required Action lacks internal Action-specific Evidence: ${actionId}.`));
-  for (const claimClass of REQUIRED_COMPLETION_CLAIMS) if (!verifiedClaimClasses.has(claimClass)) diagnostics.push(diagnostic('RUN-COMPLETE-EVIDENCE-008', `Required Completion claim lacks internal verified Evidence: ${claimClass}.`));
+  for (const claimClass of REQUIRED_COMPLETION_CLAIMS) {
+    if (!verifiedClaimClasses.has(claimClass)) diagnostics.push(diagnostic('RUN-COMPLETE-EVIDENCE-008', `Required Completion claim lacks internal verified Evidence: ${claimClass}.`));
+    const subjects = new Set(verified.filter((entry) => entry.claim_classes.includes(claimClass)).map((entry) => entry.subject_ref));
+    if (subjects.size > 1 || (subjects.size === 1 && !subjects.has(BUILDER_OUTPUT_SUBJECT))) diagnostics.push(diagnostic('RUN-COMPLETE-EVIDENCE-009', `Verified Evidence subjects are inconsistent for ${claimClass}.`));
+  }
   return { passed: diagnostics.length === 0, diagnostics, verified, verified_action_ids: [...verifiedActionIds].sort(), verified_claim_classes: [...verifiedClaimClasses].sort() };
 }
 
@@ -68,7 +72,19 @@ export function deriveCompletionArtifacts(evidence) {
   const claims = new Set(evidence.verified_claim_classes);
   const states = { scaffold_built: claims.has('scaffold_built'), structure_built: claims.has('structure_built'), content_filled: claims.has('content_filled'), desktop_layout_established: claims.has('desktop_layout_established'), export_checked: claims.has('export_checked') };
   const status = { schema: 'ev4-builder-derived-completion-status@1.0.0', claim_scope: 'desktop', states, evidence: { export: states.export_checked }, derivation: { required_actions_verified: true, verified_evidence_refs: evidence.verified.map((entry) => entry.evidence_id), unresolved_blockers: [] }, scope_excludes_responsive: true, production_ready: false };
-  const proof = (claim) => ({ claim_id: claim, subject_ref: 'builder-output', verification_method: 'internal_run_evidence_snapshot', required_evidence_types: CLAIM_COMPATIBILITY[claim], verified_evidence_refs: evidence.verified.filter((entry) => entry.claim_classes.includes(claim)).map((entry) => entry.evidence_id), derived_status: claims.has(claim) ? 'confirmed' : 'missing', diagnostics: [] });
+  const proof = (claim) => {
+    const verified = evidence.verified.filter((entry) => entry.claim_classes.includes(claim));
+    const subjects = [...new Set(verified.map((entry) => entry.subject_ref))];
+    return {
+      claim_id: claim,
+      subject_ref: subjects.length === 1 ? subjects[0] : null,
+      verification_method: 'internal_run_evidence_snapshot',
+      required_evidence_types: CLAIM_COMPATIBILITY[claim],
+      verified_evidence_refs: verified.map((entry) => entry.evidence_id),
+      derived_status: claims.has(claim) && subjects.length === 1 ? 'confirmed' : 'missing',
+      diagnostics: subjects.length > 1 ? [diagnostic('RUN-COMPLETE-EVIDENCE-009', `Verified Evidence subjects are inconsistent for ${claim}.`)] : []
+    };
+  };
   return { status, gate: { schema: 'ev4-builder-derived-completion-gate@1.0.0', proofs: { layout_verified: proof('layout_verified'), export_verified: proof('export_verified') }, responsive_complete: false, production_ready: false } };
 }
 
