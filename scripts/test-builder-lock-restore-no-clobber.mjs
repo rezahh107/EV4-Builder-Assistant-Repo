@@ -276,7 +276,7 @@ async function main() {
       assert.doesNotMatch(restoreSource, /renameSync/);
       assert.doesNotMatch(source, /fs\.renameSync\(claimedFile,\s*finalFile\)/);
       assert.match(source, /fs\.linkSync\(temporaryFile, finalFile\)/);
-      assert.equal((source.match(/restoreClaimedLockFile\(/g) || []).length, 3);
+      assert.equal((source.match(/restoreClaimedLockFile\(/g) || []).length, 4);
       assert.doesNotMatch(source, /copyFileSync|symlinkSync/);
     });
   } finally {
