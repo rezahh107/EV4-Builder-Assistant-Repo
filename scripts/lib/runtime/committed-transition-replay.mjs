@@ -19,12 +19,11 @@ import {
   loadRunUnlocked
 } from './run-state-validation.mjs';
 import {
-  acquireRunLock,
-  releaseRunLock,
   mutationFailure,
   deriveExpectedSuccessorSnapshot,
   publishSuccessor
 } from './run-state-store.mjs';
+import { acquireRunLock, releaseRunLock } from './run-lock-ownership.mjs';
 import { preparePlanningPredecessor } from './transition-planner-common.mjs';
 import { planEmitTransition, planConfirmationTransition } from './transition-planner-emit-confirm.mjs';
 import { planEvidenceTransition } from './transition-planner-evidence.mjs';
@@ -188,6 +187,25 @@ export function verifyCommittedTransitionReplay({ active: suppliedActive, operat
   return { matched: true, outcome: canonicalReplayOutcome(active, expected, operation), expected, predecessor, plan };
 }
 
+function historyFailureOutcome(loaded, operation, history) {
+  const diagnostics = (history?.diagnostics || []).filter((entry) => entry?.code === 'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT');
+  return {
+    ...loaded,
+    passed: false,
+    operation,
+    state_modified: false,
+    current_pointer_advanced: false,
+    generation_created: false,
+    generation_reused: false,
+    committed_transition_history_validated: false,
+    diagnostics: diagnostics.length ? diagnostics : [diagnostic(
+      'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT',
+      'Complete committed transition history validation failed before mutation.',
+      'mismatch=committed_history'
+    )]
+  };
+}
+
 export function executePlannedMutation({ runDirectory, operation, commandInput = {}, failureInjection = null }) {
   const lock = acquireRunLock(runDirectory, operation);
   if (!lock.passed) return lock.result;
@@ -196,22 +214,28 @@ export function executePlannedMutation({ runDirectory, operation, commandInput =
   try {
     injectedPoint(failureInjection, 'after_lock_acquisition');
     loaded = loadRunUnlocked(runDirectory);
-    const replay = verifyCommittedTransitionReplay({ active: loaded, operation, commandInput });
-    if (replay.matched) outcome = replay.outcome;
-    else if (!loaded.passed) outcome = loaded;
+    if (!loaded.passed) outcome = loaded;
     else {
       injectedPoint(failureInjection, 'after_active_generation_load');
-      const prepared = preparePlanningPredecessor(loaded, operation);
-      const plan = PLANNERS[operation](plannerArguments(operation, prepared, commandInput));
-      if (!plan.passed) outcome = plan;
-      else outcome = publishSuccessor({ loaded, operation, context: plan.context, session: plan.session, checkpoint: plan.checkpoint, manifestUpdates: plan.manifestUpdates, result: plan.result, auxiliaryFiles: plan.auxiliaryFiles, failureInjection });
+      const history = validateCommittedTransitionHistory(runDirectory);
+      if (!history.passed) outcome = historyFailureOutcome(loaded, operation, history);
+      else {
+        const replay = verifyCommittedTransitionReplay({ active: loaded, operation, commandInput });
+        if (replay.matched) outcome = replay.outcome;
+        else {
+          const prepared = preparePlanningPredecessor(loaded, operation);
+          const plan = PLANNERS[operation](plannerArguments(operation, prepared, commandInput));
+          if (!plan.passed) outcome = plan;
+          else outcome = publishSuccessor({ loaded, operation, context: plan.context, session: plan.session, checkpoint: plan.checkpoint, manifestUpdates: plan.manifestUpdates, result: plan.result, auxiliaryFiles: plan.auxiliaryFiles, failureInjection });
+        }
+      }
     }
   } catch (error) {
     outcome = mutationFailure(loaded, operation, error);
   }
   try { injectedPoint(failureInjection, 'before_lock_release'); }
   catch (error) { outcome = mutationFailure(loaded, operation, error); }
-  finally { releaseRunLock(lock.lockDirectory); }
+  finally { releaseRunLock(lock); }
   return outcome;
 }
 
