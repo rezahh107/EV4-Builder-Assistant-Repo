@@ -329,44 +329,6 @@ export function finalizeExistingExactSuccessor({ loaded, operation, expected, fa
   };
 }
 
-export function detectCommittedTransitionReplay({ loaded, operation, resultRef, expectedSchema, matches }) {
-  if (!resultRef) return { matched: false };
-  const file = safeRunRef(loaded.runDirectory, resultRef);
-  if (!file || !fs.existsSync(file)) return { matched: false };
-  let result;
-  try {
-    result = readJson(file);
-  } catch {
-    return { matched: false };
-  }
-  if (result?.schema !== expectedSchema || result?.status !== 'accepted') return { matched: false };
-  if (result?.resulting_checkpoint?.checkpoint_id !== loaded.checkpoint.checkpoint_id
-    || result?.resulting_checkpoint?.checkpoint_sequence !== loaded.checkpoint.checkpoint_sequence
-    || result?.resulting_checkpoint?.parent_checkpoint_id !== loaded.checkpoint.parent_checkpoint_id) return { matched: false };
-  const local = matches(result);
-  const passed = local === true || local?.passed === true;
-  if (!passed) return { matched: false, diagnostics: local?.diagnostics || [] };
-  const replayResult = {
-    ...result,
-    replayed_existing_transition: true,
-    publication_recovery: 'post_commit_replay',
-    state_modified: false
-  };
-  return {
-    matched: true,
-    outcome: {
-      ...loaded,
-      passed: true,
-      diagnostics: [],
-      operation,
-      result: replayResult,
-      replayed_existing_transition: true,
-      state_modified: false,
-      generation: loaded.current.generation
-    }
-  };
-}
-
 export function publishSuccessor({ loaded, operation, context, session, checkpoint, manifestUpdates, result, auxiliaryFiles, failureInjection }) {
   const run = loaded.runDirectory;
   const expected = deriveExpectedSuccessorSnapshot({ loaded, context, session, checkpoint, manifestUpdates, result, auxiliaryFiles });
