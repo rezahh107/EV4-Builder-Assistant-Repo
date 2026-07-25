@@ -24,8 +24,8 @@ const LOCK_SOURCE = path.join(ROOT, 'scripts', 'lib', 'runtime', 'run-lock-owner
 const MODE = process.argv[2] || null;
 
 function emitWorkerResult(result) {
+  process.exitCode = result?.released === true || result?.passed === true ? 0 : 2;
   process.stdout.write(`${JSON.stringify(result)}\n`);
-  process.exit(result?.released === true || result?.passed === true ? 0 : 2);
 }
 
 if (MODE === '--release-worker') {
