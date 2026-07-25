@@ -61,7 +61,13 @@ A different N+1 returns `RUN_UNCOMMITTED_SUCCESSOR_CONFLICT`. An incomplete or c
 
 ### Post-commit replay
 
-When `CURRENT.json` advanced but the process terminated before returning success, rerunning the exact command returns the already committed accepted result with `replayed_existing_transition: true` and `state_modified: false`. Different operator tokens or Evidence bytes are not treated as replay.
+When `CURRENT.json` advanced but the process terminated before returning success, rerunning the exact command loads the active Manifest’s exact N-1 predecessor, validates its recorded Checkpoint binding, and runs the same pure operation planner used by normal publication. The expected-successor materializer then reconstructs the complete generation, Result, auxiliary artifacts and `CURRENT.json` bytes.
+
+Replay succeeds only when every reconstructed byte equals the committed byte. It returns `replayed_existing_transition: true`, `publication_recovery: post_commit_replay`, `state_modified: false`, `generation_created: false`, `generation_reused: true` and `current_pointer_advanced: false`; no canonical artifact is rewritten.
+
+Any generation, Result, Receipt, Evidence snapshot, Completion Status, Completion Gate or `CURRENT.json` mismatch returns `RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT` with one bounded mismatch location. The Runtime does not repair the committed transaction, select another predecessor, advance or roll back `CURRENT.json`, or create a replacement generation. A different Confirmation token is a replay conflict. Different Evidence bytes are a distinct Evidence command input and are never accepted as replay of the committed attachment.
+
+The independent canonical Run validator uses the same planners and expected-successor materializer. It validates persisted replay inputs before reconstruction and rejects missing, malformed, Schema-invalid and Schema-valid-but-noncanonical committed artifacts.
 
 The real flow is `real-intake → emit-batch → WAITING_FOR_CONFIRMATION → confirm-batch → BUILD_ACTIVE → attach-evidence → real-completion → COMPLETED`. Every transition preserves exact source, Context, Package, Candidate, Batch, Action ID/digest, Checkpoint lineage and blocker bindings.
 
