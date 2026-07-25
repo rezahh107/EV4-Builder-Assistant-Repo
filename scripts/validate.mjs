@@ -42,6 +42,7 @@ const nodeChecks = [
   'scripts/test-builder-committed-replay-semantic-fields.mjs',
   'scripts/test-builder-run-concurrency.mjs',
   'scripts/test-builder-run-crash-recovery.mjs',
+  'scripts/test-builder-coordinated-final-repair.mjs',
   'scripts/test-project-pack-determinism.mjs',
   'scripts/smoke-ce-project-gate-builder.mjs',
   'scripts/validate-builder-runtime-transaction.mjs',
