@@ -13,26 +13,41 @@ const TEMP = fs.mkdtempSync(path.join(os.tmpdir(), 'ev4-committed-replay-exactne
 const failures = [];
 let count = 0;
 
+const RESULT_SHAPE_POLICIES = Object.freeze({
+  LOAD_FAILURE_FLAGS_OPTIONAL: 'LOAD_FAILURE_FLAGS_OPTIONAL',
+  MUTATION_OUTCOME_FLAGS_REQUIRED: 'MUTATION_OUTCOME_FLAGS_REQUIRED'
+});
+const NON_MUTATION_FIELDS = Object.freeze([
+  'state_modified',
+  'current_pointer_advanced',
+  'generation_created'
+]);
+
 const DIAGNOSTIC_EXPECTATIONS = Object.freeze({
   CURRENT_LOADING: Object.freeze({
     boundary: 'CURRENT loading',
-    codes: Object.freeze(['RUN-LOAD-003'])
+    codes: Object.freeze(['RUN-LOAD-003']),
+    resultShapePolicy: RESULT_SHAPE_POLICIES.LOAD_FAILURE_FLAGS_OPTIONAL
   }),
   ACTIVE_GENERATION_PARSING: Object.freeze({
     boundary: 'active-generation parsing',
-    codes: Object.freeze(['RUN-GENERATION-001'])
+    codes: Object.freeze(['RUN-GENERATION-001']),
+    resultShapePolicy: RESULT_SHAPE_POLICIES.LOAD_FAILURE_FLAGS_OPTIONAL
   }),
   ACTIVE_POINTER_DIGEST_RECONCILIATION: Object.freeze({
     boundary: 'active-pointer digest reconciliation',
-    codes: Object.freeze(['RUN-LOAD-006'])
+    codes: Object.freeze(['RUN-LOAD-006']),
+    resultShapePolicy: RESULT_SHAPE_POLICIES.LOAD_FAILURE_FLAGS_OPTIONAL
   }),
   ACTIVE_POINTER_RECONCILIATION: Object.freeze({
     boundary: 'active-pointer reconciliation',
-    codes: Object.freeze(['RUN-LOAD-007'])
+    codes: Object.freeze(['RUN-LOAD-007']),
+    resultShapePolicy: RESULT_SHAPE_POLICIES.LOAD_FAILURE_FLAGS_OPTIONAL
   }),
   EXACT_COMMITTED_BYTE_COMPARISON: Object.freeze({
     boundary: 'exact committed-byte comparison',
-    codes: Object.freeze(['RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT'])
+    codes: Object.freeze(['RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT']),
+    resultShapePolicy: RESULT_SHAPE_POLICIES.MUTATION_OUTCOME_FLAGS_REQUIRED
   })
 });
 
@@ -46,18 +61,26 @@ function diagnosticCodes(result) { return [...new Set((result?.diagnostics || []
 function assertDiagnosticBoundary(result, expectation, label) {
   assert.ok(expectation?.boundary, `Missing diagnostic boundary for ${label}`);
   assert.ok(Array.isArray(expectation?.codes) && expectation.codes.length > 0, `Missing diagnostic code set for ${label}`);
+  assert.ok(Object.values(RESULT_SHAPE_POLICIES).includes(expectation?.resultShapePolicy), `Missing result-shape policy for ${label}`);
   assert.deepEqual(
     diagnosticCodes(result),
     [...expectation.codes].sort(),
     `${label} was not rejected at the expected ${expectation.boundary} boundary: ${JSON.stringify(result?.diagnostics || [])}`
   );
 }
-function assertNonMutatingOutcome(result, label) {
-  // Load-boundary failures predate mutation-result flags. Absence is treated as
-  // false only together with the byte snapshots and generation-count checks.
-  assert.equal(result?.state_modified ?? false, false, `${label} modified State`);
-  assert.equal(result?.current_pointer_advanced ?? false, false, `${label} advanced CURRENT`);
-  assert.equal(result?.generation_created ?? false, false, `${label} created a generation`);
+function assertNonMutatingOutcome(result, resultShapePolicy, label) {
+  assert.ok(Object.values(RESULT_SHAPE_POLICIES).includes(resultShapePolicy), `Unknown result-shape policy for ${label}`);
+  const outcome = result && typeof result === 'object' ? result : {};
+  for (const field of NON_MUTATION_FIELDS) {
+    const present = field in outcome;
+    const own = Object.hasOwn(outcome, field);
+    if (resultShapePolicy === RESULT_SHAPE_POLICIES.MUTATION_OUTCOME_FLAGS_REQUIRED) {
+      assert.equal(own, true, `${label} omitted required ${field}`);
+    } else if (present) {
+      assert.equal(own, true, `${label} inherited ${field} instead of exposing an own property`);
+    }
+    if (own) assert.equal(outcome[field], false, `${label} set ${field} to a non-false value`);
+  }
 }
 function fileBytes(file) { return fs.readFileSync(file); }
 function writeJson(file, value) { fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`); }
@@ -161,7 +184,7 @@ function assertTamperBlocked(baseline, target, mutate, {
   const result = baseline.invoke(baseline.runDirectory);
   assert.equal(result.passed, false, `tamper unexpectedly replayed: ${target.label}`);
   assertDiagnosticBoundary(result, expectedDiagnostic, target.label);
-  assertNonMutatingOutcome(result, target.label);
+  assertNonMutatingOutcome(result, expectedDiagnostic.resultShapePolicy, target.label);
   assert.equal(generationCount(baseline.runDirectory), beforeGenerationCount);
   assertSnapshotUnchanged(beforeInvoke);
 }
@@ -181,7 +204,7 @@ function assertMissingAuxiliaryBlocked(baseline, checkValidator) {
   const result = baseline.invoke(baseline.runDirectory);
   assert.equal(result.passed, false, `missing auxiliary unexpectedly replayed: ${ref}`);
   assertDiagnosticBoundary(result, DIAGNOSTIC_EXPECTATIONS.EXACT_COMMITTED_BYTE_COMPARISON, `missing auxiliary:${ref}`);
-  assertNonMutatingOutcome(result, `missing auxiliary:${ref}`);
+  assertNonMutatingOutcome(result, DIAGNOSTIC_EXPECTATIONS.EXACT_COMMITTED_BYTE_COMPARISON.resultShapePolicy, `missing auxiliary:${ref}`);
   assert.equal(generationCount(baseline.runDirectory), beforeGenerationCount);
   assert.equal(fs.existsSync(target), false, `Runtime recreated missing committed auxiliary: ${ref}`);
   assertSnapshotUnchanged(nonTargetSnapshot);
@@ -232,6 +255,46 @@ function semanticMutations(baseline) {
 }
 
 try {
+  test('load-boundary result shape accepts absent non-mutation fields', () => {
+    assertNonMutatingOutcome(
+      { passed: false, diagnostics: [{ code: 'RUN-LOAD-003' }] },
+      DIAGNOSTIC_EXPECTATIONS.CURRENT_LOADING.resultShapePolicy,
+      'synthetic CURRENT-loading failure'
+    );
+  });
+  test('load-boundary result shape rejects every present true non-mutation field', () => {
+    for (const field of NON_MUTATION_FIELDS) {
+      assert.throws(
+        () => assertNonMutatingOutcome(
+          { passed: false, diagnostics: [{ code: 'RUN-LOAD-003' }], [field]: true },
+          DIAGNOSTIC_EXPECTATIONS.CURRENT_LOADING.resultShapePolicy,
+          `synthetic CURRENT-loading failure with ${field}`
+        ),
+        { name: 'AssertionError' }
+      );
+    }
+  });
+  for (const missingField of NON_MUTATION_FIELDS) {
+    test(`replay-conflict result shape rejects missing ${missingField}`, () => {
+      const outcome = {
+        passed: false,
+        diagnostics: [{ code: 'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT' }],
+        state_modified: false,
+        current_pointer_advanced: false,
+        generation_created: false
+      };
+      delete outcome[missingField];
+      assert.throws(
+        () => assertNonMutatingOutcome(
+          outcome,
+          DIAGNOSTIC_EXPECTATIONS.EXACT_COMMITTED_BYTE_COMPARISON.resultShapePolicy,
+          `synthetic replay conflict missing ${missingField}`
+        ),
+        { name: 'AssertionError' }
+      );
+    });
+  }
+
   for (const operation of ['emit-batch', 'confirm-batch', 'attach-evidence', 'real-completion']) {
     const baseline = buildBaseline(operation);
     test(`${operation} exact committed replay is non-mutating`, () => { restoreRun(baseline.runDirectory, baseline.backupDirectory); assertExactPositiveReplay(baseline); });
@@ -265,7 +328,7 @@ try {
         const result = confirmRunBatch({ runDirectory: baseline.runDirectory, userToken: `${baseline.commandInput.userToken}-different` });
         assert.equal(result.passed, false);
         assertDiagnosticBoundary(result, DIAGNOSTIC_EXPECTATIONS.EXACT_COMMITTED_BYTE_COMPARISON, 'different confirm command token');
-        assertNonMutatingOutcome(result, 'different confirm command token');
+        assertNonMutatingOutcome(result, DIAGNOSTIC_EXPECTATIONS.EXACT_COMMITTED_BYTE_COMPARISON.resultShapePolicy, 'different confirm command token');
         assert.equal(generationCount(baseline.runDirectory), beforeCount);
         assertSnapshotUnchanged(before);
       });
