@@ -22,9 +22,9 @@ const DIAGNOSTIC_EXPECTATIONS = Object.freeze({
     boundary: 'active-generation parsing',
     codes: Object.freeze(['RUN-GENERATION-001'])
   }),
-  ACTIVE_GENERATION_VALIDATION: Object.freeze({
-    boundary: 'active-generation validation',
-    codes: Object.freeze(['RUN-MANIFEST-012'])
+  ACTIVE_POINTER_DIGEST_RECONCILIATION: Object.freeze({
+    boundary: 'active-pointer digest reconciliation',
+    codes: Object.freeze(['RUN-LOAD-006'])
   }),
   ACTIVE_POINTER_RECONCILIATION: Object.freeze({
     boundary: 'active-pointer reconciliation',
@@ -51,6 +51,13 @@ function assertDiagnosticBoundary(result, expectation, label) {
     [...expectation.codes].sort(),
     `${label} was not rejected at the expected ${expectation.boundary} boundary: ${JSON.stringify(result?.diagnostics || [])}`
   );
+}
+function assertNonMutatingOutcome(result, label) {
+  // Load-boundary failures predate mutation-result flags. Absence is treated as
+  // false only together with the byte snapshots and generation-count checks.
+  assert.equal(result?.state_modified ?? false, false, `${label} modified State`);
+  assert.equal(result?.current_pointer_advanced ?? false, false, `${label} advanced CURRENT`);
+  assert.equal(result?.generation_created ?? false, false, `${label} created a generation`);
 }
 function fileBytes(file) { return fs.readFileSync(file); }
 function writeJson(file, value) { fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`); }
@@ -154,9 +161,7 @@ function assertTamperBlocked(baseline, target, mutate, {
   const result = baseline.invoke(baseline.runDirectory);
   assert.equal(result.passed, false, `tamper unexpectedly replayed: ${target.label}`);
   assertDiagnosticBoundary(result, expectedDiagnostic, target.label);
-  assert.equal(result.state_modified, false);
-  assert.equal(result.current_pointer_advanced, false);
-  assert.equal(result.generation_created, false);
+  assertNonMutatingOutcome(result, target.label);
   assert.equal(generationCount(baseline.runDirectory), beforeGenerationCount);
   assertSnapshotUnchanged(beforeInvoke);
 }
@@ -176,9 +181,7 @@ function assertMissingAuxiliaryBlocked(baseline, checkValidator) {
   const result = baseline.invoke(baseline.runDirectory);
   assert.equal(result.passed, false, `missing auxiliary unexpectedly replayed: ${ref}`);
   assertDiagnosticBoundary(result, DIAGNOSTIC_EXPECTATIONS.EXACT_COMMITTED_BYTE_COMPARISON, `missing auxiliary:${ref}`);
-  assert.equal(result.state_modified, false);
-  assert.equal(result.current_pointer_advanced, false);
-  assert.equal(result.generation_created, false);
+  assertNonMutatingOutcome(result, `missing auxiliary:${ref}`);
   assert.equal(generationCount(baseline.runDirectory), beforeGenerationCount);
   assert.equal(fs.existsSync(target), false, `Runtime recreated missing committed auxiliary: ${ref}`);
   assertSnapshotUnchanged(nonTargetSnapshot);
@@ -195,7 +198,7 @@ function semanticMutations(baseline) {
     { name: 'Checkpoint canonical bytes', label: 'generation:checkpoint.json', expectedDiagnostic: replayConflict, mutate: reverseTopLevelJson },
     { name: 'Manifest canonical bytes', label: 'generation:run-manifest.json', expectedDiagnostic: replayConflict, mutate: reverseTopLevelJson },
     { name: 'CURRENT canonical bytes', label: 'CURRENT.json', expectedDiagnostic: replayConflict, mutate: reverseTopLevelJson },
-    { name: 'Manifest predecessor binding', label: 'generation:run-manifest.json', expectedDiagnostic: DIAGNOSTIC_EXPECTATIONS.ACTIVE_GENERATION_VALIDATION, checkValidator: emitValidator, mutate: (file) => mutateResult(file, (value) => { value.generation.predecessor_checkpoint_id = replaceLastCharacter(value.generation.predecessor_checkpoint_id); value.manifest_digest = digestWithout(value, 'manifest_digest'); }) },
+    { name: 'Manifest predecessor binding', label: 'generation:run-manifest.json', expectedDiagnostic: DIAGNOSTIC_EXPECTATIONS.ACTIVE_POINTER_DIGEST_RECONCILIATION, checkValidator: emitValidator, mutate: (file) => mutateResult(file, (value) => { value.generation.predecessor_checkpoint_id = replaceLastCharacter(value.generation.predecessor_checkpoint_id); value.manifest_digest = digestWithout(value, 'manifest_digest'); }) },
     { name: 'CURRENT semantic pointer', label: 'CURRENT.json', expectedDiagnostic: DIAGNOSTIC_EXPECTATIONS.ACTIVE_POINTER_RECONCILIATION, checkValidator: emitValidator, mutate: (file) => mutateResult(file, (value) => { value.checkpoint_id = replaceLastCharacter(value.checkpoint_id); value.pointer_digest = digestWithout(value, 'pointer_digest'); }) }
   ];
   const resultRef = baseline.expected.auxiliaryFiles.find((entry) => entry.ref.endsWith('result.json'))?.ref || baseline.expected.auxiliaryFiles.find((entry) => entry.ref.includes('result'))?.ref;
@@ -262,9 +265,7 @@ try {
         const result = confirmRunBatch({ runDirectory: baseline.runDirectory, userToken: `${baseline.commandInput.userToken}-different` });
         assert.equal(result.passed, false);
         assertDiagnosticBoundary(result, DIAGNOSTIC_EXPECTATIONS.EXACT_COMMITTED_BYTE_COMPARISON, 'different confirm command token');
-        assert.equal(result.state_modified, false);
-        assert.equal(result.current_pointer_advanced, false);
-        assert.equal(result.generation_created, false);
+        assertNonMutatingOutcome(result, 'different confirm command token');
         assert.equal(generationCount(baseline.runDirectory), beforeCount);
         assertSnapshotUnchanged(before);
       });
