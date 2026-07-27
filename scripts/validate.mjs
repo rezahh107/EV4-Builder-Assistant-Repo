@@ -198,6 +198,7 @@ export function getExecutionPlan(shardId = null) {
       id: task.id,
       order: task.order,
       shard: task.shard,
+      kind: task.kind,
       executable: task.executable,
       args: [...task.args],
       label: task.label
