@@ -23,6 +23,28 @@ export const requiredShardIds = Object.freeze([
   'runtime-transaction-state'
 ]);
 
+export const canonicalShardTaskContracts = Object.freeze({
+  transaction: Object.freeze({
+    id: 'node:scripts/validate-builder-runtime-transaction.mjs',
+    executable: 'node',
+    args: Object.freeze([
+      'scripts/validate-builder-runtime-transaction.mjs',
+      transactionFixture,
+      '--self-test'
+    ]),
+    shard: 'runtime-transaction'
+  }),
+  transactionState: Object.freeze({
+    id: 'node:scripts/validate-builder-runtime-transaction-state.mjs',
+    executable: 'node',
+    args: Object.freeze([
+      'scripts/validate-builder-runtime-transaction-state.mjs',
+      transactionFixture
+    ]),
+    shard: 'runtime-transaction-state'
+  })
+});
+
 let nextOrder = 0;
 function npmTask(script, shard = 'contracts-and-static') {
   return Object.freeze({
@@ -123,12 +145,15 @@ export const canonicalTasks = Object.freeze([
   nodeTask('scripts/test-validation-sharding.mjs', 'contracts-and-static')
 ]);
 
-export function buildPartition(tasks = canonicalTasks) {
-  const partition = requiredShardIds.map((id) => ({ id, taskIds: [] }));
+export function buildPartition(tasks = canonicalTasks, requiredShards = requiredShardIds) {
+  const partition = requiredShards.map((id) => ({ id, taskIds: [] }));
   const byId = new Map(partition.map((shard) => [shard.id, shard]));
   for (const task of tasks) {
-    if (!byId.has(task.shard)) partition.push({ id: task.shard, taskIds: [task.id] });
-    else byId.get(task.shard).taskIds.push(task.id);
+    if (!byId.has(task.shard)) {
+      const shard = { id: task.shard, taskIds: [task.id] };
+      partition.push(shard);
+      byId.set(task.shard, shard);
+    } else byId.get(task.shard).taskIds.push(task.id);
   }
   return partition;
 }
@@ -136,7 +161,7 @@ export function buildPartition(tasks = canonicalTasks) {
 export function validatePartition({
   tasks = canonicalTasks,
   requiredShards = requiredShardIds,
-  partition = buildPartition(tasks)
+  partition = buildPartition(tasks, requiredShards)
 } = {}) {
   const diagnostics = [];
   const taskIdCounts = new Map();
@@ -185,6 +210,117 @@ export function validatePartition({
     missingTasks: 0,
     duplicateTasks: 0,
     unknownTasks: 0
+  };
+}
+
+function workflowJobBlock(workflowText, jobId) {
+  const escaped = jobId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = workflowText.match(new RegExp(`(?:^|\\n)  ${escaped}:\\n([\\s\\S]*?)(?=\\n  [A-Za-z0-9_-]+:\\n|$)`));
+  return match?.[1] || '';
+}
+
+function executableWorkflowText(workflowText) {
+  return workflowText
+    .split(/\r?\n/)
+    .filter((line) => !/^\s*#/.test(line))
+    .join('\n');
+}
+
+function sameArray(actual, expected) {
+  return Array.isArray(actual) && actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+}
+
+export function getCanonicalTaskIdentity(taskId, {
+  tasks = canonicalTasks,
+  requiredShards = requiredShardIds,
+  partition = buildPartition(tasks, requiredShards)
+} = {}) {
+  const matches = tasks.filter((task) => task.id === taskId);
+  const assignments = partition.flatMap((shard) => (shard.taskIds || []).filter((id) => id === taskId).map(() => shard.id));
+  return {
+    count: matches.length,
+    task: matches.length === 1 ? {
+      id: matches[0].id,
+      executable: matches[0].executable,
+      args: [...matches[0].args],
+      shard: matches[0].shard
+    } : null,
+    assignments
+  };
+}
+
+export function validateShardExecutionContract({
+  tasks = canonicalTasks,
+  requiredShards = requiredShardIds,
+  partition = buildPartition(tasks, requiredShards),
+  workflowText
+} = {}) {
+  const diagnostics = [];
+  try {
+    validatePartition({ tasks, requiredShards, partition });
+  } catch (error) {
+    diagnostics.push(...(error?.diagnostics || [`PARTITION_VALIDATION_FAILED:${error?.message || 'unknown'}`]));
+  }
+
+  for (const expected of Object.values(canonicalShardTaskContracts)) {
+    const identity = getCanonicalTaskIdentity(expected.id, { tasks, requiredShards, partition });
+    if (identity.count !== 1) diagnostics.push(`CANONICAL_TASK_COUNT:${expected.id}:${identity.count}`);
+    if (
+      !identity.task ||
+      identity.task.executable !== expected.executable ||
+      !sameArray(identity.task.args, expected.args) ||
+      identity.task.shard !== expected.shard
+    ) diagnostics.push(`CANONICAL_TASK_IDENTITY_MISMATCH:${expected.id}`);
+    if (identity.assignments.length !== 1 || identity.assignments[0] !== expected.shard) {
+      diagnostics.push(`CANONICAL_TASK_ASSIGNMENT_MISMATCH:${expected.id}`);
+    }
+  }
+
+  if (typeof workflowText !== 'string') diagnostics.push('WORKFLOW_TEXT_REQUIRED');
+  else {
+    const executableText = executableWorkflowText(workflowText);
+    const discover = workflowJobBlock(executableText, 'discover');
+    const shardJob = workflowJobBlock(executableText, 'validation_shard');
+    const finalJob = workflowJobBlock(executableText, 'validate');
+
+    if (!/node\s+scripts\/validate\.mjs\s+--list-shards\b/.test(discover)) diagnostics.push('WORKFLOW_LIST_SHARDS_MISSING');
+    if (!/matrix:\s*\$\{\{\s*fromJSON\(needs\.discover\.outputs\.matrix\)\s*\}\}/.test(shardJob)) diagnostics.push('WORKFLOW_MATRIX_CONSUMPTION_MISSING');
+    if (!/node\s+scripts\/validate\.mjs\s+--shard\s+["']?\$\{\{\s*matrix\.shard\s*\}\}["']?/.test(shardJob)) diagnostics.push('WORKFLOW_SHARD_EXECUTION_MISSING');
+    if (
+      !/EXPECTED_SHA:\s*\$\{\{\s*needs\.discover\.outputs\.expected_sha\s*\}\}/.test(shardJob) ||
+      !/EVENT_SHA:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\|\|\s*github\.sha\s*\}\}/.test(shardJob) ||
+      !/ACTUAL_SHA="\$\(git rev-parse HEAD\)"/.test(shardJob) ||
+      !/test "\$EXPECTED_SHA" = "\$EVENT_SHA"/.test(shardJob) ||
+      !/test "\$ACTUAL_SHA" = "\$EXPECTED_SHA"/.test(shardJob)
+    ) diagnostics.push('WORKFLOW_EXACT_HEAD_CHECK_MISSING');
+    if (!/if:\s*always\(\)/.test(finalJob) || !/needs:\s*\[discover,\s*validation_shard\]/.test(finalJob)) {
+      diagnostics.push('WORKFLOW_FINAL_DEPENDENCIES_MISSING');
+    }
+    if (
+      !/DISCOVERY_RESULT:\s*\$\{\{\s*needs\.discover\.result\s*\}\}/.test(finalJob) ||
+      !/SHARD_RESULT:\s*\$\{\{\s*needs\.validation_shard\.result\s*\}\}/.test(finalJob) ||
+      !/test "\$DISCOVERY_RESULT" = "success"/.test(finalJob) ||
+      !/test "\$SHARD_RESULT" = "success"/.test(finalJob)
+    ) diagnostics.push('WORKFLOW_FINAL_AGGREGATION_MISSING');
+
+    if (/\bnpm\s+run\s+validate\b/.test(executableText)) diagnostics.push('WORKFLOW_MONOLITHIC_EXECUTION_PRESENT');
+    if (/\bnode\s+scripts\/validate-builder-runtime-transaction(?:-state)?\.mjs\b/.test(executableText)) {
+      diagnostics.push('WORKFLOW_DUPLICATE_TRANSACTION_EXECUTION_PRESENT');
+    }
+  }
+
+  if (diagnostics.length > 0) {
+    const error = new Error(`Shard execution contract is invalid:\n- ${diagnostics.join('\n- ')}`);
+    error.code = 'INVALID_SHARD_EXECUTION_CONTRACT';
+    error.diagnostics = diagnostics;
+    throw error;
+  }
+
+  return {
+    taskCount: tasks.length,
+    shardCount: requiredShards.length,
+    transactionTaskId: canonicalShardTaskContracts.transaction.id,
+    transactionStateTaskId: canonicalShardTaskContracts.transactionState.id
   };
 }
 
@@ -304,7 +440,7 @@ if (directInvocation) {
   try {
     main();
   } catch (error) {
-    console.error(error?.stack || error?.message || String(error));
+    console.error(error.stack || error.message);
     process.exit(1);
   }
 }
