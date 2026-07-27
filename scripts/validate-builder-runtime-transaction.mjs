@@ -9,6 +9,12 @@ import {
   sha256Bytes,
   sortedCanonicalJson,
 } from "./lib/canonical-builder-package.mjs";
+import {
+  buildPartition,
+  canonicalTasks,
+  requiredShardIds,
+  validateShardExecutionContract,
+} from "./validate.mjs";
 
 const ROOT = process.cwd();
 const DEFAULT = "tests/valid/runtime-transaction/complete-transaction.json";
@@ -754,36 +760,32 @@ function evidenceAndCompletion(b, e) {
     add(e, "BUILDER-TRX-013", "Prior valid output not preserved.");
 }
 function wiring(b, e) {
-  const v =
-      b.overrides.validateText ??
-      fs.readFileSync(path.resolve(ROOT, "scripts/validate.mjs"), "utf8"),
-    w =
-      b.overrides.workflowText ??
-      fs.readFileSync(
-        path.resolve(ROOT, ".github/workflows/schema-validation.yml"),
-        "utf8",
-      ),
-    main =
-      "node scripts/validate-builder-runtime-transaction.mjs tests/valid/runtime-transaction/complete-transaction.json --self-test",
-    state =
-      "node scripts/validate-builder-runtime-transaction-state.mjs tests/valid/runtime-transaction/complete-transaction.json";
-  if (
-    !/validate-builder-runtime-transaction\.mjs[\s\S]{0,240}tests\/valid\/runtime-transaction\/complete-transaction\.json/.test(
-      v,
-    ) ||
-    !/validate-builder-runtime-transaction-state\.mjs[\s\S]{0,240}tests\/valid\/runtime-transaction\/complete-transaction\.json/.test(
-      v,
-    ) ||
-    !w.includes("npm run validate") ||
-    !w.includes("Run Builder runtime transaction enforcement validation") ||
-    !w.includes(main) ||
-    !w.includes(state)
-  )
+  const tasks = b.overrides.tasks ?? canonicalTasks;
+  const requiredShards = b.overrides.requiredShards ?? requiredShardIds;
+  const partition =
+    b.overrides.partition ?? buildPartition(tasks, requiredShards);
+  const workflowText =
+    b.overrides.workflowText ??
+    fs.readFileSync(
+      path.resolve(ROOT, ".github/workflows/schema-validation.yml"),
+      "utf8",
+    );
+  try {
+    validateShardExecutionContract({
+      tasks,
+      requiredShards,
+      partition,
+      workflowText,
+    });
+  } catch (error) {
     add(
       e,
       "BUILDER-TRX-014",
-      "Central runner or independent exact-head workflow step bypasses real transaction input.",
+      `Canonical validation shard wiring is invalid: ${
+        error?.diagnostics?.join(", ") || error.message
+      }`,
     );
+  }
 }
 export async function validateBuilderRuntimeTransactionBundle(b) {
   const e = [];
@@ -877,14 +879,22 @@ async function mutate(b, op) {
     case "captured_source_hash_changed":
       b.envelope.source.captured_file_sha256 = "0".repeat(64);
       return;
-    case "central_validator_bypassed":
-      b.overrides.validateText = fs
-        .readFileSync(path.resolve(ROOT, "scripts/validate.mjs"), "utf8")
-        .replace(
-          /[^\n]*validate-builder-runtime-transaction\.mjs[^\n]*\n?/g,
-          "",
-        );
+    case "central_validator_bypassed": {
+      const tasks = canonicalTasks
+        .filter(
+          (task) =>
+            task.id !==
+            "node:scripts/validate-builder-runtime-transaction.mjs",
+        )
+        .map((task) => ({ ...task, args: [...task.args] }));
+      b.overrides.tasks = tasks;
+      b.overrides.requiredShards = [...requiredShardIds];
+      b.overrides.partition = buildPartition(
+        tasks,
+        b.overrides.requiredShards,
+      );
       return;
+    }
     case "direct_adapter_output_mismatch": {
       const source = artifact(
         "tests/valid/ce_builder_package_adapter_valid.json",
