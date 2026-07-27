@@ -1,0 +1,44 @@
+continuation_profile:
+  profile_id: EV4-PCVP-PROFILE-BUILDER
+  profile_version: 1.0.0
+  profile_status: release_candidate
+  policy_id: EV4-PCVP
+  policy_version: 1.0.0
+  repository: rezahh107/EV4-Builder-Assistant-Repo
+  stage_id: BUILDER_ASSISTANT
+  consumes_from:
+  - ARCHITECT
+  - CONSTRUCTABILITY_ENGINEER
+  produces_for:
+  - RESPONSIVE_ARCHITECT
+  - PROJECT_GATE
+  preauthorized_effects:
+  - effect_class: REASONING_ONLY
+    bounded_output_types:
+    - build_guidance
+    - action_batch_planning
+    - dependency_scoped_clarification
+    scope: guidance only; no external mutation
+  - effect_class: DRAFT_ONLY
+    bounded_output_types:
+    - provisional_build_batch
+    scope: discardable instructions; owner performs actions
+  safe_reversible_default_enabled: true
+  safe_reversible_default_effect_classes:
+  - REASONING_ONLY
+  - DRAFT_ONLY
+  verified_only_boundaries:
+  - claim that UI action was actually performed
+  - claim that artifact was persisted
+  - production-ready claim
+  - selected architecture or class-map change
+  upstream_supplement_request_format: one claim-bound request to Architect or Constructability
+    Engineer
+  new_blocker_examples:
+  - required UI control cannot be identified without evidence
+  - instruction would change locked architecture
+  - owner reports result contradicting expected state
+  non_blocker_examples:
+  - same missing Runtime already covered
+  - same approved provisional guidance scope
+  owner_facing_language: fa

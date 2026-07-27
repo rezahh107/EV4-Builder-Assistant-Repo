@@ -5,6 +5,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertAllTransformsDeclared } from './ce-builder-transformation-registry.mjs';
+import {
+  assertOptionalPcvpCarrier,
+  clonePcvpCarrier
+} from './lib/pcvp-carrier.mjs';
 import { assertCeToBuilderContractGatePass } from './validate-ce-to-builder-contract-gate.mjs';
 import { normalizeCeReferenceCarrier } from './normalize-ce-reference-map.mjs';
 
@@ -18,6 +22,7 @@ export const CE_BUILDER_PACKAGE_TRANSFORM_IDS = [
   'CE_PKG_PRODUCTION_READY_FALSE',
   'CE_PKG_SOURCE_PAYLOAD_LEDGER_DERIVE',
   'CE_PKG_BUILDER_CARRIERS_COPY',
+  'CE_PKG_PCVP_CARRIER_COPY',
   'CE_PKG_FIRST_BATCH_NORMALIZE',
   'CE_PKG_ACTION_PARAMETERS_FLATTEN',
   'CE_PKG_CONFIRMATION_TEMPLATE_ATTACH',
@@ -241,6 +246,9 @@ export function normalizeCeBuilderExecutablePackage(cePackage) {
   assertCeExecutablePackage(cePackage);
   requireBuilderPayloadCarriers(cePackage);
   assertVisualReferencePrerequisites(cePackage);
+  const pcvp = assertOptionalPcvpCarrier(cePackage, {
+    expectedSourceStages: ['CONSTRUCTABILITY_ENGINEER']
+  });
 
   const firstBuilderBatch = normalizeFirstBuilderBatch(cePackage.first_safe_builder_batch);
   const confirmationRequest = normalizeConfirmationRequest(cePackage.confirmation_request, firstBuilderBatch.actions);
@@ -273,6 +281,9 @@ export function normalizeCeBuilderExecutablePackage(cePackage) {
     asset_replacement_map: cePackage.asset_replacement_map,
     scoped_css_need_map: cePackage.scoped_css_need_map,
     responsive_qa_seed: cePackage.responsive_qa_seed,
+    ...(pcvp.status === 'validated'
+      ? { continuation_assurance: clonePcvpCarrier(pcvp) }
+      : {}),
     ...(Array.isArray(cePackage.audit_flags_to_preserve) ? { audit_flags_to_preserve: cePackage.audit_flags_to_preserve } : {}),
     ...(Array.isArray(cePackage.unknowns_to_preserve) ? { unknowns_to_preserve: cePackage.unknowns_to_preserve } : {}),
     forbidden_work: cePackage.forbidden_work,
