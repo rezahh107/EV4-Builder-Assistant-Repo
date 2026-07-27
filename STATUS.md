@@ -1,13 +1,18 @@
 # STATUS — EV4 Builder Assistant Repo
 
 Version: 0.3.6
+Status: active_on_main
+Date: 2026-07-27
 
 ```yaml
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
-pull_request: 66
-feature_branch: fix/lean-builder-truth-spine
-repair_state: implemented_pending_rereview
+active_branch: main
+merged_pull_request: 66
+merged_pr_head: e3eb26277a5e49a68c3b6a9ed452d5c794f2f13f
+merge_commit: 05db0e210220a60c85d1faca073642da57941970
+repair_state: merged_active_on_main
+documentation_state: synchronized_with_runtime_authority
 external_source_after_intake: not_used
 caller_authored_initial_state: forbidden
 caller_managed_carrier_selection: forbidden
@@ -20,10 +25,12 @@ current_pointer_to_partial_generation: forbidden
 lost_update: forbidden
 responsive_complete: false
 production_ready: false
-merge_performed: false
-approval_performed: false
+merge_performed: true
 deployment_performed: false
 external_repositories_modified: false
+independent_review_required: false
+pr_inspector_required: false
+exact_head_runtime_authority: false
 ```
 
 ## Active Runtime Architecture
@@ -31,24 +38,45 @@ external_repositories_modified: false
 ```text
 explicit operator source
 → stable Run root creation
-→ internal source snapshot
+→ byte-preserving internal source snapshot
 → immutable generations/000001
 → atomic CURRENT.json
-→ local .mutation-lock
-→ State load after lock
+→ acquire local .mutation-lock
+→ load active generation after lock
+→ full pre-emission derivation
 → immutable WAITING_FOR_CONFIRMATION generation
 → atomic CURRENT.json update
+→ exact Confirmation reconciliation
 → immutable confirmed BUILD_ACTIVE generation
-→ attach-evidence generations
+→ attach-evidence internal snapshots and generations
+→ full Completion rederivation
 → immutable terminal generation
 → atomic CURRENT.json update
 → COMPLETED
 ```
 
-Implemented scope includes concurrent Intake protection, immediate `RUN_BUSY_OR_STALE_LOCK`, immutable complete State generations, atomic same-filesystem `CURRENT.json` replacement, exact expected-successor derivation, byte-level generation and auxiliary-artifact reconciliation, exact same-transition orphan finalization, post-commit replay, explicit conflict/ambiguity diagnostics, orphan generation inspection, bounded stale-lock/temp cleanup, independent publication validation, child-process concurrency tests, crash-boundary tests, inert historical bypass records and repository-wide Legacy authority rejection.
+`CURRENT.json` is the sole active State selector. Published generations are immutable. Every mutation acquires `.mutation-lock` before reading State. A future generation is not authority merely because it exists or has the highest number.
 
-`CURRENT.json` remains the sole authority. No future generation is promoted by number or Schema validity alone. Exact N+1 may be finalized only by retrying the same canonical command with matching inputs; differing, incomplete or multiple future generations leave `CURRENT.json` unchanged. An exact already-committed transition replays its accepted result without producing another generation.
+The same canonical transition may finalize only an exact byte-identical expected N+1, including all operation-specific artifacts. A different, incomplete, or ambiguous future generation blocks without changing authority. Repeating an exact transition after commit returns the committed result with `replayed_existing_transition: true` and creates no additional generation.
 
-The canonical real commands remain `real-intake`, `emit-batch`, `confirm-batch`, `attach-evidence`, and `real-completion`. Compatibility operations cannot mutate canonical Run State or claim Builder Completion.
+## Canonical Commands
 
-Exact-head GitHub Actions evidence must be regenerated after all code and documentation commits. A fresh independent review remains mandatory; no review finding is declared finally closed.
+```bash
+node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
+node scripts/builder-inspector.mjs emit-batch <run-directory>
+node scripts/builder-inspector.mjs confirm-batch <run-directory> "<operator-token>"
+node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
+node scripts/builder-inspector.mjs real-completion <run-directory>
+```
+
+Compatibility operations and historical bypass records cannot mutate canonical Run State or claim Builder Completion. Active Legacy entrypoints return `BUILDER-LEGACY-AUTHORITY-INACTIVE`.
+
+## Validation Evidence
+
+The merged PR Head `e3eb26277a5e49a68c3b6a9ed452d5c794f2f13f` completed `Schema validation` run `30250938148` successfully before merge. The workflow used the canonical dynamic shard registry, exact-SHA checkout for every shard, and the required final `validate` aggregate.
+
+This CI evidence is maintenance evidence. It is not Runtime authorization. Repository authority explicitly keeps `independent_review_required: false`, `pr_inspector_required: false`, and `exact_head_runtime_authority: false`.
+
+## Remaining Product Boundary
+
+The Runtime truth spine, concurrency protection, crash recovery, replay, deterministic completion, and canonical validation sharding are active on `main`. Real Elementor execution evidence, Responsive completion, Builder-to-Responsive delivery, deployment, and production readiness remain outside the proven scope.
