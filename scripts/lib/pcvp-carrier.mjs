@@ -24,8 +24,17 @@ const DEFAULT_SOURCE_STAGES = Object.freeze([
   'ARCHITECT',
   'CONSTRUCTABILITY_ENGINEER'
 ]);
+const LAYERS = Object.freeze({
+  JSON_SCHEMA: 'JSON_SCHEMA',
+  CROSS_RECORD: 'CROSS_RECORD',
+  BUILDER_INTEGRATION: 'BUILDER_INTEGRATION',
+  SEMANTIC_POLICY: 'SEMANTIC_POLICY'
+});
 
-function diagnostic(code, message, pathNow = '$', layer = 'PCVP_BOUNDARY') {
+function diagnostic(code, message, pathNow, layer) {
+  if (!pathNow || !layer || !Object.values(LAYERS).includes(layer)) {
+    throw new TypeError('PCVP diagnostics require explicit path and validation layer.');
+  }
   return { code, message, path: pathNow, layer };
 }
 
@@ -70,42 +79,42 @@ function validateSchema(value, schema, schemas, pathNow = '$') {
     const resolved = schemas[reference];
     return resolved
       ? validateSchema(value, resolved, schemas, pathNow)
-      : [diagnostic('BUILDER_PCVP_SCHEMA_REF_UNRESOLVED', `Schema reference is not pinned: ${schema.$ref}`, pathNow, 'JSON_SCHEMA')];
+      : [diagnostic('BUILDER_PCVP_SCHEMA_REF_UNRESOLVED', `Schema reference is not pinned: ${schema.$ref}`, pathNow, LAYERS.JSON_SCHEMA)];
   }
 
   const errors = [];
   if (schema.const !== undefined && !deepEqual(value, schema.const)) {
-    errors.push(diagnostic('BUILDER_PCVP_SCHEMA_CONST', `Value must equal ${JSON.stringify(schema.const)}.`, pathNow, 'JSON_SCHEMA'));
+    errors.push(diagnostic('BUILDER_PCVP_SCHEMA_CONST', `Value must equal ${JSON.stringify(schema.const)}.`, pathNow, LAYERS.JSON_SCHEMA));
   }
   if (Array.isArray(schema.enum) && !schema.enum.some((candidate) => deepEqual(value, candidate))) {
-    errors.push(diagnostic('BUILDER_PCVP_SCHEMA_ENUM', 'Value is outside the canonical enum.', pathNow, 'JSON_SCHEMA'));
+    errors.push(diagnostic('BUILDER_PCVP_SCHEMA_ENUM', 'Value is outside the canonical enum.', pathNow, LAYERS.JSON_SCHEMA));
   }
 
   if (schema.type !== undefined) {
     const expectedTypes = Array.isArray(schema.type) ? schema.type : [schema.type];
     if (!expectedTypes.some((expected) => typeMatches(value, expected))) {
-      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_TYPE', `Value must have type ${expectedTypes.join(' or ')}.`, pathNow, 'JSON_SCHEMA'));
+      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_TYPE', `Value must have type ${expectedTypes.join(' or ')}.`, pathNow, LAYERS.JSON_SCHEMA));
       return errors;
     }
   }
 
   if (typeof value === 'string') {
     if (Number.isInteger(schema.minLength) && value.length < schema.minLength) {
-      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_MIN_LENGTH', `String length must be at least ${schema.minLength}.`, pathNow, 'JSON_SCHEMA'));
+      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_MIN_LENGTH', `String length must be at least ${schema.minLength}.`, pathNow, LAYERS.JSON_SCHEMA));
     }
     if (typeof schema.pattern === 'string' && !(new RegExp(schema.pattern, 'u')).test(value)) {
-      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_PATTERN', `String does not match ${schema.pattern}.`, pathNow, 'JSON_SCHEMA'));
+      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_PATTERN', `String does not match ${schema.pattern}.`, pathNow, LAYERS.JSON_SCHEMA));
     }
   }
 
   if (Array.isArray(value)) {
     if (Number.isInteger(schema.minItems) && value.length < schema.minItems) {
-      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_MIN_ITEMS', `Array must contain at least ${schema.minItems} item(s).`, pathNow, 'JSON_SCHEMA'));
+      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_MIN_ITEMS', `Array must contain at least ${schema.minItems} item(s).`, pathNow, LAYERS.JSON_SCHEMA));
     }
     if (schema.uniqueItems === true) {
       const serialized = value.map(canonicalJson);
       if (new Set(serialized).size !== serialized.length) {
-        errors.push(diagnostic('BUILDER_PCVP_SCHEMA_UNIQUE_ITEMS', 'Array items must be unique.', pathNow, 'JSON_SCHEMA'));
+        errors.push(diagnostic('BUILDER_PCVP_SCHEMA_UNIQUE_ITEMS', 'Array items must be unique.', pathNow, LAYERS.JSON_SCHEMA));
       }
     }
     if (schema.items) {
@@ -118,7 +127,7 @@ function validateSchema(value, schema, schemas, pathNow = '$') {
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
     for (const key of schema.required ?? []) {
       if (!Object.hasOwn(value, key)) {
-        errors.push(diagnostic('BUILDER_PCVP_SCHEMA_REQUIRED', `Required property is missing: ${key}.`, schemaPath(pathNow, key), 'JSON_SCHEMA'));
+        errors.push(diagnostic('BUILDER_PCVP_SCHEMA_REQUIRED', `Required property is missing: ${key}.`, schemaPath(pathNow, key), LAYERS.JSON_SCHEMA));
       }
     }
     for (const [key, nested] of Object.entries(schema.properties ?? {})) {
@@ -130,7 +139,7 @@ function validateSchema(value, schema, schemas, pathNow = '$') {
       const allowed = new Set(Object.keys(schema.properties ?? {}));
       for (const key of Object.keys(value)) {
         if (!allowed.has(key)) {
-          errors.push(diagnostic('BUILDER_PCVP_SCHEMA_ADDITIONAL_PROPERTIES', `Additional property is forbidden: ${key}.`, schemaPath(pathNow, key), 'JSON_SCHEMA'));
+          errors.push(diagnostic('BUILDER_PCVP_SCHEMA_ADDITIONAL_PROPERTIES', `Additional property is forbidden: ${key}.`, schemaPath(pathNow, key), LAYERS.JSON_SCHEMA));
         }
       }
     }
@@ -142,7 +151,7 @@ function validateSchema(value, schema, schemas, pathNow = '$') {
   if (Array.isArray(schema.anyOf)) {
     const accepted = schema.anyOf.some((nested) => validateSchema(value, nested, schemas, pathNow).length === 0);
     if (!accepted) {
-      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_ANY_OF', 'Value does not satisfy any canonical alternative.', pathNow, 'JSON_SCHEMA'));
+      errors.push(diagnostic('BUILDER_PCVP_SCHEMA_ANY_OF', 'Value does not satisfy any canonical alternative.', pathNow, LAYERS.JSON_SCHEMA));
     }
   }
   if (schema.if && validateSchema(value, schema.if, schemas, pathNow).length === 0 && schema.then) {
@@ -159,7 +168,7 @@ function loadPinnedContract() {
   } catch (error) {
     return {
       schemas: null,
-      diagnostics: [diagnostic('BUILDER_PCVP_LOCK_UNAVAILABLE', `Pinned contract lock could not be loaded (${error.name}).`)]
+      diagnostics: [diagnostic('BUILDER_PCVP_LOCK_UNAVAILABLE', `Pinned contract lock could not be loaded (${error.name}).`, '$.pcvp_lock', LAYERS.BUILDER_INTEGRATION)]
     };
   }
 
@@ -169,7 +178,7 @@ function loadPinnedContract() {
   };
   for (const [key, expected] of Object.entries(expectedLock)) {
     if (lock[key] !== expected) {
-      diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', `${key} must remain ${expected}.`, `$.${key}`));
+      diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', `${key} must remain ${expected}.`, `$.${key}`, LAYERS.BUILDER_INTEGRATION));
     }
   }
 
@@ -180,13 +189,13 @@ function loadPinnedContract() {
     activation: 'NONE'
   };
   if (!deepEqual(lock.policy, expectedPolicy)) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', 'Policy identity or dormant state drifted.', '$.policy'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', 'Policy identity or dormant state drifted.', '$.policy', LAYERS.BUILDER_INTEGRATION));
   }
   if (
     lock.canonical?.repository !== CANONICAL_REPOSITORY
     || lock.canonical?.commit_sha !== CANONICAL_COMMIT
   ) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', 'Canonical owner or immutable commit drifted.', '$.canonical'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', 'Canonical owner or immutable commit drifted.', '$.canonical', LAYERS.BUILDER_INTEGRATION));
   }
 
   const expectedProfile = {
@@ -200,29 +209,29 @@ function loadPinnedContract() {
     local_copy_authoritative: false
   };
   if (!deepEqual(lock.profile, expectedProfile)) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_PROFILE_IDENTITY_MISMATCH', 'Builder profile identity drifted.', '$.profile'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_PROFILE_IDENTITY_MISMATCH', 'Builder profile identity drifted.', '$.profile', LAYERS.BUILDER_INTEGRATION));
   }
 
   try {
     const observedProfile = sha256(readFileSync(path.join(ROOT, PROFILE_PATH)));
     if (observedProfile !== PROFILE_SHA256) {
-      diagnostics.push(diagnostic('BUILDER_PCVP_PROFILE_HASH_MISMATCH', 'Builder profile bytes do not match the immutable lock.', '$.profile.sha256'));
+      diagnostics.push(diagnostic('BUILDER_PCVP_PROFILE_HASH_MISMATCH', 'Builder profile bytes do not match the immutable lock.', '$.profile.sha256', LAYERS.BUILDER_INTEGRATION));
     }
   } catch (error) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_PROFILE_UNAVAILABLE', `Builder profile could not be loaded (${error.name}).`, '$.profile.path'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_PROFILE_UNAVAILABLE', `Builder profile could not be loaded (${error.name}).`, '$.profile.path', LAYERS.BUILDER_INTEGRATION));
   }
 
   if (
     lock.vendored?.root !== VENDORED_ROOT
     || lock.vendored?.local_copy_authoritative !== false
   ) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', 'Vendored schemas must remain non-authoritative at the locked path.', '$.vendored'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', 'Vendored schemas must remain non-authoritative at the locked path.', '$.vendored', LAYERS.BUILDER_INTEGRATION));
   }
   if (
     lock.verification?.byte_equality_required !== true
     || lock.verification?.compare_against_moving_default_branch !== false
   ) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', 'Verification must remain bound to immutable bytes.', '$.verification'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_IDENTITY_MISMATCH', 'Verification must remain bound to immutable bytes.', '$.verification', LAYERS.BUILDER_INTEGRATION));
   }
 
   const lockedFiles = new Map(
@@ -232,7 +241,7 @@ function loadPinnedContract() {
     lockedFiles.size !== Object.keys(SCHEMA_HASHES).length
     || Object.entries(SCHEMA_HASHES).some(([name, hash]) => lockedFiles.get(name) !== hash)
   ) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_FILE_SET_INVALID', 'Lock must cover exactly the four canonical schemas.', '$.files'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_LOCK_FILE_SET_INVALID', 'Lock must cover exactly the four canonical schemas.', '$.files', LAYERS.BUILDER_INTEGRATION));
   }
 
   const schemas = {};
@@ -242,18 +251,18 @@ function loadPinnedContract() {
       const bytes = readFileSync(path.join(ROOT, relativePath));
       const observedHash = sha256(bytes);
       if (observedHash !== expectedHash) {
-        diagnostics.push(diagnostic('BUILDER_PCVP_SCHEMA_HASH_MISMATCH', `Vendored ${name} bytes do not match the immutable source.`, `$.files.${name}`));
+        diagnostics.push(diagnostic('BUILDER_PCVP_SCHEMA_HASH_MISMATCH', `Vendored ${name} bytes do not match the immutable source.`, `$.files.${name}`, LAYERS.BUILDER_INTEGRATION));
       } else {
         schemas[name] = JSON.parse(bytes.toString('utf8'));
       }
     } catch (error) {
-      diagnostics.push(diagnostic('BUILDER_PCVP_SCHEMA_UNAVAILABLE', `Vendored ${name} could not be loaded (${error.name}).`, `$.files.${name}`));
+      diagnostics.push(diagnostic('BUILDER_PCVP_SCHEMA_UNAVAILABLE', `Vendored ${name} could not be loaded (${error.name}).`, `$.files.${name}`, LAYERS.BUILDER_INTEGRATION));
     }
   }
   return { schemas: Object.keys(schemas).length === 4 ? schemas : null, diagnostics };
 }
 
-function crossRecordDiagnostics(document, expectedSourceStages) {
+function canonicalCrossRecordDiagnostics(document) {
   const carrier = document.continuation_assurance;
   const claims = carrier.claims;
   const effects = carrier.effects;
@@ -270,48 +279,89 @@ function crossRecordDiagnostics(document, expectedSourceStages) {
   ];
 
   if (new Set(allIds).size !== allIds.length) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_ID_NOT_GLOBALLY_UNIQUE', 'Claim, Effect and Authorization IDs must be globally unique.', '$.continuation_assurance'));
-  }
-  if (!expectedSourceStages.includes(carrier.source_stage)) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_SOURCE_STAGE_MISMATCH', `source_stage must be one of ${expectedSourceStages.join(', ')}.`, '$.continuation_assurance.source_stage'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_ID_NOT_GLOBALLY_UNIQUE', 'Claim, Effect and Authorization IDs must be globally unique.', '$.continuation_assurance', LAYERS.CROSS_RECORD));
   }
 
   for (const effect of effects) {
     for (const claimId of effect.depends_on_claim_ids) {
       if (!claimsById.has(claimId)) {
-        diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_CLAIM_REF_UNRESOLVED', `Effect dependency is unresolved: ${claimId}.`, `$.continuation_assurance.effects.${effect.effect_id}`));
+        diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_CLAIM_REF_UNRESOLVED', `Effect dependency is unresolved: ${claimId}.`, `$.continuation_assurance.effects.${effect.effect_id}`, LAYERS.CROSS_RECORD));
       }
     }
     const authorization = effect.authorization_ref === null
       ? null
       : authorizationsById.get(effect.authorization_ref);
     if (effect.authorization_ref !== null && !authorization) {
-      diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_REF_UNRESOLVED', `Authorization reference is unresolved: ${effect.authorization_ref}.`, `$.continuation_assurance.effects.${effect.effect_id}`));
+      diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_REF_UNRESOLVED', `Authorization reference is unresolved: ${effect.authorization_ref}.`, `$.continuation_assurance.effects.${effect.effect_id}`, LAYERS.CROSS_RECORD));
     }
     if (authorization) {
       if (authorization.status !== 'ACTIVE') {
-        diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_NOT_ACTIVE', `Authorization ${authorization.authorization_id} is not ACTIVE.`, `$.continuation_assurance.effects.${effect.effect_id}`));
+        diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_NOT_ACTIVE', `Authorization ${authorization.authorization_id} is not ACTIVE.`, `$.continuation_assurance.effects.${effect.effect_id}`, LAYERS.CROSS_RECORD));
       }
       const covered = authorization.allowed_effect_ids.includes(effect.effect_id)
         || authorization.allowed_effect_classes.includes(effect.effect_class);
       if (!covered) {
-        diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_NOT_COVERING', `Authorization ${authorization.authorization_id} does not cover the effect.`, `$.continuation_assurance.effects.${effect.effect_id}`));
+        diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_NOT_COVERING', `Authorization ${authorization.authorization_id} does not cover the effect.`, `$.continuation_assurance.effects.${effect.effect_id}`, LAYERS.CROSS_RECORD));
       }
       if (authorization.permitted_scope !== effect.permitted_scope) {
-        diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_SCOPE_MISMATCH', `Authorization ${authorization.authorization_id} scope differs from the effect scope.`, `$.continuation_assurance.effects.${effect.effect_id}`));
+        diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_SCOPE_MISMATCH', `Authorization ${authorization.authorization_id} scope differs from the effect scope.`, `$.continuation_assurance.effects.${effect.effect_id}`, LAYERS.CROSS_RECORD));
       }
-      if (
-        authorization.stage_scope.from !== carrier.source_stage
-        || authorization.stage_scope.through !== BUILDER_STAGE
-      ) {
-        diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_STAGE_SCOPE_MISMATCH', `Authorization ${authorization.authorization_id} must bind ${carrier.source_stage} through ${BUILDER_STAGE}.`, `$.continuation_assurance.authorizations.${authorization.authorization_id}.stage_scope`));
-      }
-      if (
-        authorization.basis === 'SAFE_REVERSIBLE_DEFAULT'
-        && ['EXTERNAL_MUTATION', 'IRREVERSIBLE_OR_AUTHORITY_BEARING'].includes(effect.effect_class)
-      ) {
-        diagnostics.push(diagnostic('BUILDER_PCVP_SAFE_DEFAULT_FORBIDDEN_EFFECT', 'SAFE_REVERSIBLE_DEFAULT cannot cover external or irreversible effects.', `$.continuation_assurance.effects.${effect.effect_id}`));
-      }
+    }
+  }
+
+  const currentEffect = effectsById.get(summary.current_effect_id);
+  if (!currentEffect) {
+    diagnostics.push(diagnostic('BUILDER_PCVP_SUMMARY_EFFECT_REF_UNRESOLVED', 'stage_summary.current_effect_id is unresolved.', '$.continuation_assurance.stage_summary.current_effect_id', LAYERS.CROSS_RECORD));
+    return diagnostics;
+  }
+  const currentDependencies = new Set(currentEffect.depends_on_claim_ids);
+  for (const claimId of summary.derived_from_claim_ids) {
+    if (!claimsById.has(claimId)) {
+      diagnostics.push(diagnostic('BUILDER_PCVP_SUMMARY_CLAIM_REF_UNRESOLVED', `Summary claim reference is unresolved: ${claimId}.`, '$.continuation_assurance.stage_summary.derived_from_claim_ids', LAYERS.CROSS_RECORD));
+    } else if (!currentDependencies.has(claimId)) {
+      diagnostics.push(diagnostic('BUILDER_PCVP_SUMMARY_CLAIM_NOT_EFFECT_DEPENDENCY', `Summary claim is not a current-effect dependency: ${claimId}.`, '$.continuation_assurance.stage_summary.derived_from_claim_ids', LAYERS.CROSS_RECORD));
+    }
+  }
+  return diagnostics;
+}
+
+function builderIntegrationDiagnostics(document, expectedSourceStages) {
+  const carrier = document.continuation_assurance;
+  const diagnostics = [];
+  if (!expectedSourceStages.includes(carrier.source_stage)) {
+    diagnostics.push(diagnostic('BUILDER_PCVP_SOURCE_STAGE_MISMATCH', `source_stage must be one of ${expectedSourceStages.join(', ')}.`, '$.continuation_assurance.source_stage', LAYERS.BUILDER_INTEGRATION));
+  }
+  for (const authorization of carrier.authorizations) {
+    if (
+      authorization.stage_scope.from !== carrier.source_stage
+      || authorization.stage_scope.through !== BUILDER_STAGE
+    ) {
+      diagnostics.push(diagnostic('BUILDER_PCVP_EFFECT_AUTH_STAGE_SCOPE_MISMATCH', `Authorization ${authorization.authorization_id} must bind ${carrier.source_stage} through ${BUILDER_STAGE}.`, `$.continuation_assurance.authorizations.${authorization.authorization_id}.stage_scope`, LAYERS.BUILDER_INTEGRATION));
+    }
+  }
+  return diagnostics;
+}
+
+function canonicalSemanticPolicyDiagnostics(document) {
+  const carrier = document.continuation_assurance;
+  const claims = carrier.claims;
+  const effects = carrier.effects;
+  const authorizations = carrier.authorizations;
+  const summary = carrier.stage_summary;
+  const diagnostics = [];
+  const claimsById = new Map(claims.map((item) => [item.claim_id, item]));
+  const effectsById = new Map(effects.map((item) => [item.effect_id, item]));
+  const authorizationsById = new Map(authorizations.map((item) => [item.authorization_id, item]));
+
+  for (const effect of effects) {
+    const authorization = effect.authorization_ref === null
+      ? null
+      : authorizationsById.get(effect.authorization_ref);
+    if (
+      authorization?.basis === 'SAFE_REVERSIBLE_DEFAULT'
+      && ['EXTERNAL_MUTATION', 'IRREVERSIBLE_OR_AUTHORITY_BEARING'].includes(effect.effect_class)
+    ) {
+      diagnostics.push(diagnostic('BUILDER_PCVP_SAFE_DEFAULT_FORBIDDEN_EFFECT', 'SAFE_REVERSIBLE_DEFAULT cannot cover external or irreversible effects.', `$.continuation_assurance.effects.${effect.effect_id}`, LAYERS.SEMANTIC_POLICY));
     }
 
     const dependentClaims = effect.depends_on_claim_ids
@@ -323,24 +373,11 @@ function crossRecordDiagnostics(document, expectedSourceStages) {
       && claim.verification_state === 'CONTRADICTED'
     ));
     if (contradictedCritical && effect.continuation_state !== 'BLOCKED') {
-      diagnostics.push(diagnostic('BUILDER_PCVP_CONTRADICTED_CRITICAL_EFFECT_NOT_BLOCKED', 'A contradicted critical dependency must block the effect.', `$.continuation_assurance.effects.${effect.effect_id}`));
+      diagnostics.push(diagnostic('BUILDER_PCVP_CONTRADICTED_CRITICAL_EFFECT_NOT_BLOCKED', 'A contradicted critical dependency must block the effect.', `$.continuation_assurance.effects.${effect.effect_id}`, LAYERS.SEMANTIC_POLICY));
     }
   }
 
   const currentEffect = effectsById.get(summary.current_effect_id);
-  if (!currentEffect) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_SUMMARY_EFFECT_REF_UNRESOLVED', 'stage_summary.current_effect_id is unresolved.', '$.continuation_assurance.stage_summary.current_effect_id'));
-    return diagnostics;
-  }
-  const currentDependencies = new Set(currentEffect.depends_on_claim_ids);
-  for (const claimId of summary.derived_from_claim_ids) {
-    if (!claimsById.has(claimId)) {
-      diagnostics.push(diagnostic('BUILDER_PCVP_SUMMARY_CLAIM_REF_UNRESOLVED', `Summary claim reference is unresolved: ${claimId}.`, '$.continuation_assurance.stage_summary.derived_from_claim_ids'));
-    } else if (!currentDependencies.has(claimId)) {
-      diagnostics.push(diagnostic('BUILDER_PCVP_SUMMARY_CLAIM_NOT_EFFECT_DEPENDENCY', `Summary claim is not a current-effect dependency: ${claimId}.`, '$.continuation_assurance.stage_summary.derived_from_claim_ids'));
-    }
-  }
-
   const dependentClaims = currentEffect.depends_on_claim_ids
     .map((claimId) => claimsById.get(claimId))
     .filter(Boolean);
@@ -373,7 +410,7 @@ function crossRecordDiagnostics(document, expectedSourceStages) {
       || materialApplicabilityUndetermined
     )
   ) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_GREEN_PROJECTION_INVALID', 'GREEN is inconsistent with the current effect or its dependent claims.', '$.continuation_assurance.stage_summary'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_GREEN_PROJECTION_INVALID', 'GREEN is inconsistent with the current effect or its dependent claims.', '$.continuation_assurance.stage_summary', LAYERS.SEMANTIC_POLICY));
   }
   if (summary.owner_projection === 'YELLOW') {
     const expectedSubstate = currentEffect.continuation_state === 'CONTINUE'
@@ -387,25 +424,51 @@ function crossRecordDiagnostics(document, expectedSourceStages) {
       || (!applicableUnverified && currentEffect.continuation_state !== 'AUTHORIZATION_REQUIRED')
       || criticalContradicted
     ) {
-      diagnostics.push(diagnostic('BUILDER_PCVP_YELLOW_PROJECTION_INVALID', 'YELLOW is inconsistent with the current effect or its dependent claims.', '$.continuation_assurance.stage_summary'));
+      diagnostics.push(diagnostic('BUILDER_PCVP_YELLOW_PROJECTION_INVALID', 'YELLOW is inconsistent with the current effect or its dependent claims.', '$.continuation_assurance.stage_summary', LAYERS.SEMANTIC_POLICY));
     }
   }
   if (summary.owner_projection === 'RED' && currentEffect.continuation_state !== 'BLOCKED') {
-    diagnostics.push(diagnostic('BUILDER_PCVP_RED_WITH_NON_BLOCKED_EFFECT', 'RED requires the current effect to be BLOCKED.', '$.continuation_assurance.stage_summary'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_RED_WITH_NON_BLOCKED_EFFECT', 'RED requires the current effect to be BLOCKED.', '$.continuation_assurance.stage_summary', LAYERS.SEMANTIC_POLICY));
   }
   if (
     (currentEffect.continuation_state === 'BLOCKED' || criticalContradicted)
     && summary.owner_projection !== 'RED'
   ) {
-    diagnostics.push(diagnostic('BUILDER_PCVP_REQUIRED_RED_PROJECTION_MISSING', 'A blocked or contradicted critical current effect requires RED.', '$.continuation_assurance.stage_summary'));
+    diagnostics.push(diagnostic('BUILDER_PCVP_REQUIRED_RED_PROJECTION_MISSING', 'A blocked or contradicted critical current effect requires RED.', '$.continuation_assurance.stage_summary', LAYERS.SEMANTIC_POLICY));
   }
   return diagnostics;
 }
 
-export function inspectOptionalPcvpCarrier(
-  document,
-  { expectedSourceStages = DEFAULT_SOURCE_STAGES } = {}
-) {
+function sortedDiagnostics(diagnostics) {
+  return [...diagnostics].sort((left, right) => (
+    left.path.localeCompare(right.path)
+    || left.code.localeCompare(right.code)
+    || left.message.localeCompare(right.message)
+  ));
+}
+
+function commonFacts() {
+  return {
+    compatibility_mode: 'DUAL_READ',
+    adoption_status: 'not_yet_adopted',
+    activation_effect: 'NONE',
+    emission_enabled: false,
+    runtime_authority: false
+  };
+}
+
+function invalidResult(diagnostics) {
+  return {
+    status: 'invalid',
+    diagnostics: sortedDiagnostics(diagnostics),
+    ...commonFacts()
+  };
+}
+
+function inspectPcvpCarrierByPhases(document, {
+  expectedSourceStages = DEFAULT_SOURCE_STAGES,
+  includeBuilderIntegration = true
+} = {}) {
   if (
     document === null
     || typeof document !== 'object'
@@ -415,11 +478,7 @@ export function inspectOptionalPcvpCarrier(
     return {
       status: 'legacy_absent',
       diagnostics: [],
-      compatibility_mode: 'DUAL_READ',
-      adoption_status: 'not_yet_adopted',
-      activation_effect: 'NONE',
-      emission_enabled: false,
-      runtime_authority: false
+      ...commonFacts()
     };
   }
 
@@ -427,34 +486,26 @@ export function inspectOptionalPcvpCarrier(
     continuation_assurance: structuredClone(document.continuation_assurance)
   };
   const pinned = loadPinnedContract();
-  const diagnostics = [...pinned.diagnostics];
-  if (pinned.schemas) {
-    diagnostics.push(...validateSchema(
-      carrierDocument,
-      pinned.schemas['handoff.schema.json'],
-      pinned.schemas
-    ));
-  }
-  if (diagnostics.length === 0) {
-    diagnostics.push(...crossRecordDiagnostics(carrierDocument, expectedSourceStages));
-  }
-  diagnostics.sort((left, right) => (
-    left.path.localeCompare(right.path)
-    || left.code.localeCompare(right.code)
-    || left.message.localeCompare(right.message)
-  ));
+  if (pinned.diagnostics.length > 0) return invalidResult(pinned.diagnostics);
 
-  if (diagnostics.length > 0) {
-    return {
-      status: 'invalid',
-      diagnostics,
-      compatibility_mode: 'DUAL_READ',
-      adoption_status: 'not_yet_adopted',
-      activation_effect: 'NONE',
-      emission_enabled: false,
-      runtime_authority: false
-    };
+  const schemaDiagnostics = validateSchema(
+    carrierDocument,
+    pinned.schemas['handoff.schema.json'],
+    pinned.schemas
+  );
+  if (schemaDiagnostics.length > 0) return invalidResult(schemaDiagnostics);
+
+  const crossRecord = canonicalCrossRecordDiagnostics(carrierDocument);
+  if (crossRecord.length > 0) return invalidResult(crossRecord);
+
+  if (includeBuilderIntegration) {
+    const integration = builderIntegrationDiagnostics(carrierDocument, expectedSourceStages);
+    if (integration.length > 0) return invalidResult(integration);
   }
+
+  const semanticPolicy = canonicalSemanticPolicyDiagnostics(carrierDocument);
+  if (semanticPolicy.length > 0) return invalidResult(semanticPolicy);
+
   return {
     status: 'validated',
     diagnostics: [],
@@ -463,12 +514,22 @@ export function inspectOptionalPcvpCarrier(
     policy_id: carrierDocument.continuation_assurance.policy_id,
     policy_version: carrierDocument.continuation_assurance.policy_version,
     source_stage: carrierDocument.continuation_assurance.source_stage,
-    compatibility_mode: 'DUAL_READ',
-    adoption_status: 'not_yet_adopted',
-    activation_effect: 'NONE',
-    emission_enabled: false,
-    runtime_authority: false
+    ...commonFacts()
   };
+}
+
+export function inspectOptionalPcvpCarrier(
+  document,
+  { expectedSourceStages = DEFAULT_SOURCE_STAGES } = {}
+) {
+  return inspectPcvpCarrierByPhases(document, {
+    expectedSourceStages,
+    includeBuilderIntegration: true
+  });
+}
+
+export function inspectCanonicalPcvpCarrierForValidation(document) {
+  return inspectPcvpCarrierByPhases(document, { includeBuilderIntegration: false });
 }
 
 export class PcvpCarrierValidationError extends Error {
@@ -495,4 +556,3 @@ export function clonePcvpCarrier(result) {
   }
   return structuredClone(result.carrier.continuation_assurance);
 }
-
