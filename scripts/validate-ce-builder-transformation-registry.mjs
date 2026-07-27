@@ -31,6 +31,7 @@ const ALLOWED_OPERATIONS = new Set([
   'copy_after_identity_preservation_checks',
   'derive_source_payload_ledger',
   'copy_required_builder_payload_carriers',
+  'validate_pinned_contract_then_lossless_copy',
   'normalize_first_safe_builder_batch',
   'flatten_declared_action_parameters',
   'copy_confirmation_ids_attach_trusted_template',

@@ -2,6 +2,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { inspectOptionalPcvpCarrier } from './lib/pcvp-carrier.mjs';
 import { validateReferenceParadigmGate } from './validate-reference-paradigm-gate.mjs';
 
 const filePath = process.argv[2];
@@ -39,6 +40,7 @@ const DIAGNOSTICS = {
   FIRST_BATCH_OVERCAP: ['EV4-PKG-017', 'FIRST_BATCH_OVERCAP'],
   FIRST_BATCH_MAX_ACTIONS_OVERCAP: ['EV4-PKG-018', 'FIRST_BATCH_MAX_ACTIONS_OVERCAP'],
   REFERENCE_PARADIGM_GATE: ['EV4-PKG-019', 'REFERENCE_PARADIGM_GATE'],
+  PCVP_CARRIER_INVALID: ['EV4-PKG-020', 'PCVP_CARRIER_INVALID'],
   DUPLICATE_ID: ['EV4-PKG-101', 'DUPLICATE_ID'],
   CHILD_NODE_UNKNOWN: ['EV4-PKG-102', 'CHILD_NODE_UNKNOWN'],
   CLASS_TARGET_UNKNOWN: ['EV4-PKG-103', 'CLASS_TARGET_UNKNOWN'],
@@ -217,6 +219,14 @@ function expectedAuthorization(value, diagnostics) {
 
 function arraysEqual(left = [], right = []) {
   return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+const pcvp = inspectOptionalPcvpCarrier(pkg);
+for (const diagnostic of pcvp.diagnostics) {
+  fail(
+    DIAGNOSTICS.PCVP_CARRIER_INVALID,
+    `${diagnostic.code}@${diagnostic.path}: ${diagnostic.message}`
+  );
 }
 
 if (pkg.package_status === 'blocked') {
