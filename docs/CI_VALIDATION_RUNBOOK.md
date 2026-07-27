@@ -80,7 +80,10 @@ validation / run-crash-recovery
 validation / nested-lock-publication
 validation / lock-restore-no-clobber
 validation / coordinated-final-repair
-validation / runtime-tail
+validation / project-pack-determinism
+validation / ce-project-gate-smoke
+validation / runtime-transaction
+validation / runtime-transaction-state
 validate
 ```
 
@@ -147,7 +150,7 @@ node scripts/test-validation-sharding.mjs
 
 ### A validation shard fails
 
-The failing job name identifies the shard. The runner logs the exact canonical command label before execution.
+The failing job name identifies the shard. Expensive Runtime tests and the former tail commands are independently bounded so the failing job maps directly to one high-cost or diagnostic-sensitive command. The runner also logs the exact canonical command label before execution.
 
 Run only that shard locally:
 
