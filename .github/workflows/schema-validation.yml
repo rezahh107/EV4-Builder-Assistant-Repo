@@ -92,18 +92,70 @@ jobs:
       - name: Run required validation shard
         run: node scripts/validate.mjs --shard "${{ matrix.shard }}"
 
+  pcvp_canonical_parity:
+    name: PCVP canonical fixture parity
+    needs: discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout exact Builder commit
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ needs.discover.outputs.expected_sha }}
+          persist-credentials: false
+
+      - name: Verify exact Builder object
+        env:
+          EXPECTED_SHA: ${{ needs.discover.outputs.expected_sha }}
+          EVENT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          ACTUAL_SHA="$(git rev-parse HEAD)"
+          test "$EXPECTED_SHA" = "$EVENT_SHA"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          echo "tested_object_type=exact_head_pcvp_parity"
+          echo "tested_sha=$ACTUAL_SHA"
+
+      - name: Checkout immutable Decision Kernel reference
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          repository: rezahh107/EV4-Decision-Kernel
+          ref: 069a50fa243b01fa578a7c1bcb8864d9e796d34b
+          path: decision-kernel
+          persist-credentials: false
+
+      - name: Verify exact Decision Kernel object
+        env:
+          EXPECTED_DEPENDENCY_SHA: 069a50fa243b01fa578a7c1bcb8864d9e796d34b
+        run: |
+          ACTUAL_DEPENDENCY_SHA="$(git -C decision-kernel rev-parse HEAD)"
+          test "$ACTUAL_DEPENDENCY_SHA" = "$EXPECTED_DEPENDENCY_SHA"
+          echo "dependency_repository=rezahh107/EV4-Decision-Kernel"
+          echo "dependency_sha=$ACTUAL_DEPENDENCY_SHA"
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+
+      - name: Run exact canonical PCVP fixture parity
+        run: node tests/pcvp-canonical-fixture-parity.test.mjs decision-kernel/kernel/pcvp/v1.0.0/bundle
+
   validate:
     name: validate
     if: always()
-    needs: [discover, validation_shard]
+    needs: [discover, validation_shard, pcvp_canonical_parity]
     runs-on: ubuntu-latest
     steps:
-      - name: Require discovery and every validation shard
+      - name: Require discovery, every validation shard and PCVP parity
         env:
           DISCOVERY_RESULT: ${{ needs.discover.result }}
           SHARD_RESULT: ${{ needs.validation_shard.result }}
+          PCVP_PARITY_RESULT: ${{ needs.pcvp_canonical_parity.result }}
         run: |
           echo "discovery_result=$DISCOVERY_RESULT"
           echo "validation_shards_result=$SHARD_RESULT"
+          echo "pcvp_parity_result=$PCVP_PARITY_RESULT"
           test "$DISCOVERY_RESULT" = "success"
           test "$SHARD_RESULT" = "success"
+          test "$PCVP_PARITY_RESULT" = "success"
