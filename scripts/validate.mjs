@@ -17,7 +17,10 @@ export const requiredShardIds = Object.freeze([
   'nested-lock-publication',
   'lock-restore-no-clobber',
   'coordinated-final-repair',
-  'runtime-tail'
+  'project-pack-determinism',
+  'ce-project-gate-smoke',
+  'runtime-transaction',
+  'runtime-transaction-state'
 ]);
 
 let nextOrder = 0;
@@ -105,16 +108,16 @@ export const canonicalTasks = Object.freeze([
   nodeTask('scripts/test-builder-nested-lock-publication.mjs', 'nested-lock-publication'),
   nodeTask('scripts/test-builder-lock-restore-no-clobber.mjs', 'lock-restore-no-clobber'),
   nodeTask('scripts/test-builder-coordinated-final-repair.mjs', 'coordinated-final-repair'),
-  nodeTask('scripts/test-project-pack-determinism.mjs', 'runtime-tail'),
-  nodeTask('scripts/smoke-ce-project-gate-builder.mjs', 'runtime-tail'),
+  nodeTask('scripts/test-project-pack-determinism.mjs', 'project-pack-determinism'),
+  nodeTask('scripts/smoke-ce-project-gate-builder.mjs', 'ce-project-gate-smoke'),
   nodeTask(
     'scripts/validate-builder-runtime-transaction.mjs',
-    'runtime-tail',
+    'runtime-transaction',
     ['scripts/validate-builder-runtime-transaction.mjs', transactionFixture, '--self-test']
   ),
   nodeTask(
     'scripts/validate-builder-runtime-transaction-state.mjs',
-    'runtime-tail',
+    'runtime-transaction-state',
     ['scripts/validate-builder-runtime-transaction-state.mjs', transactionFixture]
   ),
   nodeTask('scripts/test-validation-sharding.mjs', 'contracts-and-static')
