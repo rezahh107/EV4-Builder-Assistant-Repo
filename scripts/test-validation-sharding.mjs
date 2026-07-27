@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import {
   buildPartition,
+  canonicalPcvpParityWorkflowContract,
   canonicalShardTaskContracts,
   canonicalTasks,
   getCanonicalTaskIdentity,
@@ -63,7 +64,9 @@ scripts/validate-builder-runtime-transaction-state.mjs
 `.trim().split(/\s+/).map((name) => `node:${name}`);
 
 const startingHeadTaskIds = Object.freeze([...baselineNpm, ...baselineNode]);
+const pcvpTaskId = canonicalShardTaskContracts.pcvpFocused.id;
 const shardingTestId = 'node:scripts/test-validation-sharding.mjs';
+const expectedTaskIds = Object.freeze([...startingHeadTaskIds, pcvpTaskId, shardingTestId]);
 const workflowPath = new URL('../.github/workflows/schema-validation.yml', import.meta.url);
 const workflowText = fs.readFileSync(workflowPath, 'utf8');
 const cloneTasks = () => canonicalTasks.map((task) => ({ ...task, args: [...task.args] }));
@@ -78,12 +81,7 @@ function expectPartitionDiagnostic(mutate, code) {
   );
 }
 
-function expectContractDiagnostic({
-  mutateTasks = null,
-  mutatePartition = null,
-  mutateWorkflow = null,
-  code
-}) {
+function expectContractDiagnostic({ mutateTasks = null, mutatePartition = null, mutateWorkflow = null, code }) {
   const tasks = cloneTasks();
   if (mutateTasks) mutateTasks(tasks);
   const partition = clonePartition(tasks);
@@ -96,16 +94,32 @@ function expectContractDiagnostic({
   );
 }
 
+function replaceInParityJob(text, before, after) {
+  const start = text.indexOf(`  ${canonicalPcvpParityWorkflowContract.jobId}:`);
+  const end = text.indexOf('\n  validate:', start);
+  assert.ok(start >= 0 && end > start);
+  const block = text.slice(start, end);
+  assert.ok(block.includes(before), `Parity job marker not found: ${before}`);
+  return `${text.slice(0, start)}${block.replace(before, after)}${text.slice(end)}`;
+}
+
 function inventory() {
   const ids = canonicalTasks.map((task) => task.id);
-  assert.deepEqual(ids, [...startingHeadTaskIds, shardingTestId]);
+  assert.deepEqual(ids, expectedTaskIds);
   const result = validatePartition();
-  console.log(JSON.stringify({ missing_tasks: result.missingTasks, duplicate_tasks: result.duplicateTasks, unknown_tasks: result.unknownTasks }));
+  console.log(JSON.stringify({
+    missing_tasks: result.missingTasks,
+    duplicate_tasks: result.duplicateTasks,
+    unknown_tasks: result.unknownTasks,
+    pcvp_task_count: ids.filter((id) => id === pcvpTaskId).length
+  }));
 }
 
 function plans() {
   const full = getExecutionPlan();
-  assert.deepEqual(full.map((task) => task.id), [...startingHeadTaskIds, shardingTestId]);
+  assert.deepEqual(full.map((task) => task.id), expectedTaskIds);
+  assert.equal(full.filter((task) => task.id === pcvpTaskId).length, 1);
+  assert.equal(full.find((task) => task.id === pcvpTaskId)?.shard, 'contracts-and-static');
   assert.equal(full.find((task) => task.id === baselineNpm[0])?.kind, 'npm');
   assert.equal(full.find((task) => task.id === baselineNode[0])?.kind, 'node');
   const shards = requiredShardIds.flatMap((id) => getExecutionPlan(id));
@@ -140,29 +154,24 @@ function partitionMutations() {
   console.log('missing_task_rejected\nduplicate_task_rejected\nunknown_task_rejected\nunknown_shard_rejected\nempty_required_shard_rejected\nPASS');
 }
 
+function assertCanonicalIdentity(contract) {
+  const identity = getCanonicalTaskIdentity(contract.id);
+  assert.deepEqual(identity, {
+    count: 1,
+    task: {
+      id: contract.id,
+      executable: contract.executable,
+      args: [...contract.args],
+      shard: contract.shard
+    },
+    assignments: [contract.shard]
+  });
+}
+
 function canonicalIdentities() {
-  const transaction = getCanonicalTaskIdentity(canonicalShardTaskContracts.transaction.id);
-  assert.deepEqual(transaction, {
-    count: 1,
-    task: {
-      id: canonicalShardTaskContracts.transaction.id,
-      executable: 'node',
-      args: [...canonicalShardTaskContracts.transaction.args],
-      shard: 'runtime-transaction'
-    },
-    assignments: ['runtime-transaction']
-  });
-  const transactionState = getCanonicalTaskIdentity(canonicalShardTaskContracts.transactionState.id);
-  assert.deepEqual(transactionState, {
-    count: 1,
-    task: {
-      id: canonicalShardTaskContracts.transactionState.id,
-      executable: 'node',
-      args: [...canonicalShardTaskContracts.transactionState.args],
-      shard: 'runtime-transaction-state'
-    },
-    assignments: ['runtime-transaction-state']
-  });
+  assertCanonicalIdentity(canonicalShardTaskContracts.transaction);
+  assertCanonicalIdentity(canonicalShardTaskContracts.transactionState);
+  assertCanonicalIdentity(canonicalShardTaskContracts.pcvpFocused);
   console.log('PASS');
 }
 
@@ -179,27 +188,53 @@ function sharedContractMutations() {
     code: `CANONICAL_TASK_COUNT:${transactionStateId}:0`
   });
   expectContractDiagnostic({
+    mutateTasks: (tasks) => tasks.splice(tasks.findIndex((task) => task.id === pcvpTaskId), 1),
+    code: `CANONICAL_TASK_COUNT:${pcvpTaskId}:0`
+  });
+  expectContractDiagnostic({
+    mutateTasks: (tasks) => {
+      const task = tasks.find((entry) => entry.id === pcvpTaskId);
+      tasks.push({ ...task, args: [...task.args] });
+    },
+    code: `CANONICAL_TASK_COUNT:${pcvpTaskId}:2`
+  });
+  expectContractDiagnostic({
+    mutatePartition: (partition) => partition.find((shard) => shard.id === 'runtime-core').taskIds.push(pcvpTaskId),
+    code: `TASK_ASSIGNED_TO_MULTIPLE_SHARDS:${pcvpTaskId}`
+  });
+  expectContractDiagnostic({
+    mutateTasks: (tasks) => { tasks.find((entry) => entry.id === pcvpTaskId).executable = 'npm'; },
+    code: `CANONICAL_TASK_IDENTITY_MISMATCH:${pcvpTaskId}`
+  });
+  expectContractDiagnostic({
+    mutateTasks: (tasks) => { tasks.find((entry) => entry.id === pcvpTaskId).args = ['tests/wrong-pcvp.test.mjs']; },
+    code: `CANONICAL_TASK_IDENTITY_MISMATCH:${pcvpTaskId}`
+  });
+  expectContractDiagnostic({
+    mutateTasks: (tasks) => { tasks.find((entry) => entry.id === pcvpTaskId).shard = 'runtime-core'; },
+    code: `CANONICAL_TASK_IDENTITY_MISMATCH:${pcvpTaskId}`
+  });
+  expectContractDiagnostic({
+    mutatePartition: (partition) => {
+      const shard = partition.find((entry) => entry.taskIds.includes(pcvpTaskId));
+      shard.taskIds = shard.taskIds.filter((id) => id !== pcvpTaskId);
+    },
+    code: `MISSING_TASK:${pcvpTaskId}`
+  });
+  expectContractDiagnostic({
     mutatePartition: (partition) => partition.find((shard) => shard.id === 'runtime-core').taskIds.push(transactionId),
     code: `TASK_ASSIGNED_TO_MULTIPLE_SHARDS:${transactionId}`
   });
   expectContractDiagnostic({
-    mutateTasks: (tasks) => {
-      const task = tasks.find((entry) => entry.id === transactionId);
-      task.args[1] = 'tests/valid/runtime-transaction/wrong.json';
-    },
+    mutateTasks: (tasks) => { tasks.find((entry) => entry.id === transactionId).args[1] = 'tests/valid/runtime-transaction/wrong.json'; },
     code: `CANONICAL_TASK_IDENTITY_MISMATCH:${transactionId}`
   });
   expectContractDiagnostic({
-    mutateTasks: (tasks) => {
-      const task = tasks.find((entry) => entry.id === transactionId);
-      task.args = task.args.filter((arg) => arg !== '--self-test');
-    },
+    mutateTasks: (tasks) => { tasks.find((entry) => entry.id === transactionId).args = tasks.find((entry) => entry.id === transactionId).args.filter((arg) => arg !== '--self-test'); },
     code: `CANONICAL_TASK_IDENTITY_MISMATCH:${transactionId}`
   });
   expectContractDiagnostic({
-    mutateTasks: (tasks) => {
-      tasks.find((entry) => entry.id === transactionId).shard = 'runtime-core';
-    },
+    mutateTasks: (tasks) => { tasks.find((entry) => entry.id === transactionId).shard = 'runtime-core'; },
     code: `CANONICAL_TASK_IDENTITY_MISMATCH:${transactionId}`
   });
   expectContractDiagnostic({
@@ -219,17 +254,49 @@ function sharedContractMutations() {
     code: 'WORKFLOW_EXACT_HEAD_CHECK_MISSING'
   });
   expectContractDiagnostic({
-    mutateWorkflow: (text) => text.replace('test "$SHARD_RESULT" = "success"', 'echo "$SHARD_RESULT"'),
+    mutateWorkflow: (text) => text.replace(`  ${canonicalPcvpParityWorkflowContract.jobId}:`, '  pcvp_removed:'),
+    code: 'WORKFLOW_PCVP_PARITY_JOB_MISSING'
+  });
+  expectContractDiagnostic({
+    mutateWorkflow: (text) => replaceInParityJob(text, canonicalPcvpParityWorkflowContract.dependencyCommit, '1111111111111111111111111111111111111111'),
+    code: 'WORKFLOW_PCVP_DEPENDENCY_IDENTITY_MISMATCH'
+  });
+  expectContractDiagnostic({
+    mutateWorkflow: (text) => replaceInParityJob(text, 'test "$ACTUAL_SHA" = "$EXPECTED_SHA"', 'echo "$ACTUAL_SHA $EXPECTED_SHA"'),
+    code: 'WORKFLOW_PCVP_BUILDER_EXACT_HEAD_CHECK_MISSING'
+  });
+  expectContractDiagnostic({
+    mutateWorkflow: (text) => replaceInParityJob(text, 'test "$ACTUAL_DEPENDENCY_SHA" = "$EXPECTED_DEPENDENCY_SHA"', 'echo "$ACTUAL_DEPENDENCY_SHA $EXPECTED_DEPENDENCY_SHA"'),
+    code: 'WORKFLOW_PCVP_DEPENDENCY_EXACT_HEAD_CHECK_MISSING'
+  });
+  expectContractDiagnostic({
+    mutateWorkflow: (text) => text.replace('actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5', 'actions/checkout@v4'),
+    code: 'WORKFLOW_MUTABLE_ACTION_REFERENCE'
+  });
+  expectContractDiagnostic({
+    mutateWorkflow: (text) => replaceInParityJob(text, 'persist-credentials: false', 'persist-credentials: true'),
+    code: 'WORKFLOW_PCVP_CHECKOUT_CREDENTIALS_NOT_DISABLED'
+  });
+  expectContractDiagnostic({
+    mutateWorkflow: (text) => replaceInParityJob(text, `node ${canonicalPcvpParityWorkflowContract.harness}`, 'echo parity-skipped'),
+    code: 'WORKFLOW_PCVP_PARITY_EXECUTION_MISSING'
+  });
+  expectContractDiagnostic({
+    mutateWorkflow: (text) => text.replace('needs: [discover, validation_shard, pcvp_canonical_parity]', 'needs: [discover, validation_shard]'),
+    code: 'WORKFLOW_FINAL_DEPENDENCIES_MISSING'
+  });
+  expectContractDiagnostic({
+    mutateWorkflow: (text) => text.replace('test "$PCVP_PARITY_RESULT" = "success"', 'echo "$PCVP_PARITY_RESULT"'),
     code: 'WORKFLOW_FINAL_AGGREGATION_MISSING'
   });
   expectContractDiagnostic({
     mutateWorkflow: (text) => text
       .replace('node scripts/validate.mjs --shard "${{ matrix.shard }}"', 'echo "legacy markers only"')
-      .concat('\n# npm run validate\n# Run Builder runtime transaction enforcement validation\n# node scripts/validate-builder-runtime-transaction.mjs tests/valid/runtime-transaction/complete-transaction.json --self-test\n# node scripts/validate-builder-runtime-transaction-state.mjs tests/valid/runtime-transaction/complete-transaction.json\n'),
+      .concat('\n# npm run validate\n# node scripts/validate-builder-runtime-transaction.mjs tests/valid/runtime-transaction/complete-transaction.json --self-test\n# node scripts/validate-builder-runtime-transaction-state.mjs tests/valid/runtime-transaction/complete-transaction.json\n'),
     code: 'WORKFLOW_SHARD_EXECUTION_MISSING'
   });
 
-  console.log('missing_transaction_task_rejected\nmissing_transaction_state_task_rejected\nduplicate_transaction_assignment_rejected\nwrong_transaction_fixture_rejected\nmissing_self_test_rejected\nwrong_transaction_shard_rejected\nremoved_list_shards_rejected\nremoved_matrix_consumption_rejected\nremoved_shard_execution_rejected\nremoved_exact_head_check_rejected\nremoved_final_aggregation_rejected\ninert_legacy_comments_rejected\nPASS');
+  console.log('missing_pcvp_task_rejected\nduplicate_pcvp_task_rejected\nmultiple_pcvp_assignment_rejected\nwrong_pcvp_executable_rejected\nwrong_pcvp_arguments_rejected\nwrong_pcvp_shard_rejected\npcvp_removed_from_partition_rejected\nmissing_parity_job_rejected\ndependency_ref_drift_rejected\nbuilder_identity_check_removal_rejected\ndependency_identity_check_removal_rejected\nmutable_action_reference_rejected\npersisted_credentials_rejected\nmissing_parity_execution_rejected\nmissing_parity_dependency_rejected\nmissing_parity_aggregation_rejected\nPASS');
 }
 
 function workflow() {
@@ -238,22 +305,21 @@ function workflow() {
   assert.equal(result.shardCount, requiredShardIds.length);
   assert.equal(result.transactionTaskId, canonicalShardTaskContracts.transaction.id);
   assert.equal(result.transactionStateTaskId, canonicalShardTaskContracts.transactionState.id);
+  assert.equal(result.pcvpFocusedTaskId, pcvpTaskId);
+  assert.equal(result.pcvpParityJobId, canonicalPcvpParityWorkflowContract.jobId);
   console.log(JSON.stringify({
     dynamic_matrix_from_canonical_registry: true,
     exact_head_verification_per_shard: true,
-    final_job_requires_all_shards: true,
+    canonical_pcvp_task_registered_once: true,
+    canonical_pcvp_parity_required: true,
+    immutable_action_pins: true,
+    checkout_credentials_persisted: false,
+    final_job_requires_all_shards_and_parity: true,
     hard_coded_transaction_execution: false
   }));
 }
 
-const tests = {
-  inventory,
-  plans,
-  partitionMutations,
-  canonicalIdentities,
-  sharedContractMutations,
-  workflow
-};
+const tests = { inventory, plans, partitionMutations, canonicalIdentities, sharedContractMutations, workflow };
 const mode = process.argv[2] || 'all';
 if (mode === 'all') Object.values(tests).forEach((test) => test());
 else if (tests[mode]) tests[mode]();
