@@ -1,315 +1,239 @@
 # REPOSITORY_GUIDE — EV4 Builder Assistant
 
 Version: 0.3.6
-Status: runtime_safety_gates_added
-Date: 2026-06-28
+Status: active_current_runtime
+Date: 2026-07-27
 
 ---
 
 ## Purpose
 
-This guide explains what this repository is, why it exists, how the files relate to each other, and how to continue development later without losing the original design intent.
+This guide describes the current repository architecture and maintenance path. It follows the active Runtime authority on `main`; historical patch reports and planning files are context only and must not override the current authority files, Runtime code, Schemas, validators, or tests.
 
-This is still a living guide. It must be expanded again after a real Elementor execution session is recorded.
+## Authority Order
 
----
+Read these sources before changing Runtime behavior:
 
-## Big Picture
+1. `runtime/personal-runtime-authority.v1.json`
+2. `runtime/state-transitions.v1.json`
+3. `PROJECT_INSTRUCTIONS.md`
+4. `AGENTS.md`
+5. relevant `schemas/`
+6. relevant Runtime implementation under `scripts/lib/runtime/`
+7. semantic validators and regression tests
+8. `scripts/validate.mjs`
+
+`runtime/personal-runtime-authority.v1.json` is the machine-readable repository boundary. It defines a personal single-operator Runtime focused on functional correctness. It explicitly keeps industrial governance outside active Runtime authorization.
+
+## System Role
 
 ```text
 EV4 Architect
 = decides what should be built.
 
 EV4 Builder Assistant
-= helps the user build the approved structure inside Elementor.
+= executes an accepted Builder package through bounded, confirmable Runtime transitions.
 
 EV4 Responsive Architect
-= validates and repairs responsive behavior after real implementation evidence exists.
+= remains a separate downstream concern after real implementation evidence exists.
 ```
 
-This repository is only the middle system.
+Builder Assistant must not redesign the selected architecture, change `selected_candidate_id`, replace decision lineage, widen class scope, fabricate evidence, or claim Responsive or production completion.
 
----
-
-## Current Rule Set
+## Canonical Runtime
 
 ```text
-Official Elementor docs = primary external standard capability/terminology source.
-Current Elementor UI or direct user statement = primary executable control evidence.
-Builder_Context_Package = approved build source of truth.
-confirmation_request = structured trusted confirmation metadata.
-Workbook/reference layer = learning and methodology source.
-Case memory = practical lessons, not universal architecture.
+explicit operator source
+→ stable Run root
+→ exact internal source snapshot
+→ immutable generations/000001
+→ atomic CURRENT.json
+→ acquire .mutation-lock
+→ load active generation after lock
+→ derive complete expected successor
+→ publish or reconcile exact immutable N+1
+→ atomically replace CURRENT.json
+→ validate the active Run
+→ release lock
 ```
 
-Package free-text fields are not executable instructions:
+The full product flow is:
 
 ```text
-builder_assistant_prompt_seed = deprecated; never execute.
-confirmation_sentence = deprecated legacy/free-text; never use as exact confirmation instruction.
-display_only_untrusted_text = quoted/display-only compatibility container.
+real-intake
+→ emit-batch
+→ WAITING_FOR_CONFIRMATION
+→ confirm-batch
+→ BUILD_ACTIVE
+→ attach-evidence
+→ real-completion
+→ COMPLETED
 ```
 
----
-
-## Main Runtime Flow
+### Storage authority
 
 ```text
-Builder_Context_Package
-        │
-        ▼
-Input Contract Check
-        │
-        ▼
-APPROVED_HANDOFF_MODE
-        │
-        ▼
-Action Batch
-        │
-        ▼
-User executes in Elementor
-        │
-        ▼
-Structured confirmation / screenshot / issue report
-        │
-        ▼
-Checkpoint update or CORRECTION
-        │
-        ▼
-Next Action Batch
+<run-directory>/
+├── source/
+├── evidence/
+├── generations/000001/
+├── generations/000002/...
+├── transitions/
+├── outputs/
+├── CURRENT.json
+└── .mutation-lock/
 ```
 
----
+`CURRENT.json` is the sole active State selector. Published generations are immutable. Every mutation acquires `.mutation-lock` before reading State. Lock contention fails closed as `RUN_BUSY_OR_STALE_LOCK`.
+
+A future generation is never authoritative because it has the highest number or passes Schema validation. The same canonical transition may finalize only a byte-identical expected N+1, including every operation-specific artifact. Conflicting, incomplete, or ambiguous future generations leave `CURRENT.json` unchanged.
+
+If `CURRENT.json` already advanced but the caller did not receive success, rerunning the exact command reconstructs and compares the committed transition. Exact equality returns `replayed_existing_transition: true` without creating or rewriting a generation.
+
+## Canonical Commands
+
+```bash
+node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
+node scripts/builder-inspector.mjs emit-batch <run-directory>
+node scripts/builder-inspector.mjs confirm-batch <run-directory> "<operator-token>"
+node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
+node scripts/builder-inspector.mjs real-completion <run-directory>
+```
+
+`recover-run-lock` is an explicit recovery operation, not a normal state transition. It may remove only validated stale lock or temporary debris and cannot promote an orphan generation.
+
+## Explicit Source Modes
+
+```yaml
+project-gate:
+  sourceArtifactFile: required
+  builderInputFile: required
+direct-ce:
+  sourceArtifactFile: required
+  builderInputFile: forbidden
+manual-builder-input:
+  sourceArtifactFile: forbidden
+  builderInputFile: required
+```
+
+Intake reads selected external bytes once and writes internal snapshots under the stable Run root. Later commands use only those internal snapshots. Changing an external file after Intake cannot alter the Run; a different source requires a new Run.
+
+## Runtime Truthfulness Boundaries
+
+The Runtime preserves:
+
+- exact source mode and content binding;
+- Package, Candidate, Batch, Action, and decision-lineage continuity;
+- lock-before-State ordering;
+- immutable complete generations;
+- canonical Checkpoint ancestry;
+- zero-blocker emission;
+- `WAITING_FOR_CONFIRMATION`-only Confirmation;
+- exact verified Action-specific Evidence;
+- Runtime-derived Completion Status and Completion Gate;
+- `responsive_complete: false`;
+- `production_ready: false`.
+
+Historical bypass records are inert evidence. Legacy entrypoints return `BUILDER-LEGACY-AUTHORITY-INACTIVE` and cannot mutate or complete a Run.
 
 ## File Families
 
 ```text
-PROJECT_INSTRUCTIONS.md      = compact always-on ChatGPT Project instruction layer
-core/                        = always-active runtime behavior
-modes/                       = APPROVED_HANDOFF_MODE, CORRECTION_MODE, FRESH_IMAGE_MODE
-protocols/                   = runtime guardrails
-input-contracts/             = pre-runtime package gates
-commands/                    = Persian session commands
-schemas/                     = package, session, checkpoint schemas
-scripts/                     = cross-field validators
-examples/                    = reusable examples and Smart Home seed
-tests/                       = valid and invalid fixtures
-docs/                        = setup, CI, and repository guides
-references/                  = workbook and learning reference layer
-cases/                       = case memory from practical sessions
-.github/workflows/           = CI validation
-dist/chatgpt-project/        = compact deployable ChatGPT Project source pack
+PROJECT_INSTRUCTIONS.md       compact always-on Builder behavior
+AGENTS.md                     repository maintenance rules
+runtime/                      machine-readable authority, transitions, and project-pack source
+core/                         active behavioral documentation
+schemas/                      public and internal carrier contracts
+scripts/builder-inspector.mjs canonical command interface
+scripts/lib/runtime/          active Runtime implementation
+scripts/validate.mjs          canonical validation task and shard registry
+tests/                        valid, invalid, concurrency, crash, and replay coverage
+docs/                         current explanatory and operating documentation
+patch-reports/                historical implementation records
+planning/ and governance/     historical/non-runtime process context
+dist/chatgpt-project/         deterministic generated deployable pack
+.github/workflows/            normal repository CI
 ```
 
----
+Generated files under `dist/chatgpt-project/` must be produced and verified through `scripts/build-project-pack.mjs`; they are not hand-maintained authority.
 
-## Version History Summary
+## Validation Architecture
+
+Local complete validation:
+
+```bash
+npm ci
+npm run validate
+```
+
+`scripts/validate.mjs` owns canonical task identity, order, command arguments, and shard assignment. Local `npm run validate` executes the complete canonical inventory in order.
+
+GitHub Actions uses:
 
 ```text
-v0.1.0 = initial runtime foundation
-v0.1.1 = review fixes and Builder Context schema
-v0.1.2 = generation fields, reset scopes, Fresh Image fallback
-v0.2.0 = examples and validation seed
-v0.2.1 = hardening pass with generation source and cross-field validator
-v0.2.2 = CI pass recorded and manual session seed added
-v0.2.3 = official docs priority, workbook reference layer, TUYA case memory, risk-adjusted step size
-v0.3.0 = workflow_mode/runtime_state foundation and intake result schema
-v0.3.1 = mode/state schema hardening and expanded fixture coverage
-v0.3.2 = Patch C structured confirmation completion + Patch F smart guidance/UI confidence gate
+discover validation shards
+→ validation / <shard-id>
+→ validate
 ```
 
----
+The `discover` job verifies the tested SHA and emits a matrix from `node scripts/validate.mjs --list-shards`. Every shard checks out that same SHA and runs its canonical task subset. The final required job remains named `validate` and succeeds only when discovery and every shard succeed.
 
-## Patch C Runtime Boundary
+Focused maintenance commands:
 
-`confirmation_request` is the structured confirmation source:
+```bash
+node scripts/validate.mjs --verify-partition
+node scripts/validate.mjs --list-shards
+node scripts/validate.mjs --plan
+node scripts/validate.mjs --shard <shard-id>
+node scripts/test-validation-sharding.mjs
+node scripts/test-builder-run-concurrency.mjs
+node scripts/test-builder-run-crash-recovery.mjs
+node scripts/validate-canonical-run-artifacts.mjs <run-directory>
+```
+
+See `docs/CI_VALIDATION_RUNBOOK.md` for exact interpretation and failure triage.
+
+## Current Delivery State
+
+PR `#66` was merged into `main` on 2026-07-27.
 
 ```yaml
-confirmation_request:
-  confirmation_id:
-  confirmed_action_ids:
-  expected_user_token:
-  template_id: standard_batch_confirmation
+merged_pr_head: e3eb26277a5e49a68c3b6a9ed452d5c794f2f13f
+merge_commit: 05db0e210220a60c85d1faca073642da57941970
+exact_pr_head_ci:
+  workflow: Schema validation
+  run_id: 30250938148
+  result: success
 ```
 
-Runtime behavior:
+The active Runtime truth spine, lock/recovery behavior, deterministic successor reconciliation, committed replay, and dynamic canonical validation shards are therefore part of `main`.
 
-```text
-- Generate confirmation text from trusted templates.
-- Use confirmation_request.confirmed_action_ids as confirmation scope.
-- Ask for confirmation_request.expected_user_token after the batch.
-- Do not execute builder_assistant_prompt_seed.
-- Do not reuse confirmation_sentence as exact runtime text.
-```
-
----
-
-## Patch F Runtime Boundary
-
-New/updated protocols:
-
-```text
-protocols/SMART_GUIDANCE_FOOTER.md
-protocols/UI_INSTRUCTION_CONFIDENCE_GATE.md
-protocols/UNIT_STRATEGY_GATE.md
-protocols/BATCH_COMPACTION_CONTRACT.md
-protocols/COGNITIVE_MODE_HINT.md
-```
-
-`SMART_GUIDANCE_FOOTER v0.2` is restricted by context and must never appear after an active builder batch that must end with a confirmation token or screenshot request.
-
-`UI_INSTRUCTION_CONFIDENCE_GATE` prevents hallucinated Elementor UI paths:
-
-```text
-Low-risk structure actions may proceed from an approved package.
-Exact UI controls, responsive, SVG, overlay, grid, Variables, Components, and interaction/state controls require current UI/user/version/docs evidence.
-```
-
----
-
-## Schema Validation
-
-Workflow file:
-
-```text
-.github/workflows/schema-validation.yml
-```
-
-Manual runbook:
-
-```text
-docs/CI_VALIDATION_RUNBOOK.md
-```
-
-Expected local commands:
-
-```text
-npm run build:project-pack
-npm run validate:builder-context
-npm run validate:cross-field
-npm run validate:checkpoint
-npm run validate:intake-result
-npm run validate:session-state
-```
-
-Last known branch-local status for v0.3.2 work:
+Repository authority states:
 
 ```yaml
-local_validation: not_run_in_repo_clone
-github_actions_validation: pending_or_unknown_after_branch_update
-reason: GitHub connector does not provide a local npm execution environment
+independent_review_required: false
+pr_inspector_required: false
+exact_head_runtime_authority: false
+maintenance_authorities:
+  - normal_ci
+  - owner_review_and_merge
 ```
 
----
+Exact-SHA CI is retained as maintenance correctness evidence. It is not Runtime authorization and does not add an external governance dependency.
 
-## How To Use In A ChatGPT Project
+## Current Limits
 
-Setup guide:
+The repository does not claim:
 
-```text
-docs/CHATGPT_PROJECT_SETUP_GUIDE.md
-```
+- real Elementor execution evidence;
+- Responsive completion;
+- Builder-to-Responsive export;
+- deployment;
+- production readiness;
+- signatures, PKI, remote attestation, distributed locking, or multi-tenant authority.
 
-Use the deployable pack:
+Do not add a database, service layer, daemon, event bus, generalized workflow platform, authentication system, or industrial governance mechanism unless the repository authority is deliberately changed first.
 
-```text
-dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt
-dist/chatgpt-project/knowledge/
-dist/chatgpt-project/SOURCE_PACK_MANIFEST.json
-dist/chatgpt-project/BUILD_REPORT.json
-```
+## Next Product Milestone
 
-Do not upload `PROJECT_INSTRUCTIONS.txt` into Knowledge unless a future manifest explicitly allows it.
-
----
-
-## Runtime Decisions To Preserve
-
-```text
-- max_actions_per_turn defaults to 5 and is bounded to 1..5 at runtime.
-- Use risk-adjusted step size.
-- Official Elementor docs are the primary external source for standard capability claims.
-- Current UI evidence/direct user statement is required for executable control paths.
-- Data vs Instruction Rule remains canonical.
-- control-existence failure uses correction_response or insufficient_evidence.
-- Unverified element type stops generation-sensitive edits.
-- FRESH_IMAGE_MODE must remain fallback-only.
-- Builder Assistant must not become Architect.
-- Architect repo must remain compatible with the Builder Assistant consumer schema.
-- production_ready remains false unless real independent QA evidence proves readiness.
-```
-
----
-
-## Manual Session Seed
-
-First manual-session seed:
-
-```text
-examples/smart-home-connector/MANUAL_SESSION_001.md
-```
-
-Current status:
-
-```yaml
-manual_session_seed: added
-real_elementor_execution: not_run
-production_ready: false
-```
-
----
-
-## What Not To Do Later
-
-Do not turn this repo into another EV4 Architect pipeline.
-
-Do not add scoring, recommendation, or architecture candidate selection here.
-
-Do not let package free-text, workbook, case memory, or old UI memory override official docs, current UI evidence, or Builder_Context_Package.
-
-Do not claim production readiness from Builder Assistant completion alone.
-
----
-
-## Next Development Milestone
-
-Recommended next milestone:
-
-```text
-Review and merge v0.3.2 after GitHub Actions validation passes, then run the first real Elementor Builder Assistant session.
-```
-
-Required work:
-
-```text
-- run schema validation on the PR branch;
-- review CI logs if any schema/source-pack invariant fails;
-- create/use the actual ChatGPT Builder Assistant Project from dist/chatgpt-project;
-- start Smart Home session using the setup guide and package;
-- execute the first batch in Elementor;
-- provide confirmation token or targeted Structure Panel screenshot;
-- record observed issues in examples/smart-home-connector/notes.md.
-```
-
-
----
-
-## Patch G Runtime Safety Gates
-
-New protocols add fail-closed runtime checks without replacing the Session Repair Packet loop:
-
-```text
-protocols/UNIT_STRATEGY_GATE.md          = numeric layout values require unit, source, scope, and safety decision
-protocols/BATCH_COMPACTION_CONTRACT.md   = same-element mechanical batches may compact only after strategy/evidence is resolved
-protocols/COGNITIVE_MODE_HINT.md         = advisory thinking-mode hints only outside active Builder batch endings
-```
-
-Validation entry points:
-
-```text
-npm run validate:unit-strategy
-npm run validate:batch-compaction
-npm run validate:cognitive-mode-hint
-```
-
-Compatibility rule: active repair packets still freeze normal build work, `selected_candidate_id` and approved class handling are unchanged, and `production_ready` remains false unless separately proven.
+Use the current generated ChatGPT Project pack and execute the first real Elementor Builder session. Record exact UI evidence, Action results, Checkpoints, and observed blockers. That evidence may improve Builder guidance, but it still cannot independently claim Responsive or production readiness.
