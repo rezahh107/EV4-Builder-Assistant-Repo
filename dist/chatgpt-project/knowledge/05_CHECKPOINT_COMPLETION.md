@@ -1,46 +1,24 @@
-# Checkpoint and Completion
-
-Checkpoint identity binds:
-
-- `session_id`;
-- canonical `package_digest`;
-- `selected_candidate_id`;
-- `batch_id` and Action IDs;
-- assertions and retained evidence;
-- unresolved blockers;
-- legal workflow mode and runtime state.
-
-Completion is a bounded transition from `APPROVED_HANDOFF_MODE / BUILD_ACTIVE` to `APPROVED_HANDOFF_MODE / COMPLETED`. Caller-authored `COMPLETED` Session State or Checkpoint input is rejected.
-
-Before transition, the shared module must:
-
-- revalidate actual `builder-input.json` and its derived Intake Capsule;
-- verify exact session, package, candidate and predecessor Checkpoint identity;
-- reconcile every required Action in `builder-input.json:first_builder_batch.actions` with the final Checkpoint;
-- reject omitted, foreign, duplicate, conflicting or unconfirmed Action IDs;
-- enforce the active desktop Builder Completion Status semantics;
-- bind Completion Gate to candidate, package digest, session ID, Checkpoint ID and Checkpoint sequence;
-- require zero unresolved blocking evidence.
-
-Canonical command:
-
-```bash
-node scripts/builder-inspector.mjs completion \
-  builder-input.json \
-  builder-intake-result.json \
-  session-state.json \
-  checkpoint.json \
-  completion-status.json \
-  completion-gate.json \
-  completion-output-directory
-```
-
-After every guard passes, the Inspector derives the next `COMPLETED` Session State and Checkpoint, validates generated carriers, and atomically publishes them with `completion-result.json`. A failed transition publishes no terminal carrier and removes temporary output.
-
-Builder completion never implies Responsive completion or production readiness:
+# Evidence, Checkpoint and Completion Generations
 
 ```yaml
-builder_build_complete: true
+external_source_after_intake: not_used
+caller_authored_initial_state: forbidden
+caller_managed_carrier_selection: forbidden
+legacy_runtime_authority: inactive
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
 responsive_complete: false
 production_ready: false
+```
+
+`attach-evidence` acquires `.mutation-lock`, reloads the active confirmed `BUILD_ACTIVE` generation, requires exact `source.status == "verified"`, validates Session/Package/claim/subject/Action bindings, snapshots exact Evidence bytes and publishes a new immutable generation. Concurrent attachments cannot lose an accepted update.
+
+`real-completion` reloads `CURRENT.json` after lock acquisition, fully rederives Context, validates canonical Confirmation, exact Batch/Actions/digests, every internal Evidence snapshot, required Action/Completion claims, blockers and Checkpoint lineage, then derives Status/Gate and immutable `COMPLETED` generation. `CURRENT.json` advances only after complete validation.
+
+```text
+generations/000001 → WAITING_FOR_CONFIRMATION → BUILD_ACTIVE → attach-evidence generations → .mutation-lock → COMPLETED → CURRENT.json
 ```

@@ -5,106 +5,74 @@
 ```yaml
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
-industrial_governance: removed_from_active_system
-security_posture: minimal_nonblocking
+external_source_after_intake: not_used
+caller_authored_initial_state: forbidden
+caller_managed_carrier_selection: forbidden
+legacy_runtime_authority: inactive
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
+responsive_complete: false
 production_ready: false
 ```
 
-## Read First
+Read `runtime/personal-runtime-authority.v1.json`, `runtime/state-transitions.v1.json`, `PROJECT_INSTRUCTIONS.md`, relevant Schemas, validators and tests before changing Runtime code.
 
-1. `runtime/personal-runtime-authority.v1.json`
-2. `runtime/state-transitions.v1.json`
-3. `PROJECT_INSTRUCTIONS.md`
-4. `core/MODE_STATE_MATRIX.md`
-5. `schemas/**`
-6. relevant semantic validators and fixtures
-7. `scripts/validate.mjs`
+## Canonical Real Runtime
 
-## Startup Boundary
+```text
+explicit operator source
+→ stable Run root creation
+→ internal source snapshot
+→ immutable generations/000001
+→ atomic CURRENT.json
+→ acquire .mutation-lock
+→ reload active generation after lock
+→ full pre-emission derivation
+→ immutable WAITING_FOR_CONFIRMATION generation
+→ atomic CURRENT.json update
+→ Confirmation reconciliation
+→ immutable confirmed BUILD_ACTIVE generation
+→ attach-evidence internal snapshots and generations
+→ full Completion derivation
+→ immutable terminal generation
+→ atomic CURRENT.json update
+→ COMPLETED
+```
 
-The canonical personal input is `builder-input.json` parsed as `ev4-builder-context-package@1.0.0`.
+Only these commands have real Runtime authority:
 
-- `شروع` begins fresh intake only when no active Run exists.
-- repeated `شروع` preserves the current session, checkpoint and unresolved blockers.
-- `استارت` resumes only a real prior PAUSED state and cannot fabricate a Run.
-- receipt-only input and raw Project Gate envelopes remain non-semantic.
+```bash
+node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
+node scripts/builder-inspector.mjs emit-batch <run-directory>
+node scripts/builder-inspector.mjs confirm-batch <run-directory> "<operator-token>"
+node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
+node scripts/builder-inspector.mjs real-completion <run-directory>
+```
 
-## Active Runtime Authority
+`CURRENT.json` is the sole active State selector. Published generations are immutable. Every mutation acquires `.mutation-lock` before reading State. Lock contention fails closed as `RUN_BUSY_OR_STALE_LOCK`; stale locks are removed only by explicit `recover-run-lock` after active Run validation.
 
-A normal Builder Run may depend only on:
+A future generation is never authority merely because it exists or has the highest number. The same canonical transition may finalize only an exact byte-identical expected N+1, including every operation-specific artifact. A different, incomplete or ambiguous future generation blocks without changing `CURRENT.json`. Repeating an exact transition after `CURRENT.json` already advanced returns the committed result with `replayed_existing_transition: true` and creates no new generation.
 
-- valid Builder Context input;
-- selected candidate continuity;
-- decision lineage continuity;
-- allowed Action Batch semantics;
-- active confirmation binding;
-- Session State and Checkpoint consistency;
-- unresolved blocker preservation;
-- valid Completion conditions.
+Historical bypass records are inert evidence only. Active Legacy entrypoints must return `BUILDER-LEGACY-AUTHORITY-INACTIVE`, while canonical Runtime regression tests prove every historical bypass class remains blocked.
 
-Do not add PR status, Exact-Head evidence, PR Inspector, independent review, governance receipts, merge evidence, reviewer identity, external attestation, or repository commit identity as runtime authorization.
+Source modes and content binding, exact Package/Candidate/Batch/Action bindings, zero-blocker emission, WAITING-only Confirmation, exact verified Action-specific Evidence, Runtime-derived Completion Status/Gate, `responsive_complete: false`, and `production_ready: false` must be preserved.
 
-## State Rules
+Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.
 
-- `COMPLETED` is legal only in `APPROVED_HANDOFF_MODE`.
-- A completion report request is not a completion trigger.
-- `شروع` is idempotent when a Run already exists.
-- `استارت` resumes only a real prior PAUSED Session State.
-- Intake, evidence, correction, or fresh-image states cannot jump directly to Completion.
-- Unresolved blockers may not disappear silently.
-
-## Change Policy
-
-- Keep changes focused and functionally justified.
-- Preserve candidate identity, decision lineage, class scope, confirmation, Checkpoint, evidence and Completion boundaries.
-- Do not implement Builder → Responsive or production deployment.
-- Do not add services, databases, event buses, generalized workflow engines, PKI, signatures or attestation chains.
-- Historical governance material is non-authoritative and must not enter `dist/chatgpt-project`.
+Do not add a database, service layer, daemon, event bus, distributed lock, authentication, signatures, PKI, secrets, remote attestation, multi-tenant support, generalized event sourcing or workflow platform.
 
 ## Validation
 
-Run applicable checks before PR readiness:
-
 ```bash
 npm ci
-npm run validate:version-consistency
-npm run validate:schema-registry
-npm run validate:builder-context-package
-npm run validate:cross-field
-npm run validate:builder-lineage-sequence
-npm run build:project-pack
 npm run validate
+node scripts/test-builder-run-concurrency.mjs
+node scripts/test-builder-run-crash-recovery.mjs
+node scripts/validate-canonical-run-artifacts.mjs <run-directory>
 ```
 
-Deep runtime transaction validation remains a CI regression/diagnostic tool; it is not required per Builder message or Action Batch.
-
-## Delivery
-
-Use a feature branch and one focused PR. Do not merge or deploy without owner action. Do not claim validation or CI success without evidence.
-
-## Temporary Shared UX/UI Policy Adapter
-
-Use `policies/EV4_TEMP_CROSS_REPO_UX_UI_STANDARDS_POLICY_r002.md` only as a supplemental policy below repository authority.
-
-```yaml
-policy_id: EV4-TEMP-CROSS-REPO-UX-UI-STANDARDS-POLICY-r002
-revision: r002
-filename: EV4_TEMP_CROSS_REPO_UX_UI_STANDARDS_POLICY_r002.md
-sha256: f09b6978e10833c1ab3c3e35a9128db894684c5ed9cd876fa87699016b6def95
-repository_role: builder
-local_consumption_scope: accepted Builder-ready strategy and the current bounded implementation action
-role_must:
-  - implement the accepted strategy
-  - preserve applicable semantics, states, focus, responsive and recovery behavior
-  - report implementation blockers with evidence
-  - use accepted tokens and mechanisms where available
-role_must_not:
-  - select a competing architecture
-  - reinterpret locked intent
-  - claim runtime behavior without observation
-  - let aesthetic preference override accessibility or content requirements
-```
-
-Keep nonmaterial routing internal. Represent material implementation blockers, evidence gaps, and downstream obligations through existing Builder-supported fields or a concise visible status when continuation or owner action is affected. Do not add unsupported Builder states, outputs, wrapper Artifacts, or hidden-storage claims.
-
-`r001` remains an immutable historical revision. A filename, ID, revision, byte, or digest mismatch is `TEMP_UX_UI_POLICY_IDENTITY_MISMATCH`. This adapter does not create Kernel adoption, Builder→Responsive implementation, or a parallel approval path.
+Do not claim validation, merge, approval or deployment without direct evidence.

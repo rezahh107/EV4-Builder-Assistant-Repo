@@ -1,31 +1,20 @@
-# Intake Inspector
+# Intake Inspector — Source Snapshot and Generation 000001
 
-Canonical command:
-
-```bash
-node scripts/builder-inspector.mjs intake builder-input.json builder-intake-result.json
+```yaml
+external_source_after_intake: not_used
+caller_authored_initial_state: forbidden
+caller_managed_carrier_selection: forbidden
+legacy_runtime_authority: inactive
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
+responsive_complete: false
+production_ready: false
 ```
 
-Accepted input must be exact parsed `ev4-builder-context-package@1.0.0` content and must pass:
+`real-intake` validates exact `project-gate`, `direct-ce`, or `manual-builder-input` arguments, reads selected bytes once, creates a unique sibling stage, snapshots source bytes, derives Context/Session/Checkpoint, validates immutable `generations/000001`, writes `CURRENT.json`, and atomically publishes the stable Run root only if absent.
 
-- JSON parsing;
-- Builder Context Schema validation;
-- semantic and cross-field validation;
-- decision-lineage validation;
-- selected candidate lock and consistency;
-- `input_authorization` decision and eligible mode/state;
-- canonical package digest validation.
-
-The source file is read-only. Output publication uses a temporary file followed by atomic rename.
-
-`builder-input.json` remains canonical Runtime identity. `builder-intake-result.json` is derived evidence and cannot independently authorize Resume or Completion.
-
-Receipt-only input, raw Project Gate envelopes, malformed JSON, wrong Schema, candidate mismatch, lineage mismatch, failed authorization, or stale source bytes remain blocked.
-
-Verify a previously accepted Capsule against current source bytes with:
-
-```bash
-node scripts/builder-inspector.mjs verify-capsule builder-input.json builder-intake-result.json
-```
-
-Resume and Completion perform the same Builder Input and Capsule reconciliation again before evaluating their transitions.
+Concurrent Intake produces one accepted Run and one `RUN_ALREADY_EXISTS` or busy result. A failing process removes only its own stage. Later `emit-batch`, `WAITING_FOR_CONFIRMATION`, `confirm-batch`, `attach-evidence`, and `COMPLETED` transitions use internal snapshots under `.mutation-lock`.

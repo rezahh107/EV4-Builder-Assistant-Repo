@@ -10,16 +10,12 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  discover:
+    name: discover validation shards
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    # Deep regression compatibility markers. These commands are executed by
-    # npm run validate through scripts/validate.mjs; they are not separate
-    # Exact-Head, independent-review, or runtime-authorization steps.
-    # Run Builder runtime transaction enforcement validation
-    # node scripts/validate-builder-runtime-transaction.mjs tests/valid/runtime-transaction/complete-transaction.json --self-test
-    # node scripts/validate-builder-runtime-transaction-state.mjs tests/valid/runtime-transaction/complete-transaction.json
+    outputs:
+      matrix: ${{ steps.shards.outputs.matrix }}
+      expected_sha: ${{ steps.identity.outputs.expected_sha }}
 
     steps:
       - name: Checkout tested commit
@@ -29,6 +25,7 @@ jobs:
           persist-credentials: false
 
       - name: Report and verify tested object
+        id: identity
         env:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           EVENT_NAME: ${{ github.event_name }}
@@ -41,6 +38,47 @@ jobs:
             echo "tested_object_type=push_commit"
           fi
           echo "tested_sha=$ACTUAL_SHA"
+          echo "expected_sha=$EXPECTED_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+
+      - name: Verify canonical validation partition
+        run: node scripts/validate.mjs --verify-partition
+
+      - name: Discover required validation shards
+        id: shards
+        run: echo "matrix=$(node scripts/validate.mjs --list-shards)" >> "$GITHUB_OUTPUT"
+
+  validation_shard:
+    name: validation / ${{ matrix.shard }}
+    needs: discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ needs.discover.outputs.expected_sha }}
+          persist-credentials: false
+
+      - name: Verify exact tested object
+        env:
+          EXPECTED_SHA: ${{ needs.discover.outputs.expected_sha }}
+          EVENT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          ACTUAL_SHA="$(git rev-parse HEAD)"
+          test "$EXPECTED_SHA" = "$EVENT_SHA"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          echo "tested_object_type=exact_head_validation_shard"
+          echo "tested_sha=$ACTUAL_SHA"
+          echo "validation_shard=${{ matrix.shard }}"
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -51,11 +89,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run functional validation
-        id: functional_validation
-        continue-on-error: true
-        run: npm run validate
+      - name: Run required validation shard
+        run: node scripts/validate.mjs --shard "${{ matrix.shard }}"
 
-      - name: Functional validation failed at ${{ steps.functional_validation.outputs.failed_check }}
-        if: steps.functional_validation.outcome == 'failure'
-        run: exit 1
+  validate:
+    name: validate
+    if: always()
+    needs: [discover, validation_shard]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require discovery and every validation shard
+        env:
+          DISCOVERY_RESULT: ${{ needs.discover.result }}
+          SHARD_RESULT: ${{ needs.validation_shard.result }}
+        run: |
+          echo "discovery_result=$DISCOVERY_RESULT"
+          echo "validation_shards_result=$SHARD_RESULT"
+          test "$DISCOVERY_RESULT" = "success"
+          test "$SHARD_RESULT" = "success"

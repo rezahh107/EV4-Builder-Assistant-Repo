@@ -1,36 +1,24 @@
-# Action Batch and Confirmation
-
-Ordinary actions carry only execution-critical metadata:
+# Action Batch and Confirmation Generations
 
 ```yaml
-required_for_normal_action:
-  - target_node
-  - element_type
-  - control_family
-  - control_name
-  - value when applicable
-  - unit and value_source for numeric values
-  - responsive_scope
-  - class_scope when class_name is present
-  - expected_result
+external_source_after_intake: not_used
+caller_authored_initial_state: forbidden
+caller_managed_carrier_selection: forbidden
+legacy_runtime_authority: inactive
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
+responsive_complete: false
+production_ready: false
 ```
 
-Extended metadata is conditional:
+`emit-batch` acquires `.mutation-lock`, reloads `CURRENT.json`, fully rederives Context from the internal snapshot, verifies zero blockers and publishes an immutable `WAITING_FOR_CONFIRMATION` generation. Only after generation validation does it atomically advance `CURRENT.json`.
 
-```yaml
-risk_conditioned:
-  - rationale
-  - reversibility_analysis
-  - safety_decision
-  - evidence_required
-  - confirmation_scope
-  - forbidden_changes
+`confirm-batch` reloads the exact WAITING generation after lock acquisition, validates emit result, Context, Package, Candidate, Batch, Action IDs/digests, token and blockers, then derives an immutable confirmed `BUILD_ACTIVE` generation plus Receipt/Result. Caller-authored Confirmation has no authority.
+
+```text
+generations/000001 → CURRENT.json → .mutation-lock → WAITING_FOR_CONFIRMATION → confirm-batch → BUILD_ACTIVE → attach-evidence → COMPLETED
 ```
-
-It is required for `risk_level: high` or `difficult_to_reverse: true`.
-
-Never weaken target identity, `selected_candidate_id`, decision lineage, class scope, or active confirmation binding.
-
-A checkpointed action must carry a non-empty `confirmation_scope`. Only the active structured confirmation token can advance the state.
-
-For the active bounded Run, `builder-input.json:first_builder_batch.actions` defines the complete expected Action set. Completion must reconcile every expected Action ID with the final Checkpoint; deleting an Action from `unconfirmed_action_ids` cannot make it complete. No separate Action Ledger is active.

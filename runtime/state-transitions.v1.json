@@ -1,161 +1,97 @@
 {
   "schema": "ev4-builder-state-transitions@1.0.0",
-  "workflow_modes": [
-    "START_INTAKE_MODE",
-    "APPROVED_HANDOFF_MODE",
-    "FRESH_IMAGE_MODE_LIMITED"
-  ],
-  "runtime_states": [
-    "INTAKE_WAITING",
-    "INTAKE_VALIDATING",
-    "BUILD_ACTIVE",
-    "WAITING_FOR_CONFIRMATION",
-    "EVIDENCE_REQUIRED",
-    "CORRECTION",
-    "REVIEW_ONLY",
-    "PAUSED",
-    "COMPLETED"
-  ],
+  "storage_model": "stable_run_root_immutable_generations_atomic_current_pointer",
+  "contention_behavior": "immediate_RUN_BUSY_OR_STALE_LOCK",
+  "workflow_modes": ["START_INTAKE_MODE", "APPROVED_HANDOFF_MODE", "FRESH_IMAGE_MODE_LIMITED"],
+  "runtime_states": ["INTAKE_WAITING", "INTAKE_VALIDATING", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"],
   "allowed_combinations": {
-    "START_INTAKE_MODE": [
-      "INTAKE_WAITING",
-      "INTAKE_VALIDATING",
-      "EVIDENCE_REQUIRED",
-      "REVIEW_ONLY",
-      "CORRECTION",
-      "PAUSED"
-    ],
-    "APPROVED_HANDOFF_MODE": [
-      "BUILD_ACTIVE",
-      "WAITING_FOR_CONFIRMATION",
-      "EVIDENCE_REQUIRED",
-      "CORRECTION",
-      "REVIEW_ONLY",
-      "PAUSED",
-      "COMPLETED"
-    ],
-    "FRESH_IMAGE_MODE_LIMITED": [
-      "INTAKE_WAITING",
-      "EVIDENCE_REQUIRED",
-      "BUILD_ACTIVE",
-      "WAITING_FOR_CONFIRMATION",
-      "CORRECTION",
-      "REVIEW_ONLY",
-      "PAUSED"
-    ]
+    "START_INTAKE_MODE": ["INTAKE_WAITING", "INTAKE_VALIDATING", "EVIDENCE_REQUIRED", "REVIEW_ONLY", "CORRECTION", "PAUSED"],
+    "APPROVED_HANDOFF_MODE": ["BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "EVIDENCE_REQUIRED", "CORRECTION", "REVIEW_ONLY", "PAUSED", "COMPLETED"],
+    "FRESH_IMAGE_MODE_LIMITED": ["INTAKE_WAITING", "EVIDENCE_REQUIRED", "BUILD_ACTIVE", "WAITING_FOR_CONFIRMATION", "CORRECTION", "REVIEW_ONLY", "PAUSED"]
   },
+  "canonical_mutation_protocol": ["acquire_run_lock","load_CURRENT_after_lock","validate_active_generation","derive_successor_state","write_complete_temporary_generation","validate_complete_successor_generation","atomically_publish_successor_generation","atomically_advance_CURRENT","release_run_lock_in_finally"],
   "transitions": [
     {
       "id": "fresh-intake",
+      "authority_scope": "bootstrap_routing_only",
+      "real_run_authority": false,
       "from": null,
       "trigger": "شروع",
-      "guards": ["no_initialized_session"],
+      "guards": ["no_initialized_session", "routes_to_explicit_real_intake_without_fabricating_run"],
       "to": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_WAITING"}
     },
     {
       "id": "repeated-start",
+      "authority_scope": "bootstrap_routing_only",
+      "real_run_authority": false,
       "from": "ANY_INITIALIZED_STATE",
       "trigger": "شروع",
-      "guards": ["preserve_session_id", "preserve_checkpoint", "preserve_unresolved_blockers"],
+      "guards": ["preserve_session_id", "preserve_checkpoint", "preserve_unresolved_blockers", "create_second_active_run_false"],
       "to": "SAME_STATE"
     },
     {
-      "id": "intake-validate",
-      "from": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_WAITING"},
-      "trigger": "builder_input_received",
-      "guards": ["candidate_is_unambiguous"],
-      "to": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_VALIDATING"}
-    },
-    {
-      "id": "intake-accepted",
-      "from": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_VALIDATING"},
-      "trigger": "intake_accepted",
-      "guards": ["schema_valid", "semantic_valid", "lineage_valid", "input_authorization_valid"],
+      "id": "real-intake",
+      "authority_scope": "canonical_real_run",
+      "real_run_authority": true,
+      "from": null,
+      "trigger": "explicit_operator_source_selected",
+      "guards": ["target_run_root_absent","source_mode_arguments_exact","selected_source_bytes_read_once","internal_source_snapshot_created","source_mode_derivation_valid","builder_schema_valid","builder_semantic_valid","decision_lineage_valid","runtime_context_derived","initial_session_derived","initial_checkpoint_sequence_one_parent_null","generation_000001_complete_and_valid","CURRENT_pointer_complete_and_valid","atomic_run_root_creation"],
       "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"}
     },
     {
-      "id": "intake-blocked",
-      "from": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "INTAKE_VALIDATING"},
-      "trigger": "intake_blocked",
-      "guards": ["blocking_diagnostic_present"],
-      "to": {"workflow_mode": "START_INTAKE_MODE", "runtime_state": "EVIDENCE_REQUIRED"}
-    },
-    {
-      "id": "pause",
-      "from": "ANY_INITIALIZED_NON_COMPLETED_STATE",
-      "trigger": "توقف",
-      "guards": ["session_exists", "resumable_state_recorded"],
-      "to": {"workflow_mode": "SAME", "runtime_state": "PAUSED"}
-    },
-    {
-      "id": "resume",
-      "from": {"workflow_mode": "ANY", "runtime_state": "PAUSED"},
-      "trigger": "استارت",
-      "guards": [
-        "builder_input_verified",
-        "intake_capsule_verified",
-        "prior_initialized_state_exists",
-        "session_id_matches",
-        "package_digest_matches",
-        "candidate_matches",
-        "checkpoint_valid",
-        "checkpoint_and_state_consistent",
-        "unresolved_blockers_preserved",
-        "resume_target_legal"
-      ],
-      "to": "PREVIOUS_RESUMABLE_STATE"
-    },
-    {
       "id": "emit-batch",
+      "authority_scope": "canonical_real_run",
+      "real_run_authority": true,
       "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"},
       "trigger": "action_batch_emitted",
-      "guards": ["action_batch_valid", "no_blocker", "confirmation_binding_created"],
+      "guards": ["run_root_valid","run_lock_held","current_pointer_valid","active_generation_loaded_after_lock","active_generation_valid","internal_source_snapshot_hash_matches","full_runtime_context_rederivation_matches","package_candidate_batch_action_bindings_match","active_blocker_set_empty","checkpoint_sequence_valid","successor_generation_valid","atomic_generation_publication","atomic_current_pointer_update"],
       "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "WAITING_FOR_CONFIRMATION"}
     },
     {
       "id": "confirm-batch",
+      "authority_scope": "canonical_real_run",
+      "real_run_authority": true,
       "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "WAITING_FOR_CONFIRMATION"},
       "trigger": "confirmation_accepted",
-      "guards": ["active_confirmation_matches", "checkpoint_updated", "unresolved_blockers_preserved"],
+      "guards": ["run_root_valid","run_lock_held","current_pointer_valid","active_generation_loaded_after_lock","active_generation_valid","internal_source_snapshot_hash_matches","exact_emit_result_binding_matches","exact_operator_token_matches","active_blocker_set_empty","checkpoint_sequence_valid","confirmation_receipt_derived_not_caller_authored","successor_generation_valid","atomic_generation_publication","atomic_current_pointer_update"],
       "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"}
     },
     {
-      "id": "enter-correction",
-      "from": "ANY_INITIALIZED_NON_COMPLETED_STATE",
-      "trigger": "blocking_error",
-      "guards": ["repair_packet_created_or_updated"],
-      "to": {"workflow_mode": "SAME", "runtime_state": "CORRECTION"}
+      "id": "attach-evidence",
+      "authority_scope": "canonical_real_run",
+      "real_run_authority": true,
+      "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"},
+      "trigger": "verified_evidence_attached",
+      "guards": ["run_root_valid","run_lock_held","current_pointer_valid","active_generation_loaded_after_lock","active_generation_valid","canonical_confirmation_artifacts_valid","external_evidence_bytes_read_once","evidence_source_status_exactly_verified","evidence_schema_and_semantics_valid","action_specific_execution_binding_valid","internal_evidence_snapshot_created","checkpoint_sequence_valid","successor_generation_valid","atomic_generation_publication","atomic_current_pointer_update"],
+      "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"}
     },
     {
       "id": "complete-builder",
+      "authority_scope": "canonical_real_run",
+      "real_run_authority": true,
       "from": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "BUILD_ACTIVE"},
       "trigger": "completion_validation_passed",
-      "guards": [
-        "builder_input_verified",
-        "intake_capsule_verified",
-        "predecessor_checkpoint_valid",
-        "package_digest_matches",
-        "candidate_matches",
-        "session_id_matches",
-        "checkpoint_sequence_valid",
-        "required_actions_reconciled",
-        "unresolved_blocking_evidence_count_zero",
-        "completion_status_valid",
-        "completion_gate_bound"
-      ],
+      "guards": ["run_root_valid","current_pointer_valid","active_generation_valid","run_lock_held","active_generation_loaded_after_lock","internal_source_snapshot_hash_matches","full_runtime_context_rederivation_matches","canonical_confirmation_artifacts_valid","confirmed_checkpoint_lineage_valid","batch_matches_context","confirmed_action_set_complete","action_body_digests_match","internal_evidence_snapshots_valid","required_action_evidence_complete","required_completion_claims_complete","active_blocker_set_empty","checkpoint_sequence_valid","successor_generation_valid","runtime_derived_completion_status","runtime_derived_completion_gate","atomic_generation_publication","atomic_current_pointer_update"],
       "to": {"workflow_mode": "APPROVED_HANDOFF_MODE", "runtime_state": "COMPLETED"}
+    },
+    {
+      "id": "resume",
+      "authority_scope": "compatibility_only",
+      "real_run_authority": false,
+      "from": {"workflow_mode": "ANY", "runtime_state": "PAUSED"},
+      "trigger": "استارت",
+      "guards": ["prior_initialized_state_exists", "session_id_matches", "package_digest_matches", "candidate_matches", "checkpoint_valid", "unresolved_blockers_preserved", "legacy_fixture_carriers_only", "cannot_mutate_canonical_run"],
+      "to": "NON_AUTHORITATIVE_COMPATIBILITY_OUTPUT"
+    },
+    {
+      "id": "fixture-completion",
+      "authority_scope": "compatibility_only",
+      "real_run_authority": false,
+      "from": "FIXTURE_INPUT",
+      "trigger": "fixture_validation",
+      "guards": ["builder_build_complete_always_false", "runtime_state_NOT_A_REAL_RUN"],
+      "to": "NON_AUTHORITATIVE_FIXTURE_RESULT"
     }
   ],
-  "forbidden": [
-    "fresh_intake_to_completed",
-    "fresh_image_to_completed",
-    "completion_report_request_to_completed",
-    "resume_without_prior_initialized_state",
-    "start_command_fabricates_run",
-    "unresolved_blocker_disappears",
-    "intake_or_correction_direct_jump_to_completed",
-    "caller_authored_completed_carrier_as_transition_input",
-    "capsule_only_resume_or_completion_authorization",
-    "required_action_disappears_by_omission"
-  ]
+  "forbidden": ["run_root_replacement","active_generation_mutation","mutation_without_run_lock","state_load_before_lock","CURRENT_points_to_partial_or_missing_generation","highest_generation_implicitly_becomes_authoritative","lost_update","competing_active_checkpoints","concurrent_intake_overwrites_or_deletes_existing_run","time_based_lock_breaking","caller_authored_initial_state","caller_managed_carrier_selection","external_source_dependency_after_intake","legacy_real_authority_entrypoint","legacy_module_publishes_real_completion","start_command_fabricates_run","confirm_batch_from_build_active","evidence_without_verified_source_status","generic_subject_authorizes_action_execution","completion_batch_drift","partial_generation_selected","mixed_generation_carriers"]
 }

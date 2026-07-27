@@ -1,128 +1,145 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { requireCanonicalTransition } from './lib/builder-runtime-transition.mjs';
 
-const root = process.cwd();
+const ROOT = process.cwd();
 const errors = [];
-const readJson = (file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
-const readText = (file) => fs.readFileSync(path.join(root, file), 'utf8');
-const fail = (message) => errors.push(message);
+
+function fail(message) { errors.push(message); }
+function readText(file) { return fs.readFileSync(path.join(ROOT, file), 'utf8'); }
+function readJson(file) { return JSON.parse(readText(file)); }
+function includesAll(text, terms, label) { for (const term of terms) if (!text.includes(term)) fail(`${label} is missing required invariant: ${term}`); }
+function listRuntimeModules(directory) {
+  const files = [];
+  for (const entry of fs.readdirSync(path.join(ROOT, directory), { withFileTypes: true })) {
+    const rel = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...listRuntimeModules(rel));
+    else if (entry.name.endsWith('.mjs')) files.push(rel.split(path.sep).join('/'));
+  }
+  return files;
+}
 
 const authority = readJson('runtime/personal-runtime-authority.v1.json');
 const transitions = readJson('runtime/state-transitions.v1.json');
+const runtimeModules = listRuntimeModules('scripts/lib/runtime');
+const runtimeCode = runtimeModules.map((file) => readText(file)).join('\n');
+const inspector = readText('scripts/builder-inspector.mjs');
+const truthSpine = readText('scripts/lib/builder-truth-spine.mjs');
+const functional = readText('scripts/lib/builder-functional-correctness.mjs');
+const explicitSource = readText('scripts/lib/builder-explicit-source-runtime.mjs');
+const centralValidation = readText('scripts/validate.mjs');
 
-if (authority.schema !== 'ev4-builder-personal-runtime-authority@1.0.0') fail('Unexpected runtime authority schema.');
 if (authority.repository_profile !== 'personal_single_operator') fail('repository_profile must be personal_single_operator.');
 if (authority.runtime_goal !== 'functional_correctness') fail('runtime_goal must be functional_correctness.');
-if (authority.active !== true) fail('Personal runtime authority must be active.');
-if (authority.industrial_governance !== 'removed_from_active_system') fail('Industrial governance must be removed from the active system.');
-for (const key of ['independent_review_required', 'pr_inspector_required', 'exact_head_runtime_authority', 'runtime_transaction_per_message_required', 'production_ready']) {
-  if (authority[key] !== false) fail(`${key} must be false.`);
+if (authority.builder_to_responsive !== 'out_of_scope' || authority.production_ready !== false) fail('Builder to Responsive and production boundary changed.');
+for (const field of ['stable_run_root','immutable_state_generations','atomic_current_pointer','local_single_writer_lock','state_loaded_after_lock','internal_source_snapshot','canonical_confirmation_transaction','verified_evidence_status','action_specific_execution_evidence','valid_completion_conditions']) if (!authority.runtime_authorities.includes(field)) fail(`Missing Runtime authority: ${field}`);
+
+includesAll(runtimeCode, [
+  "path.join(run, '.mutation-lock')",
+  "readJson(path.join(run, 'CURRENT.json'))",
+  'generationRef(number)',
+  "fs.renameSync(currentTemporary, path.join(run, 'CURRENT.json'))",
+  'for (const [filename, bytes] of expected.generationFiles)',
+  "injectedPoint(failureInjection, 'after_lock_acquisition')",
+  "injectedPoint(failureInjection, 'after_active_generation_load')",
+  'RUN_BUSY_OR_STALE_LOCK',
+  'before_CURRENT_rename',
+  'after_CURRENT_rename',
+  'deriveExpectedSuccessorSnapshot',
+  'listFutureGenerations',
+  'loadExactSuccessorCandidate',
+  'compareSuccessorToExpected',
+  'finalizeExistingExactSuccessor',
+  'verifyCommittedTransitionReplay',
+  'validateCommittedTransitionHistory',
+  'executePlannedMutation',
+  'RUN_COMMITTED_TRANSITION_REPLAY_CONFLICT',
+  'RUN_UNCOMMITTED_SUCCESSOR_CONFLICT',
+  'RUN_UNCOMMITTED_SUCCESSOR_INCOMPLETE',
+  'RUN_AMBIGUOUS_FUTURE_GENERATIONS',
+  'recoverRunLock',
+  'inspectRunGenerations'
+], 'Canonical generation Runtime');
+if (runtimeCode.includes('detectCommittedTransitionReplay')) fail('Callback-based selected-field committed replay authority remains active.');
+if (runtimeCode.includes('replaceRunAtomically')) fail('Run-root replacement implementation remains active.');
+if (runtimeCode.includes('fs.renameSync(target, backup)')) fail('Active Run-root backup swap remains.');
+if (runtimeCode.includes("writeJson(path.join(stage, 'run-manifest.json')")) fail('Mutable top-level Run manifest publication remains.');
+if (runtimeCode.includes("writeJson(path.join(stage, 'runtime-context.json')")) fail('Mutable top-level Runtime Context publication remains.');
+if (runtimeCode.includes("writeJson(path.join(stage, 'session-state.json')")) fail('Mutable top-level Session publication remains.');
+if (runtimeCode.includes("writeJson(path.join(stage, 'checkpoint.json')")) fail('Mutable top-level Checkpoint publication remains.');
+const mutationStart = runtimeCode.indexOf('export function executePlannedMutation');
+const mutationEnd = runtimeCode.indexOf('function inferCommittedOperation', mutationStart);
+const mutationFunction = mutationStart >= 0 && mutationEnd > mutationStart ? runtimeCode.slice(mutationStart, mutationEnd) : '';
+if (!mutationFunction) fail('Canonical planned mutation executor is missing.');
+else {
+  if (mutationFunction.indexOf('acquireRunLock') > mutationFunction.indexOf('loadRunUnlocked')) fail('Canonical State is loaded before lock acquisition.');
+  if (!mutationFunction.includes('verifyCommittedTransitionReplay')) fail('Canonical mutation executor does not use exact committed replay verification.');
+  if (!mutationFunction.includes('publishSuccessor')) fail('Canonical mutation executor does not use the existing atomic publication mechanism.');
+  if (!mutationFunction.includes('releaseRunLock')) fail('Run lock is not released in canonical mutation executor.');
 }
-if (authority.builder_to_responsive !== 'out_of_scope') fail('Builder to Responsive must remain out of scope.');
 
-const requiredRuntimeAuthorities = [
-  'valid_builder_context_input',
-  'selected_candidate_id_continuity',
-  'decision_lineage_continuity',
-  'allowed_action_batch_semantics',
-  'active_confirmation_binding',
-  'session_state_consistency',
-  'checkpoint_consistency',
-  'unresolved_blocker_preservation',
-  'valid_completion_conditions'
-];
-for (const item of requiredRuntimeAuthorities) {
-  if (!authority.runtime_authorities.includes(item)) fail(`Missing runtime authority: ${item}`);
+includesAll(inspector, ['real-intake <project-gate|direct-ce|manual-builder-input>','emit-batch <run-directory>','confirm-batch <run-directory>','attach-evidence <run-directory>','real-completion <run-directory>','inspect-run-generations <run-directory>','recover-run-lock <run-directory>'], 'Builder Inspector CLI');
+for (const [file, text] of [['scripts/lib/builder-truth-spine.mjs', truthSpine],['scripts/lib/builder-functional-correctness.mjs', functional],['scripts/lib/builder-explicit-source-runtime.mjs', explicitSource]]) if (!text.includes('BUILDER-LEGACY-AUTHORITY-INACTIVE')) fail(`${file} does not explicitly disable Legacy real authority.`);
+for (const [file, text] of [['scripts/lib/builder-truth-spine.mjs', truthSpine],['scripts/lib/builder-functional-correctness.mjs', functional]]) {
+  if (text.includes('builder_build_complete: true')) fail(`${file} can still claim real Builder Completion.`);
+  if (text.includes('publishDirectoryAtomically')) fail(`${file} can still publish caller-managed State carriers.`);
+}
+for (const name of ['resolveRealBuilderSource','writeRealIntake','validateRealCompletion','publishRealCompletion']) {
+  const expression = new RegExp(`export function ${name}\\([^)]*\\) \\{ return inactiveLegacyAuthority`);
+  if (!expression.test(explicitSource)) fail(`scripts/lib/builder-explicit-source-runtime.mjs does not fail closed for ${name}.`);
 }
 
-const requiredNonRuntime = ['exact_head_ci', 'pr_inspector', 'independent_review', 'review_receipt', 'owner_merge_receipt', 'repository_commit_identity'];
-for (const item of requiredNonRuntime) {
-  if (!authority.non_runtime_authorities.includes(item)) fail(`Missing non-runtime authority classification: ${item}`);
+const transitionById = Object.fromEntries((transitions.transitions || []).map((entry) => [entry.id, entry]));
+for (const id of ['real-intake','emit-batch','confirm-batch','attach-evidence','complete-builder']) {
+  const transition = transitionById[id];
+  if (!transition || transition.authority_scope !== 'canonical_real_run' || transition.real_run_authority !== true) fail(`Canonical transition metadata is invalid: ${id}`);
 }
-
-const allowed = transitions.allowed_combinations || {};
-if ((allowed.START_INTAKE_MODE || []).includes('COMPLETED')) fail('START_INTAKE_MODE must not allow COMPLETED.');
-if ((allowed.FRESH_IMAGE_MODE_LIMITED || []).includes('COMPLETED')) fail('FRESH_IMAGE_MODE_LIMITED must not allow COMPLETED.');
-if (!(allowed.APPROVED_HANDOFF_MODE || []).includes('COMPLETED')) fail('APPROVED_HANDOFF_MODE must allow bounded Builder completion.');
-
-try {
-  requireCanonicalTransition('resume');
-  requireCanonicalTransition('complete-builder');
-} catch (error) {
-  fail(error.message);
+for (const id of ['resume','fixture-completion']) {
+  const transition = transitionById[id];
+  if (!transition || transition.authority_scope !== 'compatibility_only' || transition.real_run_authority !== false) fail(`Compatibility transition metadata is invalid: ${id}`);
 }
+const completionGuards = transitionById['complete-builder']?.guards || [];
+for (const guard of ['run_root_valid','current_pointer_valid','active_generation_valid','run_lock_held','internal_source_snapshot_hash_matches','full_runtime_context_rederivation_matches','canonical_confirmation_artifacts_valid','confirmed_checkpoint_lineage_valid','batch_matches_context','confirmed_action_set_complete','action_body_digests_match','internal_evidence_snapshots_valid','required_action_evidence_complete','required_completion_claims_complete','active_blocker_set_empty','checkpoint_sequence_valid','successor_generation_valid','runtime_derived_completion_status','runtime_derived_completion_gate','atomic_generation_publication','atomic_current_pointer_update']) if (!completionGuards.includes(guard)) fail(`Completion State Machine is missing guard: ${guard}`);
+for (const outdated of ['builder_input_verified','intake_capsule_verified','completion_status_valid','completion_gate_bound']) if (completionGuards.includes(outdated)) fail(`Completion State Machine retains Legacy guard: ${outdated}`);
 
-const completionTransitions = (transitions.transitions || []).filter((entry) => entry?.to?.runtime_state === 'COMPLETED');
-if (completionTransitions.length !== 1) fail(`Expected exactly one transition to COMPLETED; found ${completionTransitions.length}.`);
-
-for (const forbidden of [
-  'fresh_intake_to_completed',
-  'fresh_image_to_completed',
-  'completion_report_request_to_completed',
-  'resume_without_prior_initialized_state',
-  'start_command_fabricates_run',
-  'unresolved_blocker_disappears',
-  'caller_authored_completed_carrier_as_transition_input',
-  'capsule_only_resume_or_completion_authorization',
-  'required_action_disappears_by_omission'
+for (const required of [
+  'scripts/test-builder-historical-bypass-records.mjs',
+  'scripts/test-builder-authority-bypasses.mjs',
+  'scripts/test-builder-explicit-source-modes.mjs',
+  'scripts/test-builder-truth-spine.mjs',
+  'scripts/test-builder-functional-correctness.mjs',
+  'scripts/test-builder-atomic-run-bundle.mjs',
+  'scripts/test-builder-successor-reconciliation.mjs',
+  'scripts/test-builder-transition-planners.mjs',
+  'scripts/test-builder-single-replay-authority.mjs',
+  'scripts/test-builder-committed-replay-exactness.mjs',
+  'scripts/test-builder-committed-replay-semantic-fields.mjs',
+  'scripts/test-builder-run-concurrency.mjs',
+  'scripts/test-builder-run-crash-recovery.mjs',
+  'scripts/validate-canonical-run-artifacts.mjs',
+  'scripts/validate-lean-runtime.mjs',
+  'scripts/test-project-pack-determinism.mjs'
 ]) {
-  if (!(transitions.forbidden || []).includes(forbidden)) fail(`Missing forbidden transition invariant: ${forbidden}`);
-}
-
-const transitionModule = readText('scripts/lib/builder-runtime-transition.mjs');
-for (const symbol of [
-  'verifyBuilderInput',
-  'verifyIntakeCapsule',
-  'verifyRuntimeIdentity',
-  'validateResumeTransition',
-  'validateCompletionTransition',
-  'reconcileRequiredActions',
-  'publishDirectoryAtomically'
-]) {
-  if (!transitionModule.includes(`function ${symbol}`)) fail(`Shared bounded transition module is missing ${symbol}.`);
-}
-for (const forbiddenPlatformTerm of ['event bus', 'plugin guard registry', 'database adapter', 'service layer']) {
-  if (transitionModule.toLowerCase().includes(forbiddenPlatformTerm)) fail(`Generalized runtime platform term appears in bounded transition module: ${forbiddenPlatformTerm}.`);
-}
-
-const sessionValidator = readText('scripts/validate-session-state.mjs');
-if (sessionValidator.includes('const ALLOWED_BY_MODE = {')) fail('Session validator still maintains a competing hard-coded transition matrix.');
-if (!sessionValidator.includes('runtime/state-transitions.v1.json')) fail('Session validator must derive allowed combinations from canonical transition data.');
-
-const inspector = readText('scripts/builder-inspector.mjs');
-if (!inspector.includes("from './lib/builder-runtime-transition.mjs'")) fail('Builder Inspector must delegate to the shared bounded transition module.');
-if (!inspector.includes('completion <builder-input.json>')) fail('Completion CLI must require actual Builder Input.');
-if (!inspector.includes('resume <builder-input.json>')) fail('Resume CLI must require actual Builder Input.');
-
-const centralValidation = readText('scripts/validate.mjs');
-for (const removed of [
-  'validate-governance-progress-evidence.mjs',
-  'validate-governance-authorities.mjs',
-  'validate-governance-sequence.mjs',
-  'validate-pr-template-hygiene.mjs'
-]) {
-  if (centralValidation.includes(removed)) fail(`Industrial governance remains in central validation: ${removed}`);
-}
-for (const required of ['validate-lean-runtime.mjs', 'test-builder-inspector.mjs', 'validate-builder-runtime-transaction.mjs']) {
   if (!centralValidation.includes(required)) fail(`Central validation is missing: ${required}`);
+  if (!fs.existsSync(path.join(ROOT, required))) fail(`Required validation file is missing: ${required}`);
 }
 
-for (const workflow of ['.github/workflows/governance-exact-head-evidence.yml', '.github/workflows/verify-project-gate-contract.yml']) {
-  if (fs.existsSync(path.join(root, workflow))) fail(`Industrial/external blocking workflow remains active: ${workflow}`);
-}
-
-const activeDocs = ['AGENTS.md', 'README.md', 'STATUS.md', 'PROJECT_INSTRUCTIONS.md', 'core/MASTER_PROMPT.md', 'core/MODE_STATE_MATRIX.md'];
+const activeDocs = ['AGENTS.md','PROJECT_INSTRUCTIONS.md','README.md','STATUS.md','core/MASTER_PROMPT.md','core/MODE_STATE_MATRIX.md','docs/BUILDER_TRUTH_SPINE.md','docs/EXPLICIT_SOURCE_MODES.md','runtime/project-pack/PROJECT_INSTRUCTIONS.txt','runtime/project-pack/01_RUNTIME_CORE.md','runtime/project-pack/02_INTAKE_INSPECTOR.md','runtime/project-pack/03_STATE_RESUME.md','runtime/project-pack/04_ACTION_CONFIRMATION.md','runtime/project-pack/05_CHECKPOINT_COMPLETION.md','dist/chatgpt-project/PROJECT_INSTRUCTIONS.txt','dist/chatgpt-project/knowledge/01_RUNTIME_CORE.md','dist/chatgpt-project/knowledge/02_INTAKE_INSPECTOR.md','dist/chatgpt-project/knowledge/03_STATE_RESUME.md','dist/chatgpt-project/knowledge/04_ACTION_CONFIRMATION.md','dist/chatgpt-project/knowledge/05_CHECKPOINT_COMPLETION.md'];
+const declarations = ['external_source_after_intake: not_used','caller_authored_initial_state: forbidden','caller_managed_carrier_selection: forbidden','legacy_runtime_authority: inactive','run_root_replacement: forbidden','active_generation_mutation: forbidden','mutation_without_run_lock: forbidden','state_load_before_lock: forbidden','current_pointer_to_partial_generation: forbidden','lost_update: forbidden','responsive_complete: false','production_ready: false'];
 for (const file of activeDocs) {
+  if (!fs.existsSync(path.join(ROOT, file))) { fail(`Active Runtime document is missing: ${file}`); continue; }
   const text = readText(file);
-  if (!text.includes('personal_single_operator')) fail(`${file} does not declare personal_single_operator.`);
-  if (!text.includes('production_ready: false')) fail(`${file} does not preserve production_ready: false.`);
+  includesAll(text, declarations, file);
+  includesAll(text, ['CURRENT.json','generations/000001','.mutation-lock','WAITING_FOR_CONFIRMATION','attach-evidence','COMPLETED'], file);
+  for (const forbidden of ['<runtime-context.json> <session-state.json> <checkpoint.json>',"writeJson(path.join(stage, 'checkpoint.json')",'highest-numbered generation becomes active']) if (text.includes(forbidden)) fail(`${file} contains contradictory Runtime guidance: ${forbidden}`);
 }
+if (!runtimeModules.includes('scripts/lib/runtime/canonical-run-runtime.mjs')) fail('Canonical Runtime module is missing.');
+if (!runtimeModules.includes('scripts/lib/runtime/runtime-test-fixtures.mjs')) fail('Runtime test fixture helper is missing.');
+if (!runtimeModules.includes('scripts/lib/runtime/committed-transition-replay.mjs')) fail('Exact committed replay authority module is missing.');
 
-if (errors.length > 0) {
-  console.error('Lean runtime validation failed:');
+if (errors.length) {
+  console.error('Lean Runtime validation failed:');
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log('Lean runtime authority, bounded transition module, and canonical transition consistency passed.');
+console.log('Lean Runtime stable root, immutable generations, exact successor reconciliation, atomic CURRENT, local locking, Legacy isolation, exact committed replay, concurrency, crash recovery, and documentation consistency passed.');

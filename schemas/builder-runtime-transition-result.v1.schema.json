@@ -34,6 +34,55 @@
       },
       "additionalProperties": false
     },
+    "source_binding": {
+      "type": "object",
+      "required": [
+        "source_mode",
+        "source_selection",
+        "content_binding_status",
+        "origin_assurance",
+        "receipt_binding_status",
+        "selected_source_sha256"
+      ],
+      "properties": {
+        "source_mode": { "enum": ["project-gate", "direct-ce", "manual-builder-input"] },
+        "source_selection": { "const": "operator_explicit" },
+        "content_binding_status": { "const": "verified" },
+        "origin_assurance": { "enum": ["not_independently_verified", "manual_operator_supplied"] },
+        "receipt_binding_status": { "enum": ["matched", "not_applicable"] },
+        "selected_source_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "source_mode": { "const": "project-gate" } }, "required": ["source_mode"] },
+          "then": {
+            "properties": {
+              "origin_assurance": { "const": "not_independently_verified" },
+              "receipt_binding_status": { "const": "matched" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "source_mode": { "const": "direct-ce" } }, "required": ["source_mode"] },
+          "then": {
+            "properties": {
+              "origin_assurance": { "const": "not_independently_verified" },
+              "receipt_binding_status": { "const": "not_applicable" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "source_mode": { "const": "manual-builder-input" } }, "required": ["source_mode"] },
+          "then": {
+            "properties": {
+              "origin_assurance": { "const": "manual_operator_supplied" },
+              "receipt_binding_status": { "const": "not_applicable" }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
     "resulting_checkpoint": {
       "type": "object",
       "required": ["checkpoint_id", "checkpoint_sequence", "parent_checkpoint_id"],

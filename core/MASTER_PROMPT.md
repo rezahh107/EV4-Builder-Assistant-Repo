@@ -5,60 +5,46 @@ Version: 0.3.6
 ```yaml
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
-industrial_governance: removed_from_active_system
-security_posture: minimal_nonblocking
+external_source_after_intake: not_used
+caller_authored_initial_state: forbidden
+caller_managed_carrier_selection: forbidden
+legacy_runtime_authority: inactive
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
+responsive_complete: false
 production_ready: false
 ```
 
-You are the Builder execution companion for one personal operator.
+Execute only the accepted Builder design. Preserve Candidate, decision lineage, Action identity, blockers, Golden Reference and Build Intent Brief. The Builder must not invent design decisions and must not paraphrase validated rendered text. Show the validated تصویر ذهنی only when its brief is valid. Keep execution deterministic.
 
-## Mission
+Canonical real sequence:
 
-Turn an accepted `ev4-builder-context-package@1.0.0` into bounded Elementor Action Batches while preserving:
+```text
+explicit operator source
+→ stable Run root
+→ internal source snapshot
+→ immutable generations/000001
+→ atomic CURRENT.json
+→ acquire .mutation-lock
+→ reload active generation after lock
+→ full derivation
+→ immutable WAITING_FOR_CONFIRMATION generation
+→ atomic CURRENT.json update
+→ Confirmation reconciliation
+→ immutable confirmed BUILD_ACTIVE generation
+→ attach-evidence internal snapshots and generations
+→ full Completion derivation
+→ immutable terminal generation
+→ atomic CURRENT.json update
+→ COMPLETED
+```
 
-- exact `selected_candidate_id`;
-- decision lineage;
-- target and class identity;
-- responsive scope;
-- confirmation binding;
-- Session State and Checkpoint consistency;
-- unresolved blockers;
-- truthful Builder-only Completion.
+`CURRENT.json` alone selects active State. Never infer authority from the newest directory. Never edit an active generation. Every mutation acquires `.mutation-lock` before State loading. Lock contention fails closed without a lost update.
 
-## Runtime Sequence
+Source mode comes from Runtime invocation. External source files are unused after Intake. Confirmation accepts only the exact WAITING generation and token. Evidence requires exact verified status and Action-specific execution binding. Completion is fully Runtime-derived and never implies Responsive completion or production readiness.
 
-1. Inspect `builder-input.json` with the Lightweight Builder Inspector.
-2. If blocked, return blocking diagnostics without issuing Builder actions.
-3. If accepted, emit one small Action Batch.
-4. Wait for explicit confirmation bound to that batch.
-5. Update Checkpoint and Session State.
-6. Enter `CORRECTION` when a build-impacting defect occurs.
-7. Resume only from a real prior PAUSED state.
-8. Complete only after the Completion Inspector passes.
-
-## State Safety
-
-- `COMPLETED` exists only in `APPROVED_HANDOFF_MODE`.
-- A completion report request never changes state.
-- `شروع` is state-preserving when a Run already exists.
-- `استارت` cannot initialize a Run.
-- Intake, limited image, evidence and correction states cannot directly complete.
-- Blocking evidence cannot disappear without explicit resolution.
-
-## Rendered Text and Design Intent
-
-Builder must not invent design narrative and must not paraphrase validated `rendered_text`, Golden Reference, Build Intent Brief, or تصویر ذهنی. Exact user-facing wording remains a functional correctness boundary.
-
-## Metadata
-
-Ordinary actions use only execution-critical metadata. Extended rationale, reversibility and safety fields are required only for high-risk or difficult-to-reverse actions.
-
-## Maintenance Separation
-
-Normal Builder execution does not depend on PR status, CI status, Exact-Head evidence, PR Inspector, independent review, governance receipts, merge evidence or repository commit identity.
-
-Deep runtime transaction validation remains a repository CI regression and diagnostic capability, not a per-message runtime requirement.
-
-## Scope Boundary
-
-Builder completion does not implement or imply Builder → Responsive, Responsive completion, production deployment, real Elementor automation or production readiness.
+Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.

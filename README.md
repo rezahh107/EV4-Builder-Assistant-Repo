@@ -4,113 +4,60 @@
 version: 0.3.6
 repository_profile: personal_single_operator
 runtime_goal: functional_correctness
-industrial_governance: removed_from_active_system
-security_posture: minimal_nonblocking
-independent_review_required: false
-pr_inspector_required: false
-exact_head_runtime_authority: false
-builder_to_responsive: out_of_scope
+external_source_after_intake: not_used
+caller_authored_initial_state: forbidden
+caller_managed_carrier_selection: forbidden
+legacy_runtime_authority: inactive
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
+responsive_complete: false
 production_ready: false
 ```
 
-این ریپو runtime شخصی Builder برای تبدیل یک `builder-input.json` معتبر با Schema `ev4-builder-context-package@1.0.0` به Action Batchهای کوچک، تأییدشده، checkpointed و قابل Resume است.
+The real Runtime owns one stable local Run directory. Intake snapshots exact selected source bytes and creates immutable `generations/000001`. `CURRENT.json` is the sole active State pointer; there are no duplicate mutable top-level Session, Checkpoint, Context or manifest files.
 
-## Active Runtime
+## Canonical Flow
 
 ```text
-builder-input.json
-→ Lightweight Intake Inspector
-→ accepted | blocked
-→ Builder Action Batch
-→ explicit user confirmation
-→ Checkpoint + Session State
-→ Resume validation when needed
-→ Completion validation
-→ Builder completion
+explicit operator source
+→ stable Run root
+→ internal source snapshot
+→ immutable generations/000001
+→ atomic CURRENT.json
+→ acquire .mutation-lock
+→ load active generation after lock
+→ emit immutable WAITING_FOR_CONFIRMATION generation
+→ atomic CURRENT.json update
+→ confirm immutable BUILD_ACTIVE generation
+→ attach-evidence internal snapshots and generations
+→ derive immutable terminal generation
+→ atomic CURRENT.json update
+→ COMPLETED
 ```
-
-`شروع` یک intake جدید را فقط در نبود Run فعال آغاز می‌کند. `شروع` تکراری state را حفظ می‌کند. `استارت` فقط Session واقعی و PAUSED را Resume می‌کند و نمی‌تواند Run بسازد.
-
-Builder completion فقط پایان محدوده Builder است و Responsive completion یا production readiness را اثبات نمی‌کند.
-
-## Lightweight Builder Inspector
 
 ```bash
-node scripts/builder-inspector.mjs intake builder-input.json builder-intake-result.json
-node scripts/builder-inspector.mjs verify-capsule builder-input.json builder-intake-result.json
-node scripts/builder-inspector.mjs resume builder-intake-result.json session-state.json checkpoint.json resume-result.json
-node scripts/builder-inspector.mjs completion builder-intake-result.json session-state.json checkpoint.json completion-status.json completion-gate.json completion-result.json
+node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
+node scripts/builder-inspector.mjs emit-batch <run-directory>
+node scripts/builder-inspector.mjs confirm-batch <run-directory> "<operator-token>"
+node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
+node scripts/builder-inspector.mjs real-completion <run-directory>
 ```
 
-Inspector از canonical digest implementation در `scripts/lib/canonical-builder-package.mjs` استفاده می‌کند، source input را تغییر نمی‌دهد و output را atomically منتشر می‌کند.
+A mutation writer acquires `.mutation-lock` before reading `CURRENT.json`. A competing local process receives `RUN_BUSY_OR_STALE_LOCK`; it cannot commit previously loaded State. Each successful transition publishes a complete successor generation and advances `CURRENT.json` through one atomic same-filesystem rename.
 
-## Runtime Authorities
+A valid adjacent generation is not automatically authoritative. After an interrupted publication, rerunning the same canonical command rederives the exact expected successor from the active predecessor and original command input. Only a byte-identical N+1 and byte-identical operation artifacts may be finalized by advancing `CURRENT.json`. A different, incomplete or ambiguous future generation returns an explicit blocking diagnostic and leaves authority unchanged. If `CURRENT.json` was already advanced before the caller received the result, the identical command returns the committed result with `replayed_existing_transition: true` and creates no additional generation.
 
-فقط این کنترل‌ها Run را authorize یا block می‌کنند:
+Historical bypass records are inert evidence of earlier defects. They import no active Runtime implementation and cannot complete a Run. CI separately proves that every Legacy authority export is inactive and that the canonical Runtime rejects all seven historical bypass classes.
 
-- Builder Context Schema و semantic validation؛
-- `selected_candidate_id` continuity؛
-- decision lineage continuity؛
-- Action Batch semantics و class scope؛
-- confirmation binding؛
-- Session State و Checkpoint consistency؛
-- unresolved blocker preservation؛
-- valid Completion conditions.
+The Runtime preserves exact source mode arguments, deterministic Package/Candidate/Batch/Action binding, zero-blocker Action emission, `WAITING_FOR_CONFIRMATION`-only Confirmation, exact verified Action-specific Evidence, and Runtime-derived Completion Status/Gate. Builder Completion never implies Responsive completion or production readiness.
 
-PR status، PR Inspector، independent review، Exact-Head evidence، governance receipts، merge evidence و repository commit identity runtime authority نیستند.
-
-## Repository Maintenance
+Bootstrap compatibility: `شروع` routes to explicit Intake; `استارت` is compatibility Resume. Canonical input hint: `builder-input.json`; canonical input Schema: `ev4-builder-context-package@1.0.0`.
 
 ```bash
 npm ci
-npm run validate:version-consistency
-npm run validate:schema-registry
-npm run validate:builder-context-package
-npm run validate:cross-field
-npm run validate:builder-lineage-sequence
-npm run build:project-pack
 npm run validate
 ```
-
-Normal CI فقط functional correctness، deterministic packaging و regressionها را می‌سنجد.
-
-## Deterministic Project Pack
-
-Canonical source map:
-
-```text
-runtime/project-pack-source-map.v1.json
-```
-
-Build verification:
-
-```bash
-node scripts/build-project-pack.mjs --verify
-```
-
-Regeneration:
-
-```bash
-node scripts/build-project-pack.mjs --write
-```
-
-Generated files در `dist/chatgpt-project` authoritative نیستند. Hand edit یا stale file باعث failure می‌شود.
-
-## Out of Scope
-
-- Builder → Responsive runtime handoff
-- Responsive completion
-- production deployment
-- real Elementor automation
-- production readiness claim
-
-## Owner Local Pilot
-
-1. از Project Gate یک `builder-input.json` بگیر.
-2. Inspector intake را اجرا کن.
-3. input و accepted capsule را در ChatGPT Project بارگذاری کن.
-4. یک Action Batch کوچک واقعی اجرا کن.
-5. آن را صریحاً تأیید کن.
-6. Checkpoint بساز.
-7. یک بار Pause/Resume را تست کن.
-8. فقط پس از پایان bounded build، Completion validation را اجرا کن.

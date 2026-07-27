@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rezahh107/EV4-Builder-Assistant-Repo/schemas/real-intake-result.v2.schema.json",
+  "title": "EV4 Builder Atomic Intake Result",
+  "type": "object",
+  "required": ["schema", "run_id", "transition_id", "status", "source_mode", "source_snapshot_sha256", "receipt_snapshot_sha256", "context_digest", "package_digest", "selected_candidate_id", "batch_id", "action_ids", "action_digests", "resulting_checkpoint", "runtime_state", "builder_build_complete", "responsive_complete", "production_ready", "publication", "blocking_diagnostics"],
+  "properties": {
+    "schema": { "const": "ev4-builder-real-intake-result@2.0.0" },
+    "run_id": { "$ref": "#/$defs/run" },
+    "transition_id": { "const": "real-intake" },
+    "status": { "const": "accepted" },
+    "source_mode": { "enum": ["project-gate", "direct-ce", "manual-builder-input"] },
+    "source_snapshot_sha256": { "$ref": "#/$defs/hash" },
+    "receipt_snapshot_sha256": { "anyOf": [{ "$ref": "#/$defs/hash" }, { "type": "null" }] },
+    "context_digest": { "$ref": "#/$defs/hash" },
+    "package_digest": { "$ref": "#/$defs/hash" },
+    "selected_candidate_id": { "type": "string", "minLength": 1 },
+    "batch_id": { "type": "string", "minLength": 1 },
+    "action_ids": { "$ref": "#/$defs/actions" },
+    "action_digests": { "$ref": "#/$defs/digests" },
+    "resulting_checkpoint": { "$ref": "#/$defs/initial_checkpoint" },
+    "runtime_state": { "const": "BUILD_ACTIVE" },
+    "builder_build_complete": { "const": false },
+    "responsive_complete": { "const": false },
+    "production_ready": { "const": false },
+    "publication": { "$ref": "#/$defs/publication" },
+    "blocking_diagnostics": { "type": "array", "maxItems": 0 }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "run": { "type": "string", "pattern": "^RUN-[a-f0-9]{20}$" },
+    "actions": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "digests": { "type": "object", "minProperties": 1, "additionalProperties": { "$ref": "#/$defs/hash" } },
+    "initial_checkpoint": {
+      "type": "object",
+      "required": ["checkpoint_id", "checkpoint_sequence", "parent_checkpoint_id"],
+      "properties": {
+        "checkpoint_id": { "type": "string", "minLength": 1 },
+        "checkpoint_sequence": { "const": 1 },
+        "parent_checkpoint_id": { "type": "null" }
+      },
+      "additionalProperties": false
+    },
+    "publication": {
+      "type": "object",
+      "required": ["atomic", "files"],
+      "properties": {
+        "atomic": { "const": true },
+        "files": { "type": "array", "minItems": 6, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

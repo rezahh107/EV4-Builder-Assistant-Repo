@@ -1,15 +1,28 @@
-# Runtime Core
+# Runtime Core — Stable Run Generations
 
 ```yaml
-repository_profile: personal_single_operator
-runtime_goal: functional_correctness
-industrial_governance: removed_from_active_system
-security_posture: minimal_nonblocking
+external_source_after_intake: not_used
+caller_authored_initial_state: forbidden
+caller_managed_carrier_selection: forbidden
+legacy_runtime_authority: inactive
+run_root_replacement: forbidden
+active_generation_mutation: forbidden
+mutation_without_run_lock: forbidden
+state_load_before_lock: forbidden
+current_pointer_to_partial_generation: forbidden
+lost_update: forbidden
+responsive_complete: false
 production_ready: false
 ```
 
-Builder executes a selected and locked implementation. It does not choose architecture or change `selected_candidate_id`.
+The Run root is stable. Intake creates the exact internal source snapshot, immutable `generations/000001`, and atomic `CURRENT.json`. Every later mutation acquires `.mutation-lock` before loading State, validates the active generation, writes a complete immutable successor, then atomically advances `CURRENT.json`.
 
-Runtime authorities are limited to valid Builder input, candidate and decision-lineage continuity, Action Batch semantics, confirmation binding, Session State, Checkpoint, unresolved blocker preservation, and valid Completion conditions.
+```text
+generations/000001 BUILD_ACTIVE
+→ WAITING_FOR_CONFIRMATION generation
+→ confirmed BUILD_ACTIVE generation
+→ attach-evidence generations
+→ COMPLETED generation
+```
 
-Repository maintenance uses Schemas, validators, fixtures, regression tests, normal CI, and owner review. Repository process evidence is not runtime authorization.
+Orphan generations are not authority. Legacy modules cannot publish real State.
