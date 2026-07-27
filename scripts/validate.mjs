@@ -5,6 +5,12 @@ import { pathToFileURL } from 'node:url';
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const transactionFixture = 'tests/valid/runtime-transaction/complete-transaction.json';
+const pcvpFixtureParityHarness = 'tests/pcvp-canonical-fixture-parity.test.mjs';
+const pcvpFocusedHarness = 'tests/pcvp-tolerant-consumer.test.mjs';
+const pcvpDependencyRepository = 'rezahh107/EV4-Decision-Kernel';
+const pcvpDependencyCommit = '069a50fa243b01fa578a7c1bcb8864d9e796d34b';
+const pcvpDependencyCheckoutPath = 'decision-kernel';
+const pcvpDependencyBundlePath = `${pcvpDependencyCheckoutPath}/kernel/pcvp/v1.0.0/bundle`;
 
 export const requiredShardIds = Object.freeze([
   'contracts-and-static',
@@ -42,7 +48,22 @@ export const canonicalShardTaskContracts = Object.freeze({
       transactionFixture
     ]),
     shard: 'runtime-transaction-state'
+  }),
+  pcvpFocused: Object.freeze({
+    id: `node:${pcvpFocusedHarness}`,
+    executable: 'node',
+    args: Object.freeze([pcvpFocusedHarness]),
+    shard: 'contracts-and-static'
   })
+});
+
+export const canonicalPcvpParityWorkflowContract = Object.freeze({
+  jobId: 'pcvp_canonical_parity',
+  dependencyRepository: pcvpDependencyRepository,
+  dependencyCommit: pcvpDependencyCommit,
+  dependencyCheckoutPath: pcvpDependencyCheckoutPath,
+  bundlePath: pcvpDependencyBundlePath,
+  harness: pcvpFixtureParityHarness
 });
 
 let nextOrder = 0;
@@ -142,6 +163,7 @@ export const canonicalTasks = Object.freeze([
     'runtime-transaction-state',
     ['scripts/validate-builder-runtime-transaction-state.mjs', transactionFixture]
   ),
+  nodeTask(pcvpFocusedHarness, 'contracts-and-static'),
   nodeTask('scripts/test-validation-sharding.mjs', 'contracts-and-static')
 ]);
 
@@ -230,6 +252,17 @@ function sameArray(actual, expected) {
   return Array.isArray(actual) && actual.length === expected.length && actual.every((value, index) => value === expected[index]);
 }
 
+function actionReferencesAreImmutable(workflowText) {
+  const references = [...workflowText.matchAll(/\buses:\s*([^\s]+)/g)].map((match) => match[1]);
+  return references.length > 0 && references.every((reference) => /@[0-9a-f]{40}$/.test(reference));
+}
+
+function checkoutCredentialsAreDisabled(jobBlock, expectedCheckoutCount) {
+  const checkoutCount = (jobBlock.match(/\buses:\s*actions\/checkout@[0-9a-f]{40}/g) || []).length;
+  const disabledCount = (jobBlock.match(/persist-credentials:\s*false/g) || []).length;
+  return checkoutCount === expectedCheckoutCount && disabledCount === expectedCheckoutCount;
+}
+
 export function getCanonicalTaskIdentity(taskId, {
   tasks = canonicalTasks,
   requiredShards = requiredShardIds,
@@ -281,6 +314,7 @@ export function validateShardExecutionContract({
     const executableText = executableWorkflowText(workflowText);
     const discover = workflowJobBlock(executableText, 'discover');
     const shardJob = workflowJobBlock(executableText, 'validation_shard');
+    const parityJob = workflowJobBlock(executableText, canonicalPcvpParityWorkflowContract.jobId);
     const finalJob = workflowJobBlock(executableText, 'validate');
 
     if (!/node\s+scripts\/validate\.mjs\s+--list-shards\b/.test(discover)) diagnostics.push('WORKFLOW_LIST_SHARDS_MISSING');
@@ -293,14 +327,50 @@ export function validateShardExecutionContract({
       !/test "\$EXPECTED_SHA" = "\$EVENT_SHA"/.test(shardJob) ||
       !/test "\$ACTUAL_SHA" = "\$EXPECTED_SHA"/.test(shardJob)
     ) diagnostics.push('WORKFLOW_EXACT_HEAD_CHECK_MISSING');
-    if (!/if:\s*always\(\)/.test(finalJob) || !/needs:\s*\[discover,\s*validation_shard\]/.test(finalJob)) {
+
+    if (!parityJob) diagnostics.push('WORKFLOW_PCVP_PARITY_JOB_MISSING');
+    else {
+      if (
+        !new RegExp(`repository:\\s*${canonicalPcvpParityWorkflowContract.dependencyRepository.replace('/', '\\/')}`).test(parityJob) ||
+        !new RegExp(`ref:\\s*${canonicalPcvpParityWorkflowContract.dependencyCommit}`).test(parityJob) ||
+        !new RegExp(`path:\\s*${canonicalPcvpParityWorkflowContract.dependencyCheckoutPath}`).test(parityJob)
+      ) diagnostics.push('WORKFLOW_PCVP_DEPENDENCY_IDENTITY_MISMATCH');
+      if (
+        !/EXPECTED_SHA:\s*\$\{\{\s*needs\.discover\.outputs\.expected_sha\s*\}\}/.test(parityJob) ||
+        !/EVENT_SHA:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\|\|\s*github\.sha\s*\}\}/.test(parityJob) ||
+        !/ACTUAL_SHA="\$\(git rev-parse HEAD\)"/.test(parityJob) ||
+        !/test "\$EXPECTED_SHA" = "\$EVENT_SHA"/.test(parityJob) ||
+        !/test "\$ACTUAL_SHA" = "\$EXPECTED_SHA"/.test(parityJob)
+      ) diagnostics.push('WORKFLOW_PCVP_BUILDER_EXACT_HEAD_CHECK_MISSING');
+      if (
+        !new RegExp(`EXPECTED_DEPENDENCY_SHA:\\s*${canonicalPcvpParityWorkflowContract.dependencyCommit}`).test(parityJob) ||
+        !new RegExp(`ACTUAL_DEPENDENCY_SHA="\\$\\(git -C ${canonicalPcvpParityWorkflowContract.dependencyCheckoutPath} rev-parse HEAD\\)"`).test(parityJob) ||
+        !/test "\$ACTUAL_DEPENDENCY_SHA" = "\$EXPECTED_DEPENDENCY_SHA"/.test(parityJob)
+      ) diagnostics.push('WORKFLOW_PCVP_DEPENDENCY_EXACT_HEAD_CHECK_MISSING');
+      if (!checkoutCredentialsAreDisabled(parityJob, 2)) diagnostics.push('WORKFLOW_PCVP_CHECKOUT_CREDENTIALS_NOT_DISABLED');
+      if (
+        !new RegExp(`node\\s+${canonicalPcvpParityWorkflowContract.harness.replaceAll('.', '\\.')}`)
+          .test(parityJob) ||
+        !new RegExp(canonicalPcvpParityWorkflowContract.bundlePath.replaceAll('/', '\\/'))
+          .test(parityJob)
+      ) diagnostics.push('WORKFLOW_PCVP_PARITY_EXECUTION_MISSING');
+    }
+
+    if (!actionReferencesAreImmutable(executableText)) diagnostics.push('WORKFLOW_MUTABLE_ACTION_REFERENCE');
+    if (!checkoutCredentialsAreDisabled(discover, 1) || !checkoutCredentialsAreDisabled(shardJob, 1)) {
+      diagnostics.push('WORKFLOW_CHECKOUT_CREDENTIALS_NOT_DISABLED');
+    }
+
+    if (!/if:\s*always\(\)/.test(finalJob) || !/needs:\s*\[discover,\s*validation_shard,\s*pcvp_canonical_parity\]/.test(finalJob)) {
       diagnostics.push('WORKFLOW_FINAL_DEPENDENCIES_MISSING');
     }
     if (
       !/DISCOVERY_RESULT:\s*\$\{\{\s*needs\.discover\.result\s*\}\}/.test(finalJob) ||
       !/SHARD_RESULT:\s*\$\{\{\s*needs\.validation_shard\.result\s*\}\}/.test(finalJob) ||
+      !/PCVP_PARITY_RESULT:\s*\$\{\{\s*needs\.pcvp_canonical_parity\.result\s*\}\}/.test(finalJob) ||
       !/test "\$DISCOVERY_RESULT" = "success"/.test(finalJob) ||
-      !/test "\$SHARD_RESULT" = "success"/.test(finalJob)
+      !/test "\$SHARD_RESULT" = "success"/.test(finalJob) ||
+      !/test "\$PCVP_PARITY_RESULT" = "success"/.test(finalJob)
     ) diagnostics.push('WORKFLOW_FINAL_AGGREGATION_MISSING');
 
     if (/\bnpm\s+run\s+validate\b/.test(executableText)) diagnostics.push('WORKFLOW_MONOLITHIC_EXECUTION_PRESENT');
@@ -320,7 +390,9 @@ export function validateShardExecutionContract({
     taskCount: tasks.length,
     shardCount: requiredShards.length,
     transactionTaskId: canonicalShardTaskContracts.transaction.id,
-    transactionStateTaskId: canonicalShardTaskContracts.transactionState.id
+    transactionStateTaskId: canonicalShardTaskContracts.transactionState.id,
+    pcvpFocusedTaskId: canonicalShardTaskContracts.pcvpFocused.id,
+    pcvpParityJobId: canonicalPcvpParityWorkflowContract.jobId
   };
 }
 
