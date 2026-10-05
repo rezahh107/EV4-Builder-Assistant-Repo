@@ -3,6 +3,7 @@ import { RUNTIME_MODES } from '../builder-explicit-source-runtime.mjs';
 import { diagnostic, sameSet, digestWithout, generationRef, collectActiveBlockers, buildCheckpoint, updateSessionForCheckpoint } from './run-primitives.mjs';
 import { expectedPublicationFiles, validatePublication } from './run-state-store.mjs';
 import { failedPlan, successfulPlan } from './transition-planner-common.mjs';
+import { verifyComparativeAdmissions } from './comparative-admission.mjs';
 
 function validateEmitBinding(predecessor) {
   const diagnostics = [...(predecessor.planning?.diagnostics || [])];
@@ -26,13 +27,15 @@ export function planEmitTransition({ predecessor }) {
   if (!sameSet(checkpoint.unconfirmed_action_ids, context.action_batch.action_ids) || (checkpoint.confirmed_action_ids || []).length !== 0) diagnostics.push(diagnostic('RUN-EMIT-003', 'Action mirrors do not match the complete derived Action set.'));
   const blockers = collectActiveBlockers(session, checkpoint);
   if (blockers.length) diagnostics.push(diagnostic('RUN-EMIT-004', `Action emission is blocked by: ${blockers.join(', ')}.`));
-  if (diagnostics.length) return failedPlan(predecessor, diagnostics, { active_blockers: blockers });
+  const comparativeAdmission = verifyComparativeAdmissions(predecessor);
+  diagnostics.push(...comparativeAdmission.diagnostics);
+  if (diagnostics.length) return failedPlan(predecessor, diagnostics, { active_blockers: blockers, comparative_admission: comparativeAdmission });
   const transitionId = `EMIT-${computeCanonicalDigest({ run_id: manifest.run_id, context_digest: context.context_digest, predecessor: checkpoint.checkpoint_id }).slice(0, 16)}`;
   const resultRef = `transitions/emit-batch/${transitionId}/emit-batch-result.json`;
   const resulting = buildCheckpoint({ runId: manifest.run_id, sessionId: session.session_id, context, sequence: checkpoint.checkpoint_sequence + 1, parentId: checkpoint.checkpoint_id, state: 'WAITING_FOR_CONFIRMATION', confirmedActionIds: [], unconfirmedActionIds: context.action_batch.action_ids, unresolvedBlockers: checkpoint.unresolved_blockers || [], assertions: checkpoint.assertions, evidenceLedger: checkpoint.evidence_ledger, createdFrom: 'initial' });
   const nextSession = updateSessionForCheckpoint(session, resulting);
   const refs = { generation_ref: generationRef(predecessor.current.generation + 1), result_ref: resultRef };
-  const result = { schema: 'ev4-builder-emit-batch-result@2.0.0', run_id: manifest.run_id, transition_id: transitionId, status: 'accepted', source_snapshot_sha256: manifest.source_snapshot_sha256, context_digest: context.context_digest, package_digest: context.canonical_package_digest, selected_candidate_id: context.selected_candidate_id, batch_id: context.action_batch.batch_id, action_ids: [...context.action_batch.action_ids], action_digests: { ...context.action_batch.action_digests }, predecessor_checkpoint: { checkpoint_id: checkpoint.checkpoint_id, checkpoint_sequence: checkpoint.checkpoint_sequence }, resulting_checkpoint: { checkpoint_id: resulting.checkpoint_id, checkpoint_sequence: resulting.checkpoint_sequence, parent_checkpoint_id: resulting.parent_checkpoint_id }, runtime_state: 'WAITING_FOR_CONFIRMATION', builder_build_complete: false, responsive_complete: false, production_ready: false, publication: { atomic: true, files: expectedPublicationFiles('emit-batch', refs) }, blocking_diagnostics: [] };
+  const result = { schema: 'ev4-builder-emit-batch-result@2.0.0', run_id: manifest.run_id, transition_id: transitionId, status: 'accepted', source_snapshot_sha256: manifest.source_snapshot_sha256, context_digest: context.context_digest, package_digest: context.canonical_package_digest, selected_candidate_id: context.selected_candidate_id, batch_id: context.action_batch.batch_id, action_ids: [...context.action_batch.action_ids], action_digests: { ...context.action_batch.action_digests }, comparative_admission: comparativeAdmission.actions, predecessor_checkpoint: { checkpoint_id: checkpoint.checkpoint_id, checkpoint_sequence: checkpoint.checkpoint_sequence }, resulting_checkpoint: { checkpoint_id: resulting.checkpoint_id, checkpoint_sequence: resulting.checkpoint_sequence, parent_checkpoint_id: resulting.parent_checkpoint_id }, runtime_state: 'WAITING_FOR_CONFIRMATION', builder_build_complete: false, responsive_complete: false, production_ready: false, publication: { atomic: true, files: expectedPublicationFiles('emit-batch', refs) }, blocking_diagnostics: [] };
   const publicationDiagnostics = validatePublication(result, 'emit-batch', refs, 'ev4-builder-emit-batch-result@2.0.0', manifest.run_id);
   if (publicationDiagnostics.length) return failedPlan(predecessor, publicationDiagnostics);
   return successfulPlan('emit-batch', context, nextSession, resulting, { active_emit_result_ref: resultRef }, result, [{ ref: resultRef, kind: 'json', value: result }], refs);
