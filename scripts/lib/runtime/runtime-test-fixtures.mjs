@@ -14,6 +14,7 @@ import {
   initializeAtomicRun,
   validateCanonicalRun
 } from './canonical-run-runtime.mjs';
+import { bindComparativeRequirement } from './comparative-admission.mjs';
 
 export const ROOT = process.cwd();
 const BUILDER_FIXTURE = path.join(ROOT, 'tests', 'valid', 'runtime-transaction', 'carriers', 'builder_context_package.json');
@@ -69,6 +70,47 @@ export function activeRun(runDirectory, fullDerivation = false) {
   return loaded;
 }
 
+function directRequirement(action, index) {
+  const fields = ['target_element', 'element_type', 'instruction', 'expected_result'];
+  return {
+    schema: 'ev4-comparative-decision-requirement@1.0.0',
+    action_id: action.action_id,
+    decision_requirement_id: `TEST-DIRECT-${action.action_id}`,
+    implementation_question: 'Test fixture direct execution precheck.',
+    governing_upstream_constraints: ['exact test action is already fully specified'],
+    implementation_surface_type: 'generic',
+    material_behavior_dimensions: [],
+    content_variability: 'fixed',
+    reference_frame: 'none',
+    responsive_relevance: false,
+    text_semantics_relevance: false,
+    interaction_relevance: false,
+    media_relevance: false,
+    reuse_scope: 'local',
+    platform_capability_relevance: false,
+    accessibility_relevance: false,
+    performance_relevance: false,
+    security_relevance: false,
+    saved_state_relevance: false,
+    runtime_validation_relevance: false,
+    allowed_authority_boundary: 'BUILDER_BOUNDED_ONLY',
+    required_material_parameters: fields,
+    fully_specified_upstream_parameters: fields,
+    unresolved_material_parameters: [],
+    upstream_parameter_bindings: Object.fromEntries(fields.map((field) => [field, { source_ref: `first_builder_batch.actions[${index}].${field}`, evidence: String(action[field] ?? '') }]))
+  };
+}
+
+function bindTestDirectRequirements(baseDirectory, source, runDirectory, name) {
+  const pkg = readJson(source.builderInputFile);
+  const directory = path.join(baseDirectory, `${name}-comparative-direct`);
+  for (const [index, action] of (pkg.first_builder_batch?.actions || []).entries()) {
+    const file = writeJson(path.join(directory, `${index}.json`), directRequirement(action, index));
+    const result = bindComparativeRequirement({ runDirectory, requirementSourceFile: file });
+    if (!result.passed) throw new Error(JSON.stringify(result.diagnostics));
+  }
+}
+
 export function initializeManualRun(baseDirectory, name) {
   const source = createSourceCase(baseDirectory, 'manual-builder-input', `${name}-source`);
   const runDirectory = path.join(baseDirectory, `run-${name}`);
@@ -79,6 +121,7 @@ export function initializeManualRun(baseDirectory, name) {
     runDirectory
   });
   if (!intake.passed) throw new Error(JSON.stringify(intake.diagnostics));
+  bindTestDirectRequirements(baseDirectory, source, runDirectory, name);
   return { source, runDirectory, intake };
 }
 
