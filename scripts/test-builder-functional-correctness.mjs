@@ -151,3 +151,4 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(`Builder functional-correctness tests passed: ${count}/${count}.`);
+await import('./test-builder-comparative-admission.mjs');
