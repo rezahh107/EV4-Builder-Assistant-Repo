@@ -16,6 +16,7 @@ import {
 import {
   ROOT,
   activeRun,
+  bindTestDirectRequirements,
   createEvidenceSources,
   createSourceCase,
   progressToConfirmed,
@@ -67,6 +68,7 @@ function executeHappyFlow(mode, name) {
   assert.equal(intake.runtime_state, 'BUILD_ACTIVE');
   assert.equal(intake.resulting_checkpoint.checkpoint_sequence, 1);
   assert.equal(intake.resulting_checkpoint.parent_checkpoint_id, null);
+  bindTestDirectRequirements(TEMP, runDirectory, `${name}-direct`);
   for (const file of source.externalFiles) fs.rmSync(file, { force: true });
   let loaded = activeRun(runDirectory, true);
   assert.equal(loaded.current.generation, 1);
@@ -157,6 +159,7 @@ try {
     const source = createSourceCase(TEMP, 'manual-builder-input', 'wrong-token-source');
     const runDirectory = path.join(TEMP, 'run-wrong-token');
     assert.equal(initializeAtomicRun({ sourceMode: source.sourceMode, builderInputFile: source.builderInputFile, runDirectory }).passed, true);
+    bindTestDirectRequirements(TEMP, runDirectory, 'wrong-token');
     assert.equal(emitRunBatch({ runDirectory }).passed, true);
     const result = confirmRunBatch({ runDirectory, userToken: 'WRONG' });
     assert.equal(result.passed, false);
@@ -191,6 +194,7 @@ try {
     const source = createSourceCase(TEMP, 'manual-builder-input', 'pointer-failure-source');
     const runDirectory = path.join(TEMP, 'run-pointer-failure');
     assert.equal(initializeAtomicRun({ sourceMode: source.sourceMode, builderInputFile: source.builderInputFile, runDirectory }).passed, true);
+    bindTestDirectRequirements(TEMP, runDirectory, 'pointer-failure');
     const result = emitRunBatch({ runDirectory, failureInjection: 'before_CURRENT_rename' });
     assert.equal(result.passed, false);
     assert.equal(result.failure_stage, 'before_CURRENT_rename');
