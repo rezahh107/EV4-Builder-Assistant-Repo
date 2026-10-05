@@ -15,6 +15,7 @@ import {
 } from './lib/runtime/canonical-run-runtime.mjs';
 import {
   activeRun,
+  bindTestDirectRequirements,
   createEvidenceSources,
   createSourceCase,
   progressToConfirmed,
@@ -68,6 +69,7 @@ try {
     const source = createSourceCase(TEMP, 'manual-builder-input', 'confirm-source');
     const runDirectory = path.join(TEMP, 'run-confirm');
     assert.equal(initializeAtomicRun({ sourceMode: source.sourceMode, builderInputFile: source.builderInputFile, runDirectory }).passed, true);
+    bindTestDirectRequirements(TEMP, runDirectory, 'confirm');
     const early = confirmRunBatch({ runDirectory, userToken: 'anything' });
     assert.equal(early.passed, false);
     assert.equal(code(early, 'RUN-CONFIRM-008'), true);
