@@ -101,8 +101,9 @@ function directRequirement(action, index) {
   };
 }
 
-function bindTestDirectRequirements(baseDirectory, source, runDirectory, name) {
-  const pkg = readJson(source.builderInputFile);
+export function bindTestDirectRequirements(baseDirectory, runDirectory, name) {
+  const pkg = activeRun(runDirectory, true).derivation?.builderPackage;
+  if (!pkg) throw new Error('Full derivation did not expose Builder package for test precheck.');
   const directory = path.join(baseDirectory, `${name}-comparative-direct`);
   for (const [index, action] of (pkg.first_builder_batch?.actions || []).entries()) {
     const file = writeJson(path.join(directory, `${index}.json`), directRequirement(action, index));
@@ -121,7 +122,7 @@ export function initializeManualRun(baseDirectory, name) {
     runDirectory
   });
   if (!intake.passed) throw new Error(JSON.stringify(intake.diagnostics));
-  bindTestDirectRequirements(baseDirectory, source, runDirectory, name);
+  bindTestDirectRequirements(baseDirectory, runDirectory, name);
   return { source, runDirectory, intake };
 }
 
