@@ -33,6 +33,10 @@ explicit operator source
 → local .mutation-lock
 → active generation reload after lock
 → full pre-emission derivation
+→ bind immutable Comparative Decision Requirement(s)
+→ derive locked required-domain set before selection
+→ validate bounded Resolution and publish immutable Admission Receipt(s) where required
+→ emit-batch verifies DIRECT/BMR comparative admission
 → immutable WAITING_FOR_CONFIRMATION generation
 → atomic CURRENT.json update
 → exact Confirmation reconciliation
@@ -48,6 +52,8 @@ explicit operator source
 
 ```bash
 node scripts/builder-inspector.mjs real-intake <project-gate|direct-ce|manual-builder-input> <source-artifact.json|-> <builder-input.json|-> <run-directory>
+node scripts/comparative-admission.mjs bind-requirement <run-directory> <requirement-source.json>
+node scripts/comparative-admission.mjs admit-resolution <run-directory> <resolution-source.json>
 node scripts/builder-inspector.mjs emit-batch <run-directory>
 node scripts/builder-inspector.mjs confirm-batch <run-directory> "<operator-token>"
 node scripts/builder-inspector.mjs attach-evidence <run-directory> <evidence-source.json>
@@ -55,6 +61,8 @@ node scripts/builder-inspector.mjs real-completion <run-directory>
 node scripts/builder-inspector.mjs inspect-run-generations <run-directory>
 node scripts/builder-inspector.mjs recover-run-lock <run-directory>
 ```
+
+Comparative pre-emission authority is state-neutral: requirement, Resolution and Admission Receipt carriers are immutable sidecars protected by the Run lock; they never replace or select `CURRENT.json`. `emit-batch` independently rederives/validates their bindings and fails closed for unresolved material choice, missing/stale/mismatched receipt, incomplete required-domain coverage, authority failure, or unsupported validator identity. `DIRECT_EXECUTION` is admitted only when all material implementation parameters are already explicitly bound upstream.
 
 `CURRENT.json` alone selects authority. Never infer authority from the highest generation. Published State generations are immutable. Every canonical mutation acquires `.mutation-lock` before State loading; contention returns `RUN_BUSY_OR_STALE_LOCK` without changing the Run.
 
